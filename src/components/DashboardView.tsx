@@ -147,6 +147,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       loadDashboardData();
     };
 
+    const unsubscribe = StorageManager.subscribe(handleSync);
     window.addEventListener('cms_data_changed', handleSync);
     window.addEventListener('storage', handleSync);
     window.addEventListener('focus', handleSync);
@@ -154,9 +155,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     // Fast polling interval for zero-delay realtime UI synchronization across tabs
     const intervalId = setInterval(() => {
       loadDashboardData();
-    }, 1500);
+    }, 500);
 
     return () => {
+      unsubscribe();
       window.removeEventListener('cms_data_changed', handleSync);
       window.removeEventListener('storage', handleSync);
       window.removeEventListener('focus', handleSync);

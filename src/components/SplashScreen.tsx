@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { AppSettings } from '../types';
 import { DEFAULT_CHURCH_LOGO } from '../data/initialData';
 
@@ -9,6 +9,11 @@ interface SplashScreenProps {
 
 export const SplashScreen: React.FC<SplashScreenProps> = ({ settings, onFinish }) => {
   const [progress, setProgress] = useState(1);
+  const onFinishRef = useRef(onFinish);
+
+  useEffect(() => {
+    onFinishRef.current = onFinish;
+  }, [onFinish]);
 
   useEffect(() => {
     const totalDuration = 3000; // 3 seconds total loading delay
@@ -20,7 +25,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ settings, onFinish }
         const next = prev + increment;
         if (next >= 100) {
           clearInterval(timer);
-          setTimeout(onFinish, 150); // slight smooth fade
+          setTimeout(() => {
+            if (onFinishRef.current) {
+              onFinishRef.current();
+            }
+          }, 150); // slight smooth fade
           return 100;
         }
         return next;
@@ -28,7 +37,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ settings, onFinish }
     }, intervalTime);
 
     return () => clearInterval(timer);
-  }, [onFinish]);
+  }, []);
+
+  const churchLogo = settings.logo || (settings as any).logo_url || DEFAULT_CHURCH_LOGO;
 
   return (
     <div className="fixed inset-0 z-[9999] bg-[#090d16] flex flex-col items-center justify-center p-6 text-white font-sans overflow-hidden">
@@ -40,8 +51,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ settings, onFinish }
         <div className="relative group">
           <div className="absolute -inset-1.5 rounded-3xl bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-600 blur opacity-80 animate-pulse" />
           <img
-            src={settings.logo_url || DEFAULT_CHURCH_LOGO}
-            alt={settings.nama_gereja}
+            src={churchLogo}
+            alt={settings.nama_gereja || 'Logo Gereja'}
             onError={(e) => {
               (e.target as HTMLImageElement).src = DEFAULT_CHURCH_LOGO;
             }}

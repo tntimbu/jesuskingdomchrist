@@ -93,13 +93,15 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
     };
     syncNotifs();
 
+    const unsubscribe = StorageManager.subscribe(syncNotifs);
     window.addEventListener('cms_data_changed', syncNotifs);
     window.addEventListener('storage', syncNotifs);
     window.addEventListener('focus', syncNotifs);
 
-    const intervalId = setInterval(syncNotifs, 1500);
+    const intervalId = setInterval(syncNotifs, 500);
 
     return () => {
+      unsubscribe();
       window.removeEventListener('cms_data_changed', syncNotifs);
       window.removeEventListener('storage', syncNotifs);
       window.removeEventListener('focus', syncNotifs);

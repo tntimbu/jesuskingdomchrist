@@ -95,6 +95,22 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
 
   useEffect(() => {
     loadData();
+
+    const handleSync = () => loadData();
+    const unsubscribe = StorageManager.subscribe(handleSync);
+    window.addEventListener('cms_data_changed', handleSync);
+    window.addEventListener('storage', handleSync);
+    window.addEventListener('focus', handleSync);
+
+    const intervalId = setInterval(loadData, 500);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('cms_data_changed', handleSync);
+      window.removeEventListener('storage', handleSync);
+      window.removeEventListener('focus', handleSync);
+      clearInterval(intervalId);
+    };
   }, []);
 
   const loadData = () => {

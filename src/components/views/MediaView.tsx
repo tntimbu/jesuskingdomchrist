@@ -43,13 +43,15 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
     loadData();
 
     const handleSync = () => loadData();
+    const unsubscribe = StorageManager.subscribe(handleSync);
     window.addEventListener('cms_data_changed', handleSync);
     window.addEventListener('storage', handleSync);
     window.addEventListener('focus', handleSync);
 
-    const intervalId = setInterval(loadData, 1500);
+    const intervalId = setInterval(loadData, 500);
 
     return () => {
+      unsubscribe();
       window.removeEventListener('cms_data_changed', handleSync);
       window.removeEventListener('storage', handleSync);
       window.removeEventListener('focus', handleSync);

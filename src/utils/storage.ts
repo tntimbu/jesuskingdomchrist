@@ -119,13 +119,27 @@ function getItem<T>(key: string, fallback: T): T {
   }
 }
 
-// Realtime synchronization channel for cross-tab updates
+// Realtime synchronization channel & pub/sub listeners for instant sync
+type StorageListener = () => void;
+const internalListeners = new Set<StorageListener>();
+
+function notifyStorageListeners() {
+  internalListeners.forEach((fn) => {
+    try {
+      fn();
+    } catch (e) {
+      console.error('Error in storage listener:', e);
+    }
+  });
+}
+
 let syncChannel: BroadcastChannel | null = null;
 if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
   try {
     syncChannel = new BroadcastChannel('cms_realtime_sync_channel');
     syncChannel.onmessage = (event) => {
       if (typeof window !== 'undefined') {
+        notifyStorageListeners();
         window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: event.data }));
       }
     };
@@ -137,6 +151,7 @@ if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
 if (typeof window !== 'undefined') {
   window.addEventListener('storage', (e) => {
     if (e.key && e.key.startsWith('cms_pro_')) {
+      notifyStorageListeners();
       window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { key: e.key } }));
     }
   });
@@ -147,6 +162,7 @@ function setItem<T>(key: string, value: T): void {
     localStorage.setItem(key, JSON.stringify(value));
     if (typeof window !== 'undefined') {
       const payload = { key, timestamp: Date.now() };
+      notifyStorageListeners();
       window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: payload }));
       if (syncChannel) {
         try {
@@ -162,6 +178,12 @@ function setItem<T>(key: string, value: T): void {
 }
 
 export const StorageManager = {
+  subscribe: (listener: StorageListener): (() => void) => {
+    internalListeners.add(listener);
+    return () => {
+      internalListeners.delete(listener);
+    };
+  },
   getSettings: (): AppSettings => {
     const saved = getItem<AppSettings>(KEYS.SETTINGS, initialSettings);
     return { ...initialSettings, ...saved };

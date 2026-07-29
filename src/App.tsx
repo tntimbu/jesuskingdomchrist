@@ -73,11 +73,18 @@ export default function App() {
     // Listen for setting changes across components & tabs
     const handleSettingsSync = () => {
       setSettings(StorageManager.getSettings());
+      const savedUser = StorageManager.getCurrentUser();
+      if (savedUser) {
+        setCurrentUser(savedUser);
+      }
     };
+
+    const unsubscribe = StorageManager.subscribe(handleSettingsSync);
     window.addEventListener('cms_data_changed', handleSettingsSync);
     window.addEventListener('storage', handleSettingsSync);
 
     return () => {
+      unsubscribe();
       window.removeEventListener('cms_data_changed', handleSettingsSync);
       window.removeEventListener('storage', handleSettingsSync);
     };
