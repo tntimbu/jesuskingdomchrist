@@ -45,21 +45,22 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser 
   const [saveSuccess, setSaveSuccess] = useState('');
 
   const loadData = React.useCallback(() => {
+    const activeUser = StorageManager.getCurrentUser() || currentUser;
     const allJemaat = StorageManager.getJemaat();
     const found =
-      allJemaat.find((j) => j.jemaat_id === currentUser.jemaat_id) ||
-      allJemaat.find((j) => j.nama_lengkap.toLowerCase() === currentUser.nama.toLowerCase()) ||
+      allJemaat.find((j) => activeUser.jemaat_id && j.jemaat_id === activeUser.jemaat_id) ||
+      allJemaat.find((j) => j.nama_lengkap.toLowerCase() === activeUser.nama.toLowerCase()) ||
       allJemaat[0];
 
     if (found) {
       setJemaatData(found);
       if (!isEditingRef.current) {
-        setEditName(found.nama_lengkap || currentUser.nama);
-        setEditEmail(found.email || currentUser.email || '');
-        setEditPhone(found.nomor_hp || currentUser.no_hp || '');
-        setEditAddress(found.alamat || '');
-        setEditPhotoUrl(found.foto || '');
-        setPhotoPreview(found.foto || '');
+        setEditName(found.nama_lengkap ?? activeUser.nama ?? '');
+        setEditEmail(found.email ?? activeUser.email ?? '');
+        setEditPhone(found.nomor_hp ?? activeUser.no_hp ?? '');
+        setEditAddress(found.alamat ?? '');
+        setEditPhotoUrl(found.foto ?? '');
+        setPhotoPreview(found.foto ?? '');
       }
     }
 
@@ -76,7 +77,7 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser 
     window.addEventListener('storage', handleSync);
     window.addEventListener('focus', handleSync);
 
-    const intervalId = setInterval(loadData, 500);
+    const intervalId = setInterval(loadData, 1500);
 
     return () => {
       unsubscribe();
@@ -90,12 +91,13 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser 
   const handleToggleEditing = (open?: boolean) => {
     const nextState = open !== undefined ? open : !isEditing;
     if (nextState) {
-      setEditName(jemaatData?.nama_lengkap || currentUser.nama || '');
-      setEditEmail(jemaatData?.email || currentUser.email || '');
-      setEditPhone(jemaatData?.nomor_hp || currentUser.no_hp || '');
-      setEditAddress(jemaatData?.alamat || '');
-      setEditPhotoUrl(jemaatData?.foto || '');
-      setPhotoPreview(jemaatData?.foto || '');
+      const activeUser = StorageManager.getCurrentUser() || currentUser;
+      setEditName(jemaatData?.nama_lengkap ?? activeUser.nama ?? '');
+      setEditEmail(jemaatData?.email ?? activeUser.email ?? '');
+      setEditPhone(jemaatData?.nomor_hp ?? activeUser.no_hp ?? '');
+      setEditAddress(jemaatData?.alamat ?? '');
+      setEditPhotoUrl(jemaatData?.foto ?? '');
+      setPhotoPreview(jemaatData?.foto ?? '');
     }
     setIsEditing(nextState);
   };
@@ -126,47 +128,74 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser 
       return;
     }
 
+    const activeUser = StorageManager.getCurrentUser() || currentUser;
     const allJemaat = StorageManager.getJemaat();
     const finalPhoto = editPhotoUrl.trim() || photoPreview || DEFAULT_CHURCH_LOGO;
 
-    // Update matching jemaat record
+    // Find target jemaat record to update
     let updatedJemaatList = [...allJemaat];
-    const targetIndex = updatedJemaatList.findIndex(
-      (j) => j.jemaat_id === jemaatData?.jemaat_id || j.jemaat_id === currentUser.jemaat_id
+    let targetIndex = updatedJemaatList.findIndex(
+      (j) =>
+        (jemaatData && j.jemaat_id === jemaatData.jemaat_id) ||
+        (activeUser.jemaat_id && j.jemaat_id === activeUser.jemaat_id) ||
+        j.nama_lengkap.toLowerCase() === activeUser.nama.toLowerCase()
     );
 
+    const targetJemaatId =
+      targetIndex >= 0
+        ? updatedJemaatList[targetIndex].jemaat_id
+        : activeUser.jemaat_id || `JMT-${Date.now().toString().slice(-4)}`;
+
+    const updatedRecord: Jemaat = {
+      jemaat_id: targetJemaatId,
+      nik: targetIndex >= 0 ? updatedJemaatList[targetIndex].nik : '3171000000000000',
+      no_kk: targetIndex >= 0 ? updatedJemaatList[targetIndex].no_kk : '3171000000000000',
+      nama_lengkap: editName.trim(),
+      jenis_kelamin: targetIndex >= 0 ? updatedJemaatList[targetIndex].jenis_kelamin : 'Laki-laki',
+      tempat_lahir: targetIndex >= 0 ? updatedJemaatList[targetIndex].tempat_lahir : 'Jakarta',
+      tanggal_lahir: targetIndex >= 0 ? updatedJemaatList[targetIndex].tanggal_lahir : '1995-01-01',
+      alamat: editAddress.trim(),
+      wilayah: targetIndex >= 0 ? updatedJemaatList[targetIndex].wilayah : 'Wilayah I - Sunter',
+      komisi: targetIndex >= 0 ? updatedJemaatList[targetIndex].komisi : 'Komisi Pria (Bapa)',
+      status_baptis: targetIndex >= 0 ? updatedJemaatList[targetIndex].status_baptis : 'Sudah',
+      status_sidi: targetIndex >= 0 ? updatedJemaatList[targetIndex].status_sidi : 'Sudah',
+      status_pernikahan: targetIndex >= 0 ? updatedJemaatList[targetIndex].status_pernikahan : 'Belum Menikah',
+      pekerjaan: targetIndex >= 0 ? updatedJemaatList[targetIndex].pekerjaan : 'Swasta',
+      nomor_hp: editPhone.trim(),
+      email: editEmail.trim(),
+      foto: finalPhoto,
+      status: 'Aktif'
+    };
+
     if (targetIndex >= 0) {
-      updatedJemaatList[targetIndex] = {
-        ...updatedJemaatList[targetIndex],
-        nama_lengkap: editName.trim(),
-        email: editEmail.trim(),
-        nomor_hp: editPhone.trim(),
-        alamat: editAddress.trim(),
-        foto: finalPhoto
-      };
-      StorageManager.saveJemaat(updatedJemaatList);
-      setJemaatData(updatedJemaatList[targetIndex]);
+      updatedJemaatList[targetIndex] = updatedRecord;
+    } else {
+      updatedJemaatList.unshift(updatedRecord);
     }
+
+    StorageManager.saveJemaat(updatedJemaatList);
+    setJemaatData(updatedRecord);
 
     // Update currentUser and allUsers in StorageManager
     const updatedUser: User = {
-      ...currentUser,
+      ...activeUser,
       nama: editName.trim(),
       email: editEmail.trim(),
-      no_hp: editPhone.trim()
+      no_hp: editPhone.trim(),
+      jemaat_id: targetJemaatId
     };
     StorageManager.saveCurrentUser(updatedUser);
 
     const allUsers = StorageManager.getUsers();
-    const updatedUsers = allUsers.map((u) => (u.user_id === currentUser.user_id ? updatedUser : u));
+    const updatedUsers = allUsers.map((u) => (u.user_id === activeUser.user_id ? updatedUser : u));
     StorageManager.saveUsers(updatedUsers);
 
     // Notify application system of updates
     window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { action: 'profile_updated' } }));
 
     StorageManager.logActivity(
-      currentUser.username,
-      `Mengubah profil & foto profil mandiri Jemaat (${currentUser.nama})`,
+      activeUser.username,
+      `Mengubah profil & foto profil mandiri Jemaat (${activeUser.nama})`,
       'JemaatManagement'
     );
 

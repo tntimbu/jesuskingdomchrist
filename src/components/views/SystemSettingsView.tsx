@@ -27,7 +27,8 @@ import {
   KeyRound,
   Wand2,
   AlertCircle,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Sparkles
 } from 'lucide-react';
 
 interface SystemSettingsViewProps {
@@ -736,78 +737,18 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
               </div>
             </div>
 
-            {/* Section 2: Integration Video Media Sosial */}
+            {/* Section 2: Tema Warna, Background & Custom Visual Admin */}
             <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-xl">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                <div>
-                  <h3 className="text-base font-bold">2. Video Media Sosial Dashboard (YouTube / Reels / TikTok)</h3>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Tempelkan link video media sosial untuk menampilkan tayangan langsung / khotbah di Dashboard Jemaat & Admin.
-                  </p>
-                </div>
-                <label className="flex items-center gap-2 cursor-pointer bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
-                  <input
-                    type="checkbox"
-                    checked={metaForm.video_enabled !== false}
-                    onChange={(e) => setMetaForm({ ...metaForm, video_enabled: e.target.checked })}
-                    className="rounded border-slate-700 text-indigo-600 focus:ring-indigo-500 w-4 h-4"
-                  />
-                  <span className="text-xs font-semibold text-emerald-400">Aktifkan Video Player</span>
-                </label>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="sm:col-span-2">
-                  <label className="block text-slate-400 mb-1 font-semibold">
-                    Link Video Media Sosial <span className="text-indigo-400">(YouTube / Shorts / IG Reel / TikTok / MP4)</span>
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="https://www.youtube.com/watch?v=5qap5aO4i9A atau https://youtube.com/shorts/..."
-                    value={metaForm.video_url || ''}
-                    onChange={(e) => setMetaForm({ ...metaForm, video_url: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-indigo-500/40 text-white font-mono text-[11px] focus:outline-none focus:border-indigo-400"
-                  />
-                  <p className="text-[11px] text-slate-500 mt-1">
-                    Mendukung YouTube Watch, YouTube Shorts, Instagram Reels/Posts, TikTok, & MP4 Direct Stream.
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Judul Tayangan Video</label>
-                  <input
-                    type="text"
-                    placeholder="Tayangan Ibadah Raya & Khotbah Minggu Terbaru"
-                    value={metaForm.video_title || ''}
-                    onChange={(e) => setMetaForm({ ...metaForm, video_title: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Keterangan / Deskripsi Video</label>
-                  <input
-                    type="text"
-                    placeholder="Saksikan firman Tuhan dan puji-pujian yang memberkati rohani."
-                    value={metaForm.video_description || ''}
-                    onChange={(e) => setMetaForm({ ...metaForm, video_description: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Section 3: Tema Warna, Background & Kartu */}
-            <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-xl">
-              <h3 className="text-base font-bold pb-3 border-b border-slate-800">
-                3. Tema Warna Background & Style Kartu Dashboard
+              <h3 className="text-base font-bold pb-3 border-b border-slate-800 flex items-center justify-between">
+                <span>2. Kustomisasi Tema Warna & Style Dashboard Admin</span>
+                <span className="text-[10px] font-semibold text-slate-400">Visual Styling</span>
               </h3>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {/* Preset Warna */}
-                <div>
-                  <label className="block text-slate-400 mb-2 font-semibold">Pilih Preset Tema Background</label>
-                  <div className="grid grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Preset Warna Background */}
+                <div className="space-y-2">
+                  <label className="block text-slate-400 font-semibold">Preset Background Admin</label>
+                  <div className="grid grid-cols-2 gap-2">
                     {[
                       { id: 'DARK_SLATE', label: '🌌 Dark Slate', bg: 'from-slate-900 to-indigo-950', border: 'border-indigo-500/50' },
                       { id: 'MIDNIGHT_BLUE', label: '💙 Midnight Blue', bg: 'from-slate-950 to-blue-950', border: 'border-blue-500/50' },
@@ -820,41 +761,72 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                         type="button"
                         key={t.id}
                         onClick={() => setMetaForm({ ...metaForm, theme_preset: t.id as any })}
-                        className={`p-3 rounded-2xl bg-gradient-to-br ${t.bg} border text-left text-xs font-bold transition-all flex items-center justify-between ${
+                        className={`p-2.5 rounded-xl bg-gradient-to-br ${t.bg} border text-left text-[11px] font-bold transition-all flex items-center justify-between ${
                           (metaForm.theme_preset || 'DARK_SLATE') === t.id
                             ? `${t.border} ring-2 ring-indigo-500 shadow-lg scale-[1.02]`
                             : 'border-slate-800 opacity-70 hover:opacity-100'
                         }`}
                       >
-                        <span>{t.label}</span>
-                        {(metaForm.theme_preset || 'DARK_SLATE') === t.id && <Check className="w-4 h-4 text-emerald-400" />}
+                        <span className="truncate">{t.label}</span>
+                        {(metaForm.theme_preset || 'DARK_SLATE') === t.id && <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Accent Color */}
+                <div className="space-y-2">
+                  <label className="block text-slate-400 font-semibold">Warna Aksen Utama System</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { id: 'INDIGO', label: '🟣 Royal Indigo', color: 'bg-indigo-600' },
+                      { id: 'EMERALD', label: '🟢 Emerald Green', color: 'bg-emerald-600' },
+                      { id: 'AMBER', label: '🟡 Radiant Amber', color: 'bg-amber-600' },
+                      { id: 'ROSE', label: '🔴 Crimson Rose', color: 'bg-rose-600' },
+                      { id: 'CYAN', label: '🔵 Ocean Cyan', color: 'bg-cyan-600' },
+                      { id: 'ROYAL_GOLD', label: '⚜️ Royal Gold', color: 'bg-yellow-600' }
+                    ].map((ac) => (
+                      <button
+                        type="button"
+                        key={ac.id}
+                        onClick={() => setMetaForm({ ...metaForm, accent_color: ac.id as any })}
+                        className={`p-2.5 rounded-xl bg-slate-950 border text-left text-[11px] font-bold transition-all flex items-center justify-between ${
+                          (metaForm.accent_color || 'INDIGO') === ac.id
+                            ? 'border-indigo-500 ring-2 ring-indigo-500/50 text-white'
+                            : 'border-slate-800 text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 truncate">
+                          <span className={`w-3 h-3 rounded-full ${ac.color}`} />
+                          <span>{ac.label}</span>
+                        </div>
                       </button>
                     ))}
                   </div>
                 </div>
 
                 {/* Style Kartu */}
-                <div>
-                  <label className="block text-slate-400 mb-2 font-semibold">Pilih Style Kartu & Border</label>
-                  <div className="grid grid-cols-2 gap-2.5">
+                <div className="space-y-2">
+                  <label className="block text-slate-400 font-semibold">Style Kartu & Border</label>
+                  <div className="grid grid-cols-2 gap-2">
                     {[
-                      { id: 'GLASS', label: '✨ Glassmorphism', desc: 'Transparan Kaca Blur' },
-                      { id: 'SOLID', label: '⬛ Solid Dark Glass', desc: 'Latar Gelap Pekat' },
-                      { id: 'NEON', label: '💡 Neon Accent', desc: 'Glow Border Menyala' },
-                      { id: 'FLAT', label: '📄 Flat Bordered', desc: 'Simpel Minimalis' }
+                      { id: 'GLASS', label: '✨ Glassmorphism', desc: 'Blur Transparan' },
+                      { id: 'SOLID', label: '⬛ Solid Dark', desc: 'Gelap Pekat' },
+                      { id: 'NEON', label: '💡 Neon Accent', desc: 'Glow Menyala' },
+                      { id: 'FLAT', label: '📄 Flat Bordered', desc: 'Simpel Flat' }
                     ].map((c) => (
                       <button
                         type="button"
                         key={c.id}
                         onClick={() => setMetaForm({ ...metaForm, card_style: c.id as any })}
-                        className={`p-3 rounded-2xl bg-slate-950 border text-left transition-all ${
+                        className={`p-2.5 rounded-xl bg-slate-950 border text-left transition-all ${
                           (metaForm.card_style || 'GLASS') === c.id
                             ? 'border-indigo-500 ring-2 ring-indigo-500/50 text-white'
                             : 'border-slate-800 text-slate-400 hover:text-slate-200'
                         }`}
                       >
-                        <div className="font-bold text-xs">{c.label}</div>
-                        <div className="text-[10px] text-slate-500 mt-0.5">{c.desc}</div>
+                        <div className="font-bold text-[11px]">{c.label}</div>
+                        <div className="text-[9px] text-slate-500 mt-0.5">{c.desc}</div>
                       </button>
                     ))}
                   </div>
@@ -862,16 +834,119 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
               </div>
             </div>
 
-            {/* Section 4: Sakelar Komponen Dashboard (Tambahkan / Kurangi Tampilan) */}
+            {/* Section 3: Custom Tampilan Portal Jemaat (Mobile & Dashboard Jemaat) */}
+            <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-xl">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                <div>
+                  <h3 className="text-base font-bold text-indigo-300 flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-amber-400" />
+                    <span>3. Kustomisasi Tampilan Portal Jemaat (Hape & Mobile View)</span>
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Atur ucapan selamat datang, gaya banner, teks pengumuman, serta aktifkan/nonaktifkan modul di Dashboard Jemaat.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-slate-400 mb-1 font-semibold">Judul Banner Selamat Datang Jemaat</label>
+                  <input
+                    type="text"
+                    value={metaForm.jemaat_banner_title || 'Shalom & Selamat Datang'}
+                    onChange={(e) => setMetaForm({ ...metaForm, jemaat_banner_title: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-400 mb-1 font-semibold">Subtitle Banner Jemaat</label>
+                  <input
+                    type="text"
+                    value={metaForm.jemaat_banner_subtitle || 'Portal Layanan Jemaat Resmi & Sistem Informasi Terpadu'}
+                    onChange={(e) => setMetaForm({ ...metaForm, jemaat_banner_subtitle: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-slate-400 mb-1 font-semibold">Teks Ticker Pengumuman Jemaat</label>
+                  <textarea
+                    rows={2}
+                    value={metaForm.jemaat_announcement_text || ''}
+                    onChange={(e) => setMetaForm({ ...metaForm, jemaat_announcement_text: e.target.value })}
+                    placeholder="Contoh: Ibadah Raya Minggu ini pukul 09:00 WIB..."
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-400 mb-2 font-semibold">Style Background Banner Jemaat</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { id: 'GRADIENT_INDIGO', label: '🌌 Royal Twilight' },
+                      { id: 'GRADIENT_GOLD', label: '👑 Golden Grace' },
+                      { id: 'GRADIENT_EMERALD', label: '🌿 Emerald Divine' },
+                      { id: 'GRADIENT_PURPLE', label: '🔮 Amethyst Majesty' },
+                      { id: 'OBSIDIAN_NIGHT', label: '🖤 Obsidian Night' },
+                      { id: 'OCEAN_BLUE', label: '🌊 Ocean Waves' }
+                    ].map((gb) => (
+                      <button
+                        type="button"
+                        key={gb.id}
+                        onClick={() => setMetaForm({ ...metaForm, jemaat_banner_bg: gb.id as any })}
+                        className={`p-2.5 rounded-xl bg-slate-950 border text-left text-xs font-bold transition-all ${
+                          (metaForm.jemaat_banner_bg || 'GRADIENT_INDIGO') === gb.id
+                            ? 'border-indigo-500 ring-2 ring-indigo-500/50 text-white'
+                            : 'border-slate-800 text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        {gb.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-slate-400 mb-2 font-semibold">Sakelar Komponen Dashboard Jemaat (Aktif/Nonaktif)</label>
+                  <div className="grid grid-cols-1 gap-2">
+                    {[
+                      { key: 'show_jemaat_announcement_banner', label: 'Banner Pengumuman Ticker' },
+                      { key: 'show_jemaat_social_video', label: 'Feed Video Media Sosial (YouTube/Reels/TikTok)' },
+                      { key: 'show_jemaat_sacraments_card', label: 'Kartu Status Sakramen & Keanggotaan' },
+                      { key: 'show_jemaat_daily_renungan', label: 'Widget Renungan Harian Terbaru' },
+                      { key: 'show_jemaat_event_jadwal', label: 'Widget Jadwal Ibadah & Event' },
+                      { key: 'show_jemaat_quick_doa', label: 'Form Kirim Permohonan Doa Jemaat' },
+                      { key: 'show_jemaat_offering_history', label: 'Catatan Histori Persembahan Personal' }
+                    ].map((jItem) => (
+                      <label
+                        key={jItem.key}
+                        className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between cursor-pointer text-xs font-semibold hover:border-slate-700"
+                      >
+                        <span>{jItem.label}</span>
+                        <input
+                          type="checkbox"
+                          checked={(metaForm as any)[jItem.key] !== false}
+                          onChange={(e) => setMetaForm({ ...metaForm, [jItem.key]: e.target.checked })}
+                          className="rounded border-slate-700 text-indigo-600 focus:ring-indigo-500 w-4 h-4 shrink-0"
+                        />
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 4: Sakelar Komponen Dashboard Admin (Tambahkan / Kurangi Tampilan) */}
             <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-xl">
               <h3 className="text-base font-bold pb-3 border-b border-slate-800 flex items-center justify-between">
-                <span>4. Sakelar Komponen Dashboard (Tambahkan / Kurangi Tampilan)</span>
+                <span>4. Sakelar Komponen Dashboard Admin</span>
                 <span className="text-[10px] font-semibold text-slate-400">Layout Widget Toggle</span>
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {[
-                  { key: 'show_video_widget', label: 'Widget Video Media Sosial', desc: 'Tayangan video/khotbah di dashboard' },
+                  { key: 'show_video_widget', label: 'Widget Video Media Sosial', desc: 'Tayangan video/khotbah di dashboard admin' },
                   { key: 'show_stat_cards', label: 'Kartu Ringkasan Statistik', desc: 'Total Jemaat, KK, Kas, Event' },
                   { key: 'show_renungan_widget', label: 'Widget Renungan Utama', desc: 'Tampilkan 1 Renungan Terbaru' },
                   { key: 'show_pengumuman_widget', label: 'Widget Pengumuman Terbaru', desc: 'Tampilkan 1 Pengumuman Terbaru' },

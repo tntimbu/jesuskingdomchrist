@@ -19,7 +19,8 @@ import {
   AppSettings,
   ActivityLog,
   LoginHistory,
-  PrayerRequest
+  PrayerRequest,
+  FeaturedVideo
 } from '../types';
 
 import {
@@ -41,7 +42,8 @@ import {
   initialNotifications,
   initialActivityLogs,
   initialLoginHistory,
-  initialPrayerRequests
+  initialPrayerRequests,
+  initialFeaturedVideos
 } from '../data/initialData';
 
 const KEYS = {
@@ -62,6 +64,7 @@ const KEYS = {
   RENUNGAN: 'cms_pro_renungan',
   EVENTS: 'cms_pro_events',
   GALLERY: 'cms_pro_gallery',
+  FEATURED_VIDEOS: 'cms_pro_featured_videos',
   NOTIFICATIONS: 'cms_pro_notifications',
   ACTIVITY_LOGS: 'cms_pro_activity_logs',
   LOGIN_HISTORY: 'cms_pro_login_history',
@@ -237,6 +240,22 @@ export const StorageManager = {
 
   getGallery: (): GalleryItem[] => getItem(KEYS.GALLERY, initialGallery),
   saveGallery: (list: GalleryItem[]): void => setItem(KEYS.GALLERY, list),
+
+  getFeaturedVideos: (): FeaturedVideo[] => getItem(KEYS.FEATURED_VIDEOS, initialFeaturedVideos),
+  saveFeaturedVideos: (list: FeaturedVideo[]): void => {
+    setItem(KEYS.FEATURED_VIDEOS, list);
+    // Automatically sync active video to settings for backward compatibility
+    const active = list.find((v) => v.is_active) || list[0];
+    if (active) {
+      const currentSettings = StorageManager.getSettings();
+      StorageManager.saveSettings({
+        ...currentSettings,
+        video_url: active.video_url,
+        video_title: active.judul,
+        video_description: active.keterangan || ''
+      });
+    }
+  },
 
   getNotifications: (): NotificationItem[] => getItem(KEYS.NOTIFICATIONS, initialNotifications),
   saveNotifications: (list: NotificationItem[]): void => setItem(KEYS.NOTIFICATIONS, list),

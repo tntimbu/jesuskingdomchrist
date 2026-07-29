@@ -17,10 +17,34 @@ import {
   AppSettings,
   ActivityLog,
   LoginHistory,
-  PrayerRequest
+  PrayerRequest,
+  FeaturedVideo
 } from '../types';
 
 export const DEFAULT_CHURCH_LOGO = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%234f46e5"/><stop offset="100%" stop-color="%237c3aed"/></linearGradient></defs><rect width="200" height="200" rx="48" fill="url(%23g)"/><path d="M100 35 v130 M55 80 h90" stroke="%23ffffff" stroke-width="22" stroke-linecap="round"/><circle cx="100" cy="80" r="10" fill="%23f59e0b"/></svg>`;
+
+export const initialFeaturedVideos: FeaturedVideo[] = [
+  {
+    video_id: 'VID-001',
+    judul: 'Tayangan Ibadah Raya & Khotbah Minggu Terbaru',
+    video_url: 'https://www.youtube.com/watch?v=5qap5aO4i9A',
+    keterangan: 'Saksikan siaran ulang ibadah minggu & puji-pujian firman Tuhan yang memberkati.',
+    is_active: true,
+    tanggal: '2026-07-28',
+    platform: 'YouTube',
+    kategori: 'Ibadah Raya'
+  },
+  {
+    video_id: 'VID-002',
+    judul: 'Shorts Renungan Singkat Pemuda & Youth',
+    video_url: 'https://www.youtube.com/shorts/5qap5aO4i9A',
+    keterangan: 'Kiprah puji-pujian dan firman Tuhan untuk generasi muda.',
+    is_active: false,
+    tanggal: '2026-07-25',
+    platform: 'YouTube',
+    kategori: 'Youth'
+  }
+];
 
 export const initialSettings: AppSettings = {
   nama_gereja: 'Gereja Kemenangan Faith Center Pro',
@@ -37,7 +61,21 @@ export const initialSettings: AppSettings = {
   header_title: 'Gereja Kemenangan Faith Center Pro',
   header_subtitle: 'Sistem Informasi Management & Portal Layanan Jemaat',
   theme_preset: 'DARK_SLATE',
+  accent_color: 'INDIGO',
   card_style: 'GLASS',
+  // Custom Jemaat Portal Banner & Toggles
+  jemaat_banner_title: 'Shalom & Selamat Datang',
+  jemaat_banner_subtitle: 'Portal Layanan Jemaat Resmi & Sistem Informasi Terpadu',
+  jemaat_banner_bg: 'GRADIENT_INDIGO',
+  jemaat_announcement_text: 'Ibadah Raya Minggu ini diadakan pukul 09:00 WIB. Mari hadir bertatap muka atau saksikan tayangan streaming online.',
+  show_jemaat_announcement_banner: true,
+  show_jemaat_offering_history: true,
+  show_jemaat_sacraments_card: true,
+  show_jemaat_social_video: true,
+  show_jemaat_daily_renungan: true,
+  show_jemaat_quick_doa: true,
+  show_jemaat_event_jadwal: true,
+  // Dashboard Widget Visibility Toggles
   show_video_widget: true,
   show_renungan_widget: true,
   show_pengumuman_widget: true,

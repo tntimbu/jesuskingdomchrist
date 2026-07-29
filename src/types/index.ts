@@ -183,6 +183,17 @@ export interface NotificationItem {
   is_pinned?: boolean;
 }
 
+export interface FeaturedVideo {
+  video_id: string;
+  judul: string;
+  video_url: string;
+  keterangan?: string;
+  is_active: boolean;
+  tanggal: string;
+  platform?: 'YouTube' | 'TikTok' | 'Instagram' | 'Direct';
+  kategori?: string;
+}
+
 export interface AppSettings {
   nama_gereja: string;
   logo: string;
@@ -200,7 +211,20 @@ export interface AppSettings {
   header_title?: string;
   header_subtitle?: string;
   theme_preset?: 'DARK_SLATE' | 'MIDNIGHT_BLUE' | 'DEEP_PURPLE' | 'WARM_GOLD' | 'FOREST_GREEN' | 'LUXE_LIGHT';
+  accent_color?: 'INDIGO' | 'EMERALD' | 'AMBER' | 'ROSE' | 'CYAN' | 'PURPLE' | 'ROYAL_GOLD';
   card_style?: 'GLASS' | 'SOLID' | 'NEON' | 'FLAT';
+  // Jemaat Portal Visual Customization
+  jemaat_banner_title?: string;
+  jemaat_banner_subtitle?: string;
+  jemaat_banner_bg?: 'GRADIENT_INDIGO' | 'GRADIENT_PURPLE' | 'GRADIENT_GOLD' | 'GRADIENT_EMERALD' | 'OBSIDIAN_NIGHT' | 'OCEAN_BLUE';
+  jemaat_announcement_text?: string;
+  show_jemaat_announcement_banner?: boolean;
+  show_jemaat_offering_history?: boolean;
+  show_jemaat_sacraments_card?: boolean;
+  show_jemaat_social_video?: boolean;
+  show_jemaat_daily_renungan?: boolean;
+  show_jemaat_quick_doa?: boolean;
+  show_jemaat_event_jadwal?: boolean;
   // Dashboard Widget Visibility Toggles
   show_video_widget?: boolean;
   show_renungan_widget?: boolean;
