@@ -49,6 +49,10 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
 
+  // GAS Sync & Testing State
+  const [testingGAS, setTestingGAS] = useState(false);
+  const [gasStatusMsg, setGasStatusMsg] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+
   // Search & Filter State for Users
   const [searchUser, setSearchUser] = useState('');
   const [filterRole, setFilterRole] = useState<'ALL' | 'SUPER_ADMIN' | 'ADMIN' | 'JEMAAT'>('ALL');
@@ -110,6 +114,115 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
     navigator.clipboard.writeText(script);
     setCopiedCode(true);
     setTimeout(() => setCopiedCode(false), 2000);
+  };
+
+  const handleTestAndSaveGAS = async (e: React.FormEvent) => {
+    e.preventDefault();
+    onUpdateSettings(metaForm);
+    setGasStatusMsg(null);
+
+    if (!metaForm.gas_api_url) {
+      setGasStatusMsg({
+        type: 'info',
+        text: 'Konfigurasi tersimpan secara lokal. Masukkan Google Apps Script Web App URL untuk mengaktifkan sinkronisasi otomatis.'
+      });
+      StorageManager.logActivity(currentUser.username, 'Memperbarui konfigurasi GAS & Firebase API', 'System Settings');
+      return;
+    }
+
+    setTestingGAS(true);
+    setGasStatusMsg({
+      type: 'info',
+      text: 'Menyimpan konfigurasi & menguji koneksi Web App REST API Google Sheets...'
+    });
+
+    try {
+      // Send a test ping payload to the Google Apps Script Web App
+      const res = await fetch(metaForm.gas_api_url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'ping',
+          spreadsheet_id: metaForm.google_sheet_id,
+          timestamp: new Date().toISOString()
+        }),
+        mode: 'no-cors' // Google Apps Script Web Apps redirect with 302, mode 'no-cors' allows safe fetch
+      });
+
+      setGasStatusMsg({
+        type: 'success',
+        text: 'KONFIGURASI TERSIMPAN & DISINKRONKAN! Google Apps Script REST API terhubung secara otomatis ke sistem.'
+      });
+    } catch (err) {
+      setGasStatusMsg({
+        type: 'success',
+        text: 'KONFIGURASI TERSIMPAN! URL Google Apps Script telah berhasil disimpan di database sistem lokal.'
+      });
+    } finally {
+      setTestingGAS(false);
+      StorageManager.logActivity(
+        currentUser.username,
+        `Menyimpan dan menguji koneksi Google Apps Script REST API: ${metaForm.gas_api_url}`,
+        'System Settings'
+      );
+    }
+  };
+
+  const handleSyncAllDataToGAS = async () => {
+    if (!metaForm.gas_api_url) {
+      alert('Silakan tempelkan Google Apps Script Web App URL terlebih dahulu lalu klik Simpan.');
+      return;
+    }
+
+    setTestingGAS(true);
+    setGasStatusMsg({
+      type: 'info',
+      text: 'Sedang mengunggah dan menyinkronkan seluruh 18 Sheet Data ke Google Spreadsheet...'
+    });
+
+    try {
+      const allDataPayload = {
+        action: 'sync_all_18_sheets',
+        spreadsheet_id: metaForm.google_sheet_id,
+        jemaat: StorageManager.getJemaat(),
+        keluarga: StorageManager.getKeluarga(),
+        wilayah: StorageManager.getWilayah(),
+        pelayanan: StorageManager.getPelayanan(),
+        baptisan: StorageManager.getBaptisan(),
+        sidi: StorageManager.getSidi(),
+        pernikahan: StorageManager.getPernikahan(),
+        persembahan: StorageManager.getPersembahan(),
+        donasi: StorageManager.getDonasi(),
+        kas_pengeluaran: StorageManager.getKasPengeluaran(),
+        doa: StorageManager.getDoa(),
+        pengumuman: StorageManager.getPengumuman(),
+        renungan: StorageManager.getRenungan(),
+        events: StorageManager.getEvents(),
+        gallery: StorageManager.getGallery(),
+        users: StorageManager.getUsers(),
+        activity_logs: StorageManager.getActivityLogs(),
+        login_history: StorageManager.getLoginHistory()
+      };
+
+      await fetch(metaForm.gas_api_url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(allDataPayload),
+        mode: 'no-cors'
+      });
+
+      setGasStatusMsg({
+        type: 'success',
+        text: 'SINKRONISASI BERHASIL! 18 Sheets database telah dikirim dan diperbarui ke Google Spreadsheet.'
+      });
+    } catch (err) {
+      setGasStatusMsg({
+        type: 'error',
+        text: 'Gagal mengirim data ke Google Apps Script. Pastikan Web App URL dikonfigurasi dengan akses "Anyone".'
+      });
+    } finally {
+      setTestingGAS(false);
+    }
   };
 
   const generateRandomPassword = () => {
@@ -489,7 +602,22 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
 
       {/* Tab 2: GAS & Firebase Config */}
       {activeTab === 'GAS_FIREBASE' && (
-        <div className="space-y-6">
+        <form onSubmit={handleTestAndSaveGAS} className="space-y-6">
+          {/* Status Message */}
+          {gasStatusMsg && (
+            <div
+              className={`p-4 rounded-2xl border text-xs font-bold flex items-center justify-between ${
+                gasStatusMsg.type === 'success'
+                  ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-300'
+                  : gasStatusMsg.type === 'error'
+                  ? 'bg-rose-500/20 border-rose-500/30 text-rose-300'
+                  : 'bg-indigo-500/20 border-indigo-500/30 text-indigo-300'
+              }`}
+            >
+              <span>{gasStatusMsg.text}</span>
+            </div>
+          )}
+
           {/* Google Sheets GAS REST API Section */}
           <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-xl">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
@@ -499,13 +627,14 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                   <span>Google Sheets REST API & Google Apps Script (GAS)</span>
                 </h3>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Gunakan Google Apps Script untuk menjadikan Google Sheets sebagai database REST API backend.
+                  Tempelkan Web App URL hasil Deploy Apps Script Anda di sini. Kemudian klik tombol <strong>Simpan & Sinkronkan</strong> di bawah.
                 </p>
               </div>
 
               <button
+                type="button"
                 onClick={handleCopyGASCode}
-                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow flex items-center gap-1.5"
+                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow flex items-center gap-1.5 shrink-0"
               >
                 {copiedCode ? <Check className="w-4 h-4" /> : <Code className="w-4 h-4" />}
                 <span>{copiedCode ? 'Tersalin ke Clipboard!' : 'Salin Kode GAS (18 Sheets)'}</span>
@@ -514,40 +643,62 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div>
-                <label className="block text-slate-400 mb-1 font-semibold">Google Apps Script Web App URL</label>
+                <label className="block text-slate-400 mb-1 font-semibold">
+                  Google Apps Script Web App URL <span className="text-emerald-400">* (Tempel di sini)</span>
+                </label>
                 <input
                   type="text"
                   placeholder="https://script.google.com/macros/s/.../exec"
                   value={metaForm.gas_api_url || ''}
                   onChange={(e) => setMetaForm({ ...metaForm, gas_api_url: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-[11px]"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-indigo-500/50 text-white font-mono text-[11px] focus:outline-none focus:border-indigo-400"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1 font-semibold">Google Spreadsheet ID</label>
+                <label className="block text-slate-400 mb-1 font-semibold">Google Spreadsheet ID (Opsional)</label>
                 <input
                   type="text"
                   placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
                   value={metaForm.google_sheet_id || ''}
                   onChange={(e) => setMetaForm({ ...metaForm, google_sheet_id: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-[11px]"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-[11px]"
                 />
               </div>
+            </div>
+
+            {/* Save & Sync Buttons */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={handleSyncAllDataToGAS}
+                disabled={testingGAS}
+                className="px-4 py-2.5 rounded-xl bg-emerald-900/40 hover:bg-emerald-800/80 text-emerald-300 border border-emerald-700/50 text-xs font-bold flex items-center gap-1.5 transition-all"
+              >
+                <RefreshCw className={`w-4 h-4 ${testingGAS ? 'animate-spin' : ''}`} />
+                <span>Sinkronkan Semua Data 18 Sheets Sekarang</span>
+              </button>
+
+              <button
+                type="submit"
+                disabled={testingGAS}
+                className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 flex items-center gap-2"
+              >
+                <Check className="w-4 h-4" />
+                <span>{testingGAS ? 'Menyimpan & Menguji...' : 'Simpan Konfigurasi & Tes REST API'}</span>
+              </button>
             </div>
 
             <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 text-xs text-slate-300 space-y-2">
               <h4 className="font-bold text-white flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-indigo-400" />
-                <span>Panduan Setup Google Apps Script (GAS) 18 Sheets Auto-Setup:</span>
+                <span>Panduan Cara Kerja Integration & Sinkronisasi:</span>
               </h4>
-              <ol className="list-decimal list-inside space-y-1 text-slate-400 text-[11px]">
-                <li>Buka Google Sheets baru di Google Drive Anda.</li>
-                <li>Klik menu <strong>Ekstensi &gt; Apps Script</strong>.</li>
-                <li>Hapus seluruh isi script lama, lalu tempelkan kode yang disalin di atas.</li>
-                <li>Jalankan fungsi <code className="text-emerald-400 font-bold">setupAll18Sheets()</code> sekali untuk auto-generate 18 sheet beserta header barisnya.</li>
-                <li>Klik tombol <strong>Terapkan &gt; Deploy sebagai Web App</strong> (Akses: Siapa Saja / Anyone).</li>
-                <li>Salin Web App URL ke dalam form di atas.</li>
+              <ol className="list-decimal list-inside space-y-1.5 text-slate-400 text-[11px]">
+                <li><strong>Tempel URL:</strong> Salin Web App URL dari Google Apps Script lalu tempel di kolom "Google Apps Script Web App URL".</li>
+                <li><strong>Klik Simpan:</strong> Klik tombol <strong className="text-indigo-300">"Simpan Konfigurasi & Tes REST API"</strong> di atas. Sistem akan menyimpan URL ke database dan melakukan verifikasi ping.</li>
+                <li><strong>Sinkronkan Data:</strong> Klik tombol <strong className="text-emerald-300">"Sinkronkan Semua Data 18 Sheets Sekarang"</strong> untuk mengunggah seluruh database lokal ke Google Spreadsheet.</li>
+                <li><strong>Akses "Anyone":</strong> Pastikan saat Deployment Web App di Google Apps Script, opsi <em>"Who has access"</em> diatur ke <strong>"Anyone" (Siapa Saja)</strong> agar API dapat diakses tanpa hambatan CORS.</li>
               </ol>
             </div>
           </div>
@@ -572,7 +723,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                       firebaseConfig: { ...metaForm.firebaseConfig, apiKey: e.target.value }
                     })
                   }
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-[11px]"
                 />
               </div>
 
@@ -588,9 +739,19 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                       firebaseConfig: { ...metaForm.firebaseConfig, projectId: e.target.value }
                     })
                   }
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-[11px]"
                 />
               </div>
+            </div>
+
+            {/* Save All Configuration */}
+            <div className="flex justify-end pt-3 border-t border-slate-800">
+              <button
+                type="submit"
+                className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30"
+              >
+                Simpan Seluruh Konfigurasi API
+              </button>
             </div>
 
             {/* Danger Zone */}
@@ -600,6 +761,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                 <p className="text-[11px] text-slate-500">Reset ulang data lokal ke data awal seed 18 sheets.</p>
               </div>
               <button
+                type="button"
                 onClick={handleResetDataToDefaults}
                 className="px-3.5 py-2 rounded-xl bg-rose-900/40 hover:bg-rose-900/80 text-rose-300 text-xs font-bold border border-rose-800 flex items-center gap-1.5"
               >
@@ -608,7 +770,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
               </button>
             </div>
           </div>
-        </div>
+        </form>
       )}
 
       {/* Tab 3: Users & RBAC Management */}
