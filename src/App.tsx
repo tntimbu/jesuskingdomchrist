@@ -19,8 +19,10 @@ import { GaleriView } from './components/views/GaleriView';
 import { LaporanView } from './components/views/LaporanView';
 import { JemaatPortalView } from './components/views/JemaatPortalView';
 import { SystemSettingsView } from './components/views/SystemSettingsView';
+import { SplashScreen } from './components/SplashScreen';
 
 export default function App() {
+  const [showSplash, setShowSplash] = useState(true);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [settings, setSettings] = useState<AppSettings>(StorageManager.getSettings());
   const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
@@ -158,6 +160,11 @@ export default function App() {
     setSettings(newSettings);
     StorageManager.saveSettings(newSettings);
   };
+
+  // Show initial splash screen with loading animation
+  if (showSplash) {
+    return <SplashScreen settings={settings} onFinish={() => setShowSplash(false)} />;
+  }
 
   // If not logged in, show Glassmorphism Login Page
   if (!currentUser) {

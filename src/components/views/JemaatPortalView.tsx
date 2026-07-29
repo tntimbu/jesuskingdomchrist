@@ -28,6 +28,11 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser 
 
   // Edit Profile State
   const [isEditing, setIsEditing] = useState(false);
+  const isEditingRef = React.useRef(isEditing);
+  useEffect(() => {
+    isEditingRef.current = isEditing;
+  }, [isEditing]);
+
   const [editName, setEditName] = useState('');
   const [editEmail, setEditEmail] = useState('');
   const [editPhone, setEditPhone] = useState('');
@@ -48,12 +53,14 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser 
 
     if (found) {
       setJemaatData(found);
-      setEditName(found.nama_lengkap || currentUser.nama);
-      setEditEmail(found.email || currentUser.email || '');
-      setEditPhone(found.nomor_hp || currentUser.no_hp || '');
-      setEditAddress(found.alamat || '');
-      setEditPhotoUrl(found.foto || '');
-      setPhotoPreview(found.foto || '');
+      if (!isEditingRef.current) {
+        setEditName(found.nama_lengkap || currentUser.nama);
+        setEditEmail(found.email || currentUser.email || '');
+        setEditPhone(found.nomor_hp || currentUser.no_hp || '');
+        setEditAddress(found.alamat || '');
+        setEditPhotoUrl(found.foto || '');
+        setPhotoPreview(found.foto || '');
+      }
     }
 
     const allPersembahan = StorageManager.getPersembahan();
@@ -77,6 +84,19 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser 
       clearInterval(intervalId);
     };
   }, [loadData]);
+
+  const handleToggleEditing = (open?: boolean) => {
+    const nextState = open !== undefined ? open : !isEditing;
+    if (nextState) {
+      setEditName(jemaatData?.nama_lengkap || currentUser.nama || '');
+      setEditEmail(jemaatData?.email || currentUser.email || '');
+      setEditPhone(jemaatData?.nomor_hp || currentUser.no_hp || '');
+      setEditAddress(jemaatData?.alamat || '');
+      setEditPhotoUrl(jemaatData?.foto || '');
+      setPhotoPreview(jemaatData?.foto || '');
+    }
+    setIsEditing(nextState);
+  };
 
   // Handle Offline Image Upload via FileReader Base64
   const handleImageFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -173,7 +193,7 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser 
                 className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border-2 border-indigo-500 shadow-xl shadow-indigo-500/20"
               />
               <button
-                onClick={() => setIsEditing(true)}
+                onClick={() => handleToggleEditing(true)}
                 className="absolute -bottom-2 -right-2 p-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-500 shadow-lg border border-white/20 transition-all cursor-pointer"
                 title="Ganti Foto Profil"
               >
@@ -197,7 +217,7 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser 
           </div>
 
           <button
-            onClick={() => setIsEditing(!isEditing)}
+            onClick={() => handleToggleEditing()}
             className="px-5 py-2.5 rounded-2xl bg-indigo-600/80 hover:bg-indigo-600 text-white font-bold text-xs sm:text-sm shadow-lg shadow-indigo-600/30 border border-indigo-400/30 flex items-center gap-2 transition-all cursor-pointer shrink-0"
           >
             <Edit3 className="w-4 h-4" />
