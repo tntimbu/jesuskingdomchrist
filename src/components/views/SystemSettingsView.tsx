@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { User, AppSettings, ActivityLog, LoginHistory } from '../../types';
 import { StorageManager } from '../../utils/storage';
 import { generateGASScriptCode } from '../../utils/googleSheetsGAS';
+import { DEFAULT_CHURCH_LOGO } from '../../data/initialData';
 import {
   Settings,
   ShieldCheck,
@@ -25,7 +26,8 @@ import {
   Search,
   KeyRound,
   Wand2,
-  AlertCircle
+  AlertCircle,
+  Image as ImageIcon
 } from 'lucide-react';
 
 interface SystemSettingsViewProps {
@@ -575,14 +577,83 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                   />
                 </div>
 
-                <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">URL Logo Gereja</label>
-                  <input
-                    type="text"
-                    value={metaForm.logo}
-                    onChange={(e) => setMetaForm({ ...metaForm, logo: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-[11px]"
-                  />
+                <div className="sm:col-span-2 space-y-3 bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                  <label className="font-bold text-indigo-300 flex items-center gap-1.5">
+                    <ImageIcon className="w-4 h-4 text-indigo-400" />
+                    <span>Logo & Gambar Identitas Gereja (Tersinkronisasi Realtime)</span>
+                  </label>
+
+                  <div className="flex flex-col sm:flex-row items-center gap-4 bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                    <div className="shrink-0 relative">
+                      <img
+                        src={metaForm.logo || DEFAULT_CHURCH_LOGO}
+                        alt="Logo Preview"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = DEFAULT_CHURCH_LOGO;
+                        }}
+                        className="w-16 h-16 rounded-2xl object-cover border-2 border-indigo-500/50 shadow-md bg-slate-950"
+                      />
+                      <span className="absolute -bottom-1 -right-1 px-2 py-0.5 bg-indigo-600 text-[9px] font-bold text-white rounded-full">
+                        Preview
+                      </span>
+                    </div>
+
+                    <div className="flex-1 space-y-2 w-full">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={metaForm.logo || ''}
+                          placeholder="Paste URL Gambar Logo atau Upload File..."
+                          onChange={(e) => setMetaForm({ ...metaForm, logo: e.target.value })}
+                          className="flex-1 px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-[11px]"
+                        />
+                        <label className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shrink-0 transition-all">
+                          <Upload className="w-4 h-4" />
+                          <span>Upload File Logo</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onload = (evt) => {
+                                  if (evt.target?.result) {
+                                    setMetaForm({ ...metaForm, logo: evt.target.result as string });
+                                  }
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                          />
+                        </label>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-[10px] text-slate-400 font-semibold">Pilih Preset Logo:</span>
+                        <button
+                          type="button"
+                          onClick={() => setMetaForm({ ...metaForm, logo: DEFAULT_CHURCH_LOGO })}
+                          className="px-2.5 py-1 rounded-lg bg-indigo-950 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold hover:bg-indigo-900"
+                        >
+                          Gold Cross Badge
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setMetaForm({
+                              ...metaForm,
+                              logo: 'https://images.unsplash.com/photo-1548625361-185966347898?w=300&auto=format&fit=crop&q=80'
+                            })
+                          }
+                          className="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 border border-slate-700 text-[10px] hover:bg-slate-700"
+                        >
+                          Cathedral Photo
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <div>

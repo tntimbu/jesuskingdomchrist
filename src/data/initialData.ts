@@ -20,9 +20,11 @@ import {
   PrayerRequest
 } from '../types';
 
+export const DEFAULT_CHURCH_LOGO = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%234f46e5"/><stop offset="100%" stop-color="%237c3aed"/></linearGradient></defs><rect width="200" height="200" rx="48" fill="url(%23g)"/><path d="M100 35 v130 M55 80 h90" stroke="%23ffffff" stroke-width="22" stroke-linecap="round"/><circle cx="100" cy="80" r="10" fill="%23f59e0b"/></svg>`;
+
 export const initialSettings: AppSettings = {
   nama_gereja: 'Gereja Kemenangan Faith Center Pro',
-  logo: 'https://images.unsplash.com/photo-1548625361-185966347898?w=300&auto=format&fit=crop&q=80',
+  logo: DEFAULT_CHURCH_LOGO,
   alamat: 'Jl. Pemuda No. 77, Jakarta Pusat, DKI Jakarta 10110',
   email: 'info@gkfc-cms.org',
   telepon: '+62 21 555-9876',

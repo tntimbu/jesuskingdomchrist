@@ -12,6 +12,7 @@ import {
 } from '../types';
 import { StorageManager } from '../utils/storage';
 import { parseSocialVideoUrl } from '../utils/videoHelper';
+import { DEFAULT_CHURCH_LOGO } from '../data/initialData';
 import {
   Users,
   DollarSign,
@@ -42,7 +43,11 @@ import {
   ChevronRight,
   RotateCw,
   LogOut,
-  AlertTriangle
+  AlertTriangle,
+  Home,
+  Wallet,
+  Upload,
+  Image as ImageIcon
 } from 'lucide-react';
 
 import {
@@ -117,6 +122,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   useEffect(() => {
     loadDashboardData();
+
+    const handleSync = () => {
+      loadDashboardData();
+    };
+
+    window.addEventListener('cms_data_changed', handleSync);
+    window.addEventListener('storage', handleSync);
+    return () => {
+      window.removeEventListener('cms_data_changed', handleSync);
+      window.removeEventListener('storage', handleSync);
+    };
   }, []);
 
   useEffect(() => {
@@ -283,10 +299,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 src={
                   currentUser.jemaat_id
                     ? jemaatList.find((j) => j.jemaat_id === currentUser.jemaat_id)?.foto ||
-                      settings.logo
-                    : settings.logo
+                      settings.logo || DEFAULT_CHURCH_LOGO
+                    : settings.logo || DEFAULT_CHURCH_LOGO
                 }
                 alt="Logo/Avatar"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = DEFAULT_CHURCH_LOGO;
+                }}
                 className="w-16 h-16 rounded-2xl object-cover border-2 border-indigo-500/50 shadow-lg shadow-indigo-500/20 bg-slate-900"
               />
               <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 ring-2 ring-[#0f172a]" />
@@ -359,17 +378,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <span>Cetak Laporan</span>
             </button>
 
-            {/* Tombol Keluar dari Dashboard */}
-            {onLogout && (
-              <button
-                onClick={onLogout}
-                className="px-3.5 py-2 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 text-xs font-semibold border border-rose-500/30 flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
-                title="Keluar dari aplikasi"
-              >
-                <LogOut className="w-4 h-4 text-rose-400" />
-                <span>Keluar</span>
-              </button>
-            )}
           </div>
         </div>
 
@@ -385,9 +393,88 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         )}
       </div>
 
-      {/* JEMAAT FOCUS MODE: Single Latest Update Panel (Anti-Stacking) */}
+      {/* JEMAAT FOCUS MODE: Single Latest Update Panel & Statistics Cards */}
       {isJemaat && (
         <div className="space-y-6">
+          {/* STATISTIK INFORMASI JEMAAT (2 BARIS x 2 KARTU) */}
+          <div className="space-y-4">
+            {/* Baris Pertama: Total Jemaat & Total KK */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Kartu 1: Total Jemaat */}
+              <div className={`p-5 rounded-3xl ${cardStyleClass} border border-indigo-500/30 space-y-2`}>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-300 font-bold uppercase tracking-wider">Total Jemaat</span>
+                  <div className="p-2.5 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shadow-md">
+                    <Users className="w-5 h-5" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-black text-white">{totalJemaat}</span>
+                  <span className="text-xs text-slate-400 font-medium">Jiwa Terdaftar</span>
+                </div>
+                <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-300">
+                  <span>Laki-laki: <strong className="text-indigo-300 font-bold">{totalLaki}</strong></span>
+                  <span>Perempuan: <strong className="text-pink-300 font-bold">{totalPerempuan}</strong></span>
+                </div>
+              </div>
+
+              {/* Kartu 2: Total Kepala Keluarga (KK) */}
+              <div className={`p-5 rounded-3xl ${cardStyleClass} border border-purple-500/30 space-y-2`}>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-300 font-bold uppercase tracking-wider">Total Kepala Keluarga</span>
+                  <div className="p-2.5 rounded-2xl bg-purple-500/20 text-purple-400 border border-purple-500/30 shadow-md">
+                    <Home className="w-5 h-5" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-black text-white">{totalKeluarga}</span>
+                  <span className="text-xs text-slate-400 font-medium">KK Terdaftar</span>
+                </div>
+                <div className="pt-2 border-t border-white/10 text-[11px] text-slate-300">
+                  <span>Tercatat dalam basis data keluarga gereja</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Baris Kedua: Kas Persembahan & Jadwal & Event */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Kartu 3: Kas Persembahan */}
+              <div className={`p-5 rounded-3xl ${cardStyleClass} border border-emerald-500/30 space-y-2`}>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-300 font-bold uppercase tracking-wider">Kas Persembahan</span>
+                  <div className="p-2.5 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-md">
+                    <Wallet className="w-5 h-5" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-black text-emerald-400">
+                    Rp {totalPersembahan.toLocaleString('id-ID')}
+                  </span>
+                </div>
+                <div className="pt-2 border-t border-white/10 text-[11px] text-slate-300">
+                  <span>Total kas persembahan & donasi jemaat</span>
+                </div>
+              </div>
+
+              {/* Kartu 4: Jadwal & Event */}
+              <div className={`p-5 rounded-3xl ${cardStyleClass} border border-amber-500/30 space-y-2`}>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-300 font-bold uppercase tracking-wider">Jadwal & Event</span>
+                  <div className="p-2.5 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shadow-md">
+                    <Calendar className="w-5 h-5" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-black text-white">{eventsList.length}</span>
+                  <span className="text-xs text-slate-400 font-medium">Agenda Aktif</span>
+                </div>
+                <div className="pt-2 border-t border-white/10 text-[11px] text-slate-300">
+                  <span>Ibadah minggu, persekutuan, & kegiatan gereja</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-200 text-xs flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-indigo-400 shrink-0" />
@@ -961,27 +1048,108 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </div>
               </div>
 
-              {/* Section 2: Custom Header Title & Logo */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-950 p-4 rounded-2xl border border-slate-800">
-                <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Judul Header Dashboard</label>
-                  <input
-                    type="text"
-                    value={customForm.header_title || ''}
-                    placeholder="Gereja Kemenangan Faith Center Pro"
-                    onChange={(e) => setCustomForm({ ...customForm, header_title: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-semibold"
-                  />
+              {/* Section 2: Custom Header Title & Logo Input */}
+              <div className="space-y-4 bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                  <label className="font-bold text-indigo-300 flex items-center gap-1.5">
+                    <ImageIcon className="w-4 h-4 text-indigo-400" />
+                    <span>Logo & Identitas Gereja (Tampil di Semua User & Device)</span>
+                  </label>
                 </div>
-                <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Subtitle Header</label>
-                  <input
-                    type="text"
-                    value={customForm.header_subtitle || ''}
-                    placeholder="Sistem Informasi & Portal Layanan Jemaat"
-                    onChange={(e) => setCustomForm({ ...customForm, header_subtitle: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white"
-                  />
+
+                <div className="flex flex-col sm:flex-row items-center gap-4 bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+                  <div className="shrink-0 relative group">
+                    <img
+                      src={customForm.logo || DEFAULT_CHURCH_LOGO}
+                      alt="Logo Preview"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = DEFAULT_CHURCH_LOGO;
+                      }}
+                      className="w-14 h-14 rounded-2xl object-cover border-2 border-indigo-500/50 shadow-md bg-slate-950"
+                    />
+                    <span className="absolute -bottom-1 -right-1 px-1.5 py-0.5 bg-indigo-600 text-[9px] font-bold text-white rounded-full">
+                      Preview
+                    </span>
+                  </div>
+
+                  <div className="flex-1 space-y-2 w-full">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={customForm.logo || ''}
+                        placeholder="Paste URL Gambar Logo atau Upload File..."
+                        onChange={(e) => setCustomForm({ ...customForm, logo: e.target.value })}
+                        className="flex-1 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-[11px]"
+                      />
+                      <label className="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shrink-0 transition-all">
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>Upload File</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onload = (evt) => {
+                                if (evt.target?.result) {
+                                  setCustomForm({ ...customForm, logo: evt.target.result as string });
+                                }
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-slate-400 font-semibold">Preset Logo Quick Pick:</span>
+                      <button
+                        type="button"
+                        onClick={() => setCustomForm({ ...customForm, logo: DEFAULT_CHURCH_LOGO })}
+                        className="px-2 py-1 rounded bg-indigo-950 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold hover:bg-indigo-900"
+                      >
+                        Default Gold Cross Emblem
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setCustomForm({
+                            ...customForm,
+                            logo: 'https://images.unsplash.com/photo-1548625361-185966347898?w=300&auto=format&fit=crop&q=80'
+                          })
+                        }
+                        className="px-2 py-1 rounded bg-slate-800 text-slate-300 border border-slate-700 text-[10px] hover:bg-slate-700"
+                      >
+                        Cathedral Photo
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-400 mb-1 font-semibold">Judul Header Dashboard</label>
+                    <input
+                      type="text"
+                      value={customForm.header_title || ''}
+                      placeholder="Gereja Kemenangan Faith Center Pro"
+                      onChange={(e) => setCustomForm({ ...customForm, header_title: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-semibold"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-400 mb-1 font-semibold">Subtitle Header</label>
+                    <input
+                      type="text"
+                      value={customForm.header_subtitle || ''}
+                      placeholder="Sistem Informasi & Portal Layanan Jemaat"
+                      onChange={(e) => setCustomForm({ ...customForm, header_subtitle: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white"
+                    />
+                  </div>
                 </div>
               </div>
 

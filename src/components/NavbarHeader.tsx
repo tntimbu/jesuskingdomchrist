@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, AppSettings, NotificationItem } from '../types';
 import { StorageManager } from '../utils/storage';
+import { DEFAULT_CHURCH_LOGO } from '../data/initialData';
 import {
   Bell,
   Clock,
@@ -190,8 +191,11 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
         <div className="flex items-center gap-3">
           <div className="relative group">
             <img
-              src={settings.logo || 'https://images.unsplash.com/photo-1548625361-185966347898?w=100&auto=format&fit=crop&q=80'}
+              src={settings.logo || DEFAULT_CHURCH_LOGO}
               alt="Logo"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = DEFAULT_CHURCH_LOGO;
+              }}
               className="w-10 h-10 rounded-xl object-cover border border-white/20 shadow-lg shadow-indigo-500/10"
             />
           </div>

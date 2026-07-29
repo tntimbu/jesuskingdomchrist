@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { User, AppSettings } from '../types';
 import { StorageManager } from '../utils/storage';
+import { DEFAULT_CHURCH_LOGO } from '../data/initialData';
 import { ShieldCheck, UserCheck, Church, Lock, Mail, Eye, EyeOff, Sparkles, ArrowRight, RefreshCw, Smartphone } from 'lucide-react';
 
 interface LoginPageProps {
@@ -127,11 +128,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-indigo-500 to-blue-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 overflow-hidden border border-white/20">
-                {settings.logo ? (
-                  <img src={settings.logo} alt="Logo Gereja" className="w-full h-full object-cover" />
-                ) : (
-                  <Church className="w-6 h-6 text-white" />
-                )}
+                <img
+                  src={settings.logo || DEFAULT_CHURCH_LOGO}
+                  alt="Logo Gereja"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = DEFAULT_CHURCH_LOGO;
+                  }}
+                  className="w-full h-full object-cover"
+                />
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
                 {settings.nama_gereja}

@@ -66,6 +66,39 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    // Listen for setting changes across components & tabs
+    const handleSettingsSync = () => {
+      setSettings(StorageManager.getSettings());
+    };
+    window.addEventListener('cms_data_changed', handleSettingsSync);
+    window.addEventListener('storage', handleSettingsSync);
+
+    return () => {
+      window.removeEventListener('cms_data_changed', handleSettingsSync);
+      window.removeEventListener('storage', handleSettingsSync);
+    };
+  }, []);
+
+  // Intercept Android Back Button / Browser Navigation to show Exit Confirmation Modal
+  useEffect(() => {
+    if (!currentUser) return;
+
+    // Push history state to enable popstate interception for back button
+    window.history.pushState({ page: 'cms' }, '', window.location.href);
+
+    const handlePopState = () => {
+      // Re-push history state to prevent unexpected navigation
+      window.history.pushState({ page: 'cms' }, '', window.location.href);
+      setIsLogoutConfirmOpen(true);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [currentUser]);
+
   const handleInstallPWA = async () => {
     if (deferredPrompt) {
       deferredPrompt.prompt();

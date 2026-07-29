@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, Jemaat, Persembahan, EventSchedule, Pengumuman, Renungan } from '../../types';
 import { StorageManager } from '../../utils/storage';
+import { DEFAULT_CHURCH_LOGO } from '../../data/initialData';
 import { UserCheck, Heart, Calendar, Megaphone, BookOpen, DollarSign, Download, ShieldCheck } from 'lucide-react';
 
 interface JemaatPortalViewProps {
@@ -34,8 +35,11 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser 
       <div className="rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border border-slate-800 p-6 sm:p-8 shadow-xl text-white">
         <div className="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
           <img
-            src={jemaatData?.foto || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80'}
+            src={jemaatData?.foto || DEFAULT_CHURCH_LOGO}
             alt="Foto Profil"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = DEFAULT_CHURCH_LOGO;
+            }}
             className="w-20 h-20 rounded-2xl object-cover border-2 border-indigo-500 shadow-lg"
           />
           <div className="space-y-1">

@@ -122,6 +122,9 @@ function getItem<T>(key: string, fallback: T): T {
 function setItem<T>(key: string, value: T): void {
   try {
     localStorage.setItem(key, JSON.stringify(value));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { key, value } }));
+    }
   } catch (e) {
     console.error(`Error writing ${key} to localStorage:`, e);
   }
