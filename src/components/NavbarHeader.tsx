@@ -235,6 +235,11 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
           <span>{timeStr}</span>
         </div>
         <div className="h-3 w-[1px] bg-white/10" />
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[10px] text-emerald-300 font-bold">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span>Real-Time Cloud</span>
+        </div>
+        <div className="h-3 w-[1px] bg-white/10" />
         <div className="flex items-center gap-2 text-slate-400 text-[11px] font-medium uppercase tracking-wider">
           <Calendar className="w-3.5 h-3.5 text-slate-400" />
           <span>{dateStr}</span>

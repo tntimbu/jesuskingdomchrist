@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { User, AppSettings, ActivityLog, LoginHistory } from '../../types';
 import { StorageManager } from '../../utils/storage';
 import { generateGASScriptCode } from '../../utils/googleSheetsGAS';
-import { testFirestoreConnection, getActiveFirebaseConfig } from '../../utils/firebaseSync';
+import { testFirestoreConnection, getActiveFirebaseConfig, reconnectRealtimeCloudSync } from '../../utils/firebaseSync';
 import { DEFAULT_CHURCH_LOGO } from '../../data/initialData';
 import {
   Settings,
@@ -79,6 +79,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
     };
     setMetaForm(updatedMeta);
     onUpdateSettings(updatedMeta);
+    reconnectRealtimeCloudSync();
     setFirebaseStatusMsg({
       type: 'success',
       text: 'Kembali menggunakan Firebase Project bawaan sistem otomatis secara penuh.'

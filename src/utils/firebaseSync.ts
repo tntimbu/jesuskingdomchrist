@@ -10,29 +10,31 @@ import defaultFirebaseConfig from '../../firebase-applet-config.json';
 
 const COLLECTION_NAME = 'gkfc_cms';
 
-// Map storage keys to Firestore document IDs
+// Comprehensive Mapping of all LocalStorage keys to Firestore Document IDs
 const DOC_MAPPING: Record<string, string> = {
+  cms_pro_settings: 'settings',
+  cms_pro_users: 'users',
   cms_pro_jemaat: 'jemaat',
-  cms_pro_warta: 'warta',
-  cms_pro_pengumuman: 'pengumuman',
-  cms_pro_keuangan: 'keuangan',
-  cms_pro_renungan: 'renungan',
-  cms_pro_surat: 'surat',
+  cms_pro_keluarga: 'keluarga',
+  cms_pro_wilayah: 'wilayah',
+  cms_pro_pelayanan: 'pelayanan',
   cms_pro_baptisan: 'baptisan',
   cms_pro_sidi: 'sidi',
   cms_pro_pernikahan: 'pernikahan',
-  cms_pro_events: 'events',
-  cms_pro_doa: 'doa',
-  cms_pro_gallery: 'gallery',
-  cms_pro_featured_videos: 'featured_videos',
-  cms_pro_media_files: 'media_files',
-  cms_pro_settings: 'settings',
-  cms_pro_users: 'users',
-  cms_pro_wilayah: 'wilayah',
-  cms_pro_activity_logs: 'activity_logs',
   cms_pro_persembahan: 'persembahan',
   cms_pro_donasi: 'donasi',
   cms_pro_kas_pengeluaran: 'kas_pengeluaran',
+  cms_pro_doa: 'doa',
+  cms_pro_pengumuman: 'pengumuman',
+  cms_pro_renungan: 'renungan',
+  cms_pro_events: 'events',
+  cms_pro_gallery: 'gallery',
+  cms_pro_featured_videos: 'featured_videos',
+  cms_pro_media_files: 'media_files',
+  cms_pro_notifications: 'notifications',
+  cms_pro_activity_logs: 'activity_logs',
+  cms_pro_login_history: 'login_history',
+  cms_pro_prayer_requests: 'prayer_requests',
 };
 
 /**
@@ -92,6 +94,8 @@ export const db = getFirestoreInstance();
 
 // Flag to prevent echo loops when updating from Firestore to localStorage
 let isRemoteUpdating = false;
+let activeUnsubscribers: Array<() => void> = [];
+let syncConnectedStatus = true;
 
 /**
  * Pushes updated local data to Cloud Firestore
@@ -103,14 +107,19 @@ export async function pushToCloud(storageKey: string, data: any): Promise<void> 
   try {
     const firestoreDb = getFirestoreInstance();
     const docRef = doc(firestoreDb, COLLECTION_NAME, docId);
+    
+    // Store payload as serialized string to avoid nested array/type mismatches
+    const payloadString = typeof data === 'string' ? data : JSON.stringify(data);
+
     await setDoc(
       docRef,
       {
-        payload: data,
+        payload: payloadString,
         updatedAt: Date.now()
       },
       { merge: true }
     );
+    syncConnectedStatus = true;
   } catch (error) {
     console.warn(`[FirebaseSync] Error syncing ${storageKey} to cloud:`, error);
   }
@@ -131,11 +140,13 @@ export async function testFirestoreConnection(): Promise<{ success: boolean; mes
       clientInfo: 'GKFC CMS Pro - Super Admin Test'
     }, { merge: true });
 
+    syncConnectedStatus = true;
     return {
       success: true,
       message: `TERHUBUNG REAL-TIME! Berhasil terhubung ke Firestore Cloud project ID: "${config.projectId}".`
     };
   } catch (err: any) {
+    syncConnectedStatus = false;
     return {
       success: false,
       message: `Gagal terhubung ke Firestore: ${err?.message || 'Pastikan API Key & Project ID valid.'}`
@@ -144,10 +155,28 @@ export async function testFirestoreConnection(): Promise<{ success: boolean; mes
 }
 
 /**
- * Initializes real-time listener for all collections across devices
+ * Gets real-time connection status
+ */
+export function getCloudSyncStatus(): boolean {
+  return syncConnectedStatus;
+}
+
+/**
+ * Initializes or re-initializes real-time listener for all collections across devices
  */
 export function initRealtimeCloudSync(onDataReceived?: () => void): () => void {
-  const unsubscribers: Array<() => void> = [];
+  // Clear previous active subscriptions if any
+  if (activeUnsubscribers.length > 0) {
+    activeUnsubscribers.forEach((unsub) => {
+      try {
+        unsub();
+      } catch (e) {
+        // ignore
+      }
+    });
+    activeUnsubscribers = [];
+  }
+
   const firestoreDb = getFirestoreInstance();
 
   Object.entries(DOC_MAPPING).forEach(([storageKey, docId]) => {
@@ -156,6 +185,7 @@ export function initRealtimeCloudSync(onDataReceived?: () => void): () => void {
     const unsubscribe = onSnapshot(
       docRef,
       (snapshot) => {
+        syncConnectedStatus = true;
         if (snapshot.exists()) {
           const cloudData = snapshot.data();
           if (cloudData && cloudData.payload !== undefined) {
@@ -171,7 +201,7 @@ export function initRealtimeCloudSync(onDataReceived?: () => void): () => void {
               if (currentLocalStr !== cloudPayloadStr) {
                 localStorage.setItem(storageKey, cloudPayloadStr);
 
-                // Notify app
+                // Notify app components of remote data updates
                 window.dispatchEvent(new Event('cms_data_changed'));
                 window.dispatchEvent(new Event('storage'));
                 if (onDataReceived) onDataReceived();
@@ -188,7 +218,7 @@ export function initRealtimeCloudSync(onDataReceived?: () => void): () => void {
               const parsed = JSON.parse(initialLocal);
               pushToCloud(storageKey, parsed);
             } catch (e) {
-              console.warn(`[FirebaseSync] Error pushing initial state for ${storageKey}:`, e);
+              pushToCloud(storageKey, initialLocal);
             }
           }
         }
@@ -198,10 +228,24 @@ export function initRealtimeCloudSync(onDataReceived?: () => void): () => void {
       }
     );
 
-    unsubscribers.push(unsubscribe);
+    activeUnsubscribers.push(unsubscribe);
   });
 
   return () => {
-    unsubscribers.forEach((unsub) => unsub());
+    activeUnsubscribers.forEach((unsub) => {
+      try {
+        unsub();
+      } catch (e) {
+        // ignore
+      }
+    });
+    activeUnsubscribers = [];
   };
+}
+
+/**
+ * Reconnects real-time cloud sync when Firebase settings change
+ */
+export function reconnectRealtimeCloudSync(onDataReceived?: () => void): () => void {
+  return initRealtimeCloudSync(onDataReceived);
 }
