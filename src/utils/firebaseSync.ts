@@ -38,6 +38,13 @@ const DOC_MAPPING: Record<string, string> = {
 };
 
 /**
+ * Gets default automatic Firebase configuration
+ */
+export function getDefaultFirebaseConfig() {
+  return defaultFirebaseConfig;
+}
+
+/**
  * Gets the active Firebase configuration (Custom from Super Admin Settings or default automatic project)
  */
 export function getActiveFirebaseConfig() {
@@ -54,14 +61,35 @@ export function getActiveFirebaseConfig() {
           storageBucket: (custom.storageBucket || '').trim() || `${custom.projectId.trim()}.firebasestorage.app`,
           messagingSenderId: (custom.messagingSenderId || '').trim() || defaultFirebaseConfig.messagingSenderId,
           appId: (custom.appId || '').trim() || defaultFirebaseConfig.appId,
-          firestoreDatabaseId: (custom.firestoreDatabaseId || defaultFirebaseConfig.firestoreDatabaseId || '(default)').trim()
+          firestoreDatabaseId: (custom.firestoreDatabaseId || defaultFirebaseConfig.firestoreDatabaseId || '(default)').trim(),
+          isCustom: true
         };
       }
     }
   } catch (e) {
     console.warn('[FirebaseSync] Using default automatic Firebase config', e);
   }
-  return defaultFirebaseConfig;
+  return { ...defaultFirebaseConfig, isCustom: false };
+}
+
+/**
+ * Get Default Firestore Instance
+ */
+export function getDefaultFirestoreInstance(): Firestore {
+  const appName = `app_${defaultFirebaseConfig.projectId || 'default'}`;
+  const existingApps = getApps();
+  let app = existingApps.find((a) => a.name === appName);
+
+  if (!app) {
+    app = initializeApp(defaultFirebaseConfig, appName);
+  }
+
+  const firestoreDb =
+    defaultFirebaseConfig.firestoreDatabaseId && defaultFirebaseConfig.firestoreDatabaseId !== '(default)'
+      ? getFirestore(app, defaultFirebaseConfig.firestoreDatabaseId)
+      : getFirestore(app);
+
+  return firestoreDb;
 }
 
 /**
@@ -96,21 +124,23 @@ export const db = getFirestoreInstance();
 let isRemoteUpdating = false;
 let activeUnsubscribers: Array<() => void> = [];
 let syncConnectedStatus = true;
+let lastActiveProjectId = '';
 
 /**
- * Pushes updated local data to Cloud Firestore
+ * Pushes updated local data to Cloud Firestore (with Dual-Write Bridge & Fallback)
  */
 export async function pushToCloud(storageKey: string, data: any): Promise<void> {
   if (isRemoteUpdating) return;
   const docId = DOC_MAPPING[storageKey] || storageKey;
+  const payloadString = typeof data === 'string' ? data : JSON.stringify(data);
 
+  const activeConfig = getActiveFirebaseConfig();
+  let primarySuccess = false;
+
+  // 1. Try pushing to primary active Firestore
   try {
     const firestoreDb = getFirestoreInstance();
     const docRef = doc(firestoreDb, COLLECTION_NAME, docId);
-    
-    // Store payload as serialized string to avoid nested array/type mismatches
-    const payloadString = typeof data === 'string' ? data : JSON.stringify(data);
-
     await setDoc(
       docRef,
       {
@@ -120,8 +150,27 @@ export async function pushToCloud(storageKey: string, data: any): Promise<void> 
       { merge: true }
     );
     syncConnectedStatus = true;
+    primarySuccess = true;
   } catch (error) {
-    console.warn(`[FirebaseSync] Error syncing ${storageKey} to cloud:`, error);
+    console.warn(`[FirebaseSync] Primary sync failed for ${storageKey}:`, error);
+  }
+
+  // 2. Dual-write bridge to default automatic project if primary is custom OR if primary failed
+  if (activeConfig.isCustom || !primarySuccess) {
+    try {
+      const defaultDb = getDefaultFirestoreInstance();
+      const defaultDocRef = doc(defaultDb, COLLECTION_NAME, docId);
+      await setDoc(
+        defaultDocRef,
+        {
+          payload: payloadString,
+          updatedAt: Date.now()
+        },
+        { merge: true }
+      );
+    } catch (e) {
+      console.warn(`[FirebaseSync] Default bridge write error for ${storageKey}:`, e);
+    }
   }
 }
 
@@ -159,13 +208,13 @@ export async function testFirestoreConnection(overrideConfig?: any): Promise<{ s
     syncConnectedStatus = true;
     return {
       success: true,
-      message: `TERHUBUNG REAL-TIME! Berhasil terhubung ke Firestore Cloud project ID: "${config.projectId}".`
+      message: `TERHUBUNG REAL-TIME! Berhasil menulis dan membaca data di Firestore Cloud project ID: "${config.projectId}".`
     };
   } catch (err: any) {
     syncConnectedStatus = false;
     return {
       success: false,
-      message: `Gagal terhubung ke Firestore: ${err?.message || 'Pastikan API Key & Project ID valid dan aturan Firestore Security Rules mengizinkan read/write.'}`
+      message: `Gagal terhubung ke Firestore: ${err?.message || 'Pastikan API Key & Project ID valid dan aturan Firestore Security Rules di Firebase Console Anda sudah diatur allow read, write: if true;'}`
     };
   }
 }
@@ -193,59 +242,105 @@ export function initRealtimeCloudSync(onDataReceived?: () => void): () => void {
     activeUnsubscribers = [];
   }
 
-  const firestoreDb = getFirestoreInstance();
+  const activeConfig = getActiveFirebaseConfig();
+  lastActiveProjectId = activeConfig.projectId;
 
-  Object.entries(DOC_MAPPING).forEach(([storageKey, docId]) => {
-    const docRef = doc(firestoreDb, COLLECTION_NAME, docId);
+  const attachListeners = (firestoreDb: Firestore) => {
+    Object.entries(DOC_MAPPING).forEach(([storageKey, docId]) => {
+      const docRef = doc(firestoreDb, COLLECTION_NAME, docId);
 
-    const unsubscribe = onSnapshot(
-      docRef,
-      (snapshot) => {
-        syncConnectedStatus = true;
-        if (snapshot.exists()) {
-          const cloudData = snapshot.data();
-          if (cloudData && cloudData.payload !== undefined) {
-            isRemoteUpdating = true;
-            try {
-              const cloudPayloadStr =
-                typeof cloudData.payload === 'string'
-                  ? cloudData.payload
-                  : JSON.stringify(cloudData.payload);
+      const unsubscribe = onSnapshot(
+        docRef,
+        (snapshot) => {
+          syncConnectedStatus = true;
+          if (snapshot.exists()) {
+            const cloudData = snapshot.data();
+            if (cloudData && cloudData.payload !== undefined) {
+              isRemoteUpdating = true;
+              try {
+                const cloudPayloadStr =
+                  typeof cloudData.payload === 'string'
+                    ? cloudData.payload
+                    : JSON.stringify(cloudData.payload);
 
+                const currentLocalStr = localStorage.getItem(storageKey);
+
+                if (currentLocalStr !== cloudPayloadStr) {
+                  localStorage.setItem(storageKey, cloudPayloadStr);
+
+                  // Notify app components of remote data updates
+                  window.dispatchEvent(new Event('cms_data_changed'));
+                  window.dispatchEvent(new Event('storage'));
+                  if (onDataReceived) onDataReceived();
+
+                  // If settings were updated with new firebaseConfig, check if project switched
+                  if (storageKey === 'cms_pro_settings') {
+                    const newConfig = getActiveFirebaseConfig();
+                    if (newConfig.projectId !== lastActiveProjectId) {
+                      setTimeout(() => {
+                        reconnectRealtimeCloudSync(onDataReceived);
+                      }, 300);
+                    }
+                  }
+                }
+              } finally {
+                isRemoteUpdating = false;
+              }
+            }
+          } else {
+            // If document does not exist in cloud yet, push initial local data to cloud
+            const initialLocal = localStorage.getItem(storageKey);
+            if (initialLocal) {
+              try {
+                const parsed = JSON.parse(initialLocal);
+                pushToCloud(storageKey, parsed);
+              } catch (e) {
+                pushToCloud(storageKey, initialLocal);
+              }
+            }
+          }
+        },
+        (error) => {
+          console.warn(`[FirebaseSync] Error watching document ${docId}:`, error);
+        }
+      );
+
+      activeUnsubscribers.push(unsubscribe);
+    });
+  };
+
+  // Attach primary listeners
+  const primaryDb = getFirestoreInstance();
+  attachListeners(primaryDb);
+
+  // If primary is custom, ALSO attach listeners to default project for settings & notifications bridge
+  if (activeConfig.isCustom) {
+    try {
+      const defaultDb = getDefaultFirestoreInstance();
+      ['cms_pro_settings', 'cms_pro_notifications', 'cms_pro_pengumuman'].forEach((storageKey) => {
+        const docId = DOC_MAPPING[storageKey] || storageKey;
+        const docRef = doc(defaultDb, COLLECTION_NAME, docId);
+        const unsubBridge = onSnapshot(docRef, (snapshot) => {
+          if (snapshot.exists()) {
+            const cloudData = snapshot.data();
+            if (cloudData && cloudData.payload !== undefined) {
+              const cloudPayloadStr = typeof cloudData.payload === 'string' ? cloudData.payload : JSON.stringify(cloudData.payload);
               const currentLocalStr = localStorage.getItem(storageKey);
-
               if (currentLocalStr !== cloudPayloadStr) {
                 localStorage.setItem(storageKey, cloudPayloadStr);
-
-                // Notify app components of remote data updates
                 window.dispatchEvent(new Event('cms_data_changed'));
                 window.dispatchEvent(new Event('storage'));
                 if (onDataReceived) onDataReceived();
               }
-            } finally {
-              isRemoteUpdating = false;
             }
           }
-        } else {
-          // If document does not exist in cloud yet, push initial local data to cloud
-          const initialLocal = localStorage.getItem(storageKey);
-          if (initialLocal) {
-            try {
-              const parsed = JSON.parse(initialLocal);
-              pushToCloud(storageKey, parsed);
-            } catch (e) {
-              pushToCloud(storageKey, initialLocal);
-            }
-          }
-        }
-      },
-      (error) => {
-        console.warn(`[FirebaseSync] Error watching document ${docId}:`, error);
-      }
-    );
-
-    activeUnsubscribers.push(unsubscribe);
-  });
+        });
+        activeUnsubscribers.push(unsubBridge);
+      });
+    } catch (e) {
+      console.warn('[FirebaseSync] Default bridge listener attach failed:', e);
+    }
+  }
 
   return () => {
     activeUnsubscribers.forEach((unsub) => {
