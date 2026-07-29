@@ -1,12 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { User, AppSettings, NotificationItem } from '../types';
 import { StorageManager } from '../utils/storage';
-import { Bell, Clock, Calendar, Smartphone, LogOut, ChevronDown, CheckCheck, Menu } from 'lucide-react';
+import {
+  Bell,
+  Clock,
+  Calendar,
+  Smartphone,
+  LogOut,
+  ChevronDown,
+  CheckCheck,
+  Menu,
+  KeyRound,
+  UserCheck,
+  Eye,
+  EyeOff,
+  Wand2,
+  AlertCircle,
+  Check
+} from 'lucide-react';
 
 interface NavbarHeaderProps {
   currentUser: User;
   settings: AppSettings;
   onLogout: () => void;
+  onUpdateCurrentUser?: (updatedUser: User) => void;
   onOpenMobileMenu?: () => void;
   onInstallPWA?: () => void;
   canInstallPWA?: boolean;
@@ -16,6 +33,7 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
   currentUser,
   settings,
   onLogout,
+  onUpdateCurrentUser,
   onOpenMobileMenu,
   onInstallPWA,
   canInstallPWA
@@ -25,6 +43,33 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
+
+  // Self Profile Modal State
+  const [isSelfModalOpen, setIsSelfModalOpen] = useState(false);
+  const [showSelfPass, setShowSelfPass] = useState(false);
+  const [selfForm, setSelfForm] = useState({
+    username: currentUser.username,
+    nama: currentUser.nama,
+    email: currentUser.email || '',
+    no_hp: currentUser.no_hp || '',
+    old_password: '',
+    new_password: '',
+    confirm_password: ''
+  });
+  const [selfError, setSelfError] = useState('');
+  const [selfSuccess, setSelfSuccess] = useState('');
+
+  useEffect(() => {
+    setSelfForm({
+      username: currentUser.username,
+      nama: currentUser.nama,
+      email: currentUser.email || '',
+      no_hp: currentUser.no_hp || '',
+      old_password: '',
+      new_password: '',
+      confirm_password: ''
+    });
+  }, [currentUser]);
 
   useEffect(() => {
     const updateTime = () => {
@@ -62,6 +107,73 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
       default:
         return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
     }
+  };
+
+  const handleSaveSelfProfile = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSelfError('');
+    setSelfSuccess('');
+
+    const trimmedUsername = selfForm.username.trim().toLowerCase();
+    if (!trimmedUsername) {
+      setSelfError('Username tidak boleh kosong');
+      return;
+    }
+
+    const allUsers = StorageManager.getUsers();
+    // Check if new username is already taken by another user
+    const existing = allUsers.find(
+      (u) => u.username.toLowerCase() === trimmedUsername && u.user_id !== currentUser.user_id
+    );
+    if (existing) {
+      setSelfError(`Username "${trimmedUsername}" sudah digunakan oleh pengguna lain.`);
+      return;
+    }
+
+    let finalPasswordHash = currentUser.password_hash || (currentUser.role === 'JEMAAT' ? 'jemaat123' : 'admin123');
+
+    // If changing password
+    if (selfForm.new_password) {
+      if (selfForm.new_password.length < 4) {
+        setSelfError('Password baru minimal 4 karakter');
+        return;
+      }
+      if (selfForm.new_password !== selfForm.confirm_password) {
+        setSelfError('Konfirmasi password baru tidak cocok');
+        return;
+      }
+      finalPasswordHash = selfForm.new_password;
+    }
+
+    const updatedUser: User = {
+      ...currentUser,
+      username: trimmedUsername,
+      nama: selfForm.nama.trim(),
+      email: selfForm.email.trim(),
+      no_hp: selfForm.no_hp.trim(),
+      password_hash: finalPasswordHash
+    };
+
+    // Save to allUsers array in localStorage
+    const updatedUserList = allUsers.map((u) => (u.user_id === currentUser.user_id ? updatedUser : u));
+    StorageManager.saveUsers(updatedUserList);
+    StorageManager.saveCurrentUser(updatedUser);
+
+    if (onUpdateCurrentUser) {
+      onUpdateCurrentUser(updatedUser);
+    }
+
+    StorageManager.logActivity(
+      updatedUser.username,
+      `Mengubah kredensial profil & password mandiri (${updatedUser.user_id})`,
+      'SystemSettings'
+    );
+
+    setSelfSuccess('Profil & Kredensial Login berhasil diperbarui!');
+    setTimeout(() => {
+      setIsSelfModalOpen(false);
+      setSelfSuccess('');
+    }, 1200);
   };
 
   return (
@@ -212,6 +324,28 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
               </div>
 
               <button
+                onClick={() => {
+                  setShowUserDropdown(false);
+                  setSelfError('');
+                  setSelfSuccess('');
+                  setSelfForm({
+                    username: currentUser.username,
+                    nama: currentUser.nama,
+                    email: currentUser.email || '',
+                    no_hp: currentUser.no_hp || '',
+                    old_password: '',
+                    new_password: '',
+                    confirm_password: ''
+                  });
+                  setIsSelfModalOpen(true);
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-indigo-300 hover:bg-indigo-500/10 text-xs font-semibold transition-all text-left"
+              >
+                <KeyRound className="w-4 h-4 text-amber-400" />
+                <span>Ubah Username & Password</span>
+              </button>
+
+              <button
                 onClick={onLogout}
                 className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-rose-400 hover:bg-rose-500/10 text-xs font-semibold transition-all text-left"
               >
@@ -222,6 +356,155 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
           )}
         </div>
       </div>
+
+      {/* Modal Self Profile & Password Update */}
+      {isSelfModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+              <h3 className="text-base font-bold flex items-center gap-2">
+                <KeyRound className="w-5 h-5 text-indigo-400" />
+                <span>Pengaturan Kredensial Saya</span>
+              </h3>
+              <button
+                onClick={() => setIsSelfModalOpen(false)}
+                className="text-slate-400 hover:text-white font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            {selfError && (
+              <div className="p-3 bg-rose-500/20 border border-rose-500/30 text-rose-300 rounded-xl text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{selfError}</span>
+              </div>
+            )}
+
+            {selfSuccess && (
+              <div className="p-3 bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 rounded-xl text-xs flex items-center gap-2">
+                <Check className="w-4 h-4 shrink-0" />
+                <span>{selfSuccess}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSaveSelfProfile} className="space-y-3 text-xs">
+              <div>
+                <label className="block text-slate-400 mb-1">Username Login *</label>
+                <input
+                  type="text"
+                  required
+                  value={selfForm.username}
+                  onChange={(e) => setSelfForm({ ...selfForm, username: e.target.value })}
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono font-bold"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1">Nama Lengkap *</label>
+                <input
+                  type="text"
+                  required
+                  value={selfForm.nama}
+                  onChange={(e) => setSelfForm({ ...selfForm, nama: e.target.value })}
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                />
+              </div>
+
+              {/* Password change box */}
+              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-white flex items-center gap-1.5">
+                    <KeyRound className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Ubah Password</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$';
+                      let pass = '';
+                      for (let i = 0; i < 10; i++) {
+                        pass += chars.charAt(Math.floor(Math.random() * chars.length));
+                      }
+                      setSelfForm({ ...selfForm, new_password: pass, confirm_password: pass });
+                      setShowSelfPass(true);
+                    }}
+                    className="text-[11px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-semibold"
+                  >
+                    <Wand2 className="w-3 h-3 text-indigo-400" />
+                    <span>Acak Password</span>
+                  </button>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="relative">
+                    <input
+                      type={showSelfPass ? 'text' : 'password'}
+                      placeholder="Password Baru (Kosongkan jika tidak diubah)"
+                      value={selfForm.new_password}
+                      onChange={(e) => setSelfForm({ ...selfForm, new_password: e.target.value })}
+                      className="w-full pr-8 px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowSelfPass(!showSelfPass)}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                    >
+                      {showSelfPass ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+
+                  <div>
+                    <input
+                      type={showSelfPass ? 'text' : 'password'}
+                      placeholder="Konfirmasi Password Baru"
+                      value={selfForm.confirm_password}
+                      onChange={(e) => setSelfForm({ ...selfForm, confirm_password: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1">Email</label>
+                <input
+                  type="email"
+                  value={selfForm.email}
+                  onChange={(e) => setSelfForm({ ...selfForm, email: e.target.value })}
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1">Nomor Handphone</label>
+                <input
+                  type="text"
+                  value={selfForm.no_hp}
+                  onChange={(e) => setSelfForm({ ...selfForm, no_hp: e.target.value })}
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsSelfModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-bold text-white shadow-lg shadow-indigo-600/30"
+                >
+                  Simpan Kredensial
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </header>
   );
 };

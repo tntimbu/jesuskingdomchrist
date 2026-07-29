@@ -49,12 +49,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
     setTimeout(() => {
       const users = StorageManager.getUsers();
-      const found = users.find(
-        (u) =>
-          (u.username.toLowerCase() === username.trim().toLowerCase() ||
-            u.email.toLowerCase() === username.trim().toLowerCase()) &&
-          (u.password_hash === password || password === 'admin123' || password === 'jemaat123')
-      );
+      const inputName = username.trim().toLowerCase();
+      const inputPass = password.trim();
+
+      const found = users.find((u) => {
+        const matchesName =
+          u.username.toLowerCase() === inputName ||
+          u.email.toLowerCase() === inputName;
+        const expectedPass = u.password_hash || (u.role === 'JEMAAT' ? 'jemaat123' : 'admin123');
+        return matchesName && expectedPass === inputPass;
+      });
 
       if (found) {
         if (found.status === 'Nonaktif') {

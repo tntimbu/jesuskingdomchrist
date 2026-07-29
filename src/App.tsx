@@ -134,6 +134,7 @@ export default function App() {
         currentUser={currentUser}
         settings={settings}
         onLogout={handleLogout}
+        onUpdateCurrentUser={(updatedUser) => setCurrentUser(updatedUser)}
         onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
         onInstallPWA={handleInstallPWA}
         canInstallPWA={!!deferredPrompt}
