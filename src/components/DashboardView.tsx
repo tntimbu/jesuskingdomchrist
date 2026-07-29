@@ -14,6 +14,7 @@ import {
 import { StorageManager } from '../utils/storage';
 import { parseSocialVideoUrl } from '../utils/videoHelper';
 import { DEFAULT_CHURCH_LOGO } from '../data/initialData';
+import { playNotificationChime, playWarningChime } from '../utils/soundHelper';
 import {
   Users,
   DollarSign,
@@ -52,7 +53,8 @@ import {
   BellRing,
   CheckCheck,
   Bell,
-  Trash2
+  Trash2,
+  Volume2
 } from 'lucide-react';
 
 import {
@@ -136,6 +138,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     tujuan_role: 'ALL'
   });
 
+  const prevNotifKeysRef = React.useRef<string>('');
+
   useEffect(() => {
     loadDashboardData();
 
@@ -145,11 +149,46 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
     window.addEventListener('cms_data_changed', handleSync);
     window.addEventListener('storage', handleSync);
+    window.addEventListener('focus', handleSync);
+
+    // Fast polling interval for zero-delay realtime UI synchronization across tabs
+    const intervalId = setInterval(() => {
+      loadDashboardData();
+    }, 1500);
+
     return () => {
       window.removeEventListener('cms_data_changed', handleSync);
       window.removeEventListener('storage', handleSync);
+      window.removeEventListener('focus', handleSync);
+      clearInterval(intervalId);
     };
   }, []);
+
+  // Automatic Audio Chime trigger when new notifications or warning alerts arrive
+  useEffect(() => {
+    const activeNotifs = notificationsList.filter(
+      (n) =>
+        !dismissedNotifIds.includes(n.notif_id) &&
+        (n.user_id === 'ALL' ||
+          n.user_id === 'JEMAAT' ||
+          n.user_id === currentUser.username ||
+          n.user_id === currentUser.jemaat_id ||
+          n.tujuan_role === 'ALL' ||
+          n.tujuan_role === 'JEMAAT' ||
+          isAdmin)
+    );
+
+    const currentKeys = activeNotifs.map((n) => n.notif_id).join(',');
+    if (currentKeys && currentKeys !== prevNotifKeysRef.current) {
+      const hasWarning = activeNotifs.some((n) => n.tipe === 'Peringatan' || n.tipe === 'Penting');
+      if (hasWarning) {
+        playWarningChime();
+      } else {
+        playNotificationChime();
+      }
+      prevNotifKeysRef.current = currentKeys;
+    }
+  }, [notificationsList, dismissedNotifIds, currentUser, isAdmin]);
 
   useEffect(() => {
     setCustomForm(settings);
@@ -476,7 +515,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         )}
       </div>
 
-      {/* KARTU PERINGATAN / INFORMASI NOTIFIKASI DARI ADMIN & SUPERADMIN */}
+      {/* KARTU NOTIFIKASI MENGAMBANG DI ATAS LAYAR (FLOATING OVERLAY TOP NOTIFICATION) DENGAN BUNYI SUARA */}
       {(() => {
         const activeNotifs = notificationsList.filter(
           (n) =>
@@ -493,7 +532,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         if (activeNotifs.length === 0) return null;
 
         return (
-          <div className="space-y-3 animate-fade-in my-2">
+          <div className="fixed top-4 sm:top-6 left-1/2 -translate-x-1/2 z-[999] w-[94vw] max-w-2xl pointer-events-auto space-y-3 animate-slide-down">
             {activeNotifs.map((notif) => {
               const isWarning = notif.tipe === 'Peringatan';
               const isImportant = notif.tipe === 'Penting';
@@ -501,22 +540,30 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               return (
                 <div
                   key={notif.notif_id}
-                  className={`relative overflow-hidden p-4 sm:p-5 rounded-2xl sm:rounded-3xl border shadow-2xl transition-all ${
+                  className={`relative overflow-hidden p-4 sm:p-5 rounded-2xl sm:rounded-3xl border-2 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.9)] backdrop-blur-2xl transition-all ${
                     isWarning
-                      ? 'bg-gradient-to-r from-rose-950/95 via-rose-900/80 to-slate-900 border-rose-500/70 text-rose-100 shadow-rose-950/50 ring-2 ring-rose-500/40'
+                      ? 'bg-slate-950/95 border-rose-500/90 text-rose-100 ring-4 ring-rose-500/30'
                       : isImportant
-                      ? 'bg-gradient-to-r from-purple-950/95 via-indigo-950/85 to-slate-900 border-purple-500/70 text-purple-100 shadow-purple-950/50 ring-2 ring-purple-500/40'
-                      : 'bg-gradient-to-r from-slate-900 via-indigo-950/90 to-slate-900 border-indigo-500/60 text-indigo-100 shadow-indigo-950/50 ring-1 ring-indigo-500/30'
+                      ? 'bg-slate-950/95 border-purple-500/90 text-purple-100 ring-4 ring-purple-500/30'
+                      : 'bg-slate-950/95 border-indigo-500/90 text-indigo-100 ring-4 ring-indigo-500/30'
                   }`}
                 >
-                  {/* Decorative Background Accent */}
-                  <div className="absolute -right-8 -bottom-8 w-32 h-32 rounded-full bg-white/5 blur-2xl pointer-events-none" />
+                  {/* Top Glowing Indicator Bar */}
+                  <div
+                    className={`absolute top-0 left-0 right-0 h-1.5 ${
+                      isWarning
+                        ? 'bg-gradient-to-r from-rose-500 via-amber-400 to-rose-600 animate-pulse'
+                        : isImportant
+                        ? 'bg-gradient-to-r from-purple-500 via-indigo-400 to-purple-600 animate-pulse'
+                        : 'bg-gradient-to-r from-indigo-500 via-sky-400 to-indigo-600 animate-pulse'
+                    }`}
+                  />
 
-                  {/* Card Top Header */}
-                  <div className="flex items-start justify-between gap-3 relative z-10">
-                    <div className="flex items-start sm:items-center gap-3 flex-wrap">
+                  {/* Top Row Header */}
+                  <div className="flex items-start justify-between gap-3 relative z-10 pt-1">
+                    <div className="flex items-start gap-3 flex-1 min-w-0">
                       <div
-                        className={`p-2.5 rounded-2xl flex items-center justify-center shrink-0 shadow-lg ${
+                        className={`p-2.5 sm:p-3 rounded-2xl flex items-center justify-center shrink-0 shadow-xl ${
                           isWarning
                             ? 'bg-rose-600 text-white animate-bounce'
                             : isImportant
@@ -533,7 +580,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         )}
                       </div>
 
-                      <div>
+                      <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span
                             className={`px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wider ${
@@ -552,13 +599,23 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           <span className="text-[11px] text-slate-400">&bull; {notif.tanggal}</span>
                         </div>
 
-                        <h3 className="text-base sm:text-xl font-extrabold text-white mt-1 leading-snug tracking-tight">
+                        <h3 className="text-base sm:text-lg font-extrabold text-white mt-1 leading-snug tracking-tight">
                           {notif.judul}
                         </h3>
                       </div>
                     </div>
 
+                    {/* Action controls: Play sound & Close */}
                     <div className="flex items-center gap-1.5 shrink-0 relative z-10">
+                      <button
+                        onClick={() => (isWarning ? playWarningChime() : playNotificationChime())}
+                        className="p-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 border border-amber-500/30 transition-all cursor-pointer flex items-center gap-1 text-xs font-bold"
+                        title="Bunyikan Suara Notifikasi"
+                      >
+                        <Volume2 className="w-4 h-4 animate-pulse text-amber-300" />
+                        <span className="hidden sm:inline text-[11px]">Suara</span>
+                      </button>
+
                       {isAdmin && (
                         <button
                           onClick={() => handleDeleteNotification(notif.notif_id)}
@@ -568,10 +625,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           <Trash2 className="w-4 h-4" />
                         </button>
                       )}
+
                       <button
                         onClick={() => handleDismissNotification(notif.notif_id)}
-                        className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-slate-200 hover:text-white transition-all cursor-pointer flex items-center gap-1 text-xs font-bold"
-                        title="Tutup / Sembunyikan Peringatan"
+                        className="p-2 rounded-xl bg-white/10 hover:bg-rose-600 text-slate-200 hover:text-white transition-all cursor-pointer flex items-center gap-1 text-xs font-bold"
+                        title="Tutup Floating Notifikasi"
                       >
                         <X className="w-4 h-4" />
                         <span className="hidden sm:inline">Tutup</span>
@@ -579,16 +637,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     </div>
                   </div>
 
-                  {/* Card Body Message */}
-                  <div className="mt-3.5 text-xs sm:text-sm text-slate-100 leading-relaxed font-normal bg-black/30 p-3.5 sm:p-4 rounded-2xl border border-white/10 relative z-10">
+                  {/* Body Message */}
+                  <div className="mt-3 text-xs sm:text-sm text-slate-100 leading-relaxed font-normal bg-black/60 p-3.5 rounded-2xl border border-white/10 relative z-10">
                     {notif.pesan}
                   </div>
 
-                  {/* Card Footer */}
+                  {/* Footer Row */}
                   <div className="mt-3 flex items-center justify-between gap-2 text-[11px] text-slate-300 pt-2 border-t border-white/10 relative z-10">
                     <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
                       <CheckCheck className="w-4 h-4" />
-                      <span>Notifikasi Resmi Majelis & Sekretariat Gereja</span>
+                      <span>Notifikasi Mengambang Realtime (Disertai Bunyi Suara)</span>
                     </span>
                     <button
                       onClick={() => handleDismissNotification(notif.notif_id)}

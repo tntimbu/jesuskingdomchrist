@@ -15,7 +15,7 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser 
   const [announcements, setAnnouncements] = useState<Pengumuman[]>([]);
   const [devotion, setDevotion] = useState<Renungan | null>(null);
 
-  useEffect(() => {
+  const loadData = React.useCallback(() => {
     const allJemaat = StorageManager.getJemaat();
     const found = allJemaat.find((j) => j.jemaat_id === currentUser.jemaat_id) || allJemaat[0];
     setJemaatData(found);
@@ -28,6 +28,24 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser 
     const dev = StorageManager.getRenungan();
     setDevotion(dev[0] || null);
   }, [currentUser]);
+
+  useEffect(() => {
+    loadData();
+
+    const handleSync = () => loadData();
+    window.addEventListener('cms_data_changed', handleSync);
+    window.addEventListener('storage', handleSync);
+    window.addEventListener('focus', handleSync);
+
+    const intervalId = setInterval(loadData, 1500);
+
+    return () => {
+      window.removeEventListener('cms_data_changed', handleSync);
+      window.removeEventListener('storage', handleSync);
+      window.removeEventListener('focus', handleSync);
+      clearInterval(intervalId);
+    };
+  }, [loadData]);
 
   return (
     <div className="space-y-6 pb-12">

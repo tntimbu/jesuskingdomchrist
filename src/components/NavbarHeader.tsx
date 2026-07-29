@@ -92,8 +92,19 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
       setNotifications(StorageManager.getNotifications());
     };
     syncNotifs();
+
     window.addEventListener('cms_data_changed', syncNotifs);
-    return () => window.removeEventListener('cms_data_changed', syncNotifs);
+    window.addEventListener('storage', syncNotifs);
+    window.addEventListener('focus', syncNotifs);
+
+    const intervalId = setInterval(syncNotifs, 1500);
+
+    return () => {
+      window.removeEventListener('cms_data_changed', syncNotifs);
+      window.removeEventListener('storage', syncNotifs);
+      window.removeEventListener('focus', syncNotifs);
+      clearInterval(intervalId);
+    };
   }, []);
 
   const unreadCount = notifications.filter((n) => n.status_baca === 'Belum').length;

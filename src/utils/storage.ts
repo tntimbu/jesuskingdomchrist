@@ -119,11 +119,42 @@ function getItem<T>(key: string, fallback: T): T {
   }
 }
 
+// Realtime synchronization channel for cross-tab updates
+let syncChannel: BroadcastChannel | null = null;
+if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+  try {
+    syncChannel = new BroadcastChannel('cms_realtime_sync_channel');
+    syncChannel.onmessage = (event) => {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: event.data }));
+      }
+    };
+  } catch (e) {
+    console.warn('BroadcastChannel initialization fallback:', e);
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key && e.key.startsWith('cms_pro_')) {
+      window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { key: e.key } }));
+    }
+  });
+}
+
 function setItem<T>(key: string, value: T): void {
   try {
     localStorage.setItem(key, JSON.stringify(value));
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { key, value } }));
+      const payload = { key, timestamp: Date.now() };
+      window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: payload }));
+      if (syncChannel) {
+        try {
+          syncChannel.postMessage(payload);
+        } catch (err) {
+          // ignore
+        }
+      }
     }
   } catch (e) {
     console.error(`Error writing ${key} to localStorage:`, e);

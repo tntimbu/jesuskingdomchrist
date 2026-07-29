@@ -41,6 +41,20 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
 
   useEffect(() => {
     loadData();
+
+    const handleSync = () => loadData();
+    window.addEventListener('cms_data_changed', handleSync);
+    window.addEventListener('storage', handleSync);
+    window.addEventListener('focus', handleSync);
+
+    const intervalId = setInterval(loadData, 1500);
+
+    return () => {
+      window.removeEventListener('cms_data_changed', handleSync);
+      window.removeEventListener('storage', handleSync);
+      window.removeEventListener('focus', handleSync);
+      clearInterval(intervalId);
+    };
   }, []);
 
   const loadData = () => {
