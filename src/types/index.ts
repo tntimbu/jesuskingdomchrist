@@ -178,6 +178,9 @@ export interface NotificationItem {
   status_baca: 'Belum' | 'Sudah';
   tanggal: string;
   tujuan_role?: string;
+  tipe?: 'Peringatan' | 'Informasi' | 'Penting';
+  pengirim?: string;
+  is_pinned?: boolean;
 }
 
 export interface AppSettings {

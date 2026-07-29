@@ -88,7 +88,12 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
   }, []);
 
   useEffect(() => {
-    setNotifications(StorageManager.getNotifications());
+    const syncNotifs = () => {
+      setNotifications(StorageManager.getNotifications());
+    };
+    syncNotifs();
+    window.addEventListener('cms_data_changed', syncNotifs);
+    return () => window.removeEventListener('cms_data_changed', syncNotifs);
   }, []);
 
   const unreadCount = notifications.filter((n) => n.status_baca === 'Belum').length;

@@ -8,7 +8,8 @@ import {
   ActivityLog,
   Renungan,
   Pengumuman,
-  PrayerRequest
+  PrayerRequest,
+  NotificationItem
 } from '../types';
 import { StorageManager } from '../utils/storage';
 import { parseSocialVideoUrl } from '../utils/videoHelper';
@@ -47,7 +48,11 @@ import {
   Home,
   Wallet,
   Upload,
-  Image as ImageIcon
+  Image as ImageIcon,
+  BellRing,
+  CheckCheck,
+  Bell,
+  Trash2
 } from 'lucide-react';
 
 import {
@@ -120,6 +125,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [customForm, setCustomForm] = useState<AppSettings>(settings);
   const [saveSuccessMsg, setSaveSuccessMsg] = useState(false);
 
+  // Notifications State
+  const [notificationsList, setNotificationsList] = useState<NotificationItem[]>([]);
+  const [dismissedNotifIds, setDismissedNotifIds] = useState<string[]>([]);
+  const [isCreateNotifModalOpen, setIsCreateNotifModalOpen] = useState(false);
+  const [newNotifForm, setNewNotifForm] = useState({
+    judul: '',
+    pesan: '',
+    tipe: 'Peringatan' as 'Peringatan' | 'Informasi' | 'Penting',
+    tujuan_role: 'ALL'
+  });
+
   useEffect(() => {
     loadDashboardData();
 
@@ -147,6 +163,63 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     setPengumumanList(StorageManager.getPengumuman());
     setPrayerRequests(StorageManager.getPrayerRequests());
     setActivityLogs(StorageManager.getActivityLogs());
+    setNotificationsList(StorageManager.getNotifications());
+  };
+
+  const handleSaveNotification = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newNotifForm.judul.trim() || !newNotifForm.pesan.trim()) return;
+
+    const newNotif: NotificationItem = {
+      notif_id: `NTF-${Date.now().toString().slice(-4)}`,
+      user_id: newNotifForm.tujuan_role === 'ALL' ? 'ALL' : newNotifForm.tujuan_role,
+      judul: newNotifForm.judul,
+      pesan: newNotifForm.pesan,
+      status_baca: 'Belum',
+      tanggal: new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }),
+      tipe: newNotifForm.tipe,
+      pengirim: currentUser.nama || (isSuperAdmin ? 'Super Admin' : 'Admin Sekretariat'),
+      is_pinned: true,
+      tujuan_role: newNotifForm.tujuan_role
+    };
+
+    const updated = [newNotif, ...notificationsList];
+    setNotificationsList(updated);
+    StorageManager.saveNotifications(updated);
+    StorageManager.logActivity(
+      currentUser.username,
+      `Membuat notifikasi / peringatan: "${newNotif.judul}"`,
+      'Notifikasi'
+    );
+
+    window.dispatchEvent(new Event('cms_data_changed'));
+
+    setIsCreateNotifModalOpen(false);
+    setNewNotifForm({
+      judul: '',
+      pesan: '',
+      tipe: 'Peringatan',
+      tujuan_role: 'ALL'
+    });
+    setRefreshToast('Notifikasi / Peringatan berhasil dibuat dan dikirim ke Dashboard Jemaat!');
+    setTimeout(() => setRefreshToast(''), 4000);
+  };
+
+  const handleDismissNotification = (id: string) => {
+    setDismissedNotifIds((prev) => [...prev, id]);
+    const updated = notificationsList.map((n) => (n.notif_id === id ? { ...n, status_baca: 'Sudah' as const } : n));
+    setNotificationsList(updated);
+    StorageManager.saveNotifications(updated);
+    window.dispatchEvent(new Event('cms_data_changed'));
+  };
+
+  const handleDeleteNotification = (id: string) => {
+    if (!window.confirm('Hapus notifikasi ini dari sistem?')) return;
+    const updated = notificationsList.filter((n) => n.notif_id !== id);
+    setNotificationsList(updated);
+    StorageManager.saveNotifications(updated);
+    StorageManager.logActivity(currentUser.username, `Menghapus notifikasi ID ${id}`, 'Notifikasi');
+    window.dispatchEvent(new Event('cms_data_changed'));
   };
 
   const handleRefreshData = () => {
@@ -341,13 +414,24 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </button>
 
             {isAdmin && (
-              <button
-                onClick={() => setIsCustomizerOpen(true)}
-                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition-all cursor-pointer"
-              >
-                <Palette className="w-4 h-4" />
-                <span>Custom Tampilan & Video</span>
-              </button>
+              <>
+                <button
+                  onClick={() => setIsCreateNotifModalOpen(true)}
+                  className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-400 hover:to-rose-500 text-white text-xs font-bold shadow-lg shadow-amber-500/20 flex items-center gap-2 transition-all cursor-pointer"
+                  title="Buat Notifikasi atau Peringatan Resmi untuk Jemaat"
+                >
+                  <BellRing className="w-4 h-4 text-amber-200" />
+                  <span>Buat Notifikasi / Peringatan</span>
+                </button>
+
+                <button
+                  onClick={() => setIsCustomizerOpen(true)}
+                  className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition-all cursor-pointer"
+                >
+                  <Palette className="w-4 h-4" />
+                  <span>Custom Tampilan & Video</span>
+                </button>
+              </>
             )}
 
             {settings.show_quick_actions !== false && !isJemaat && (
@@ -391,6 +475,134 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         )}
       </div>
+
+      {/* KARTU PERINGATAN / INFORMASI NOTIFIKASI DARI ADMIN & SUPERADMIN */}
+      {(() => {
+        const activeNotifs = notificationsList.filter(
+          (n) =>
+            !dismissedNotifIds.includes(n.notif_id) &&
+            (n.user_id === 'ALL' ||
+              n.user_id === 'JEMAAT' ||
+              n.user_id === currentUser.username ||
+              n.user_id === currentUser.jemaat_id ||
+              n.tujuan_role === 'ALL' ||
+              n.tujuan_role === 'JEMAAT' ||
+              isAdmin)
+        );
+
+        if (activeNotifs.length === 0) return null;
+
+        return (
+          <div className="space-y-3 animate-fade-in my-2">
+            {activeNotifs.map((notif) => {
+              const isWarning = notif.tipe === 'Peringatan';
+              const isImportant = notif.tipe === 'Penting';
+
+              return (
+                <div
+                  key={notif.notif_id}
+                  className={`relative overflow-hidden p-4 sm:p-5 rounded-2xl sm:rounded-3xl border shadow-2xl transition-all ${
+                    isWarning
+                      ? 'bg-gradient-to-r from-rose-950/95 via-rose-900/80 to-slate-900 border-rose-500/70 text-rose-100 shadow-rose-950/50 ring-2 ring-rose-500/40'
+                      : isImportant
+                      ? 'bg-gradient-to-r from-purple-950/95 via-indigo-950/85 to-slate-900 border-purple-500/70 text-purple-100 shadow-purple-950/50 ring-2 ring-purple-500/40'
+                      : 'bg-gradient-to-r from-slate-900 via-indigo-950/90 to-slate-900 border-indigo-500/60 text-indigo-100 shadow-indigo-950/50 ring-1 ring-indigo-500/30'
+                  }`}
+                >
+                  {/* Decorative Background Accent */}
+                  <div className="absolute -right-8 -bottom-8 w-32 h-32 rounded-full bg-white/5 blur-2xl pointer-events-none" />
+
+                  {/* Card Top Header */}
+                  <div className="flex items-start justify-between gap-3 relative z-10">
+                    <div className="flex items-start sm:items-center gap-3 flex-wrap">
+                      <div
+                        className={`p-2.5 rounded-2xl flex items-center justify-center shrink-0 shadow-lg ${
+                          isWarning
+                            ? 'bg-rose-600 text-white animate-bounce'
+                            : isImportant
+                            ? 'bg-purple-600 text-white'
+                            : 'bg-indigo-600 text-white'
+                        }`}
+                      >
+                        {isWarning ? (
+                          <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6" />
+                        ) : isImportant ? (
+                          <ShieldAlert className="w-5 h-5 sm:w-6 sm:h-6" />
+                        ) : (
+                          <BellRing className="w-5 h-5 sm:w-6 sm:h-6" />
+                        )}
+                      </div>
+
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span
+                            className={`px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wider ${
+                              isWarning
+                                ? 'bg-rose-500/30 text-rose-200 border border-rose-400/50'
+                                : isImportant
+                                ? 'bg-purple-500/30 text-purple-200 border border-purple-400/50'
+                                : 'bg-indigo-500/30 text-indigo-200 border border-indigo-400/50'
+                            }`}
+                          >
+                            {isWarning ? '⚠️ PERINGATAN RESMI' : isImportant ? '🚨 INFORMASI PENTING' : '📢 NOTIFIKASI MAJELIS'}
+                          </span>
+                          <span className="text-[11px] text-slate-300 font-semibold">
+                            Pengirim: <strong className="text-white">{notif.pengirim || 'Admin Gereja'}</strong>
+                          </span>
+                          <span className="text-[11px] text-slate-400">&bull; {notif.tanggal}</span>
+                        </div>
+
+                        <h3 className="text-base sm:text-xl font-extrabold text-white mt-1 leading-snug tracking-tight">
+                          {notif.judul}
+                        </h3>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 shrink-0 relative z-10">
+                      {isAdmin && (
+                        <button
+                          onClick={() => handleDeleteNotification(notif.notif_id)}
+                          className="p-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/40 text-rose-300 transition-all cursor-pointer"
+                          title="Hapus Notifikasi Ini (Admin)"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleDismissNotification(notif.notif_id)}
+                        className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-slate-200 hover:text-white transition-all cursor-pointer flex items-center gap-1 text-xs font-bold"
+                        title="Tutup / Sembunyikan Peringatan"
+                      >
+                        <X className="w-4 h-4" />
+                        <span className="hidden sm:inline">Tutup</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Card Body Message */}
+                  <div className="mt-3.5 text-xs sm:text-sm text-slate-100 leading-relaxed font-normal bg-black/30 p-3.5 sm:p-4 rounded-2xl border border-white/10 relative z-10">
+                    {notif.pesan}
+                  </div>
+
+                  {/* Card Footer */}
+                  <div className="mt-3 flex items-center justify-between gap-2 text-[11px] text-slate-300 pt-2 border-t border-white/10 relative z-10">
+                    <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
+                      <CheckCheck className="w-4 h-4" />
+                      <span>Notifikasi Resmi Majelis & Sekretariat Gereja</span>
+                    </span>
+                    <button
+                      onClick={() => handleDismissNotification(notif.notif_id)}
+                      className="text-xs text-indigo-300 hover:text-white font-bold underline cursor-pointer"
+                    >
+                      Tandai Sudah Dibaca
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        );
+      })()}
 
       {/* JEMAAT FOCUS MODE: Single Latest Update Panel & Statistics Cards */}
       {isJemaat && (
@@ -1246,6 +1458,121 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 >
                   <Check className="w-4 h-4" />
                   <span>Simpan Perubahan</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL BUAT NOTIFIKASI / PERINGATAN (ADMIN & SUPERADMIN) */}
+      {isCreateNotifModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 max-w-lg w-full space-y-4 shadow-2xl relative overflow-hidden text-white">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                  <BellRing className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-extrabold text-white">
+                    Buat Notifikasi & Peringatan Jemaat
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Pesan akan langsung tampil sebagai kartu utama di Dashboard Jemaat.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsCreateNotifModalOpen(false)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg transition-all"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveNotification} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1">
+                  Judul Informasi / Peringatan
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Misal: ⚠️ Peringatan Perubahan Jadwal Ibadah Minggu"
+                  value={newNotifForm.judul}
+                  onChange={(e) => setNewNotifForm({ ...newNotifForm, judul: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs font-semibold focus:border-indigo-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1">
+                    Kategori / Tipe Pesan
+                  </label>
+                  <select
+                    value={newNotifForm.tipe}
+                    onChange={(e) => setNewNotifForm({ ...newNotifForm, tipe: e.target.value as any })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs font-bold focus:border-indigo-500 focus:outline-none"
+                  >
+                    <option value="Peringatan">⚠️ Peringatan (Warning)</option>
+                    <option value="Penting">🚨 Informasi Penting (Urgent)</option>
+                    <option value="Informasi">📢 Pengumuman Biasa (Info)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1">
+                    Target Penerima
+                  </label>
+                  <select
+                    value={newNotifForm.tujuan_role}
+                    onChange={(e) => setNewNotifForm({ ...newNotifForm, tujuan_role: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs font-bold focus:border-indigo-500 focus:outline-none"
+                  >
+                    <option value="ALL">Semua Pengguna (Jemaat & Admin)</option>
+                    <option value="JEMAAT">Khusus Jemaat</option>
+                    <option value="ADMIN">Khusus Pengurus / Admin</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1">
+                  Isi Pesan Notifikasi / Peringatan Detail
+                </label>
+                <textarea
+                  rows={4}
+                  required
+                  placeholder="Tuliskan isi detail pengumuman atau instruksi peringatan untuk jemaat gereja..."
+                  value={newNotifForm.pesan}
+                  onChange={(e) => setNewNotifForm({ ...newNotifForm, pesan: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:border-indigo-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-[11px] text-indigo-300 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-indigo-400 shrink-0" />
+                <span>
+                  Notifikasi akan langsung disinkronkan secara realtime ke seluruh browser jemaat.
+                </span>
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsCreateNotifModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-400 hover:to-rose-500 text-white text-xs font-extrabold shadow-lg shadow-amber-500/20 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>Kirim Notifikasi Sekarang</span>
                 </button>
               </div>
             </form>
