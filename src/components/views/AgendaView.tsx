@@ -5,12 +5,18 @@ import { CalendarDays, Plus, Clock, MapPin, Heart, CheckCircle2, MessageSquare, 
 
 interface AgendaViewProps {
   currentUser: User;
+  mode?: 'JADWAL' | 'DOA' | 'BOTH';
 }
 
-export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser }) => {
-  const [activeTab, setActiveTab] = useState<'AGENDA' | 'DOA'>('AGENDA');
+export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOTH' }) => {
+  const [activeTab, setActiveTab] = useState<'AGENDA' | 'DOA'>(mode === 'DOA' ? 'DOA' : 'AGENDA');
   const [eventsList, setEventsList] = useState<EventSchedule[]>([]);
   const [doaList, setDoaList] = useState<Doa[]>([]);
+
+  useEffect(() => {
+    if (mode === 'DOA') setActiveTab('DOA');
+    else if (mode === 'JADWAL') setActiveTab('AGENDA');
+  }, [mode]);
 
   // Modals
   const [isEventModal, setIsEventModal] = useState(false);
@@ -96,34 +102,54 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser }) => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
-            <CalendarDays className="w-6 h-6 text-amber-400" />
-            <span>Jadwal Ibadah, Event & Pokok Doa</span>
+            {mode === 'DOA' ? (
+              <>
+                <Heart className="w-6 h-6 text-rose-400" />
+                <span>Permohonan Doa Jemaat</span>
+              </>
+            ) : mode === 'JADWAL' ? (
+              <>
+                <CalendarDays className="w-6 h-6 text-amber-400" />
+                <span>Jadwal & Event Ibadah Gereja</span>
+              </>
+            ) : (
+              <>
+                <CalendarDays className="w-6 h-6 text-amber-400" />
+                <span>Jadwal Ibadah, Event & Pokok Doa</span>
+              </>
+            )}
           </h2>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Kalender kegiatan gereja, pelayan ibadah, permohonan doa jemaat, dan dukungan komsel.
+            {mode === 'DOA'
+              ? 'Layanan permohonan doa syafaat, konseling rohani, dan dukungan doa persekutuan jemaat.'
+              : mode === 'JADWAL'
+              ? 'Kalender resmi jadwal ibadah raya, persekutuan komsel, dan agenda kegiatan gereja.'
+              : 'Kalender kegiatan gereja, pelayan ibadah, permohonan doa jemaat, dan dukungan komsel.'}
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-800 p-1 rounded-2xl">
-            <button
-              onClick={() => setActiveTab('AGENDA')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                activeTab === 'AGENDA' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Jadwal & Agenda ({eventsList.length})
-            </button>
-            <button
-              onClick={() => setActiveTab('DOA')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                activeTab === 'DOA' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Permohonan Doa ({doaList.length})
-            </button>
+        {mode === 'BOTH' && (
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-800 p-1 rounded-2xl">
+              <button
+                onClick={() => setActiveTab('AGENDA')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                  activeTab === 'AGENDA' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Jadwal & Agenda ({eventsList.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('DOA')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                  activeTab === 'DOA' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Permohonan Doa ({doaList.length})
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Tab 1: Agenda */}

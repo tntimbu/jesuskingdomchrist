@@ -162,8 +162,12 @@ export interface GalleryItem {
   gallery_id: string;
   judul: string;
   foto: string;
+  tipe?: 'Foto' | 'Video';
+  video_url?: string;
   tanggal: string;
   kategori?: string;
+  keterangan?: string;
+  penulis?: string;
 }
 
 export interface NotificationItem {

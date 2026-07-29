@@ -5,12 +5,18 @@ import { Megaphone, BookOpen, Plus, Heart, Share2, Sparkles, X } from 'lucide-re
 
 interface MediaViewProps {
   currentUser: User;
+  mode?: 'PENGUMUMAN' | 'RENUNGAN' | 'BOTH';
 }
 
-export const MediaView: React.FC<MediaViewProps> = ({ currentUser }) => {
-  const [activeTab, setActiveTab] = useState<'PENGUMUMAN' | 'RENUNGAN'>('PENGUMUMAN');
+export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH' }) => {
+  const [activeTab, setActiveTab] = useState<'PENGUMUMAN' | 'RENUNGAN'>(mode === 'RENUNGAN' ? 'RENUNGAN' : 'PENGUMUMAN');
   const [pengumumanList, setPengumumanList] = useState<Pengumuman[]>([]);
   const [renunganList, setRenunganList] = useState<Renungan[]>([]);
+
+  useEffect(() => {
+    if (mode === 'RENUNGAN') setActiveTab('RENUNGAN');
+    else if (mode === 'PENGUMUMAN') setActiveTab('PENGUMUMAN');
+  }, [mode]);
 
   // Modals
   const [isPengumumanModal, setIsPengumumanModal] = useState(false);
@@ -88,32 +94,52 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser }) => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
-            <Megaphone className="w-6 h-6 text-indigo-400" />
-            <span>Pengumuman Jemaat & Renungan Harian</span>
+            {mode === 'RENUNGAN' ? (
+              <>
+                <BookOpen className="w-6 h-6 text-amber-400" />
+                <span>Renungan Harian & Santapan Rohani</span>
+              </>
+            ) : mode === 'PENGUMUMAN' ? (
+              <>
+                <Megaphone className="w-6 h-6 text-indigo-400" />
+                <span>Pengumuman & Warta Gereja</span>
+              </>
+            ) : (
+              <>
+                <Megaphone className="w-6 h-6 text-indigo-400" />
+                <span>Pengumuman Jemaat & Renungan Harian</span>
+              </>
+            )}
           </h2>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Warta jemaat mingguan, buletin gereja, dan santapan rohani harian bagi jemaat.
+            {mode === 'RENUNGAN'
+              ? 'Santapan rohani harian, firman Tuhan, dan inspirasi iman bagi pertumbuhan jemaat.'
+              : mode === 'PENGUMUMAN'
+              ? 'Warta jemaat mingguan, pengumuman resmi majelis, dan buletin informasi gereja.'
+              : 'Warta jemaat mingguan, buletin gereja, dan santapan rohani harian bagi jemaat.'}
           </p>
         </div>
 
-        <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-800 p-1 rounded-2xl">
-          <button
-            onClick={() => setActiveTab('PENGUMUMAN')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-              activeTab === 'PENGUMUMAN' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Warta / Pengumuman ({pengumumanList.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('RENUNGAN')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-              activeTab === 'RENUNGAN' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Renungan Harian ({renunganList.length})
-          </button>
-        </div>
+        {mode === 'BOTH' && (
+          <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-800 p-1 rounded-2xl">
+            <button
+              onClick={() => setActiveTab('PENGUMUMAN')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                activeTab === 'PENGUMUMAN' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              Warta / Pengumuman ({pengumumanList.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('RENUNGAN')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                activeTab === 'RENUNGAN' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              Renungan Harian ({renunganList.length})
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Tab 1: Pengumuman */}

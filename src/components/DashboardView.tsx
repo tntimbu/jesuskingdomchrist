@@ -151,12 +151,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   const handleRefreshData = () => {
     setIsRefreshing(true);
+    setRefreshToast('Memuat ulang seluruh data sistem & dashboard...');
     loadDashboardData();
     setTimeout(() => {
-      setIsRefreshing(false);
-      setRefreshToast('Data dashboard telah berhasil diperbarui!');
-      setTimeout(() => setRefreshToast(''), 3000);
-    }, 600);
+      window.location.reload();
+    }, 250);
   };
 
   const totalJemaat = jemaatList.length;

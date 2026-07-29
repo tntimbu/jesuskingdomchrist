@@ -15,6 +15,7 @@ import { AdministrasiView } from './components/views/AdministrasiView';
 import { KeuanganView } from './components/views/KeuanganView';
 import { AgendaView } from './components/views/AgendaView';
 import { MediaView } from './components/views/MediaView';
+import { GaleriView } from './components/views/GaleriView';
 import { LaporanView } from './components/views/LaporanView';
 import { JemaatPortalView } from './components/views/JemaatPortalView';
 import { SystemSettingsView } from './components/views/SystemSettingsView';
@@ -213,9 +214,23 @@ export default function App() {
 
           {activeTab === 'keuangan' && <KeuanganView currentUser={currentUser} />}
 
-          {activeTab === 'agenda' && <AgendaView currentUser={currentUser} />}
+          {(activeTab === 'jadwal' || activeTab === 'agenda') && (
+            <AgendaView currentUser={currentUser} mode="JADWAL" />
+          )}
 
-          {activeTab === 'media' && <MediaView currentUser={currentUser} />}
+          {activeTab === 'doa' && (
+            <AgendaView currentUser={currentUser} mode="DOA" />
+          )}
+
+          {(activeTab === 'pengumuman' || activeTab === 'media') && (
+            <MediaView currentUser={currentUser} mode="PENGUMUMAN" />
+          )}
+
+          {activeTab === 'renungan' && (
+            <MediaView currentUser={currentUser} mode="RENUNGAN" />
+          )}
+
+          {activeTab === 'galeri' && <GaleriView currentUser={currentUser} />}
 
           {activeTab === 'laporan' && <LaporanView currentUser={currentUser} />}
 

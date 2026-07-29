@@ -7,6 +7,9 @@ import {
   FileText,
   DollarSign,
   CalendarDays,
+  Heart,
+  Megaphone,
+  BookOpen,
   Image,
   FileSpreadsheet,
   Settings,
@@ -20,11 +23,16 @@ export type NavTab =
   | 'wilayah'
   | 'administrasi'
   | 'keuangan'
-  | 'agenda'
-  | 'media'
+  | 'jadwal'
+  | 'doa'
+  | 'pengumuman'
+  | 'renungan'
+  | 'galeri'
   | 'laporan'
   | 'jemaat_portal'
-  | 'settings';
+  | 'settings'
+  | 'agenda'
+  | 'media';
 
 interface SidebarProps {
   currentUser: User;
@@ -76,14 +84,32 @@ export const Sidebar: React.FC<SidebarProps> = ({
       roles: ['SUPER_ADMIN', 'ADMIN']
     },
     {
-      id: 'agenda',
-      label: 'Jadwal & Permohonan Doa',
+      id: 'jadwal',
+      label: 'Jadwal & Event Ibadah',
       icon: CalendarDays,
       roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
     },
     {
-      id: 'media',
-      label: 'Pengumuman & Renungan',
+      id: 'doa',
+      label: 'Permohonan Doa',
+      icon: Heart,
+      roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
+    },
+    {
+      id: 'pengumuman',
+      label: 'Pengumuman Gereja',
+      icon: Megaphone,
+      roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
+    },
+    {
+      id: 'renungan',
+      label: 'Renungan Harian',
+      icon: BookOpen,
+      roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
+    },
+    {
+      id: 'galeri',
+      label: 'Galeri Foto & Video',
       icon: Image,
       roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
     },

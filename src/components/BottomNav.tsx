@@ -65,9 +65,9 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       )}
 
       <button
-        onClick={() => onSelectTab('agenda')}
+        onClick={() => onSelectTab('jadwal')}
         className={`flex flex-col items-center gap-1 p-1.5 rounded-xl text-[10px] font-medium transition-all ${
-          activeTab === 'agenda' ? 'text-indigo-400 font-bold' : 'hover:text-slate-200'
+          activeTab === 'jadwal' || activeTab === 'agenda' ? 'text-indigo-400 font-bold' : 'hover:text-slate-200'
         }`}
       >
         <CalendarDays className="w-5 h-5" />
