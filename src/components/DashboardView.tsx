@@ -396,80 +396,80 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       {/* JEMAAT FOCUS MODE: Single Latest Update Panel & Statistics Cards */}
       {isJemaat && (
         <div className="space-y-6">
-          {/* STATISTIK INFORMASI JEMAAT (2 BARIS x 2 KARTU) */}
-          <div className="space-y-4">
-            {/* Baris Pertama: Total Jemaat & Total KK */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* STATISTIK INFORMASI JEMAAT (STRICTLY 2 BARIS x 2 KARTU KOTAK) */}
+          <div className="space-y-3 sm:space-y-4">
+            {/* Baris Pertama: Total Jemaat (Kotak 1) & Total KK (Kotak 2) */}
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
               {/* Kartu 1: Total Jemaat */}
-              <div className={`p-5 rounded-3xl ${cardStyleClass} border border-indigo-500/30 space-y-2`}>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-300 font-bold uppercase tracking-wider">Total Jemaat</span>
-                  <div className="p-2.5 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shadow-md">
-                    <Users className="w-5 h-5" />
+              <div className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} border border-indigo-500/30 flex flex-col justify-between space-y-2`}>
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider truncate">Total Jemaat</span>
+                  <div className="p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shadow-md shrink-0">
+                    <Users className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                 </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-black text-white">{totalJemaat}</span>
-                  <span className="text-xs text-slate-400 font-medium">Jiwa Terdaftar</span>
+                <div className="flex items-baseline gap-1.5 flex-wrap">
+                  <span className="text-xl sm:text-3xl font-black text-white">{totalJemaat}</span>
+                  <span className="text-[10px] sm:text-xs text-slate-400 font-medium">Jiwa</span>
                 </div>
-                <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-300">
-                  <span>Laki-laki: <strong className="text-indigo-300 font-bold">{totalLaki}</strong></span>
-                  <span>Perempuan: <strong className="text-pink-300 font-bold">{totalPerempuan}</strong></span>
+                <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[9px] sm:text-[11px] text-slate-300 gap-1">
+                  <span>L: <strong className="text-indigo-300 font-bold">{totalLaki}</strong></span>
+                  <span>P: <strong className="text-pink-300 font-bold">{totalPerempuan}</strong></span>
                 </div>
               </div>
 
               {/* Kartu 2: Total Kepala Keluarga (KK) */}
-              <div className={`p-5 rounded-3xl ${cardStyleClass} border border-purple-500/30 space-y-2`}>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-300 font-bold uppercase tracking-wider">Total Kepala Keluarga</span>
-                  <div className="p-2.5 rounded-2xl bg-purple-500/20 text-purple-400 border border-purple-500/30 shadow-md">
-                    <Home className="w-5 h-5" />
+              <div className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} border border-purple-500/30 flex flex-col justify-between space-y-2`}>
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider truncate">Total KK</span>
+                  <div className="p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl bg-purple-500/20 text-purple-400 border border-purple-500/30 shadow-md shrink-0">
+                    <Home className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                 </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-black text-white">{totalKeluarga}</span>
-                  <span className="text-xs text-slate-400 font-medium">KK Terdaftar</span>
+                <div className="flex items-baseline gap-1.5 flex-wrap">
+                  <span className="text-xl sm:text-3xl font-black text-white">{totalKeluarga}</span>
+                  <span className="text-[10px] sm:text-xs text-slate-400 font-medium">Keluarga</span>
                 </div>
-                <div className="pt-2 border-t border-white/10 text-[11px] text-slate-300">
-                  <span>Tercatat dalam basis data keluarga gereja</span>
+                <div className="pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 truncate">
+                  <span>Kepala Keluarga</span>
                 </div>
               </div>
             </div>
 
-            {/* Baris Kedua: Kas Persembahan & Jadwal & Event */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Baris Kedua: Kas Persembahan (Kotak 3) & Jadwal & Event (Kotak 4) */}
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
               {/* Kartu 3: Kas Persembahan */}
-              <div className={`p-5 rounded-3xl ${cardStyleClass} border border-emerald-500/30 space-y-2`}>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-300 font-bold uppercase tracking-wider">Kas Persembahan</span>
-                  <div className="p-2.5 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-md">
-                    <Wallet className="w-5 h-5" />
+              <div className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} border border-emerald-500/30 flex flex-col justify-between space-y-2`}>
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider truncate">Kas Persembahan</span>
+                  <div className="p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-md shrink-0">
+                    <Wallet className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                 </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-black text-emerald-400">
+                <div className="flex items-baseline gap-1 flex-wrap">
+                  <span className="text-base sm:text-2xl font-black text-emerald-400 leading-tight">
                     Rp {totalPersembahan.toLocaleString('id-ID')}
                   </span>
                 </div>
-                <div className="pt-2 border-t border-white/10 text-[11px] text-slate-300">
-                  <span>Total kas persembahan & donasi jemaat</span>
+                <div className="pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 truncate">
+                  <span>Kas & Donasi</span>
                 </div>
               </div>
 
               {/* Kartu 4: Jadwal & Event */}
-              <div className={`p-5 rounded-3xl ${cardStyleClass} border border-amber-500/30 space-y-2`}>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-300 font-bold uppercase tracking-wider">Jadwal & Event</span>
-                  <div className="p-2.5 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shadow-md">
-                    <Calendar className="w-5 h-5" />
+              <div className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} border border-amber-500/30 flex flex-col justify-between space-y-2`}>
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider truncate">Jadwal & Event</span>
+                  <div className="p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shadow-md shrink-0">
+                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                 </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-black text-white">{eventsList.length}</span>
-                  <span className="text-xs text-slate-400 font-medium">Agenda Aktif</span>
+                <div className="flex items-baseline gap-1.5 flex-wrap">
+                  <span className="text-xl sm:text-3xl font-black text-white">{eventsList.length}</span>
+                  <span className="text-[10px] sm:text-xs text-slate-400 font-medium">Agenda</span>
                 </div>
-                <div className="pt-2 border-t border-white/10 text-[11px] text-slate-300">
-                  <span>Ibadah minggu, persekutuan, & kegiatan gereja</span>
+                <div className="pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 truncate">
+                  <span>Ibadah & Event</span>
                 </div>
               </div>
             </div>
