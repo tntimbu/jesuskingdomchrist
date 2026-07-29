@@ -35,9 +35,9 @@ export default function App() {
     const savedUser = StorageManager.getCurrentUser();
     if (savedUser) {
       setCurrentUser(savedUser);
-      if (savedUser.role === 'JEMAAT') {
-        setActiveTab('jemaat_portal');
-      }
+      // Restore tab from sessionStorage or default to 'dashboard'
+      const savedTab = (sessionStorage.getItem('cms_active_tab') as NavTab) || 'dashboard';
+      setActiveTab(savedTab);
     }
 
     // PWA BeforeInstallPrompt Event Listener
@@ -80,6 +80,15 @@ export default function App() {
       window.removeEventListener('storage', handleSettingsSync);
     };
   }, []);
+
+  const handleSelectTab = (tab: NavTab) => {
+    setActiveTab(tab);
+    try {
+      sessionStorage.setItem('cms_active_tab', tab);
+    } catch (e) {
+      // ignore
+    }
+  };
 
   // Intercept Android Back Button / Browser Navigation to show Exit Confirmation Modal
   useEffect(() => {
@@ -189,7 +198,7 @@ export default function App() {
         <Sidebar
           currentUser={currentUser}
           activeTab={activeTab}
-          onSelectTab={setActiveTab}
+          onSelectTab={handleSelectTab}
           isMobileOpen={isMobileMenuOpen}
           onCloseMobile={() => setIsMobileMenuOpen(false)}
         />
@@ -200,7 +209,7 @@ export default function App() {
             <DashboardView
               currentUser={currentUser}
               settings={settings}
-              onNavigate={setActiveTab}
+              onNavigate={handleSelectTab}
               onUpdateSettings={handleUpdateSettings}
               onLogout={requestLogout}
             />
@@ -249,7 +258,7 @@ export default function App() {
       {/* Mobile Bottom Navigation Bar */}
       <BottomNav
         activeTab={activeTab}
-        onSelectTab={setActiveTab}
+        onSelectTab={handleSelectTab}
         currentUser={currentUser}
         onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
       />

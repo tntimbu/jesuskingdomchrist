@@ -215,9 +215,13 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
               className="w-10 h-10 rounded-xl object-cover border border-white/20 shadow-lg shadow-indigo-500/10"
             />
           </div>
-          <div className="hidden sm:block">
-            <h1 className="text-base font-bold leading-none text-white tracking-tight">{settings.nama_gereja}</h1>
-            <p className="text-[10px] uppercase tracking-widest text-indigo-400 font-semibold mt-1">Enterprise CMS Pro</p>
+          <div className="flex flex-col min-w-0">
+            <h1 className="text-xs sm:text-base font-extrabold leading-tight text-white tracking-tight max-w-[160px] sm:max-w-none truncate">
+              {settings.nama_gereja || 'Gereja'}
+            </h1>
+            <p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-indigo-400 font-bold leading-none mt-0.5">
+              Enterprise CMS Pro
+            </p>
           </div>
         </div>
       </div>
@@ -254,16 +258,16 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
               setShowNotifDropdown(!showNotifDropdown);
               setShowUserDropdown(false);
             }}
-            className="relative p-2.5 rounded-xl text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all"
+            className="relative p-2.5 rounded-xl text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all cursor-pointer"
           >
             <Bell className="w-4 h-4" />
             {unreadCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-[#0f172a]" />
+              <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-rose-500 ring-2 ring-[#0f172a] animate-pulse" />
             )}
           </button>
 
           {showNotifDropdown && (
-            <div className="absolute right-0 mt-3 w-80 sm:w-96 rounded-2xl bg-[#0f172a]/95 backdrop-blur-2xl border border-white/10 shadow-2xl p-4 z-50 text-white space-y-3">
+            <div className="fixed top-16 right-3 sm:top-auto sm:right-0 sm:absolute mt-3 w-[calc(100vw-1.5rem)] sm:w-96 max-w-sm rounded-2xl bg-slate-900/98 backdrop-blur-2xl border border-white/20 shadow-2xl p-4 z-50 text-white space-y-3">
               <div className="flex items-center justify-between pb-2 border-b border-white/10">
                 <div className="flex items-center gap-2">
                   <h3 className="text-sm font-bold">Pemberitahuan System</h3>
@@ -276,7 +280,7 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
                 {unreadCount > 0 && (
                   <button
                     onClick={markAllRead}
-                    className="text-[11px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-medium"
+                    className="text-[11px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-medium cursor-pointer"
                   >
                     <CheckCheck className="w-3.5 h-3.5" />
                     <span>Tandai Semua</span>
@@ -284,7 +288,7 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
                 )}
               </div>
 
-              <div className="max-h-64 overflow-y-auto space-y-2 pr-1">
+              <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
                 {notifications.length === 0 ? (
                   <p className="text-xs text-slate-400 text-center py-4">Belum ada notifikasi.</p>
                 ) : (
@@ -293,15 +297,15 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
                       key={n.notif_id}
                       className={`p-3 rounded-xl border text-xs space-y-1 transition-all ${
                         n.status_baca === 'Belum'
-                          ? 'bg-indigo-600/10 border-indigo-500/30 text-white'
+                          ? 'bg-indigo-600/15 border-indigo-500/40 text-white'
                           : 'bg-white/5 border-white/10 text-slate-400'
                       }`}
                     >
                       <div className="flex items-center justify-between font-semibold text-slate-200">
-                        <span>{n.judul}</span>
-                        <span className="text-[10px] text-slate-500">{n.tanggal}</span>
+                        <span className="truncate max-w-[200px]">{n.judul}</span>
+                        <span className="text-[10px] text-slate-500 shrink-0">{n.tanggal}</span>
                       </div>
-                      <p className="text-slate-300 leading-normal">{n.pesan}</p>
+                      <p className="text-slate-300 leading-normal text-[11px]">{n.pesan}</p>
                     </div>
                   ))
                 )}
