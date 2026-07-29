@@ -1,0 +1,25 @@
+{
+  "short_name": "CMS Pro",
+  "name": "Church Management System Pro Enterprise",
+  "description": "Sistem Manajemen Gereja Berbasis Web & PWA Enterprise Realtime",
+  "icons": [
+    {
+      "src": "https://images.unsplash.com/photo-1548625361-185966347898?w=192&auto=format&fit=crop&q=80",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://images.unsplash.com/photo-1548625361-185966347898?w=512&auto=format&fit=crop&q=80",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "./",
+  "background_color": "#0f172a",
+  "theme_color": "#1e293b",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "categories": ["productivity", "utilities", "business"]
+}
