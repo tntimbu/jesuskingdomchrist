@@ -6,6 +6,7 @@ import { NavbarHeader } from './components/NavbarHeader';
 import { Sidebar, NavTab } from './components/Sidebar';
 import { BottomNav } from './components/BottomNav';
 import { PWABanner } from './components/PWABanner';
+import { AlertTriangle } from 'lucide-react';
 
 import { DashboardView } from './components/DashboardView';
 import { JemaatView } from './components/views/JemaatView';
@@ -90,7 +91,14 @@ export default function App() {
     }
   };
 
-  const handleLogout = () => {
+  // Logout confirmation modal state
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
+
+  const requestLogout = () => {
+    setIsLogoutConfirmOpen(true);
+  };
+
+  const confirmLogout = () => {
     if (currentUser) {
       const historyId = (window as any).__cms_history_id;
       if (historyId) {
@@ -100,6 +108,7 @@ export default function App() {
     }
     StorageManager.clearCurrentUser();
     setCurrentUser(null);
+    setIsLogoutConfirmOpen(false);
   };
 
   const handleUpdateSettings = (newSettings: AppSettings) => {
@@ -133,7 +142,7 @@ export default function App() {
       <NavbarHeader
         currentUser={currentUser}
         settings={settings}
-        onLogout={handleLogout}
+        onLogout={requestLogout}
         onUpdateCurrentUser={(updatedUser) => setCurrentUser(updatedUser)}
         onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
         onInstallPWA={handleInstallPWA}
@@ -159,6 +168,7 @@ export default function App() {
               settings={settings}
               onNavigate={setActiveTab}
               onUpdateSettings={handleUpdateSettings}
+              onLogout={requestLogout}
             />
           )}
 
@@ -195,6 +205,39 @@ export default function App() {
         currentUser={currentUser}
         onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
       />
+
+      {/* KARTU PERINGATAN KONFIRMASI KELUAR APLIKASI */}
+      {isLogoutConfirmOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-6 text-white space-y-5 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-rose-500/20 border border-rose-500/30 text-rose-400 flex items-center justify-center mx-auto shadow-lg shadow-rose-500/20">
+              <AlertTriangle className="w-7 h-7" />
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-lg font-extrabold text-white">Konfirmasi Keluar Aplikasi</h3>
+              <p className="text-sm text-slate-300 leading-relaxed font-medium">
+                Apakah Anda yakin ingin keluar dari aplikasi? Anda akan keluar dari sesi ini.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                onClick={() => setIsLogoutConfirmOpen(false)}
+                className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition-all border border-slate-700 cursor-pointer"
+              >
+                Tidak
+              </button>
+              <button
+                onClick={confirmLogout}
+                className="w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-lg shadow-rose-600/30 transition-all cursor-pointer"
+              >
+                Ya
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

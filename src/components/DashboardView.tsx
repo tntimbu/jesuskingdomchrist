@@ -39,7 +39,10 @@ import {
   Video,
   Play,
   ShieldAlert,
-  ChevronRight
+  ChevronRight,
+  RotateCw,
+  LogOut,
+  AlertTriangle
 } from 'lucide-react';
 
 import {
@@ -75,17 +78,23 @@ interface DashboardViewProps {
   settings: AppSettings;
   onNavigate: (tab: any) => void;
   onUpdateSettings?: (newSettings: AppSettings) => void;
+  onLogout?: () => void;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
   currentUser,
   settings,
   onNavigate,
-  onUpdateSettings
+  onUpdateSettings,
+  onLogout
 }) => {
   const isSuperAdmin = currentUser.role === 'SUPER_ADMIN';
   const isAdmin = currentUser.role === 'ADMIN' || isSuperAdmin;
   const isJemaat = currentUser.role === 'JEMAAT';
+
+  // Refresh & Toast State
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshToast, setRefreshToast] = useState('');
 
   // Data state
   const [jemaatList, setJemaatList] = useState<Jemaat[]>([]);
@@ -122,6 +131,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     setPengumumanList(StorageManager.getPengumuman());
     setPrayerRequests(StorageManager.getPrayerRequests());
     setActivityLogs(StorageManager.getActivityLogs());
+  };
+
+  const handleRefreshData = () => {
+    setIsRefreshing(true);
+    loadDashboardData();
+    setTimeout(() => {
+      setIsRefreshing(false);
+      setRefreshToast('Data dashboard telah berhasil diperbarui!');
+      setTimeout(() => setRefreshToast(''), 3000);
+    }, 600);
   };
 
   const totalJemaat = jemaatList.length;
@@ -292,10 +311,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           {/* Action & Customizer Buttons Header */}
           <div className="flex flex-wrap items-center gap-2">
+            {/* Tombol Refresh Data untuk Semua User */}
+            <button
+              onClick={handleRefreshData}
+              disabled={isRefreshing}
+              className="px-3.5 py-2 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 text-xs font-semibold border border-indigo-500/40 flex items-center gap-1.5 transition-all active:scale-95 shadow-sm cursor-pointer"
+              title="Refresh Data Dashboard"
+            >
+              <RotateCw className={`w-4 h-4 text-indigo-400 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span>{isRefreshing ? 'Memuat...' : 'Refresh Data'}</span>
+            </button>
+
             {isAdmin && (
               <button
                 onClick={() => setIsCustomizerOpen(true)}
-                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition-all"
+                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition-all cursor-pointer"
               >
                 <Palette className="w-4 h-4" />
                 <span>Custom Tampilan & Video</span>
@@ -306,14 +336,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <>
                 <button
                   onClick={() => onNavigate('jemaat')}
-                  className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/30 flex items-center gap-1.5 transition-all"
+                  className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/30 flex items-center gap-1.5 transition-all cursor-pointer"
                 >
                   <PlusCircle className="w-4 h-4" />
                   <span>Tambah Jemaat</span>
                 </button>
                 <button
                   onClick={() => onNavigate('keuangan')}
-                  className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 text-xs font-semibold border border-white/10 flex items-center gap-1.5 transition-all"
+                  className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 text-xs font-semibold border border-white/10 flex items-center gap-1.5 transition-all cursor-pointer"
                 >
                   <DollarSign className="w-4 h-4 text-emerald-400" />
                   <span>Persembahan</span>
@@ -323,13 +353,36 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
             <button
               onClick={() => onNavigate('laporan')}
-              className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 text-xs font-semibold border border-white/10 flex items-center gap-1.5 transition-all"
+              className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 text-xs font-semibold border border-white/10 flex items-center gap-1.5 transition-all cursor-pointer"
             >
               <Download className="w-4 h-4 text-blue-400" />
               <span>Cetak Laporan</span>
             </button>
+
+            {/* Tombol Keluar dari Dashboard */}
+            {onLogout && (
+              <button
+                onClick={onLogout}
+                className="px-3.5 py-2 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 text-xs font-semibold border border-rose-500/30 flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+                title="Keluar dari aplikasi"
+              >
+                <LogOut className="w-4 h-4 text-rose-400" />
+                <span>Keluar</span>
+              </button>
+            )}
           </div>
         </div>
+
+        {/* Refresh Notification Toast Banner */}
+        {refreshToast && (
+          <div className="mt-4 p-3 bg-indigo-500/20 border border-indigo-500/40 text-indigo-200 rounded-2xl text-xs font-bold flex items-center justify-between gap-2 animate-fade-in shadow-lg">
+            <div className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-emerald-400" />
+              <span>{refreshToast}</span>
+            </div>
+            <span className="text-[10px] text-slate-400 font-mono">Live Sync Done</span>
+          </div>
+        )}
       </div>
 
       {/* JEMAAT FOCUS MODE: Single Latest Update Panel (Anti-Stacking) */}
