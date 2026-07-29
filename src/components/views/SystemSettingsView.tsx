@@ -64,7 +64,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
   const handleTestFirebaseConnection = async () => {
     setTestingFirebase(true);
     setFirebaseStatusMsg({ type: 'info', text: 'Sedang menguji koneksi ke Firebase Cloud Firestore...' });
-    const result = await testFirestoreConnection();
+    const result = await testFirestoreConnection(metaForm.firebaseConfig);
     setFirebaseStatusMsg({
       type: result.success ? 'success' : 'error',
       text: result.message
@@ -168,6 +168,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
   const handleTestAndSaveGAS = async (e: React.FormEvent) => {
     e.preventDefault();
     onUpdateSettings(metaForm);
+    reconnectRealtimeCloudSync();
     setGasStatusMsg(null);
 
     if (!metaForm.gas_api_url) {

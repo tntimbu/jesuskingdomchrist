@@ -126,12 +126,28 @@ export async function pushToCloud(storageKey: string, data: any): Promise<void> 
 }
 
 /**
- * Tests connection to active Firebase Firestore
+ * Tests connection to active Firebase Firestore or custom config
  */
-export async function testFirestoreConnection(): Promise<{ success: boolean; message: string }> {
+export async function testFirestoreConnection(overrideConfig?: any): Promise<{ success: boolean; message: string }> {
   try {
-    const firestoreDb = getFirestoreInstance();
-    const config = getActiveFirebaseConfig();
+    const config = overrideConfig && overrideConfig.apiKey && overrideConfig.projectId
+      ? {
+          apiKey: overrideConfig.apiKey.trim(),
+          authDomain: (overrideConfig.authDomain || '').trim() || `${overrideConfig.projectId.trim()}.firebaseapp.com`,
+          projectId: overrideConfig.projectId.trim(),
+          storageBucket: (overrideConfig.storageBucket || '').trim() || `${overrideConfig.projectId.trim()}.firebasestorage.app`,
+          messagingSenderId: (overrideConfig.messagingSenderId || '').trim() || defaultFirebaseConfig.messagingSenderId,
+          appId: (overrideConfig.appId || '').trim() || defaultFirebaseConfig.appId,
+          firestoreDatabaseId: (overrideConfig.firestoreDatabaseId || defaultFirebaseConfig.firestoreDatabaseId || '(default)').trim()
+        }
+      : getActiveFirebaseConfig();
+
+    const appName = `test_app_${config.projectId}_${Date.now()}`;
+    const app = initializeApp(config, appName);
+    const firestoreDb = config.firestoreDatabaseId && config.firestoreDatabaseId !== '(default)'
+      ? getFirestore(app, config.firestoreDatabaseId)
+      : getFirestore(app);
+
     const testDocRef = doc(firestoreDb, COLLECTION_NAME, 'connection_test');
     
     await setDoc(testDocRef, {
@@ -149,7 +165,7 @@ export async function testFirestoreConnection(): Promise<{ success: boolean; mes
     syncConnectedStatus = false;
     return {
       success: false,
-      message: `Gagal terhubung ke Firestore: ${err?.message || 'Pastikan API Key & Project ID valid.'}`
+      message: `Gagal terhubung ke Firestore: ${err?.message || 'Pastikan API Key & Project ID valid dan aturan Firestore Security Rules mengizinkan read/write.'}`
     };
   }
 }
