@@ -46,6 +46,8 @@ import {
   initialFeaturedVideos
 } from '../data/initialData';
 
+import { pushToCloud, initRealtimeCloudSync } from './firebaseSync';
+
 const KEYS = {
   SETTINGS: 'cms_pro_settings',
   USERS: 'cms_pro_users',
@@ -174,10 +176,19 @@ function setItem<T>(key: string, value: T): void {
           // ignore
         }
       }
+      // Push to Firebase Firestore for cross-device real-time sync
+      pushToCloud(key, value);
     }
   } catch (e) {
     console.error(`Error writing ${key} to localStorage:`, e);
   }
+}
+
+// Auto-start real-time cloud synchronization across devices
+if (typeof window !== 'undefined') {
+  initRealtimeCloudSync(() => {
+    notifyStorageListeners();
+  });
 }
 
 export const StorageManager = {

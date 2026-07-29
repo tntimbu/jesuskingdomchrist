@@ -1,0 +1,101 @@
+{
+  "entities": {
+    "jemaat": {
+      "title": "Data Jemaat",
+      "description": "Daftar jemaat gereja",
+      "type": "object",
+      "properties": {
+        "jemaat_id": { "type": "string" },
+        "nama_lengkap": { "type": "string" }
+      }
+    },
+    "warta": {
+      "title": "Warta & Pertemuan",
+      "description": "Warta jemaat dan pengumuman",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" }
+      }
+    },
+    "keuangan": {
+      "title": "Laporan Keuangan",
+      "description": "Catatan transaksi keuangan gereja",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" }
+      }
+    },
+    "renungan": {
+      "title": "Renungan Harian",
+      "description": "Renungan dan ayat harian",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" }
+      }
+    },
+    "surat": {
+      "title": "Surat Administrasi",
+      "description": "Surat menyurat gereja",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" }
+      }
+    },
+    "agenda": {
+      "title": "Agenda Ibadah",
+      "description": "Jadwal dan agenda peribadatan",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" }
+      }
+    },
+    "gallery": {
+      "title": "Galeri Foto & Dokumentasi",
+      "description": "Foto dan video galeri kegiatan",
+      "type": "object",
+      "properties": {
+        "gallery_id": { "type": "string" }
+      }
+    },
+    "featured_videos": {
+      "title": "Featured Social Videos",
+      "description": "Video YouTube/TikTok/Reels tayangan utama",
+      "type": "object",
+      "properties": {
+        "video_id": { "type": "string" }
+      }
+    },
+    "media_files": {
+      "title": "File Media & Dokumen",
+      "description": "Berkas dan file upload gereja",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" }
+      }
+    },
+    "system_settings": {
+      "title": "Pengaturan Sistem",
+      "description": "Profil gereja dan konfigurasi",
+      "type": "object",
+      "properties": {
+        "nama_gereja": { "type": "string" }
+      }
+    },
+    "users": {
+      "title": "Pengguna Sistem",
+      "description": "Akun login admin dan jemaat",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" }
+      }
+    },
+    "wilayah": {
+      "title": "Data Wilayah",
+      "description": "Daftar wilayah pelayanan",
+      "type": "object",
+      "properties": {
+        "wilayah_id": { "type": "string" }
+      }
+    }
+  }
+}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { EventSchedule, Doa, User } from '../../types';
 import { StorageManager } from '../../utils/storage';
-import { CalendarDays, Plus, Clock, MapPin, Heart, CheckCircle2, MessageSquare, X } from 'lucide-react';
+import { CalendarDays, Plus, Clock, MapPin, Heart, CheckCircle2, MessageSquare, X, Trash2 } from 'lucide-react';
 
 interface AgendaViewProps {
   currentUser: User;
@@ -112,6 +112,24 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
     StorageManager.saveDoa(updated);
   };
 
+  const handleDeleteEvent = (id: string, nama: string) => {
+    if (window.confirm(`Hapus event "${nama}"?`)) {
+      const updated = eventsList.filter((e) => e.event_id !== id);
+      setEventsList(updated);
+      StorageManager.saveEvents(updated);
+      StorageManager.logActivity(currentUser.username, `Menghapus event: ${nama}`, 'Jadwal & Doa');
+    }
+  };
+
+  const handleDeleteDoa = (id: string) => {
+    if (window.confirm('Hapus permohonan doa ini?')) {
+      const updated = doaList.filter((d) => d.doa_id !== id);
+      setDoaList(updated);
+      StorageManager.saveDoa(updated);
+      StorageManager.logActivity(currentUser.username, `Menghapus doa ID: ${id}`, 'Jadwal & Doa');
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -195,7 +213,18 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
                     <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/20 text-[10px] font-bold">
                       {e.kategori}
                     </span>
-                    <span className="text-xs font-mono text-slate-400">{e.tanggal}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-mono text-slate-400">{e.tanggal}</span>
+                      {currentUser.role !== 'JEMAAT' && (
+                        <button
+                          onClick={() => handleDeleteEvent(e.event_id, e.nama)}
+                          className="p-1.5 rounded-lg bg-rose-900/40 text-rose-300 hover:bg-rose-900/80 transition-all text-[11px]"
+                          title="Hapus Event"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <h4 className="text-base font-bold text-white leading-snug">{e.nama}</h4>
                   <p className="text-xs text-slate-300 flex items-center gap-1.5">
@@ -249,7 +278,18 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
                       {d.kategori}
                     </span>
                   </div>
-                  <span className="text-xs text-slate-400">{d.tanggal}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-slate-400">{d.tanggal}</span>
+                    {currentUser.role !== 'JEMAAT' && (
+                      <button
+                        onClick={() => handleDeleteDoa(d.doa_id)}
+                        className="p-1 rounded-lg bg-rose-900/40 text-rose-300 hover:bg-rose-900/80 transition-all text-[11px]"
+                        title="Hapus Permohonan Doa"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <p className="text-xs text-slate-200 leading-relaxed bg-slate-950/40 p-3 rounded-xl border border-slate-800/80">

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Pengumuman, Renungan, User } from '../../types';
 import { StorageManager } from '../../utils/storage';
-import { Megaphone, BookOpen, Plus, Heart, Share2, Sparkles, X } from 'lucide-react';
+import { Megaphone, BookOpen, Plus, Heart, Share2, Sparkles, X, Trash2 } from 'lucide-react';
 
 interface MediaViewProps {
   currentUser: User;
@@ -104,6 +104,26 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
     setIsRenunganModal(false);
   };
 
+  const handleDeletePengumuman = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (window.confirm('Apakah Anda yakin ingin menghapus pengumuman ini?')) {
+      const updated = pengumumanList.filter((p) => p.pengumuman_id !== id);
+      setPengumumanList(updated);
+      StorageManager.savePengumuman(updated);
+      StorageManager.logActivity(currentUser.username, `Menghapus pengumuman ID ${id}`, 'Media & Renungan');
+    }
+  };
+
+  const handleDeleteRenungan = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (window.confirm('Apakah Anda yakin ingin menghapus renungan harian ini?')) {
+      const updated = renunganList.filter((r) => r.renungan_id !== id);
+      setRenunganList(updated);
+      StorageManager.saveRenungan(updated);
+      StorageManager.logActivity(currentUser.username, `Menghapus renungan ID ${id}`, 'Media & Renungan');
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -192,10 +212,22 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
 
                 <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-500 font-medium">
                   <span>Diterbitkan oleh: {p.penulis}</span>
-                  <button className="text-indigo-400 hover:text-indigo-300 flex items-center gap-1">
-                    <Share2 className="w-3.5 h-3.5" />
-                    <span>Bagikan</span>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button className="text-indigo-400 hover:text-indigo-300 flex items-center gap-1">
+                      <Share2 className="w-3.5 h-3.5" />
+                      <span>Bagikan</span>
+                    </button>
+                    {currentUser.role !== 'JEMAAT' && (
+                      <button
+                        onClick={(e) => handleDeletePengumuman(p.pengumuman_id, e)}
+                        className="p-1.5 rounded-lg bg-rose-900/40 text-rose-300 hover:bg-rose-900/80 transition-all flex items-center gap-1 text-[11px]"
+                        title="Hapus Pengumuman"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Hapus</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -232,7 +264,19 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
                       Renungan Tanggal: {r.tanggal}
                     </span>
                   </div>
-                  <span className="text-xs text-slate-400">Penulis: {r.penulis}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-slate-400">Penulis: {r.penulis}</span>
+                    {currentUser.role !== 'JEMAAT' && (
+                      <button
+                        onClick={(e) => handleDeleteRenungan(r.renungan_id, e)}
+                        className="p-1.5 rounded-lg bg-rose-900/40 text-rose-300 hover:bg-rose-900/80 transition-all flex items-center gap-1 text-[11px]"
+                        title="Hapus Renungan"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Hapus</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <div>

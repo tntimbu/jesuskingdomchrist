@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Baptisan, Sidi, Pernikahan, User, Jemaat } from '../../types';
 import { StorageManager } from '../../utils/storage';
 import { exportToPDF } from '../../utils/exportTools';
-import { FileText, Plus, Award, Heart, Scroll, Printer, Download, X } from 'lucide-react';
+import { FileText, Plus, Award, Heart, Scroll, Printer, Download, X, Trash2 } from 'lucide-react';
 
 interface AdministrasiViewProps {
   currentUser: User;
@@ -125,6 +125,33 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
     setIsNikahModal(false);
   };
 
+  const handleDeleteBaptis = (id: string, nama: string) => {
+    if (window.confirm(`Hapus record baptisan untuk ${nama}?`)) {
+      const updated = baptisanList.filter((b) => b.baptisan_id !== id);
+      setBaptisanList(updated);
+      StorageManager.saveBaptisan(updated);
+      StorageManager.logActivity(currentUser.username, `Menghapus record baptis: ${nama}`, 'Administrasi Sacraments');
+    }
+  };
+
+  const handleDeleteSidi = (id: string, nama: string) => {
+    if (window.confirm(`Hapus record sidi untuk ${nama}?`)) {
+      const updated = sidiList.filter((s) => s.sidi_id !== id);
+      setSidiList(updated);
+      StorageManager.saveSidi(updated);
+      StorageManager.logActivity(currentUser.username, `Menghapus record sidi: ${nama}`, 'Administrasi Sacraments');
+    }
+  };
+
+  const handleDeleteNikah = (id: string, nama: string) => {
+    if (window.confirm(`Hapus record pernikahan untuk ${nama}?`)) {
+      const updated = pernikahanList.filter((n) => n.nikah_id !== id);
+      setPernikahanList(updated);
+      StorageManager.savePernikahan(updated);
+      StorageManager.logActivity(currentUser.username, `Menghapus record pernikahan: ${nama}`, 'Administrasi Sacraments');
+    }
+  };
+
   const cetakSuratBaptisPDF = (b: Baptisan) => {
     const title = `SURAT BAPTISAN KUDUS (No. ${b.nomor_surat || b.baptisan_id})`;
     const headers = ['Parameter Surat', 'Keterangan'];
@@ -207,6 +234,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                     <th className="p-3.5">Pendeta Pembaptis</th>
                     <th className="p-3.5">Lokasi</th>
                     <th className="p-3.5 text-center">Cetak Surat</th>
+                    <th className="p-3.5 text-center">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60">
@@ -226,6 +254,15 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                         >
                           <Printer className="w-3.5 h-3.5" />
                           <span>PDF</span>
+                        </button>
+                      </td>
+                      <td className="p-3.5 text-center">
+                        <button
+                          onClick={() => handleDeleteBaptis(b.baptisan_id, b.nama_jemaat || b.jemaat_id)}
+                          className="p-1.5 rounded-lg bg-rose-900/40 text-rose-300 hover:bg-rose-900/80 transition-all inline-flex items-center gap-1 text-[11px]"
+                          title="Hapus Record"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </td>
                     </tr>
@@ -260,6 +297,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                     <th className="p-3.5">Nama Peserta Sidi</th>
                     <th className="p-3.5">Tanggal Sidi</th>
                     <th className="p-3.5">Pendeta Melayani</th>
+                    <th className="p-3.5 text-center">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60">
@@ -269,6 +307,15 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                       <td className="p-3.5 font-bold text-white text-sm">{s.nama_jemaat || s.jemaat_id}</td>
                       <td className="p-3.5">{s.tanggal}</td>
                       <td className="p-3.5">{s.pendeta}</td>
+                      <td className="p-3.5 text-center">
+                        <button
+                          onClick={() => handleDeleteSidi(s.sidi_id, s.nama_jemaat || s.jemaat_id)}
+                          className="p-1.5 rounded-lg bg-rose-900/40 text-rose-300 hover:bg-rose-900/80 transition-all inline-flex items-center gap-1 text-[11px]"
+                          title="Hapus Record"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -302,6 +349,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                     <th className="p-3.5">Mempelai Wanita (Istri)</th>
                     <th className="p-3.5">Tanggal Pemberkatan</th>
                     <th className="p-3.5">Pendeta Pemberkat</th>
+                    <th className="p-3.5 text-center">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60">
@@ -312,6 +360,15 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                       <td className="p-3.5 font-bold text-white">{n.istri}</td>
                       <td className="p-3.5">{n.tanggal}</td>
                       <td className="p-3.5">{n.pendeta}</td>
+                      <td className="p-3.5 text-center">
+                        <button
+                          onClick={() => handleDeleteNikah(n.nikah_id, `${n.suami} & ${n.istri}`)}
+                          className="p-1.5 rounded-lg bg-rose-900/40 text-rose-300 hover:bg-rose-900/80 transition-all inline-flex items-center gap-1 text-[11px]"
+                          title="Hapus Record"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
