@@ -17,12 +17,35 @@
   <body class="bg-slate-900 text-slate-100 min-h-screen">
     <div id="root">
       <div style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;color:#94a3b8;background-color:#0f172a;">
-        <div style="text-align:center;padding:1rem;">
+        <div style="text-align:center;padding:1.5rem;max-width:24rem;">
           <div style="font-size:1.5rem;font-weight:700;color:#38bdf8;margin-bottom:0.75rem;">Kingdom of Christ</div>
-          <div style="font-size:0.95rem;color:#cbd5e1;">Memuat sistem manajemen gereja...</div>
+          <div id="loading-text" style="font-size:0.95rem;color:#cbd5e1;margin-bottom:1rem;">Memuat sistem manajemen gereja...</div>
+          <div id="fallback-action" style="display:none;margin-top:1rem;">
+            <p style="font-size:0.85rem;color:#f87171;margin-bottom:0.75rem;" id="error-desc">Proses memuat memakan waktu terlalu lama.</p>
+            <button onclick="window.location.reload(true)" style="background-color:#0284c7;color:#ffffff;border:none;padding:0.6rem 1.2rem;border-radius:0.5rem;font-weight:600;font-size:0.85rem;cursor:pointer;margin-right:0.5rem;">Muat Ulang Page</button>
+            <button onclick="localStorage.clear();if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(r=>r.forEach(s=>s.unregister()))};window.location.reload(true);" style="background-color:#334155;color:#e2e8f0;border:none;padding:0.6rem 1.2rem;border-radius:0.5rem;font-weight:500;font-size:0.85rem;cursor:pointer;">Reset Cache</button>
+          </div>
         </div>
       </div>
     </div>
-    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      window.addEventListener('error', function(e) {
+        var fb = document.getElementById('fallback-action');
+        var errDesc = document.getElementById('error-desc');
+        if (fb) {
+          fb.style.display = 'block';
+          if (errDesc && e.message) errDesc.textContent = 'Gagal memuat modul: ' + e.message;
+        }
+      });
+      setTimeout(function() {
+        var root = document.getElementById('root');
+        var fb = document.getElementById('fallback-action');
+        if (root && root.firstElementChild && root.firstElementChild.id !== 'app-container' && fb) {
+          fb.style.display = 'block';
+        }
+      }, 5000);
+    </script>
+    <script type="module" src="./src/main.tsx"></script>
   </body>
 </html>
+

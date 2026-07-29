@@ -92,7 +92,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   };
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-slate-950 p-4 sm:p-6 lg:p-8 selection:bg-indigo-500 selection:text-white">
+    <div id="app-container" className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-slate-950 p-4 sm:p-6 lg:p-8 selection:bg-indigo-500 selection:text-white">
       {/* Background Animated Gradient Blobs */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-600/30 rounded-full blur-3xl animate-pulse pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-3xl animate-pulse pointer-events-none delay-1000" />

@@ -120,7 +120,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-slate-100 flex flex-col font-sans selection:bg-indigo-500/30 selection:text-white relative" style={{ backgroundImage: 'radial-gradient(circle at 0% 0%, #1e293b 0%, #0f172a 100%)' }}>
+    <div id="app-container" className="min-h-screen bg-[#0f172a] text-slate-100 flex flex-col font-sans selection:bg-indigo-500/30 selection:text-white relative" style={{ backgroundImage: 'radial-gradient(circle at 0% 0%, #1e293b 0%, #0f172a 100%)' }}>
       {/* PWA Install Notification Banner */}
       {showPWABanner && (
         <PWABanner
