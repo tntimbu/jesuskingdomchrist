@@ -184,6 +184,25 @@ export interface AppSettings {
   telepon: string;
   website?: string;
   warna_tema?: string;
+  // Social Media Video Feed Settings
+  video_url?: string;
+  video_title?: string;
+  video_description?: string;
+  video_enabled?: boolean;
+  // Dashboard Visual Customization
+  header_title?: string;
+  header_subtitle?: string;
+  theme_preset?: 'DARK_SLATE' | 'MIDNIGHT_BLUE' | 'DEEP_PURPLE' | 'WARM_GOLD' | 'FOREST_GREEN' | 'LUXE_LIGHT';
+  card_style?: 'GLASS' | 'SOLID' | 'NEON' | 'FLAT';
+  // Dashboard Widget Visibility Toggles
+  show_video_widget?: boolean;
+  show_renungan_widget?: boolean;
+  show_pengumuman_widget?: boolean;
+  show_event_widget?: boolean;
+  show_stat_cards?: boolean;
+  show_quick_actions?: boolean;
+  show_prayer_widget?: boolean;
+  show_finance_chart?: boolean;
   firebaseConfig?: {
     apiKey?: string;
     projectId?: string;

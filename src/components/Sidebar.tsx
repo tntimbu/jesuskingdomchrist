@@ -101,9 +101,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'settings',
-      label: 'Pengaturan System (SuperAdmin)',
+      label: 'Pengaturan & Custom Tampilan',
       icon: Settings,
-      roles: ['SUPER_ADMIN']
+      roles: ['SUPER_ADMIN', 'ADMIN']
     }
   ];
 

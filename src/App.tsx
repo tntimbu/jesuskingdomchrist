@@ -158,6 +158,7 @@ export default function App() {
               currentUser={currentUser}
               settings={settings}
               onNavigate={setActiveTab}
+              onUpdateSettings={handleUpdateSettings}
             />
           )}
 

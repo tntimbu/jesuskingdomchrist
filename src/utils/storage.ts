@@ -128,7 +128,10 @@ function setItem<T>(key: string, value: T): void {
 }
 
 export const StorageManager = {
-  getSettings: (): AppSettings => getItem(KEYS.SETTINGS, initialSettings),
+  getSettings: (): AppSettings => {
+    const saved = getItem<AppSettings>(KEYS.SETTINGS, initialSettings);
+    return { ...initialSettings, ...saved };
+  },
   saveSettings: (settings: AppSettings): void => setItem(KEYS.SETTINGS, settings),
 
   getUsers: (): User[] => getItem(KEYS.USERS, initialUsers),

@@ -465,135 +465,361 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
   return (
     <div className="space-y-6 pb-12">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
         <div>
           <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
             <ShieldCheck className="w-6 h-6 text-indigo-400" />
-            <span>Pengaturan System & Control Panel (SuperAdmin)</span>
+            <span>Pengaturan & Custom Tampilan System</span>
           </h2>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Konfigurasi Google Sheets REST API, Firebase Auth, Hak Akses RBAC, & Audit Activity Log.
+            {currentUser.role === 'SUPER_ADMIN'
+              ? 'Kontrol penuh profil gereja, kustomisasi visual, video social, Google Sheets GAS, Firebase API & RBAC Users.'
+              : 'Kustomisasi identitas gereja, judul, warna tema, video media sosial, dan sakelar tampilan dashboard.'}
           </p>
         </div>
 
         {/* Tab Buttons */}
-        <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-800 p-1 rounded-2xl">
+        <div className="flex flex-wrap items-center gap-1.5 bg-slate-900 border border-slate-800 p-1 rounded-2xl">
           <button
             onClick={() => setActiveTab('METADATA')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
               activeTab === 'METADATA' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'
             }`}
           >
-            Profil Gereja
+            Profil & Custom Tampilan
           </button>
+
           <button
-            onClick={() => setActiveTab('GAS_FIREBASE')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+            onClick={() => {
+              if (currentUser.role !== 'SUPER_ADMIN') {
+                alert('Akses Terbatas! Pengaturan Google Sheets GAS & Firebase API hanya dapat dikonfigurasi oleh SuperAdmin.');
+                return;
+              }
+              setActiveTab('GAS_FIREBASE');
+            }}
+            className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
               activeTab === 'GAS_FIREBASE' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'
-            }`}
+            } ${currentUser.role !== 'SUPER_ADMIN' ? 'opacity-60 cursor-not-allowed' : ''}`}
           >
-            Google Sheets & Firebase
+            {currentUser.role !== 'SUPER_ADMIN' && <Lock className="w-3 h-3 text-amber-400" />}
+            <span>Google Sheets & Firebase</span>
           </button>
+
           <button
-            onClick={() => setActiveTab('USERS')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+            onClick={() => {
+              if (currentUser.role !== 'SUPER_ADMIN') {
+                alert('Akses Terbatas! Manajemen User & Hak Akses RBAC hanya dapat diakses oleh SuperAdmin.');
+                return;
+              }
+              setActiveTab('USERS');
+            }}
+            className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
               activeTab === 'USERS' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'
-            }`}
+            } ${currentUser.role !== 'SUPER_ADMIN' ? 'opacity-60 cursor-not-allowed' : ''}`}
           >
-            Users RBAC ({usersList.length})
+            {currentUser.role !== 'SUPER_ADMIN' && <Lock className="w-3 h-3 text-amber-400" />}
+            <span>Users RBAC ({usersList.length})</span>
           </button>
-          <button
-            onClick={() => setActiveTab('AUDIT')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-              activeTab === 'AUDIT' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Audit Logs ({activityLogs.length})
-          </button>
+
+          {currentUser.role === 'SUPER_ADMIN' && (
+            <button
+              onClick={() => setActiveTab('AUDIT')}
+              className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
+                activeTab === 'AUDIT' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              Audit Logs ({activityLogs.length})
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Tab 1: Metadata profil gereja */}
-      {activeTab === 'METADATA' && (
-        <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-6 shadow-xl">
-          <h3 className="text-base font-bold pb-3 border-b border-slate-800">Identitas & Informasi Gereja</h3>
+      {/* Role Notice for Admin */}
+      {currentUser.role === 'ADMIN' && (
+        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 shrink-0 text-amber-400" />
+          <div>
+            <span className="font-bold block">Akses Level Admin:</span>
+            <span>Anda dapat mengubah profil gereja, judul dashboard, tema warna, logo, dan tautan video media sosial. Fitur Google Sheets REST API & Manajemen User dikunci khusus untuk SuperAdmin.</span>
+          </div>
+        </div>
+      )}
 
+      {/* Tab 1: Metadata profil gereja & Custom Visual */}
+      {activeTab === 'METADATA' && (
+        <div className="space-y-6">
           {savedSuccess && (
-            <div className="p-3 bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 rounded-xl text-xs font-bold">
-              Konfigurasi gereja berhasil diperbarui!
+            <div className="p-3.5 bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 rounded-2xl text-xs font-bold flex items-center gap-2">
+              <Check className="w-4 h-4" />
+              <span>Konfigurasi & Kustomisasi Tampilan Berhasil Disimpan!</span>
             </div>
           )}
 
-          <form onSubmit={handleSaveMeta} className="space-y-4 text-xs">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-slate-400 mb-1">Nama Gereja *</label>
-                <input
-                  type="text"
-                  required
-                  value={metaForm.nama_gereja}
-                  onChange={(e) => setMetaForm({ ...metaForm, nama_gereja: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold"
-                />
-              </div>
+          <form onSubmit={handleSaveMeta} className="space-y-6 text-xs">
+            {/* Section 1: Identitas & Informasi Gereja */}
+            <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-xl">
+              <h3 className="text-base font-bold pb-3 border-b border-slate-800 flex items-center justify-between">
+                <span>1. Identitas & Profil Gereja</span>
+                <span className="text-[10px] font-semibold text-slate-400">Header & Contact Info</span>
+              </h3>
 
-              <div>
-                <label className="block text-slate-400 mb-1">URL Logo Gereja</label>
-                <input
-                  type="text"
-                  value={metaForm.logo}
-                  onChange={(e) => setMetaForm({ ...metaForm, logo: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
-                />
-              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-slate-400 mb-1 font-semibold">Nama Gereja *</label>
+                  <input
+                    type="text"
+                    required
+                    value={metaForm.nama_gereja}
+                    onChange={(e) => setMetaForm({ ...metaForm, nama_gereja: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-slate-400 mb-1">Alamat Lengkap</label>
-                <input
-                  type="text"
-                  value={metaForm.alamat}
-                  onChange={(e) => setMetaForm({ ...metaForm, alamat: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
-                />
-              </div>
+                <div>
+                  <label className="block text-slate-400 mb-1 font-semibold">URL Logo Gereja</label>
+                  <input
+                    type="text"
+                    value={metaForm.logo}
+                    onChange={(e) => setMetaForm({ ...metaForm, logo: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-[11px]"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-slate-400 mb-1">Nomor Telepon / Hotline</label>
-                <input
-                  type="text"
-                  value={metaForm.telepon}
-                  onChange={(e) => setMetaForm({ ...metaForm, telepon: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
-                />
-              </div>
+                <div>
+                  <label className="block text-slate-400 mb-1 font-semibold">Judul Header Dashboard</label>
+                  <input
+                    type="text"
+                    value={metaForm.header_title || ''}
+                    placeholder="Gereja Kemenangan Faith Center Pro"
+                    onChange={(e) => setMetaForm({ ...metaForm, header_title: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-slate-400 mb-1">Email Resmi Sekretariat</label>
-                <input
-                  type="email"
-                  value={metaForm.email}
-                  onChange={(e) => setMetaForm({ ...metaForm, email: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
-                />
-              </div>
+                <div>
+                  <label className="block text-slate-400 mb-1 font-semibold">Subtitle Header Dashboard</label>
+                  <input
+                    type="text"
+                    value={metaForm.header_subtitle || ''}
+                    placeholder="Sistem Informasi Management & Portal Layanan Jemaat"
+                    onChange={(e) => setMetaForm({ ...metaForm, header_subtitle: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                  />
+                </div>
 
-              <div>
-                <label className="block text-slate-400 mb-1">Website Resmi</label>
-                <input
-                  type="text"
-                  value={metaForm.website}
-                  onChange={(e) => setMetaForm({ ...metaForm, website: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
-                />
+                <div>
+                  <label className="block text-slate-400 mb-1 font-semibold">Alamat Lengkap</label>
+                  <input
+                    type="text"
+                    value={metaForm.alamat}
+                    onChange={(e) => setMetaForm({ ...metaForm, alamat: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-400 mb-1 font-semibold">Nomor Telepon / Hotline</label>
+                  <input
+                    type="text"
+                    value={metaForm.telepon}
+                    onChange={(e) => setMetaForm({ ...metaForm, telepon: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-400 mb-1 font-semibold">Email Resmi Sekretariat</label>
+                  <input
+                    type="email"
+                    value={metaForm.email}
+                    onChange={(e) => setMetaForm({ ...metaForm, email: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-400 mb-1 font-semibold">Website Resmi</label>
+                  <input
+                    type="text"
+                    value={metaForm.website || ''}
+                    onChange={(e) => setMetaForm({ ...metaForm, website: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                  />
+                </div>
               </div>
             </div>
 
+            {/* Section 2: Integration Video Media Sosial */}
+            <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-xl">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                <div>
+                  <h3 className="text-base font-bold">2. Video Media Sosial Dashboard (YouTube / Reels / TikTok)</h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Tempelkan link video media sosial untuk menampilkan tayangan langsung / khotbah di Dashboard Jemaat & Admin.
+                  </p>
+                </div>
+                <label className="flex items-center gap-2 cursor-pointer bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
+                  <input
+                    type="checkbox"
+                    checked={metaForm.video_enabled !== false}
+                    onChange={(e) => setMetaForm({ ...metaForm, video_enabled: e.target.checked })}
+                    className="rounded border-slate-700 text-indigo-600 focus:ring-indigo-500 w-4 h-4"
+                  />
+                  <span className="text-xs font-semibold text-emerald-400">Aktifkan Video Player</span>
+                </label>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="sm:col-span-2">
+                  <label className="block text-slate-400 mb-1 font-semibold">
+                    Link Video Media Sosial <span className="text-indigo-400">(YouTube / Shorts / IG Reel / TikTok / MP4)</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="https://www.youtube.com/watch?v=5qap5aO4i9A atau https://youtube.com/shorts/..."
+                    value={metaForm.video_url || ''}
+                    onChange={(e) => setMetaForm({ ...metaForm, video_url: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-indigo-500/40 text-white font-mono text-[11px] focus:outline-none focus:border-indigo-400"
+                  />
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Mendukung YouTube Watch, YouTube Shorts, Instagram Reels/Posts, TikTok, & MP4 Direct Stream.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-slate-400 mb-1 font-semibold">Judul Tayangan Video</label>
+                  <input
+                    type="text"
+                    placeholder="Tayangan Ibadah Raya & Khotbah Minggu Terbaru"
+                    value={metaForm.video_title || ''}
+                    onChange={(e) => setMetaForm({ ...metaForm, video_title: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-400 mb-1 font-semibold">Keterangan / Deskripsi Video</label>
+                  <input
+                    type="text"
+                    placeholder="Saksikan firman Tuhan dan puji-pujian yang memberkati rohani."
+                    value={metaForm.video_description || ''}
+                    onChange={(e) => setMetaForm({ ...metaForm, video_description: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Section 3: Tema Warna, Background & Kartu */}
+            <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-xl">
+              <h3 className="text-base font-bold pb-3 border-b border-slate-800">
+                3. Tema Warna Background & Style Kartu Dashboard
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {/* Preset Warna */}
+                <div>
+                  <label className="block text-slate-400 mb-2 font-semibold">Pilih Preset Tema Background</label>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {[
+                      { id: 'DARK_SLATE', label: '🌌 Dark Slate', bg: 'from-slate-900 to-indigo-950', border: 'border-indigo-500/50' },
+                      { id: 'MIDNIGHT_BLUE', label: '💙 Midnight Blue', bg: 'from-slate-950 to-blue-950', border: 'border-blue-500/50' },
+                      { id: 'DEEP_PURPLE', label: '💜 Amethyst Dark', bg: 'from-neutral-950 to-purple-950', border: 'border-purple-500/50' },
+                      { id: 'FOREST_GREEN', label: '🌲 Emerald Dark', bg: 'from-stone-950 to-emerald-950', border: 'border-emerald-500/50' },
+                      { id: 'WARM_GOLD', label: '⚜️ Warm Gold Luxe', bg: 'from-neutral-950 to-amber-950', border: 'border-amber-500/50' },
+                      { id: 'LUXE_LIGHT', label: '☀️ Minimalist Light', bg: 'from-slate-100 to-white text-slate-900', border: 'border-slate-300' }
+                    ].map((t) => (
+                      <button
+                        type="button"
+                        key={t.id}
+                        onClick={() => setMetaForm({ ...metaForm, theme_preset: t.id as any })}
+                        className={`p-3 rounded-2xl bg-gradient-to-br ${t.bg} border text-left text-xs font-bold transition-all flex items-center justify-between ${
+                          (metaForm.theme_preset || 'DARK_SLATE') === t.id
+                            ? `${t.border} ring-2 ring-indigo-500 shadow-lg scale-[1.02]`
+                            : 'border-slate-800 opacity-70 hover:opacity-100'
+                        }`}
+                      >
+                        <span>{t.label}</span>
+                        {(metaForm.theme_preset || 'DARK_SLATE') === t.id && <Check className="w-4 h-4 text-emerald-400" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Style Kartu */}
+                <div>
+                  <label className="block text-slate-400 mb-2 font-semibold">Pilih Style Kartu & Border</label>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {[
+                      { id: 'GLASS', label: '✨ Glassmorphism', desc: 'Transparan Kaca Blur' },
+                      { id: 'SOLID', label: '⬛ Solid Dark Glass', desc: 'Latar Gelap Pekat' },
+                      { id: 'NEON', label: '💡 Neon Accent', desc: 'Glow Border Menyala' },
+                      { id: 'FLAT', label: '📄 Flat Bordered', desc: 'Simpel Minimalis' }
+                    ].map((c) => (
+                      <button
+                        type="button"
+                        key={c.id}
+                        onClick={() => setMetaForm({ ...metaForm, card_style: c.id as any })}
+                        className={`p-3 rounded-2xl bg-slate-950 border text-left transition-all ${
+                          (metaForm.card_style || 'GLASS') === c.id
+                            ? 'border-indigo-500 ring-2 ring-indigo-500/50 text-white'
+                            : 'border-slate-800 text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        <div className="font-bold text-xs">{c.label}</div>
+                        <div className="text-[10px] text-slate-500 mt-0.5">{c.desc}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 4: Sakelar Komponen Dashboard (Tambahkan / Kurangi Tampilan) */}
+            <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-xl">
+              <h3 className="text-base font-bold pb-3 border-b border-slate-800 flex items-center justify-between">
+                <span>4. Sakelar Komponen Dashboard (Tambahkan / Kurangi Tampilan)</span>
+                <span className="text-[10px] font-semibold text-slate-400">Layout Widget Toggle</span>
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {[
+                  { key: 'show_video_widget', label: 'Widget Video Media Sosial', desc: 'Tayangan video/khotbah di dashboard' },
+                  { key: 'show_stat_cards', label: 'Kartu Ringkasan Statistik', desc: 'Total Jemaat, KK, Kas, Event' },
+                  { key: 'show_renungan_widget', label: 'Widget Renungan Utama', desc: 'Tampilkan 1 Renungan Terbaru' },
+                  { key: 'show_pengumuman_widget', label: 'Widget Pengumuman Terbaru', desc: 'Tampilkan 1 Pengumuman Terbaru' },
+                  { key: 'show_event_widget', label: 'Widget Agenda & Ibadah', desc: 'Tampilkan 1 Event Mendatang' },
+                  { key: 'show_prayer_widget', label: 'Widget Permohonan Doa', desc: 'Form doa untuk jemaat' },
+                  { key: 'show_finance_chart', label: 'Widget Grafik Keuangan', desc: 'Grafik tren kas persembahan' },
+                  { key: 'show_quick_actions', label: 'Akses Cepat (Quick Actions)', desc: 'Tombol aksi cepat di header' }
+                ].map((item) => (
+                  <label
+                    key={item.key}
+                    className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-slate-700 flex items-center justify-between cursor-pointer transition-all"
+                  >
+                    <div>
+                      <div className="font-bold text-xs text-slate-200">{item.label}</div>
+                      <div className="text-[10px] text-slate-500 mt-0.5">{item.desc}</div>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={(metaForm as any)[item.key] !== false}
+                      onChange={(e) => setMetaForm({ ...metaForm, [item.key]: e.target.checked })}
+                      className="rounded border-slate-700 text-indigo-600 focus:ring-indigo-500 w-4 h-4 shrink-0"
+                    />
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Save Button */}
             <div className="flex justify-end pt-3 border-t border-slate-800">
               <button
                 type="submit"
-                className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md shadow-indigo-600/30"
+                className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 flex items-center gap-2"
               >
-                Simpan Profil Gereja
+                <Check className="w-4 h-4" />
+                <span>Simpan Seluruh Kustomisasi Tampilan</span>
               </button>
             </div>
           </form>
