@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { User, AppSettings, ActivityLog, LoginHistory } from '../../types';
 import { StorageManager } from '../../utils/storage';
 import { generateGASScriptCode } from '../../utils/googleSheetsGAS';
+import { testFirestoreConnection, getActiveFirebaseConfig } from '../../utils/firebaseSync';
 import { DEFAULT_CHURCH_LOGO } from '../../data/initialData';
 import {
   Settings,
@@ -55,6 +56,34 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
   // GAS Sync & Testing State
   const [testingGAS, setTestingGAS] = useState(false);
   const [gasStatusMsg, setGasStatusMsg] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+
+  // Firebase Firestore Connection Testing State
+  const [testingFirebase, setTestingFirebase] = useState(false);
+  const [firebaseStatusMsg, setFirebaseStatusMsg] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+
+  const handleTestFirebaseConnection = async () => {
+    setTestingFirebase(true);
+    setFirebaseStatusMsg({ type: 'info', text: 'Sedang menguji koneksi ke Firebase Cloud Firestore...' });
+    const result = await testFirestoreConnection();
+    setFirebaseStatusMsg({
+      type: result.success ? 'success' : 'error',
+      text: result.message
+    });
+    setTestingFirebase(false);
+  };
+
+  const handleResetToDefaultFirebase = () => {
+    const updatedMeta = {
+      ...metaForm,
+      firebaseConfig: undefined
+    };
+    setMetaForm(updatedMeta);
+    onUpdateSettings(updatedMeta);
+    setFirebaseStatusMsg({
+      type: 'success',
+      text: 'Kembali menggunakan Firebase Project bawaan sistem otomatis secara penuh.'
+    });
+  };
 
   // Search & Filter State for Users
   const [searchUser, setSearchUser] = useState('');
@@ -1091,19 +1120,54 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
             </div>
           </div>
 
-          {/* Firebase Setup */}
+          {/* Firebase Cloud Firestore Setup & Multi-Device Real-Time Sync */}
           <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-xl">
-            <h3 className="text-base font-bold flex items-center gap-2 pb-3 border-b border-slate-800">
-              <Key className="w-5 h-5 text-amber-400" />
-              <span>Firebase Cloud Firestore & Authentication Credentials</span>
-            </h3>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+              <div>
+                <h3 className="text-base font-bold flex items-center gap-2">
+                  <Key className="w-5 h-5 text-amber-400" />
+                  <span>Firebase Cloud Firestore (Koneksi Database Multi-Device Real-Time)</span>
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Secara default, aplikasi <strong>sudah terhubung secara otomatis</strong> ke Cloud Firestore real-time. Semua data admin dan hape jemaat tersinkron otomatis.
+                </p>
+              </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+                <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[11px] font-bold flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                  <span>Cloud Sync Active: {getActiveFirebaseConfig().projectId}</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Status Message */}
+            {firebaseStatusMsg && (
+              <div
+                className={`p-3.5 rounded-xl border text-xs font-bold flex items-center justify-between ${
+                  firebaseStatusMsg.type === 'success'
+                    ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-300'
+                    : firebaseStatusMsg.type === 'error'
+                    ? 'bg-rose-500/20 border-rose-500/30 text-rose-300'
+                    : 'bg-indigo-500/20 border-indigo-500/30 text-indigo-300'
+                }`}
+              >
+                <span>{firebaseStatusMsg.text}</span>
+              </div>
+            )}
+
+            <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 text-xs text-slate-300 space-y-2">
+              <p className="text-slate-300 leading-relaxed text-[11px]">
+                💡 <strong>Koneksi Bawaan vs Custom:</strong> Sistem telah menyediakan project Firebase otomatis (ID: <code className="text-indigo-300 font-mono">{getActiveFirebaseConfig().projectId}</code>). Jika Anda ingin menggunakan project Firebase Console milik Anda sendiri, isi form di bawah ini dan klik <strong className="text-indigo-300">Simpan Konfigurasi</strong>.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
               <div>
                 <label className="block text-slate-400 mb-1 font-semibold">Firebase API Key</label>
                 <input
                   type="text"
-                  placeholder="AIzaSyA..."
+                  placeholder={getActiveFirebaseConfig().apiKey}
                   value={metaForm.firebaseConfig?.apiKey || ''}
                   onChange={(e) =>
                     setMetaForm({
@@ -1119,7 +1183,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                 <label className="block text-slate-400 mb-1 font-semibold">Firebase Project ID</label>
                 <input
                   type="text"
-                  placeholder="gkfc-cms-pro"
+                  placeholder={getActiveFirebaseConfig().projectId}
                   value={metaForm.firebaseConfig?.projectId || ''}
                   onChange={(e) =>
                     setMetaForm({
@@ -1130,15 +1194,102 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-[11px]"
                 />
               </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">Firebase Auth Domain (Opsional)</label>
+                <input
+                  type="text"
+                  placeholder={getActiveFirebaseConfig().authDomain}
+                  value={metaForm.firebaseConfig?.authDomain || ''}
+                  onChange={(e) =>
+                    setMetaForm({
+                      ...metaForm,
+                      firebaseConfig: { ...metaForm.firebaseConfig, authDomain: e.target.value }
+                    })
+                  }
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-[11px]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">Firebase Storage Bucket (Opsional)</label>
+                <input
+                  type="text"
+                  placeholder={getActiveFirebaseConfig().storageBucket}
+                  value={metaForm.firebaseConfig?.storageBucket || ''}
+                  onChange={(e) =>
+                    setMetaForm({
+                      ...metaForm,
+                      firebaseConfig: { ...metaForm.firebaseConfig, storageBucket: e.target.value }
+                    })
+                  }
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-[11px]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">Messaging Sender ID (Opsional)</label>
+                <input
+                  type="text"
+                  placeholder={getActiveFirebaseConfig().messagingSenderId}
+                  value={metaForm.firebaseConfig?.messagingSenderId || ''}
+                  onChange={(e) =>
+                    setMetaForm({
+                      ...metaForm,
+                      firebaseConfig: { ...metaForm.firebaseConfig, messagingSenderId: e.target.value }
+                    })
+                  }
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-[11px]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">App ID (Opsional)</label>
+                <input
+                  type="text"
+                  placeholder={getActiveFirebaseConfig().appId}
+                  value={metaForm.firebaseConfig?.appId || ''}
+                  onChange={(e) =>
+                    setMetaForm({
+                      ...metaForm,
+                      firebaseConfig: { ...metaForm.firebaseConfig, appId: e.target.value }
+                    })
+                  }
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-[11px]"
+                />
+              </div>
             </div>
 
-            {/* Save All Configuration */}
-            <div className="flex justify-end pt-3 border-t border-slate-800">
+            {/* Action buttons */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-800">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleTestFirebaseConnection}
+                  disabled={testingFirebase}
+                  className="px-4 py-2.5 rounded-xl bg-amber-900/40 hover:bg-amber-800/80 text-amber-300 border border-amber-700/50 text-xs font-bold flex items-center gap-1.5 transition-all"
+                >
+                  <RefreshCw className={`w-4 h-4 ${testingFirebase ? 'animate-spin' : ''}`} />
+                  <span>Tes Koneksi Firestore Real-time</span>
+                </button>
+
+                {metaForm.firebaseConfig?.projectId && (
+                  <button
+                    type="button"
+                    onClick={handleResetToDefaultFirebase}
+                    className="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-all"
+                  >
+                    Gunakan Firebase Bawaan Otomatis
+                  </button>
+                )}
+              </div>
+
               <button
                 type="submit"
-                className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30"
+                className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 flex items-center gap-2"
               >
-                Simpan Seluruh Konfigurasi API
+                <Check className="w-4 h-4" />
+                <span>Simpan Seluruh Konfigurasi API</span>
               </button>
             </div>
 
