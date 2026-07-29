@@ -78,7 +78,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         setIsLoading(false);
         onLoginSuccess(found);
       } else {
-        setErrorMessage('Username/Email atau Password tidak cocok. Silakan coba lagi.');
+        setErrorMessage('Username/Email atau Password tidak cocok. Coba: superadmin / admin123, atau klik tombol Pulihkan Kredensial Default di bawah.');
         setIsLoading(false);
       }
     }, 700);
@@ -247,10 +247,26 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               <motion.div 
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-medium flex items-start gap-2"
+                className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-medium space-y-2"
               >
-                <div className="w-1.5 h-1.5 rounded-full bg-rose-400 mt-1.5 shrink-0" />
-                <span>{errorMessage}</span>
+                <div className="flex items-start gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-rose-400 mt-1.5 shrink-0" />
+                  <span>{errorMessage}</span>
+                </div>
+                <div className="pt-1 border-t border-rose-500/20 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      StorageManager.resetAdminAccounts();
+                      setUsername('superadmin');
+                      setPassword('admin123');
+                      setErrorMessage('Kredensial Admin dipulihkan: superadmin / admin123. Silakan klik Masuk ke Dashboard.');
+                    }}
+                    className="text-[11px] text-amber-300 hover:text-amber-200 underline font-semibold cursor-pointer"
+                  >
+                    ⚡ Reset Kredensial Super Admin Ke Default
+                  </button>
+                </div>
               </motion.div>
             )}
 

@@ -204,8 +204,23 @@ export const StorageManager = {
   },
   saveSettings: (settings: AppSettings): void => setItem(KEYS.SETTINGS, settings),
 
-  getUsers: (): User[] => getItem(KEYS.USERS, initialUsers),
+  getUsers: (): User[] => {
+    const list = getItem<User[]>(KEYS.USERS, initialUsers);
+    const hasSuperAdmin = list.some((u) => u.role === 'SUPER_ADMIN' || u.username.toLowerCase() === 'superadmin');
+    if (!hasSuperAdmin) {
+      const merged = [initialUsers[0], initialUsers[1], ...list];
+      setItem(KEYS.USERS, merged);
+      return merged;
+    }
+    return list;
+  },
   saveUsers: (users: User[]): void => setItem(KEYS.USERS, users),
+  resetAdminAccounts: (): void => {
+    const currentUsers = getItem<User[]>(KEYS.USERS, initialUsers);
+    const nonAdmins = currentUsers.filter((u) => u.role !== 'SUPER_ADMIN' && u.role !== 'ADMIN');
+    const resetList = [initialUsers[0], initialUsers[1], ...nonAdmins];
+    setItem(KEYS.USERS, resetList);
+  },
 
   getJemaat: (): Jemaat[] => getItem(KEYS.JEMAAT, initialJemaat),
   saveJemaat: (list: Jemaat[]): void => setItem(KEYS.JEMAAT, list),

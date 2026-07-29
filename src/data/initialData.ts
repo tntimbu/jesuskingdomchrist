@@ -1,3 +1,4 @@
+import defaultFirebaseConfig from '../../firebase-applet-config.json';
 import {
   User,
   Jemaat,
@@ -84,12 +85,12 @@ export const initialSettings: AppSettings = {
   show_quick_actions: true,
   show_prayer_widget: true,
   show_finance_chart: true,
-  firebase_api_key: 'AIzaSyDemoKeyCMSPro2026_Enterprise',
-  firebase_project_id: 'cmspro-church-app',
-  firebase_auth_domain: 'cmspro-church-app.firebaseapp.com',
-  firebase_storage_bucket: 'cmspro-church-app.appspot.com',
-  firebase_messaging_sender_id: '887766554433',
-  firebase_app_id: '1:887766554433:web:abc123def456',
+  firebase_api_key: defaultFirebaseConfig.apiKey,
+  firebase_project_id: defaultFirebaseConfig.projectId,
+  firebase_auth_domain: defaultFirebaseConfig.authDomain,
+  firebase_storage_bucket: defaultFirebaseConfig.storageBucket,
+  firebase_messaging_sender_id: defaultFirebaseConfig.messagingSenderId,
+  firebase_app_id: defaultFirebaseConfig.appId,
   google_sheet_id: '1A2b3C4d5E6f7G8h9I0j_ChurchMasterDatabase2026',
   google_apps_script_url: 'https://script.google.com/macros/s/AKfycbxDemoCMSProScript/exec',
   timezone: 'Asia/Jakarta (WIB)',

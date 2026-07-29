@@ -53,7 +53,14 @@ export function getActiveFirebaseConfig() {
     if (rawSettings) {
       const parsed = JSON.parse(rawSettings);
       const custom = parsed.firebaseConfig;
-      if (custom && custom.apiKey && custom.projectId) {
+      if (
+        custom &&
+        custom.apiKey &&
+        custom.projectId &&
+        !custom.apiKey.includes('DemoKey') &&
+        custom.projectId !== 'cmspro-church-app' &&
+        custom.projectId !== defaultFirebaseConfig.projectId
+      ) {
         return {
           apiKey: custom.apiKey.trim(),
           authDomain: (custom.authDomain || '').trim() || `${custom.projectId.trim()}.firebaseapp.com`,

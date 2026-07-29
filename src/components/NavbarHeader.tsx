@@ -109,7 +109,19 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
     };
   }, []);
 
-  const unreadCount = notifications.filter((n) => n.status_baca === 'Belum').length;
+  const relevantNotifications = notifications.filter((n) => {
+    if (currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'ADMIN') return true;
+    return (
+      n.user_id === 'ALL' ||
+      n.user_id === 'JEMAAT' ||
+      n.user_id === currentUser.username ||
+      n.user_id === currentUser.jemaat_id ||
+      n.tujuan_role === 'ALL' ||
+      n.tujuan_role === 'JEMAAT'
+    );
+  });
+
+  const unreadCount = relevantNotifications.filter((n) => n.status_baca === 'Belum').length;
 
   const markAllRead = () => {
     const updated = notifications.map((n) => ({ ...n, status_baca: 'Sudah' as const }));
@@ -296,10 +308,10 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
               </div>
 
               <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
-                {notifications.length === 0 ? (
+                {relevantNotifications.length === 0 ? (
                   <p className="text-xs text-slate-400 text-center py-4">Belum ada notifikasi.</p>
                 ) : (
-                  notifications.map((n) => (
+                  relevantNotifications.map((n) => (
                     <div
                       key={n.notif_id}
                       className={`p-3 rounded-xl border text-xs space-y-1 transition-all ${
