@@ -4,8 +4,9 @@ import path from 'path';
 import { defineConfig } from 'vite';
 
 export default defineConfig(() => {
-  // Base path for GitHub Pages subpath deployment (/KingdomOfChrist/)
-  const baseUrl = process.env.BASE_URL || (process.env.GITHUB_ACTIONS ? '/KingdomOfChrist/' : '/');
+  // Support GitHub Pages relative base path deployment regardless of repo name
+  const repoName = process.env.GITHUB_REPOSITORY ? `/${process.env.GITHUB_REPOSITORY.split('/')[1]}/` : './';
+  const baseUrl = process.env.BASE_URL || repoName;
 
   return {
     base: baseUrl,

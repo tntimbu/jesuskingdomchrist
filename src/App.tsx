@@ -49,7 +49,8 @@ export default function App() {
 
     // Register Service Worker for PWA
     if ('serviceWorker' in navigator && import.meta.env.PROD) {
-      const swUrl = `${import.meta.env.BASE_URL}sw.js`;
+      const base = import.meta.env.BASE_URL || './';
+      const swUrl = `${base.endsWith('/') ? base : base + '/'}sw.js`;
       navigator.serviceWorker
         .register(swUrl)
         .then((reg) => {
