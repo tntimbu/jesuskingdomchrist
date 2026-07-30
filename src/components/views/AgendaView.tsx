@@ -57,6 +57,19 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
 
   // Admin View Reservations Modal
   const [selectedEventForAdmin, setSelectedEventForAdmin] = useState<EventSchedule | null>(null);
+  const [isAllAdminReservationsModal, setIsAllAdminReservationsModal] = useState(false);
+  const [reservationSearch, setReservationSearch] = useState('');
+
+  const isMatchingEvent = (rEventId?: string, targetEventId?: string) => {
+    if (!rEventId || !targetEventId) return false;
+    const r = rEventId.trim().toLowerCase();
+    const t = targetEventId.trim().toLowerCase();
+    return (
+      r === t ||
+      r.replace('evt-2026-', 'evt-') === t.replace('evt-2026-', 'evt-') ||
+      t.replace('evt-2026-', 'evt-') === r.replace('evt-2026-', 'evt-')
+    );
+  };
 
   // Forms
   const [eventForm, setEventForm] = useState({
@@ -364,28 +377,37 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
               <span>Upcoming Special Events &amp; Reservasi Tempat</span>
             </h3>
             {currentUser.role !== 'JEMAAT' && (
-              <button
-                onClick={() => {
-                  setEventForm((prev) => ({ ...prev, kategori: 'Upcoming Event Spesial' }));
-                  setIsEventModal(true);
-                }}
-                className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold shadow-md flex items-center gap-1.5 cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Tambah Upcoming Event</span>
-              </button>
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  onClick={() => setIsAllAdminReservationsModal(true)}
+                  className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Users className="w-4 h-4 text-amber-300" />
+                  <span>Rekap Semua Reservasi Jemaat ({reservationsList.length})</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setEventForm((prev) => ({ ...prev, kategori: 'Upcoming Event Spesial' }));
+                    setIsEventModal(true);
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold shadow-md flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Tambah Upcoming Event</span>
+                </button>
+              </div>
             )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {eventsList.map((e) => {
-              const eventResList = reservationsList.filter((r) => r.event_id === e.event_id && r.status !== 'DIBATALKAN');
+              const eventResList = reservationsList.filter((r) => isMatchingEvent(r.event_id, e.event_id) && r.status !== 'DIBATALKAN');
               const totalBookedSeats = eventResList.reduce((acc, curr) => acc + curr.jumlah_kursi, 0);
               const maxSeats = e.kuota_kursi || 150;
               const remainingSeats = Math.max(0, maxSeats - totalBookedSeats);
 
               // Check if user has already reserved
-              const userRes = reservationsList.find((r) => r.event_id === e.event_id && r.nama_jemaat.toLowerCase() === (currentUser.nama || '').toLowerCase());
+              const userRes = reservationsList.find((r) => isMatchingEvent(r.event_id, e.event_id) && (r.nama_jemaat || '').toLowerCase() === (currentUser.nama || '').toLowerCase());
 
               return (
                 <div
@@ -692,11 +714,11 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
 
             {/* List */}
             <div className="flex-1 overflow-y-auto space-y-3 pr-1">
-              {reservationsList.filter((r) => r.event_id === selectedEventForAdmin.event_id).length === 0 ? (
+              {reservationsList.filter((r) => isMatchingEvent(r.event_id, selectedEventForAdmin.event_id)).length === 0 ? (
                 <div className="p-8 text-center text-slate-400 text-xs">Belum ada jemaat yang melakukan reservasi untuk event ini.</div>
               ) : (
                 reservationsList
-                  .filter((r) => r.event_id === selectedEventForAdmin.event_id)
+                  .filter((r) => isMatchingEvent(r.event_id, selectedEventForAdmin.event_id))
                   .map((r) => (
                     <div key={r.reservation_id} className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2 text-xs">
                       <div className="flex items-center justify-between">
@@ -742,6 +764,128 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
                       </div>
                     </div>
                   ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 2B: ADMIN REKAP SEMUA RESERVASI JEMAAT */}
+      {isAllAdminReservationsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-4xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-6 text-white space-y-4 max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div>
+                <h3 className="text-base font-extrabold text-white flex items-center gap-2">
+                  <Users className="w-5 h-5 text-indigo-400" />
+                  <span>Panel Admin: Rekap Seluruh Reservasi Kursi Jemaat</span>
+                </h3>
+                <p className="text-xs text-indigo-300 font-bold mt-0.5">
+                  Total {reservationsList.length} Order Reservasi ({reservationsList.reduce((acc, curr) => acc + curr.jumlah_kursi, 0)} Total Kursi Dipesan)
+                </p>
+              </div>
+              <button
+                onClick={() => setIsAllAdminReservationsModal(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Search Input */}
+            <div className="relative">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+              <input
+                type="text"
+                value={reservationSearch}
+                onChange={(e) => setReservationSearch(e.target.value)}
+                placeholder="Cari nama jemaat, nomor WA, atau event..."
+                className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white"
+              />
+            </div>
+
+            {/* List */}
+            <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+              {reservationsList.length === 0 ? (
+                <div className="p-8 text-center text-slate-400 text-xs">Belum ada data reservasi kursi jemaat.</div>
+              ) : (
+                reservationsList
+                  .filter((r) => {
+                    if (!reservationSearch) return true;
+                    const q = reservationSearch.toLowerCase();
+                    const evtName = eventsList.find((e) => isMatchingEvent(e.event_id, r.event_id))?.nama || '';
+                    return (
+                      r.nama_jemaat.toLowerCase().includes(q) ||
+                      r.nomor_wa.includes(q) ||
+                      evtName.toLowerCase().includes(q) ||
+                      r.status.toLowerCase().includes(q)
+                    );
+                  })
+                  .map((r) => {
+                    const matchedEvent = eventsList.find((e) => isMatchingEvent(e.event_id, r.event_id));
+                    return (
+                      <div key={r.reservation_id} className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2 text-xs">
+                        <div className="flex items-center justify-between flex-wrap gap-2">
+                          <div>
+                            <span className="font-extrabold text-white text-sm block">{r.nama_jemaat}</span>
+                            <span className="text-[11px] text-amber-300 font-semibold block">
+                              Event: {matchedEvent?.nama || `ID: ${r.event_id}`}
+                            </span>
+                          </div>
+                          <span
+                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                              r.status === 'TERKONFIRMASI' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'
+                            }`}
+                          >
+                            {r.status}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-slate-300 text-[11px]">
+                          <p className="flex items-center gap-1.5">
+                            <Phone className="w-3.5 h-3.5 text-emerald-400" />
+                            <span>WA: {r.nomor_wa}</span>
+                            <a
+                              href={`https://wa.me/${r.nomor_wa.replace(/\D/g, '')}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-[10px] text-emerald-400 underline font-bold ml-1 hover:text-emerald-300"
+                            >
+                              Chat WA
+                            </a>
+                          </p>
+                          <p className="flex items-center gap-1 font-bold text-amber-300">
+                            <Ticket className="w-3.5 h-3.5" />
+                            <span>{r.jumlah_kursi} Kursi Dipesan</span>
+                          </p>
+                          <p className="text-slate-400 text-[10px]">{r.tanggal_reservasi}</p>
+                        </div>
+
+                        {r.catatan && <p className="text-[11px] text-slate-400 italic bg-slate-900/60 p-2 rounded-lg">Catatan: "{r.catatan}"</p>}
+
+                        <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-900">
+                          <button
+                            onClick={() => handleUpdateReservationStatus(r.reservation_id, 'TERKONFIRMASI')}
+                            className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold cursor-pointer"
+                          >
+                            Konfirmasi
+                          </button>
+                          <button
+                            onClick={() => handleUpdateReservationStatus(r.reservation_id, 'DIBATALKAN')}
+                            className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold cursor-pointer"
+                          >
+                            Batalkan
+                          </button>
+                          <button
+                            onClick={() => handleDeleteReservation(r.reservation_id)}
+                            className="p-1 rounded-lg bg-rose-900/40 text-rose-300 hover:bg-rose-900/80 cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
               )}
             </div>
           </div>

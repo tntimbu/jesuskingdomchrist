@@ -488,6 +488,28 @@ export const initialRenungan: Renungan[] = [
 
 export const initialEvents: EventSchedule[] = [
   {
+    event_id: 'EVT-2026-001',
+    nama: 'KKR Kebangunan Rohani & Doa Kesembuhan Massal 2026',
+    lokasi: 'Sanctuary Main Hall Lt. 3 GKFC Pro',
+    tanggal: '2026-08-15',
+    jam: '18.00 - 21.00 WIB',
+    kategori: 'Upcoming Special Event',
+    pembicara: 'Pdt. Dr. Herman Setyawan, M.Th',
+    keterangan: 'Kebaktian KKR Spesial dengan Doa Kesembuhan & Pembagian Berkat Rohani. Kuota tempat terbatas.',
+    kuota_kursi: 200
+  },
+  {
+    event_id: 'EVT-2026-002',
+    nama: 'Retret Kebangunan Keluarga & Pasutri Bahagia',
+    lokasi: 'Grand Convention Hall Lt. 2',
+    tanggal: '2026-08-28',
+    jam: '09.00 - 17.00 WIB',
+    kategori: 'Upcoming Special Event',
+    pembicara: 'Pdt. Markus & Ev. Ruth Iskandar',
+    keterangan: 'Seminar & retret pemulihan mezbah keluarga jemaat. Dapatkan kursi reservasi Anda sekarang.',
+    kuota_kursi: 120
+  },
+  {
     event_id: 'EVT-001',
     nama: 'Ibadah Raya I (Umum & Pemuda)',
     lokasi: 'Sanctuary Main Hall Lt. 3',

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Volume2, VolumeX, Play, Pause, Square, Sparkles, AudioWaveform } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Volume2, VolumeX, Play, Pause, Square, Sparkles, AudioWaveform, RotateCcw } from 'lucide-react';
+import { playNotificationChime } from '../utils/soundHelper';
 
 interface RenunganAudioPlayerProps {
   text: string;
@@ -20,74 +21,152 @@ export const RenunganAudioPlayer: React.FC<RenunganAudioPlayerProps> = ({
   const [isPaused, setIsPaused] = useState(false);
   const [speed, setSpeed] = useState<number>(0.95);
   const [hasSpeechSupport, setHasSpeechSupport] = useState<boolean>(true);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [currentSentenceIndex, setCurrentSentenceIndex] = useState<number>(0);
 
+  const sentencesRef = useRef<string[]>([]);
+  const isPlayingRef = useRef<boolean>(false);
+  const speedRef = useRef<number>(speed);
+
+  useEffect(() => {
+    speedRef.current = speed;
+  }, [speed]);
+
+  // Load voices and listen to voiceschanged event
   useEffect(() => {
     if (!('speechSynthesis' in window)) {
       setHasSpeechSupport(false);
+      return;
+    }
+
+    const updateVoices = () => {
+      const available = window.speechSynthesis.getVoices();
+      if (available && available.length > 0) {
+        setVoices(available);
+      }
+    };
+
+    updateVoices();
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = updateVoices;
     }
 
     return () => {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
       }
+      isPlayingRef.current = false;
     };
   }, []);
 
   const getCleanText = () => {
     let content = '';
-    if (title) content += `Renungan Harian. ${title}. `;
-    if (verse) content += `Bacaan Alkitab. ${verse}. `;
+    if (title) content += `Renungan Harian: ${title}. `;
+    if (verse) content += `Nats Alkitab: ${verse}. `;
     content += text;
     if (writer) content += `. Renungan ini ditulis oleh ${writer}.`;
     return content;
   };
 
-  const handlePlay = () => {
-    if (!('speechSynthesis' in window)) {
-      alert('Maaf, peramban Anda tidak mendukung pembaca suara AI.');
-      return;
-    }
+  // Break text into readable sentence chunks to avoid Chrome speech synthesis timeouts
+  const prepareSentences = () => {
+    const rawText = getCleanText();
+    const chunks = rawText
+      .split(/(?<=[.!?])\s+/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+    return chunks.length > 0 ? chunks : [rawText];
+  };
 
-    if (isPaused) {
-      window.speechSynthesis.resume();
+  const speakSentenceAtIndex = (index: number, chunks: string[]) => {
+    if (!('speechSynthesis' in window) || index >= chunks.length || !isPlayingRef.current) {
+      setIsPlaying(false);
       setIsPaused(false);
-      setIsPlaying(true);
+      isPlayingRef.current = false;
       return;
     }
 
-    // Cancel any ongoing speech
+    // Chrome resume workaround
+    window.speechSynthesis.resume();
     window.speechSynthesis.cancel();
 
-    const utterance = new SpeechSynthesisUtterance(getCleanText());
-    utterance.lang = 'id-ID'; // Indonesian Language
-    utterance.rate = speed;
+    const sentenceText = chunks[index];
+    const utterance = new SpeechSynthesisUtterance(sentenceText);
+    utterance.lang = 'id-ID';
+    utterance.rate = speedRef.current;
     utterance.pitch = 1.0;
 
-    // Try to assign Indonesian voice if available
-    const voices = window.speechSynthesis.getVoices();
-    const indonesianVoice = voices.find(
+    // Find best Indonesian voice or fallback
+    const availableVoices = voices.length > 0 ? voices : window.speechSynthesis.getVoices();
+    const indonesianVoice = availableVoices.find(
       (v) => v.lang.includes('id') || v.lang.includes('ID') || v.name.toLowerCase().includes('indonesia')
     );
     if (indonesianVoice) {
       utterance.voice = indonesianVoice;
     }
 
-    utterance.onstart = () => {
-      setIsPlaying(true);
-      setIsPaused(false);
-    };
-
     utterance.onend = () => {
-      setIsPlaying(false);
-      setIsPaused(false);
+      if (isPlayingRef.current) {
+        const nextIndex = index + 1;
+        setCurrentSentenceIndex(nextIndex);
+        if (nextIndex < chunks.length) {
+          // Speak next sentence
+          speakSentenceAtIndex(nextIndex, chunks);
+        } else {
+          setIsPlaying(false);
+          setIsPaused(false);
+          isPlayingRef.current = false;
+          setCurrentSentenceIndex(0);
+        }
+      }
     };
 
-    utterance.onerror = () => {
-      setIsPlaying(false);
-      setIsPaused(false);
+    utterance.onerror = (e) => {
+      console.warn('SpeechSynthesis error event:', e);
+      // Try continuing to next sentence if error occurs
+      if (isPlayingRef.current && index + 1 < chunks.length) {
+        speakSentenceAtIndex(index + 1, chunks);
+      } else {
+        setIsPlaying(false);
+        setIsPaused(false);
+        isPlayingRef.current = false;
+      }
     };
 
     window.speechSynthesis.speak(utterance);
+  };
+
+  const handlePlay = () => {
+    if (!('speechSynthesis' in window)) {
+      alert('Maaf, peramban Anda tidak mendukung fitur pembaca suara AI.');
+      return;
+    }
+
+    // Play gentle audio chime confirmation
+    try {
+      playNotificationChime();
+    } catch (e) {
+      // ignore
+    }
+
+    if (isPaused) {
+      window.speechSynthesis.resume();
+      setIsPaused(false);
+      setIsPlaying(true);
+      isPlayingRef.current = true;
+      return;
+    }
+
+    const chunks = prepareSentences();
+    sentencesRef.current = chunks;
+    isPlayingRef.current = true;
+    setIsPlaying(true);
+    setIsPaused(false);
+    setCurrentSentenceIndex(0);
+
+    setTimeout(() => {
+      speakSentenceAtIndex(0, chunks);
+    }, 150);
   };
 
   const handlePause = () => {
@@ -95,14 +174,17 @@ export const RenunganAudioPlayer: React.FC<RenunganAudioPlayerProps> = ({
       window.speechSynthesis.pause();
       setIsPaused(true);
       setIsPlaying(false);
+      isPlayingRef.current = false;
     }
   };
 
   const handleStop = () => {
     if ('speechSynthesis' in window) {
+      isPlayingRef.current = false;
       window.speechSynthesis.cancel();
       setIsPlaying(false);
       setIsPaused(false);
+      setCurrentSentenceIndex(0);
     }
   };
 
@@ -114,7 +196,7 @@ export const RenunganAudioPlayer: React.FC<RenunganAudioPlayerProps> = ({
 
     if (isPlaying) {
       handleStop();
-      setTimeout(handlePlay, 100);
+      setTimeout(handlePlay, 200);
     }
   };
 
@@ -128,29 +210,29 @@ export const RenunganAudioPlayer: React.FC<RenunganAudioPlayerProps> = ({
         {!isPlaying ? (
           <button
             onClick={handlePlay}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold shadow-md transition-all cursor-pointer"
-            title="Dengarkan Renungan dengan AI Speech"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold shadow-md transition-all cursor-pointer"
+            title="Putar Suara Pembaca AI"
           >
             <Play className="w-3.5 h-3.5 fill-current" />
-            <span>Audio AI</span>
+            <span>Suara AI</span>
           </button>
         ) : (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <button
               onClick={handlePause}
-              className="p-1 rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/40 text-[10px] font-bold transition-all cursor-pointer"
-              title="Pause Audio"
+              className="p-1.5 rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/40 text-[10px] font-bold transition-all cursor-pointer"
+              title="Jeda"
             >
               <Pause className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={handleStop}
-              className="p-1 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/40 text-[10px] font-bold transition-all cursor-pointer"
-              title="Stop Audio"
+              className="p-1.5 rounded-lg bg-rose-500/20 text-rose-300 hover:bg-rose-500/40 text-[10px] font-bold transition-all cursor-pointer"
+              title="Stop"
             >
               <Square className="w-3.5 h-3.5 fill-current" />
             </button>
-            <span className="flex items-center gap-1 text-[10px] text-indigo-300 font-semibold px-1.5 animate-pulse">
+            <span className="flex items-center gap-1 text-[10px] text-indigo-300 font-semibold px-1 animate-pulse">
               <AudioWaveform className="w-3.5 h-3.5 text-amber-400" />
               <span>Membaca...</span>
             </span>
@@ -161,71 +243,73 @@ export const RenunganAudioPlayer: React.FC<RenunganAudioPlayerProps> = ({
   }
 
   return (
-    <div className="p-3 sm:p-4 rounded-2xl bg-gradient-to-r from-indigo-950/90 via-slate-900 to-indigo-950 border border-indigo-500/40 shadow-lg text-white space-y-2.5 my-2">
+    <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-indigo-950/90 via-slate-900 to-indigo-950 border border-indigo-500/40 shadow-lg text-white space-y-3 my-2">
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
-            <Volume2 className="w-4 h-4 text-indigo-300 animate-pulse" />
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 shadow-inner">
+            <Volume2 className="w-4 h-4 text-amber-400 animate-pulse" />
           </div>
           <div>
-            <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
-              <span>Pemutar Suara AI Renungan</span>
-              <span className="px-1.5 py-0.2 rounded-md bg-indigo-500/30 text-indigo-200 text-[9px] font-extrabold uppercase border border-indigo-400/30">
-                TTS AI
+            <h4 className="text-xs sm:text-sm font-extrabold text-white flex items-center gap-1.5">
+              <span>Pemutar Suara AI Renungan Harian</span>
+              <span className="px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 text-[9px] font-extrabold uppercase border border-amber-500/30">
+                TTS AI Active
               </span>
             </h4>
-            <p className="text-[10px] text-slate-400">Dengarkan renungan dibacakan otomatis oleh suara AI</p>
+            <p className="text-[10px] sm:text-xs text-slate-300">
+              Dengarkan renungan dibacakan otomatis oleh suara AI Bahasa Indonesia
+            </p>
           </div>
         </div>
 
         <button
           onClick={toggleSpeed}
-          className="px-2 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[10px] font-bold text-indigo-300 border border-white/10 transition-all cursor-pointer"
-          title="Ubah Kecepatan Suara"
+          className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-[10px] font-extrabold text-indigo-200 border border-white/20 transition-all cursor-pointer shrink-0"
+          title="Ubah Kecepatan Bicara"
         >
-          Speed: {speed}x
+          {speed}x
         </button>
       </div>
 
       {/* Control Buttons & Soundwave Visualizer */}
-      <div className="flex items-center justify-between gap-2 pt-1 border-t border-white/10">
+      <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/10 flex-wrap">
         <div className="flex items-center gap-2">
           {!isPlaying ? (
             <button
               onClick={handlePlay}
-              className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-500 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white text-xs font-bold shadow-md shadow-indigo-500/20 transition-all cursor-pointer"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 via-indigo-600 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white text-xs font-bold shadow-lg shadow-indigo-600/30 transition-all cursor-pointer"
             >
-              <Play className="w-3.5 h-3.5 fill-current" />
-              <span>{isPaused ? 'Lanjutkan Suara' : 'Putar Audio Renungan'}</span>
+              <Play className="w-4 h-4 fill-current text-white" />
+              <span>{isPaused ? 'Lanjutkan Suara AI' : 'Putar Suara AI Renungan'}</span>
             </button>
           ) : (
-            <>
+            <div className="flex items-center gap-2">
               <button
                 onClick={handlePause}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold transition-all cursor-pointer"
               >
                 <Pause className="w-3.5 h-3.5" />
                 <span>Jeda (Pause)</span>
               </button>
               <button
                 onClick={handleStop}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 text-xs font-bold transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 text-xs font-bold transition-all cursor-pointer"
               >
                 <Square className="w-3.5 h-3.5 fill-current" />
                 <span>Stop</span>
               </button>
-            </>
+            </div>
           )}
         </div>
 
         {/* Animated Sound Wave Effect */}
         {isPlaying && (
-          <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/30">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-500/20 border border-indigo-500/30">
             <span className="w-1 h-3 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
             <span className="w-1 h-4 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
             <span className="w-1 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
             <span className="w-1 h-3.5 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '450ms' }} />
-            <span className="text-[10px] font-bold text-amber-300 ml-1">AI Pembaca Aktif</span>
+            <span className="text-[10px] font-extrabold text-amber-300 ml-1">AI Sedang Membaca...</span>
           </div>
         )}
       </div>

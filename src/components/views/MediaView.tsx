@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Pengumuman, Renungan, User } from '../../types';
 import { StorageManager } from '../../utils/storage';
-import { Megaphone, BookOpen, Plus, Heart, Share2, Sparkles, X, Trash2, Volume2 } from 'lucide-react';
+import { Megaphone, BookOpen, Plus, Heart, Share2, Sparkles, X, Trash2, Volume2, Maximize2 } from 'lucide-react';
 import { RenunganAudioPlayer } from '../RenunganAudioPlayer';
+import { RenunganFullscreenModal } from '../RenunganFullscreenModal';
 
 interface MediaViewProps {
   currentUser: User;
@@ -22,6 +23,7 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
   // Modals
   const [isPengumumanModal, setIsPengumumanModal] = useState(false);
   const [isRenunganModal, setIsRenunganModal] = useState(false);
+  const [selectedRenunganForModal, setSelectedRenunganForModal] = useState<Renungan | null>(null);
 
   // Forms
   const [pengumumanForm, setPengumumanForm] = useState({
@@ -266,6 +268,13 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
                     </span>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
+                    <button
+                      onClick={() => setSelectedRenunganForModal(r)}
+                      className="px-3 py-1.5 rounded-xl bg-indigo-600/90 hover:bg-indigo-600 text-white font-bold text-xs border border-indigo-400/30 shadow flex items-center gap-1.5 transition-all cursor-pointer"
+                    >
+                      <Maximize2 className="w-3.5 h-3.5 text-amber-300" />
+                      <span>Baca Layar Penuh</span>
+                    </button>
                     <span className="px-2.5 py-1 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold flex items-center gap-1.5 shadow-sm">
                       <Volume2 className="w-4 h-4 text-amber-400 animate-pulse" />
                       <span>Audio Pembaca AI</span>
@@ -285,13 +294,21 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
                 </div>
 
                 <div>
-                  <h4 className="text-xl font-extrabold text-white tracking-tight">{r.judul}</h4>
+                  <h4
+                    onClick={() => setSelectedRenunganForModal(r)}
+                    className="text-xl font-extrabold text-white tracking-tight cursor-pointer hover:text-indigo-300 transition-colors"
+                  >
+                    {r.judul}
+                  </h4>
                   <div className="mt-2 inline-block px-3 py-1 rounded-xl bg-indigo-950/80 border border-indigo-500/30 text-indigo-300 font-semibold text-xs">
                     Bacaan Alkitab: {r.ayat_alkitab || r.ayat}
                   </div>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 text-xs text-slate-200 leading-relaxed font-sans">
+                <div
+                  onClick={() => setSelectedRenunganForModal(r)}
+                  className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 text-xs text-slate-200 leading-relaxed font-sans cursor-pointer hover:border-slate-700"
+                >
                   "{r.isi}"
                 </div>
 
@@ -415,6 +432,12 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
           </div>
         </div>
       )}
+
+      {/* Fullscreen Renungan Reader Modal */}
+      <RenunganFullscreenModal
+        renungan={selectedRenunganForModal}
+        onClose={() => setSelectedRenunganForModal(null)}
+      />
     </div>
   );
 };
