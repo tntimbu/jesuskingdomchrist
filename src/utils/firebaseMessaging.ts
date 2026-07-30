@@ -208,7 +208,7 @@ export async function triggerStatusBarNotification(
           renotify: true,
           requireInteraction: true,
           data: { url: dataUrl }
-        });
+        } as any);
         return true;
       }
     } catch (e) {
@@ -222,7 +222,7 @@ export async function triggerStatusBarNotification(
       body,
       icon: 'https://images.unsplash.com/photo-1548625361-185966347898?w=192&auto=format&fit=crop&q=80',
       vibrate: [200, 100, 200, 100, 200]
-    });
+    } as any);
     notif.onclick = () => {
       window.focus();
       notif.close();

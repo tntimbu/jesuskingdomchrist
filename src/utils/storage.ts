@@ -214,7 +214,19 @@ export const StorageManager = {
     }
     return list;
   },
-  saveUsers: (users: User[]): void => setItem(KEYS.USERS, users),
+  saveUsers: (users: User[]): void => {
+    setItem(KEYS.USERS, users);
+    const current = getItem<User | null>(KEYS.CURRENT_USER, null);
+    if (current) {
+      const fresh = users.find(
+        (u) => u.user_id === current.user_id || u.username.toLowerCase() === current.username.toLowerCase()
+      );
+      if (fresh) {
+        setItem(KEYS.CURRENT_USER, { ...current, ...fresh });
+      }
+    }
+    window.dispatchEvent(new Event('cms_data_changed'));
+  },
   resetAdminAccounts: (): void => {
     const currentUsers = getItem<User[]>(KEYS.USERS, initialUsers);
     const nonAdmins = currentUsers.filter((u) => u.role !== 'SUPER_ADMIN' && u.role !== 'ADMIN');
@@ -326,7 +338,18 @@ export const StorageManager = {
   getPrayerRequests: (): PrayerRequest[] => getItem(KEYS.PRAYER_REQUESTS, initialPrayerRequests),
   savePrayerRequests: (list: PrayerRequest[]): void => setItem(KEYS.PRAYER_REQUESTS, list),
 
-  getCurrentUser: (): User | null => getItem<User | null>(KEYS.CURRENT_USER, initialUsers[0]),
+  getCurrentUser: (): User | null => {
+    const saved = getItem<User | null>(KEYS.CURRENT_USER, null);
+    if (!saved) return null;
+    const allUsers = getItem<User[]>(KEYS.USERS, initialUsers);
+    const fresh = allUsers.find(
+      (u) => u.user_id === saved.user_id || u.username.toLowerCase() === saved.username.toLowerCase()
+    );
+    if (fresh) {
+      return { ...saved, ...fresh };
+    }
+    return saved;
+  },
   saveCurrentUser: (user: User | null): void => setItem(KEYS.CURRENT_USER, user),
   clearCurrentUser: (): void => localStorage.removeItem(KEYS.CURRENT_USER),
 
@@ -353,7 +376,7 @@ export const StorageManager = {
     setItem(KEYS.ACTIVITY_LOGS, initialActivityLogs);
     setItem(KEYS.LOGIN_HISTORY, initialLoginHistory);
     setItem(KEYS.PRAYER_REQUESTS, initialPrayerRequests);
-    setItem(KEYS.CURRENT_USER, initialUsers[0]);
+    localStorage.removeItem(KEYS.CURRENT_USER);
   },
   resetAllDataToDefaults: (): void => {
     StorageManager.resetToDefault();

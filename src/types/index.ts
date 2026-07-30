@@ -213,6 +213,8 @@ export interface AppSettings {
   theme_preset?: 'DARK_SLATE' | 'MIDNIGHT_BLUE' | 'DEEP_PURPLE' | 'WARM_GOLD' | 'FOREST_GREEN' | 'LUXE_LIGHT';
   accent_color?: 'INDIGO' | 'EMERALD' | 'AMBER' | 'ROSE' | 'CYAN' | 'PURPLE' | 'ROYAL_GOLD';
   card_style?: 'GLASS' | 'SOLID' | 'NEON' | 'FLAT';
+  card_size?: 'COMPACT' | 'NORMAL' | 'SPACIOUS';
+  font_family?: 'SANS' | 'SERIF' | 'MONO';
   // Jemaat Portal Visual Customization
   jemaat_banner_title?: string;
   jemaat_banner_subtitle?: string;

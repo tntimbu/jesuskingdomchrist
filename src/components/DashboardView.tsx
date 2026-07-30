@@ -9,7 +9,10 @@ import {
   Renungan,
   Pengumuman,
   PrayerRequest,
-  NotificationItem
+  NotificationItem,
+  FeaturedVideo,
+  GalleryItem,
+  Doa
 } from '../types';
 import { StorageManager } from '../utils/storage';
 import { parseSocialVideoUrl } from '../utils/videoHelper';
@@ -116,6 +119,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [pengumumanList, setPengumumanList] = useState<Pengumuman[]>([]);
   const [prayerRequests, setPrayerRequests] = useState<PrayerRequest[]>([]);
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
+  const [featuredVideos, setFeaturedVideos] = useState<FeaturedVideo[]>([]);
+  const [galleryList, setGalleryList] = useState<GalleryItem[]>([]);
+  const [activeVideoUrl, setActiveVideoUrl] = useState<string>('');
 
   // Prayer Request Form State
   const [prayerText, setPrayerText] = useState('');
@@ -205,6 +211,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     setPrayerRequests(StorageManager.getPrayerRequests());
     setActivityLogs(StorageManager.getActivityLogs());
     setNotificationsList(StorageManager.getNotifications());
+    setFeaturedVideos(StorageManager.getFeaturedVideos());
+    setGalleryList(StorageManager.getGallery());
   };
 
   const handleSaveNotification = (e: React.FormEvent) => {
@@ -284,7 +292,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const latestEvent = eventsList.length > 0 ? eventsList[0] : null;
 
   // Parsed Video Social Link
-  const parsedVideo = parseSocialVideoUrl(settings.video_url);
+  const currentVideoUrl = activeVideoUrl || settings.video_url || (featuredVideos.find((v) => v.is_active)?.video_url || featuredVideos[0]?.video_url || '');
+  const parsedVideo = parseSocialVideoUrl(currentVideoUrl);
 
   // Submit Jemaat Prayer Request
   const handleSubmitPrayer = (e: React.FormEvent) => {
@@ -305,12 +314,26 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     StorageManager.savePrayerRequests(updated);
     setPrayerRequests(updated);
 
+    // Sync to Doa array so it appears in the Agenda / Permohonan Doa menu tab!
+    const newDoa: Doa = {
+      doa_id: `DOA-2026-${Date.now().toString().slice(-4)}`,
+      nama_pemohon: currentUser.nama || 'Jemaat Mandiri',
+      kategori: prayerTopic,
+      isi_permohonan: prayerText,
+      tanggal: new Date().toISOString().slice(0, 10),
+      status: 'Proses Doa'
+    };
+    const currentDoaList = StorageManager.getDoa();
+    StorageManager.saveDoa([newDoa, ...currentDoaList]);
+
     // Add activity log
     StorageManager.logActivity(
       currentUser.nama,
       `Mengirim permohonan doa (${prayerTopic})`,
       'Permohonan Doa'
     );
+
+    window.dispatchEvent(new Event('cms_data_changed'));
 
     setPrayerText('');
     setPrayerSubmitted(true);
@@ -972,6 +995,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     </h3>
                   </div>
                 </div>
+
+                <button
+                  onClick={() => onNavigate('galeri')}
+                  className="px-3.5 py-2 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 border border-indigo-500/40 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
+                >
+                  <Video className="w-4 h-4 text-indigo-400" />
+                  <span>Lihat Galeri Foto & Video Lengkap</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
               </div>
 
               {settings.video_description && (
@@ -1008,6 +1040,45 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </div>
                 )}
               </div>
+
+              {/* Gallery Video & Photo Stream Playlist Selector */}
+              {featuredVideos.length > 0 && (
+                <div className="pt-3 border-t border-white/10 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-slate-300 flex items-center gap-1.5">
+                      <Sparkles className="w-4 h-4 text-amber-400" />
+                      Pilih Tayangan Video & Media Terkait:
+                    </span>
+                    <button
+                      onClick={() => onNavigate('galeri')}
+                      className="text-indigo-400 hover:text-indigo-300 font-semibold text-[11px]"
+                    >
+                      Buka Galeri Media &rarr;
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {featuredVideos.map((v) => (
+                      <button
+                        key={v.video_id}
+                        type="button"
+                        onClick={() => setActiveVideoUrl(v.video_url)}
+                        className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                          currentVideoUrl === v.video_url
+                            ? 'bg-indigo-950/90 border-indigo-500 text-white shadow-lg ring-2 ring-indigo-500/30'
+                            : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5 text-[10px] font-bold text-indigo-400">
+                          <Play className="w-3 h-3 fill-current" />
+                          <span>{v.platform || 'Video'} &bull; {v.kategori || 'Ibadah'}</span>
+                        </div>
+                        <p className="text-xs font-semibold mt-1 truncate">{v.judul}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

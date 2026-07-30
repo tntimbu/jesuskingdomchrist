@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { User, AppSettings, NotificationItem } from '../types';
 import { StorageManager } from '../utils/storage';
 import { DEFAULT_CHURCH_LOGO } from '../data/initialData';
+import { getThemeClasses } from '../utils/themeHelper';
 import {
   triggerStatusBarNotification,
   requestAndSaveFCMToken,
@@ -213,8 +214,10 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
     }, 1200);
   };
 
+  const theme = getThemeClasses(settings);
+
   return (
-    <header className="sticky top-0 z-30 h-20 w-full bg-white/5 backdrop-blur-xl border-b border-white/10 px-4 sm:px-8 flex items-center justify-between text-white">
+    <header className={`sticky top-0 z-30 h-20 w-full ${theme.isLight ? 'bg-white/90 border-slate-200 text-slate-900' : 'bg-slate-950/80 border-white/10 text-white'} backdrop-blur-xl border-b px-4 sm:px-8 flex items-center justify-between transition-colors duration-300`}>
       {/* Left section: Mobile menu toggle & Church Branding */}
       <div className="flex items-center gap-3">
         <button

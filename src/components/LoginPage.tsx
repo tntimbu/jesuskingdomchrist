@@ -113,12 +113,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       />
 
       <div className="relative z-10 w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-        {/* Left Side: Branding & Info (Hidden or Stacked on Mobile) */}
+        {/* Left Side: Branding & Info (Visible on Mobile & Desktop) */}
         <motion.div 
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6 }}
-          className="lg:col-span-6 text-white space-y-6 hidden sm:block"
+          className="lg:col-span-6 text-white space-y-5 flex flex-col justify-center"
         >
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/80 border border-slate-800 text-xs font-medium text-indigo-300 backdrop-blur-md">
             <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-spin" style={{ animationDuration: '4s' }} />

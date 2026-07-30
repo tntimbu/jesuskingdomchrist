@@ -8,6 +8,8 @@ import { BottomNav } from './components/BottomNav';
 import { PWABanner } from './components/PWABanner';
 import { AlertTriangle } from 'lucide-react';
 
+import { getThemeClasses } from './utils/themeHelper';
+
 import { DashboardView } from './components/DashboardView';
 import { JemaatView } from './components/views/JemaatView';
 import { WilayahView } from './components/views/WilayahView';
@@ -185,8 +187,10 @@ export default function App() {
     );
   }
 
+  const theme = getThemeClasses(settings);
+
   return (
-    <div id="app-container" className="min-h-screen bg-[#0f172a] text-slate-100 flex flex-col font-sans selection:bg-indigo-500/30 selection:text-white relative" style={{ backgroundImage: 'radial-gradient(circle at 0% 0%, #1e293b 0%, #0f172a 100%)' }}>
+    <div id="app-container" className={`min-h-screen ${theme.rootBg} ${theme.fontClass} flex flex-col selection:bg-indigo-500/30 selection:text-white relative transition-colors duration-300`}>
       {/* PWA Install Notification Banner */}
       {showPWABanner && (
         <PWABanner
