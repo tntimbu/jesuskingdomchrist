@@ -136,7 +136,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const filteredItems = navItems.filter((item) => item.roles.includes(currentUser.role));
 
   const content = (
-    <aside className="w-64 bg-white/5 backdrop-blur-xl border-r border-white/10 flex flex-col justify-between shrink-0 h-full text-slate-300 overflow-hidden">
+    <aside className="w-64 lg:w-72 bg-white/5 backdrop-blur-xl border-r border-white/10 flex flex-col justify-between shrink-0 h-full text-slate-300 overflow-hidden">
       <div className="p-4 space-y-6 overflow-y-auto">
         {/* Navigation Category Header */}
         <div>

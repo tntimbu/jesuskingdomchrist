@@ -211,7 +211,7 @@ export default function App() {
       />
 
       {/* Content Layout */}
-      <div className="flex flex-1 w-full max-w-7xl mx-auto">
+      <div className="flex flex-1 w-full max-w-[1600px] mx-auto px-2 sm:px-4">
         {/* Sidebar */}
         <Sidebar
           currentUser={currentUser}

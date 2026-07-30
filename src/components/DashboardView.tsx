@@ -303,8 +303,28 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   // Parsed Video Social Link (Priority: active selected video > featured video galeri > settings URL)
   const activeFeaturedVideo = featuredVideos.find((v) => v.is_active) || featuredVideos[0];
-  const currentVideoUrl = activeVideoUrl || activeFeaturedVideo?.video_url || settings.video_url || '';
+  const rawVideoUrl = activeVideoUrl || activeFeaturedVideo?.video_url || settings.video_url || '';
+  const currentVideoUrl = rawVideoUrl && rawVideoUrl.includes('5qap5aO4i9A')
+    ? 'https://www.youtube.com/watch?v=wX2S6AebnI8'
+    : rawVideoUrl;
   const parsedVideo = parseSocialVideoUrl(currentVideoUrl);
+
+  // Stable User Avatar Source to prevent flashing/kedipan
+  const userAvatarSrc = React.useMemo(() => {
+    if (currentUser.foto) return currentUser.foto;
+    const foundInState = jemaatList.find(
+      (j) => (currentUser.jemaat_id && j.jemaat_id === currentUser.jemaat_id) || j.nama_lengkap.toLowerCase() === currentUser.nama.toLowerCase()
+    );
+    if (foundInState?.foto) return foundInState.foto;
+
+    const storedJemaat = StorageManager.getJemaat();
+    const foundInStorage = storedJemaat.find(
+      (j) => (currentUser.jemaat_id && j.jemaat_id === currentUser.jemaat_id) || j.nama_lengkap.toLowerCase() === currentUser.nama.toLowerCase()
+    );
+    if (foundInStorage?.foto) return foundInStorage.foto;
+
+    return settings.logo || DEFAULT_CHURCH_LOGO;
+  }, [currentUser, jemaatList, settings.logo]);
 
   // Submit Jemaat Prayer Request
   const handleSubmitPrayer = (e: React.FormEvent) => {
@@ -443,12 +463,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="flex items-center gap-4">
             <div className="relative">
               <img
-                src={
-                  currentUser.jemaat_id
-                    ? jemaatList.find((j) => j.jemaat_id === currentUser.jemaat_id)?.foto ||
-                      settings.logo || DEFAULT_CHURCH_LOGO
-                    : settings.logo || DEFAULT_CHURCH_LOGO
-                }
+                src={userAvatarSrc}
                 alt="Logo/Avatar"
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = DEFAULT_CHURCH_LOGO;

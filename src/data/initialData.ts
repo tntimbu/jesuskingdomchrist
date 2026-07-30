@@ -28,7 +28,7 @@ export const initialFeaturedVideos: FeaturedVideo[] = [
   {
     video_id: 'VID-001',
     judul: 'Tayangan Ibadah Raya & Khotbah Minggu Terbaru',
-    video_url: 'https://www.youtube.com/watch?v=5qap5aO4i9A',
+    video_url: 'https://www.youtube.com/watch?v=wX2S6AebnI8',
     keterangan: 'Saksikan siaran ulang ibadah minggu & puji-pujian firman Tuhan yang memberkati.',
     is_active: true,
     tanggal: '2026-07-28',
@@ -38,7 +38,7 @@ export const initialFeaturedVideos: FeaturedVideo[] = [
   {
     video_id: 'VID-002',
     judul: 'Shorts Renungan Singkat Pemuda & Youth',
-    video_url: 'https://www.youtube.com/shorts/5qap5aO4i9A',
+    video_url: 'https://www.youtube.com/watch?v=wX2S6AebnI8',
     keterangan: 'Kiprah puji-pujian dan firman Tuhan untuk generasi muda.',
     is_active: false,
     tanggal: '2026-07-25',
@@ -55,7 +55,7 @@ export const initialSettings: AppSettings = {
   telepon: '+62 21 555-9876',
   warna_tema: '#1e293b',
   // Video & Visual Customization Defaults
-  video_url: 'https://www.youtube.com/watch?v=5qap5aO4i9A',
+  video_url: 'https://www.youtube.com/watch?v=wX2S6AebnI8',
   video_title: 'Tayangan Ibadah Raya & Khotbah Terbaru',
   video_description: 'Saksikan siaran ulang ibadah minggu & firman Tuhan yang memberkati.',
   video_enabled: true,

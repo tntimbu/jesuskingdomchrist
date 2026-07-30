@@ -220,7 +220,7 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
           <div className="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
             <div className="relative group">
               <img
-                src={jemaatData?.foto || photoPreview || DEFAULT_CHURCH_LOGO}
+                src={jemaatData?.foto || currentUser.foto || photoPreview || DEFAULT_CHURCH_LOGO}
                 alt="Foto Profil"
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = DEFAULT_CHURCH_LOGO;

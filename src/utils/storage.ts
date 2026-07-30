@@ -200,7 +200,11 @@ export const StorageManager = {
   },
   getSettings: (): AppSettings => {
     const saved = getItem<AppSettings>(KEYS.SETTINGS, initialSettings);
-    return { ...initialSettings, ...saved };
+    const settings = { ...initialSettings, ...saved };
+    if (settings.video_url && settings.video_url.includes('5qap5aO4i9A')) {
+      settings.video_url = 'https://www.youtube.com/watch?v=wX2S6AebnI8';
+    }
+    return settings;
   },
   saveSettings: (settings: AppSettings): void => setItem(KEYS.SETTINGS, settings),
 
@@ -279,7 +283,18 @@ export const StorageManager = {
   getGallery: (): GalleryItem[] => getItem(KEYS.GALLERY, initialGallery),
   saveGallery: (list: GalleryItem[]): void => setItem(KEYS.GALLERY, list),
 
-  getFeaturedVideos: (): FeaturedVideo[] => getItem(KEYS.FEATURED_VIDEOS, initialFeaturedVideos),
+  getFeaturedVideos: (): FeaturedVideo[] => {
+    const list = getItem<FeaturedVideo[]>(KEYS.FEATURED_VIDEOS, initialFeaturedVideos);
+    return list.map((v) => {
+      if (v.video_url && v.video_url.includes('5qap5aO4i9A')) {
+        return {
+          ...v,
+          video_url: 'https://www.youtube.com/watch?v=wX2S6AebnI8'
+        };
+      }
+      return v;
+    });
+  },
   saveFeaturedVideos: (list: FeaturedVideo[]): void => {
     setItem(KEYS.FEATURED_VIDEOS, list);
     // Automatically sync active video to settings for backward compatibility

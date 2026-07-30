@@ -12,6 +12,7 @@ export interface User {
   created_at?: string;
   last_login?: string;
   jemaat_id?: string;
+  foto?: string;
 }
 
 export interface Jemaat {
