@@ -875,7 +875,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             {/* Baris Kedua: Kas Persembahan (Kotak 3) & Jadwal & Event (Kotak 4) */}
             <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
               {/* Kartu 3: Kas Persembahan */}
-              <div className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} border border-emerald-500/30 flex flex-col justify-between space-y-2`}>
+              <div
+                onClick={() => onNavigate('jemaat_portal')}
+                className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} border border-emerald-500/30 flex flex-col justify-between space-y-2 cursor-pointer hover:border-emerald-500/60 transition-all`}
+              >
                 <div className="flex items-center justify-between gap-1">
                   <span className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider truncate">Kas Persembahan</span>
                   <div className="p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-md shrink-0">
@@ -887,13 +890,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     Rp {totalPersembahan.toLocaleString('id-ID')}
                   </span>
                 </div>
-                <div className="pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 truncate">
+                <div className="pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 truncate flex items-center justify-between">
                   <span>Kas & Donasi</span>
+                  <ChevronRight className="w-3 h-3 text-emerald-400" />
                 </div>
               </div>
 
               {/* Kartu 4: Jadwal & Event */}
-              <div className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} border border-amber-500/30 flex flex-col justify-between space-y-2`}>
+              <div
+                onClick={() => onNavigate('agenda')}
+                className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} border border-amber-500/30 flex flex-col justify-between space-y-2 cursor-pointer hover:border-amber-500/60 transition-all`}
+              >
                 <div className="flex items-center justify-between gap-1">
                   <span className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider truncate">Jadwal & Event</span>
                   <div className="p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shadow-md shrink-0">
@@ -904,8 +911,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <span className="text-xl sm:text-3xl font-black text-white">{eventsList.length}</span>
                   <span className="text-[10px] sm:text-xs text-slate-400 font-medium">Agenda</span>
                 </div>
-                <div className="pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 truncate">
+                <div className="pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 truncate flex items-center justify-between">
                   <span>Ibadah & Event</span>
+                  <ChevronRight className="w-3 h-3 text-amber-400" />
                 </div>
               </div>
             </div>
@@ -921,17 +929,33 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   Portal Informasi Terfokus Jemaat
                 </h3>
                 <p className="text-xs text-slate-300 mt-0.5">
-                  Renungan harian, pengumuman resmi &amp; tayangan ibadah gereja terupdate
+                  Akses cepat renungan harian, pengumuman resmi &amp; tayangan ibadah gereja
                 </p>
               </div>
             </div>
-            <button
-              onClick={() => onNavigate('media')}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-indigo-600/90 hover:bg-indigo-600 text-white font-bold text-xs border border-indigo-400/30 shadow-md shadow-indigo-600/20 transition-all cursor-pointer shrink-0 self-start sm:self-auto"
-            >
-              <span>Lihat Arsip Lengkap</span>
-              <ChevronRight className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-2 flex-wrap shrink-0 self-start sm:self-auto">
+              <button
+                onClick={() => onNavigate('renungan')}
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600/90 hover:bg-indigo-600 text-white font-bold text-xs border border-indigo-400/30 shadow-md shadow-indigo-600/20 transition-all cursor-pointer"
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>Renungan</span>
+              </button>
+              <button
+                onClick={() => onNavigate('pengumuman')}
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600/90 hover:bg-emerald-600 text-white font-bold text-xs border border-emerald-400/30 shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
+              >
+                <Megaphone className="w-3.5 h-3.5" />
+                <span>Pengumuman</span>
+              </button>
+              <button
+                onClick={() => onNavigate('media')}
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-600/90 hover:bg-red-600 text-white font-bold text-xs border border-red-400/30 shadow-md shadow-red-600/20 transition-all cursor-pointer"
+              >
+                <Tv className="w-3.5 h-3.5" />
+                <span>Video Streaming</span>
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -975,11 +999,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs">
                   <span className="text-[11px] text-slate-400">Oleh: {latestRenungan?.penulis || 'Gembala Sidang'}</span>
                   <button
-                    onClick={() => onNavigate('media')}
-                    className="text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1"
+                    onClick={() => onNavigate('renungan')}
+                    className="text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 cursor-pointer"
                   >
-                    <span>Baca Semua</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
+                    <span>Kumpulan Renungan &rarr;</span>
                   </button>
                 </div>
               </div>
@@ -1012,11 +1035,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs">
                   <span className="text-[11px] text-slate-400">Sekretariat Gereja</span>
                   <button
-                    onClick={() => onNavigate('media')}
-                    className="text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1"
+                    onClick={() => onNavigate('pengumuman')}
+                    className="text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1 cursor-pointer"
                   >
-                    <span>Pengumuman Lain</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
+                    <span>Kumpulan Pengumuman &rarr;</span>
                   </button>
                 </div>
               </div>
