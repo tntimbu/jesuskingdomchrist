@@ -617,9 +617,12 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
       {activeTab === 'METADATA' && (
         <div className="space-y-6">
           {savedSuccess && (
-            <div className="p-3.5 bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 rounded-2xl text-xs font-bold flex items-center gap-2">
-              <Check className="w-4 h-4" />
-              <span>Konfigurasi & Kustomisasi Tampilan Berhasil Disimpan!</span>
+            <div className="p-4 bg-emerald-500/20 border-2 border-emerald-500/50 text-emerald-300 rounded-2xl text-xs sm:text-sm font-extrabold flex items-center justify-between gap-3 shadow-2xl animate-bounce">
+              <div className="flex items-center gap-2">
+                <Check className="w-5 h-5 text-emerald-400 shrink-0" />
+                <span>✅ Perubahan berhasil disimpan! Pengaturan Lebar Kartu & Kustomisasi Tampilan Portal/Dashboard Jemaat telah diperbarui secara realtime.</span>
+              </div>
+              <span className="text-[10px] font-mono bg-emerald-600/40 px-2.5 py-1 rounded-lg text-emerald-200 shrink-0">Status: Tersimpan</span>
             </div>
           )}
 

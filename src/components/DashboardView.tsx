@@ -448,27 +448,43 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     if (onUpdateSettings) {
       onUpdateSettings(customForm);
     }
+    window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { action: 'settings_updated' } }));
+    StorageManager.logActivity(currentUser.username, 'Mengubah kustomisasi portal & dashboard jemaat', 'System Settings');
     setSaveSuccessMsg(true);
+    setRefreshToast('✅ Perubahan Kustomisasi Dashboard & Portal Jemaat Berhasil Disimpan!');
     setTimeout(() => {
       setSaveSuccessMsg(false);
       setIsCustomizerOpen(false);
+      setTimeout(() => setRefreshToast(''), 3500);
     }, 1200);
   };
 
-  // Dynamic Theme Preset Style Classes
+  // Dynamic Theme Preset Style Classes & Density
   const getCardStyleClass = () => {
     const cardStyle = settings.card_style || 'GLASS';
+    let base = 'bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl';
     switch (cardStyle) {
       case 'SOLID':
-        return 'bg-slate-900 border border-slate-800 shadow-xl';
+        base = 'bg-slate-900 border border-slate-800 shadow-xl';
+        break;
       case 'NEON':
-        return 'bg-slate-900/90 border border-indigo-500/40 shadow-lg shadow-indigo-500/10 backdrop-blur-xl';
+        base = 'bg-slate-900/90 border border-indigo-500/40 shadow-lg shadow-indigo-500/10 backdrop-blur-xl';
+        break;
       case 'FLAT':
-        return 'bg-slate-900/60 border border-slate-700/60 shadow-none';
+        base = 'bg-slate-900/60 border border-slate-700/60 shadow-none';
+        break;
       case 'GLASS':
       default:
-        return 'bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl';
+        base = 'bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl';
+        break;
     }
+
+    const density = settings.card_size || 'NORMAL';
+    let padding = 'p-5 sm:p-6';
+    if (density === 'COMPACT') padding = 'p-3.5 sm:p-4';
+    if (density === 'SPACIOUS') padding = 'p-6 sm:p-8';
+
+    return `${base} ${padding}`;
   };
 
   const cardStyleClass = getCardStyleClass();
@@ -523,8 +539,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     ]
   };
 
+  let widthClass = 'max-w-7xl mx-auto';
+  if (settings.jemaat_card_width === 'FULL') widthClass = 'w-full';
+  if (settings.jemaat_card_width === 'COMPACT') widthClass = 'max-w-3xl mx-auto';
+  if (settings.jemaat_card_width === 'CONTAINED') widthClass = 'max-w-5xl mx-auto';
+
   return (
-    <div className="space-y-6 pb-12">
+    <div className={`space-y-6 pb-12 transition-all duration-300 ${widthClass}`}>
       {/* Welcome Card Banner with Dynamic Custom Header */}
       <div className={`relative rounded-3xl ${cardStyleClass} p-6 sm:p-8 overflow-hidden text-white`}>
         <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -1642,7 +1663,66 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </div>
               </div>
 
-              {/* Section 4: Sakelar Widget Dashboard */}
+              {/* Section 4: Pengaturan Lebar Kartu & Layout Dashboard Jemaat */}
+              <div className="space-y-3 bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                <label className="font-bold text-indigo-300 block">Pengaturan Lebar Kartu Dashboard Jemaat & Mobile View</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: 'CONTAINED', label: '🛡️ Standard (Max 5XL)', desc: 'Rekomendasi Desktop' },
+                    { id: 'FULL', label: '🖥️ Full Width (100%)', desc: 'Layar Penuh' },
+                    { id: 'COMPACT', label: '📱 Compact Mobile', desc: 'Fokus Hape' }
+                  ].map((cw) => (
+                    <button
+                      type="button"
+                      key={cw.id}
+                      onClick={() => setCustomForm({ ...customForm, jemaat_card_width: cw.id as any })}
+                      className={`p-2 rounded-xl text-left border transition-all ${
+                        (customForm.jemaat_card_width || 'CONTAINED') === cw.id
+                          ? 'border-indigo-500 bg-indigo-600/20 text-white font-bold'
+                          : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <div className="font-bold text-[11px]">{cw.label}</div>
+                      <div className="text-[9px] text-slate-500 mt-0.5">{cw.desc}</div>
+                    </button>
+                  ))}
+                </div>
+
+                <label className="font-bold text-indigo-300 block pt-2">Ukuran Density / Padding Kartu</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: 'COMPACT', label: '⚡ Ringkas (Hape)' },
+                    { id: 'NORMAL', label: '⚖️ Normal Standar' },
+                    { id: 'SPACIOUS', label: '✨ Lega & Mewah' }
+                  ].map((cs) => (
+                    <button
+                      type="button"
+                      key={cs.id}
+                      onClick={() => setCustomForm({ ...customForm, card_size: cs.id as any })}
+                      className={`p-2 rounded-xl text-center border text-xs transition-all ${
+                        (customForm.card_size || 'NORMAL') === cs.id
+                          ? 'border-indigo-500 bg-indigo-600/20 text-white font-bold'
+                          : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      {cs.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="pt-2 space-y-2">
+                  <label className="block text-slate-400 font-semibold">Teks Ticker Pengumuman Jemaat</label>
+                  <input
+                    type="text"
+                    value={customForm.jemaat_announcement_text || ''}
+                    onChange={(e) => setCustomForm({ ...customForm, jemaat_announcement_text: e.target.value })}
+                    placeholder="Contoh: Ibadah Raya Minggu ini pukul 09:00 WIB..."
+                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs"
+                  />
+                </div>
+              </div>
+
+              {/* Section 5: Sakelar Widget Dashboard */}
               <div className="space-y-2 bg-slate-950 p-4 rounded-2xl border border-slate-800">
                 <label className="font-bold text-slate-300 block">Tampilkan / Sembunyikan Widget Dashboard</label>
                 <div className="grid grid-cols-2 gap-2">

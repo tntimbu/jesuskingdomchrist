@@ -113,6 +113,12 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
   }, [currentUser]);
 
   useEffect(() => {
+    if (settings) {
+      setAppSettings(settings);
+    }
+  }, [settings]);
+
+  useEffect(() => {
     loadData();
 
     const handleSync = () => loadData();
@@ -177,6 +183,12 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
   let widthClass = 'max-w-5xl mx-auto';
   if (appSettings.jemaat_card_width === 'FULL') widthClass = 'w-full';
   if (appSettings.jemaat_card_width === 'COMPACT') widthClass = 'max-w-3xl mx-auto';
+  if (appSettings.jemaat_card_width === 'CONTAINED') widthClass = 'max-w-5xl mx-auto';
+
+  // Dynamic Card Density
+  let cardPaddingClass = 'p-6 sm:p-8';
+  if (appSettings.card_size === 'COMPACT') cardPaddingClass = 'p-3.5 sm:p-5';
+  if (appSettings.card_size === 'SPACIOUS') cardPaddingClass = 'p-6 sm:p-10';
 
   // Dynamic Banner Background
   let bannerBgClass = 'bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border-indigo-500/30';
