@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { User, Jemaat, Persembahan } from '../../types';
+import { User, Jemaat, Persembahan, AppSettings } from '../../types';
 import { StorageManager } from '../../utils/storage';
 import { DEFAULT_CHURCH_LOGO } from '../../data/initialData';
+import { getThemeClasses } from '../../utils/themeHelper';
 import {
   UserCheck,
   Edit3,
@@ -20,11 +21,13 @@ import {
 
 interface JemaatPortalViewProps {
   currentUser: User;
+  settings?: AppSettings;
 }
 
-export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser }) => {
+export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser, settings }) => {
   const [jemaatData, setJemaatData] = useState<Jemaat | null>(null);
   const [personalOfferings, setPersonalOfferings] = useState<Persembahan[]>([]);
+  const theme = getThemeClasses(settings);
 
   // Edit Profile State
   const [isEditing, setIsEditing] = useState(false);
@@ -53,7 +56,7 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser 
       allJemaat[0];
 
     if (found) {
-      setJemaatData(found);
+      setJemaatData((prev) => (JSON.stringify(prev) !== JSON.stringify(found) ? found : prev));
       if (!isEditingRef.current) {
         setEditName(found.nama_lengkap ?? activeUser.nama ?? '');
         setEditEmail(found.email ?? activeUser.email ?? '');
@@ -65,7 +68,8 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser 
     }
 
     const allPersembahan = StorageManager.getPersembahan();
-    setPersonalOfferings(allPersembahan.slice(0, 3));
+    const sliced = allPersembahan.slice(0, 3);
+    setPersonalOfferings((prev) => (JSON.stringify(prev) !== JSON.stringify(sliced) ? sliced : prev));
   }, [currentUser]);
 
   useEffect(() => {
@@ -423,53 +427,53 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser 
       )}
 
       {/* Member Profile Details Card */}
-      <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 shadow-sm text-white space-y-4">
-        <h3 className="text-base font-bold flex items-center justify-between border-b border-slate-800 pb-3">
+      <div className={`rounded-3xl ${theme.cardClass} space-y-4`}>
+        <h3 className="text-base font-bold flex items-center justify-between border-b border-white/10 pb-3">
           <div className="flex items-center gap-2">
-            <UserCheck className="w-5 h-5 text-indigo-400" />
+            <UserCheck className={`w-5 h-5 ${theme.accentText}`} />
             <span>Informasi Keanggotaan & Data Jemaat</span>
           </div>
           <span className="text-xs text-slate-400 font-normal">Sektor: {jemaatData?.wilayah || 'Utama'}</span>
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-xs">
-          <div className="p-4 bg-slate-950/80 rounded-2xl border border-slate-800 space-y-1">
+          <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-1">
             <span className="text-slate-400 block font-semibold">Identitas KTP / KK:</span>
             <p className="font-mono text-slate-200 font-bold text-sm">{jemaatData?.nik || '-'}</p>
             <p className="text-[11px] text-slate-400">No. KK: {jemaatData?.no_kk || '-'}</p>
           </div>
 
-          <div className="p-4 bg-slate-950/80 rounded-2xl border border-slate-800 space-y-1">
+          <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-1">
             <span className="text-slate-400 block font-semibold">Status Sacraments:</span>
             <p className="text-emerald-400 font-bold">Baptis: {jemaatData?.status_baptis || 'Sudah'}</p>
             <p className="text-blue-400 font-bold">Sidi: {jemaatData?.status_sidi || 'Sudah'}</p>
           </div>
 
-          <div className="p-4 bg-slate-950/80 rounded-2xl border border-slate-800 space-y-1">
+          <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-1">
             <span className="text-slate-400 block font-semibold">Komisi & Pelayanan:</span>
-            <p className="text-indigo-300 font-bold text-sm">{jemaatData?.komisi || 'Jemaat Umum'}</p>
+            <p className={`${theme.accentText} font-bold text-sm`}>{jemaatData?.komisi || 'Jemaat Umum'}</p>
             <p className="text-[11px] text-slate-400">Status Keanggotaan: {jemaatData?.status || 'Aktif'}</p>
           </div>
 
-          <div className="p-4 bg-slate-950/80 rounded-2xl border border-slate-800 space-y-1">
+          <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-1">
             <span className="text-slate-400 block font-semibold flex items-center gap-1">
-              <Phone className="w-3.5 h-3.5 text-indigo-400" />
+              <Phone className={`w-3.5 h-3.5 ${theme.accentText}`} />
               <span>Kontak HP / WA:</span>
             </span>
             <p className="text-slate-200 font-bold text-xs">{jemaatData?.nomor_hp || currentUser.no_hp || '-'}</p>
           </div>
 
-          <div className="p-4 bg-slate-950/80 rounded-2xl border border-slate-800 space-y-1">
+          <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-1">
             <span className="text-slate-400 block font-semibold flex items-center gap-1">
-              <Mail className="w-3.5 h-3.5 text-indigo-400" />
+              <Mail className={`w-3.5 h-3.5 ${theme.accentText}`} />
               <span>Email:</span>
             </span>
             <p className="text-slate-200 font-bold text-xs truncate">{jemaatData?.email || currentUser.email || '-'}</p>
           </div>
 
-          <div className="p-4 bg-slate-950/80 rounded-2xl border border-slate-800 space-y-1">
+          <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-1">
             <span className="text-slate-400 block font-semibold flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5 text-indigo-400" />
+              <MapPin className={`w-3.5 h-3.5 ${theme.accentText}`} />
               <span>Alamat Domisili:</span>
             </span>
             <p className="text-slate-200 font-bold text-xs">{jemaatData?.alamat || '-'}</p>
@@ -478,8 +482,8 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser 
       </div>
 
       {/* Riwayat Catatan Persembahan Personal */}
-      <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 shadow-sm text-white space-y-4">
-        <h3 className="text-base font-bold flex items-center gap-2 border-b border-slate-800 pb-3">
+      <div className={`rounded-3xl ${theme.cardClass} space-y-4`}>
+        <h3 className="text-base font-bold flex items-center gap-2 border-b border-white/10 pb-3">
           <DollarSign className="w-5 h-5 text-emerald-400" />
           <span>Catatan Histori Persembahan Personal</span>
         </h3>
@@ -489,7 +493,7 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser 
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {personalOfferings.map((po) => (
-              <div key={po.persembahan_id} className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 text-xs space-y-1">
+              <div key={po.persembahan_id} className="p-4 rounded-2xl bg-white/5 border border-white/10 text-xs space-y-1">
                 <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
                   {po.kategori || 'Gereja'}
                 </span>

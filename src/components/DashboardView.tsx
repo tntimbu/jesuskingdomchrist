@@ -202,18 +202,28 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     setCustomForm(settings);
   }, [settings]);
 
-  const loadDashboardData = () => {
-    setJemaatList(StorageManager.getJemaat());
-    setPersembahanList(StorageManager.getPersembahan());
-    setEventsList(StorageManager.getEvents());
-    setRenunganList(StorageManager.getRenungan());
-    setPengumumanList(StorageManager.getPengumuman());
-    setPrayerRequests(StorageManager.getPrayerRequests());
-    setActivityLogs(StorageManager.getActivityLogs());
-    setNotificationsList(StorageManager.getNotifications());
-    setFeaturedVideos(StorageManager.getFeaturedVideos());
-    setGalleryList(StorageManager.getGallery());
-  };
+  const loadDashboardData = React.useCallback(() => {
+    const j = StorageManager.getJemaat();
+    setJemaatList((prev) => (prev.length !== j.length || JSON.stringify(prev) !== JSON.stringify(j) ? j : prev));
+    const p = StorageManager.getPersembahan();
+    setPersembahanList((prev) => (prev.length !== p.length || JSON.stringify(prev) !== JSON.stringify(p) ? p : prev));
+    const e = StorageManager.getEvents();
+    setEventsList((prev) => (prev.length !== e.length || JSON.stringify(prev) !== JSON.stringify(e) ? e : prev));
+    const r = StorageManager.getRenungan();
+    setRenunganList((prev) => (prev.length !== r.length || JSON.stringify(prev) !== JSON.stringify(r) ? r : prev));
+    const pg = StorageManager.getPengumuman();
+    setPengumumanList((prev) => (prev.length !== pg.length || JSON.stringify(prev) !== JSON.stringify(pg) ? pg : prev));
+    const pr = StorageManager.getPrayerRequests();
+    setPrayerRequests((prev) => (prev.length !== pr.length || JSON.stringify(prev) !== JSON.stringify(pr) ? pr : prev));
+    const al = StorageManager.getActivityLogs();
+    setActivityLogs((prev) => (prev.length !== al.length || JSON.stringify(prev) !== JSON.stringify(al) ? al : prev));
+    const n = StorageManager.getNotifications();
+    setNotificationsList((prev) => (prev.length !== n.length || JSON.stringify(prev) !== JSON.stringify(n) ? n : prev));
+    const fv = StorageManager.getFeaturedVideos();
+    setFeaturedVideos((prev) => (prev.length !== fv.length || JSON.stringify(prev) !== JSON.stringify(fv) ? fv : prev));
+    const g = StorageManager.getGallery();
+    setGalleryList((prev) => (prev.length !== g.length || JSON.stringify(prev) !== JSON.stringify(g) ? g : prev));
+  }, []);
 
   const handleSaveNotification = (e: React.FormEvent) => {
     e.preventDefault();
@@ -291,8 +301,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const latestPengumuman = pengumumanList.length > 0 ? pengumumanList[0] : null;
   const latestEvent = eventsList.length > 0 ? eventsList[0] : null;
 
-  // Parsed Video Social Link
-  const currentVideoUrl = activeVideoUrl || settings.video_url || (featuredVideos.find((v) => v.is_active)?.video_url || featuredVideos[0]?.video_url || '');
+  // Parsed Video Social Link (Priority: active selected video > featured video galeri > settings URL)
+  const activeFeaturedVideo = featuredVideos.find((v) => v.is_active) || featuredVideos[0];
+  const currentVideoUrl = activeVideoUrl || activeFeaturedVideo?.video_url || settings.video_url || '';
   const parsedVideo = parseSocialVideoUrl(currentVideoUrl);
 
   // Submit Jemaat Prayer Request

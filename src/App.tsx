@@ -261,7 +261,7 @@ export default function App() {
 
           {activeTab === 'laporan' && <LaporanView currentUser={currentUser} />}
 
-          {activeTab === 'jemaat_portal' && <JemaatPortalView currentUser={currentUser} />}
+          {activeTab === 'jemaat_portal' && <JemaatPortalView currentUser={currentUser} settings={settings} />}
 
           {activeTab === 'settings' && (
             <SystemSettingsView

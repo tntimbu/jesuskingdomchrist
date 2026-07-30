@@ -136,11 +136,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const filteredItems = navItems.filter((item) => item.roles.includes(currentUser.role));
 
   const content = (
-    <aside className="w-64 bg-white/5 backdrop-blur-xl border-r border-white/10 flex flex-col justify-between shrink-0 h-full text-slate-300">
+    <aside className="w-64 bg-white/5 backdrop-blur-xl border-r border-white/10 flex flex-col justify-between shrink-0 h-full text-slate-300 overflow-hidden">
       <div className="p-4 space-y-6 overflow-y-auto">
         {/* Navigation Category Header */}
         <div>
-          <p className="px-3 text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-3">
+          <p className="px-3 text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-3 truncate">
             Main Menu CMS Pro
           </p>
           <nav className="space-y-1">
@@ -160,11 +160,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       : 'hover:bg-white/5 text-slate-400 hover:text-slate-100 border border-transparent'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-indigo-400' : 'text-slate-400'}`} />
-                    <span className="truncate">{item.label}</span>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-indigo-400' : 'text-slate-400'}`} />
+                    <span className="truncate text-left">{item.label}</span>
                   </div>
-                  {isActive && <ChevronRight className="w-3.5 h-3.5 text-indigo-400" />}
+                  {isActive && <ChevronRight className="w-3.5 h-3.5 text-indigo-400 shrink-0 ml-1" />}
                 </button>
               );
             })}
@@ -173,12 +173,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Footer info in sidebar */}
-      <div className="p-4 border-t border-white/10 bg-white/5">
-        <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium">
-          <span>Status Database:</span>
-          <span className="inline-flex items-center gap-1.5 text-emerald-400 font-semibold">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            Google Sheets Sync
+      <div className="p-4 border-t border-white/10 bg-white/5 shrink-0">
+        <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium gap-1">
+          <span className="shrink-0">Status Database:</span>
+          <span className="inline-flex items-center gap-1.5 text-emerald-400 font-semibold truncate">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+            <span className="truncate">Google Sheets Sync</span>
           </span>
         </div>
       </div>
@@ -188,7 +188,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <>
       {/* Desktop Persistent Sidebar */}
-      <div className="hidden lg:block h-[calc(100vh-4rem)] sticky top-16 z-20">
+      <div className="hidden lg:block h-[calc(100vh-5rem)] sticky top-20 z-20">
         {content}
       </div>
 
