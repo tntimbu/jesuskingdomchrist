@@ -173,8 +173,8 @@ export const RenunganFullscreenModal: React.FC<RenunganFullscreenModalProps> = (
           {/* Main Content Text */}
           <div
             style={{ fontSize: `${fontSize}px` }}
-            className={`font-sans leading-relaxed sm:leading-loose whitespace-pre-line tracking-normal space-y-4 break-words ${
-              isLightMode ? 'text-slate-800' : 'text-slate-200'
+            className={`font-sans leading-relaxed sm:leading-loose whitespace-pre-line tracking-normal space-y-4 break-words text-justify [text-align-last:left] ${
+              isLightMode ? 'text-slate-900' : 'text-slate-100'
             }`}
           >
             {renungan.isi}

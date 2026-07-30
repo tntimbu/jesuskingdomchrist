@@ -1000,7 +1000,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       )}
                       <p
                         onClick={() => setSelectedRenunganForModal(latestRenungan)}
-                        className="text-xs text-slate-300 line-clamp-4 leading-relaxed cursor-pointer hover:text-slate-100"
+                        className="text-xs text-slate-300 line-clamp-4 leading-relaxed cursor-pointer hover:text-slate-100 text-justify [text-align-last:left]"
                       >
                         {latestRenungan.isi}
                       </p>
@@ -1196,11 +1196,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           {/* Featured Social Media Video Player Widget for Jemaat (At the Very Bottom) */}
           {settings.show_video_widget !== false && settings.video_enabled !== false && (
-            <div className={`rounded-3xl ${cardStyleClass} overflow-hidden text-white space-y-4 transition-all duration-300`}>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-2xl bg-red-500/20 border border-red-500/30 text-red-400 animate-pulse">
-                    <Tv className="w-5 h-5" />
+            <div className="rounded-3xl bg-slate-900/90 border border-slate-800 p-4 sm:p-5 overflow-hidden text-white space-y-3 transition-all duration-300 shadow-xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-white/10">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-red-500/20 border border-red-500/30 text-red-400 animate-pulse shrink-0">
+                    <Tv className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
@@ -1209,7 +1209,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       </span>
                       <span className="text-[11px] text-slate-400 capitalize">Media: {parsedVideo.type}</span>
                     </div>
-                    <h3 className="text-base sm:text-lg font-bold text-white mt-0.5">
+                    <h3 className="text-sm sm:text-base font-bold text-white mt-0.5">
                       {currentVideoDisplayTitle}
                     </h3>
                   </div>
@@ -1217,22 +1217,22 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                 <button
                   onClick={() => onNavigate('galeri')}
-                  className="px-3.5 py-2 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 border border-indigo-500/40 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
+                  className="px-3 py-1.5 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 border border-indigo-500/40 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
                 >
-                  <Video className="w-4 h-4 text-indigo-400" />
-                  <span>Lihat Galeri Foto & Video Lengkap</span>
-                  <ChevronRight className="w-4 h-4" />
+                  <Video className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>Galeri Video &amp; Foto</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </div>
 
               {settings.video_description && (
-                <p className="text-xs text-slate-300 italic bg-white/5 p-3 rounded-2xl border border-white/5">
+                <p className="text-xs text-slate-300 italic bg-white/5 py-1.5 px-3 rounded-xl border border-white/5">
                   "{settings.video_description}"
                 </p>
               )}
 
               {/* Embedded Video Display */}
-              <div className="relative w-full rounded-2xl overflow-hidden bg-black/80 border border-white/10 aspect-video shadow-2xl">
+              <div className="relative w-full max-w-5xl mx-auto rounded-2xl overflow-hidden bg-black/90 border border-white/10 aspect-video max-h-[380px] sm:max-h-[460px] shadow-2xl">
                 {parsedVideo.isValid ? (
                   parsedVideo.type === 'mp4' ? (
                     <video
@@ -1250,10 +1250,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     />
                   )
                 ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center text-slate-400">
-                    <ShieldAlert className="w-12 h-12 text-amber-400 mb-2" />
-                    <p className="text-sm font-bold text-slate-200">Video Belum Diatur atau Tautan Tidak Sesuai</p>
-                    <p className="text-xs mt-1 max-w-md">
+                  <div className="w-full h-full min-h-[160px] flex flex-col items-center justify-center p-4 text-center text-slate-400">
+                    <ShieldAlert className="w-10 h-10 text-amber-400 mb-1.5" />
+                    <p className="text-xs font-bold text-slate-200">Video Belum Diatur atau Tautan Tidak Sesuai</p>
+                    <p className="text-[11px] mt-0.5 max-w-md text-slate-400">
                       Video tayangan ibadah/khotbah belum dikonfigurasi oleh pengurus gereja.
                     </p>
                   </div>
@@ -1262,11 +1262,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
               {/* Gallery Video & Photo Stream Playlist Selector */}
               {allDashboardVideos.length > 0 && (
-                <div className="pt-3 border-t border-white/10 space-y-2">
+                <div className="pt-2.5 border-t border-white/10 space-y-2">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-slate-300 flex items-center gap-1.5">
-                      <Sparkles className="w-4 h-4 text-amber-400" />
-                      Pilih Tayangan Video & Media Terkait:
+                    <span className="font-bold text-slate-300 flex items-center gap-1.5 text-[11px]">
+                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                      Pilih Tayangan Video &amp; Media Terkait:
                     </span>
                     <button
                       onClick={() => onNavigate('galeri')}
@@ -1282,9 +1282,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         key={v.id}
                         type="button"
                         onClick={() => setActiveVideoUrl(v.video_url)}
-                        className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                        className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
                           currentVideoUrl === v.video_url
-                            ? 'bg-indigo-950/90 border-indigo-500 text-white shadow-lg ring-2 ring-indigo-500/30'
+                            ? 'bg-indigo-950/90 border-indigo-500 text-white shadow-lg ring-1 ring-indigo-500/30'
                             : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
                         }`}
                       >
@@ -1292,7 +1292,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           <Play className="w-3 h-3 fill-current" />
                           <span>{v.platform || 'Video'} &bull; {v.kategori || 'Ibadah'}</span>
                         </div>
-                        <p className="text-xs font-semibold mt-1 truncate">{v.judul}</p>
+                        <p className="text-[11px] font-semibold mt-0.5 truncate">{v.judul}</p>
                       </button>
                     ))}
                   </div>

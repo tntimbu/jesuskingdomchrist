@@ -307,9 +307,9 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
 
                 <div
                   onClick={() => setSelectedRenunganForModal(r)}
-                  className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 text-xs text-slate-200 leading-relaxed font-sans cursor-pointer hover:border-slate-700"
+                  className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 text-xs text-slate-200 leading-relaxed font-sans cursor-pointer hover:border-slate-700 text-justify [text-align-last:left] whitespace-pre-line"
                 >
-                  "{r.isi}"
+                  {r.isi}
                 </div>
 
                 {/* Pemutar Audio Renungan Dibaca oleh AI */}

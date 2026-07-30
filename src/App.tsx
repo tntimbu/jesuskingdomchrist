@@ -273,24 +273,24 @@ export default function App() {
           )}
 
           {activeTab === 'pengumuman' && (
-            <MediaView currentUser={currentUser} mode="PENGUMUMAN" />
+            <MediaView currentUser={effectiveUser} mode="PENGUMUMAN" />
           )}
 
           {activeTab === 'renungan' && (
-            <MediaView currentUser={currentUser} mode="RENUNGAN" />
+            <MediaView currentUser={effectiveUser} mode="RENUNGAN" />
           )}
 
           {activeTab === 'galeri' && (
-            <GaleriView currentUser={currentUser} initialTab="GALLERY" />
+            <GaleriView currentUser={effectiveUser} initialTab="GALLERY" />
           )}
 
           {activeTab === 'media' && (
-            <GaleriView currentUser={currentUser} initialTab="SOCIAL_VIDEOS" />
+            <GaleriView currentUser={effectiveUser} initialTab="SOCIAL_VIDEOS" />
           )}
 
-          {activeTab === 'laporan' && <LaporanView currentUser={currentUser} />}
+          {activeTab === 'laporan' && <LaporanView currentUser={effectiveUser} />}
 
-          {activeTab === 'jemaat_portal' && <JemaatPortalView currentUser={currentUser} settings={settings} />}
+          {activeTab === 'jemaat_portal' && <JemaatPortalView currentUser={effectiveUser} settings={settings} />}
 
           {activeTab === 'settings' && (
             <SystemSettingsView
