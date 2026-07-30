@@ -64,10 +64,12 @@ export const initialSettings: AppSettings = {
   theme_preset: 'DARK_SLATE',
   accent_color: 'INDIGO',
   card_style: 'GLASS',
+  card_size: 'NORMAL',
   // Custom Jemaat Portal Banner & Toggles
   jemaat_banner_title: 'Shalom & Selamat Datang',
   jemaat_banner_subtitle: 'Portal Layanan Jemaat Resmi & Sistem Informasi Terpadu',
   jemaat_banner_bg: 'GRADIENT_INDIGO',
+  jemaat_card_width: 'CONTAINED',
   jemaat_announcement_text: 'Ibadah Raya Minggu ini diadakan pukul 09:00 WIB. Mari hadir bertatap muka atau saksikan tayangan streaming online.',
   show_jemaat_announcement_banner: true,
   show_jemaat_offering_history: true,

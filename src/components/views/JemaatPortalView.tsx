@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { User, Jemaat, Persembahan, AppSettings } from '../../types';
+import { User, Jemaat, Persembahan, AppSettings, Renungan, EventSchedule, FeaturedVideo, GalleryItem, PrayerRequest } from '../../types';
 import { StorageManager } from '../../utils/storage';
 import { DEFAULT_CHURCH_LOGO } from '../../data/initialData';
 import { getThemeClasses } from '../../utils/themeHelper';
+import { parseSocialVideoUrl } from '../../utils/videoHelper';
 import {
   UserCheck,
   Edit3,
   Upload,
-  Link,
+  Link as LinkIcon,
   Save,
   X,
   Phone,
@@ -16,7 +17,14 @@ import {
   Check,
   DollarSign,
   Camera,
-  ShieldCheck
+  ShieldCheck,
+  Bell,
+  Tv,
+  BookOpen,
+  Calendar,
+  Send,
+  Sparkles,
+  Heart
 } from 'lucide-react';
 
 interface JemaatPortalViewProps {
@@ -36,9 +44,23 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
     );
   }, [currentUser]);
 
+  const [appSettings, setAppSettings] = useState<AppSettings>(() => settings || StorageManager.getSettings());
   const [jemaatData, setJemaatData] = useState<Jemaat | null>(initialJemaat);
   const [personalOfferings, setPersonalOfferings] = useState<Persembahan[]>(() => StorageManager.getPersembahan());
-  const theme = getThemeClasses(settings);
+  const [renunganList, setRenunganList] = useState<Renungan[]>(() => StorageManager.getRenungan());
+  const [eventsList, setEventsList] = useState<EventSchedule[]>(() => StorageManager.getEvents());
+  const [featuredVideos, setFeaturedVideos] = useState<FeaturedVideo[]>(() => StorageManager.getFeaturedVideos());
+  const [galleryList, setGalleryList] = useState<GalleryItem[]>(() => StorageManager.getGallery());
+
+  // Video State
+  const [activeVideoUrl, setActiveVideoUrl] = useState<string>('');
+
+  // Prayer Request Form State
+  const [prayerTopic, setPrayerTopic] = useState('Kesehatan & Pemulihan');
+  const [prayerContent, setPrayerContent] = useState('');
+  const [prayerSuccess, setPrayerSuccess] = useState('');
+
+  const theme = getThemeClasses(appSettings);
 
   // Edit Profile State
   const [isEditing, setIsEditing] = useState(false);
@@ -59,6 +81,9 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
   const [saveSuccess, setSaveSuccess] = useState('');
 
   const loadData = React.useCallback(() => {
+    const freshSettings = StorageManager.getSettings();
+    setAppSettings((prev) => (JSON.stringify(prev) !== JSON.stringify(freshSettings) ? freshSettings : prev));
+
     const activeUser = StorageManager.getCurrentUser() || currentUser;
     const allJemaat = StorageManager.getJemaat();
     const found =
@@ -79,8 +104,12 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
     }
 
     const allPersembahan = StorageManager.getPersembahan();
-    const sliced = allPersembahan.slice(0, 3);
-    setPersonalOfferings((prev) => (JSON.stringify(prev) !== JSON.stringify(sliced) ? sliced : prev));
+    setPersonalOfferings(allPersembahan.slice(0, 5));
+
+    setRenunganList(StorageManager.getRenungan());
+    setEventsList(StorageManager.getEvents());
+    setFeaturedVideos(StorageManager.getFeaturedVideos());
+    setGalleryList(StorageManager.getGallery());
   }, [currentUser]);
 
   useEffect(() => {
@@ -103,6 +132,76 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
     };
   }, [loadData]);
 
+  // Combined Videos for Jemaat Feed
+  const allJemaatVideos = React.useMemo(() => {
+    const combined: { id: string; judul: string; video_url: string; kategori: string }[] = [];
+    const addedUrls = new Set<string>();
+
+    featuredVideos.forEach((v) => {
+      const url = v.video_url ? v.video_url.trim() : '';
+      if (url && parseSocialVideoUrl(url).isValid && !addedUrls.has(url)) {
+        addedUrls.add(url);
+        combined.push({ id: v.video_id, judul: v.judul, video_url: url, kategori: v.kategori || 'Video Utama' });
+      }
+    });
+
+    galleryList.forEach((g) => {
+      const url = (g.video_url || (g.tipe === 'Video' ? g.foto : '')).trim();
+      if (url && parseSocialVideoUrl(url).isValid && !addedUrls.has(url)) {
+        addedUrls.add(url);
+        combined.push({ id: g.gallery_id, judul: g.judul, video_url: url, kategori: g.kategori || 'Galeri' });
+      }
+    });
+
+    if (appSettings.video_url && parseSocialVideoUrl(appSettings.video_url).isValid) {
+      const sUrl = appSettings.video_url.trim();
+      if (!addedUrls.has(sUrl)) {
+        addedUrls.add(sUrl);
+        combined.unshift({
+          id: 'SETTING-VID',
+          judul: appSettings.video_title || 'Tayangan Ibadah Terbaru',
+          video_url: sUrl,
+          kategori: 'Ibadah Utama'
+        });
+      }
+    }
+
+    return combined;
+  }, [featuredVideos, galleryList, appSettings.video_url, appSettings.video_title]);
+
+  const activeVideoItem = allJemaatVideos.find((v) => v.video_url === activeVideoUrl) || allJemaatVideos[0];
+  const currentVideoUrl = activeVideoUrl || activeVideoItem?.video_url || appSettings.video_url || '';
+  const parsedVideo = parseSocialVideoUrl(currentVideoUrl);
+
+  // Dynamic Layout Width
+  let widthClass = 'max-w-5xl mx-auto';
+  if (appSettings.jemaat_card_width === 'FULL') widthClass = 'w-full';
+  if (appSettings.jemaat_card_width === 'COMPACT') widthClass = 'max-w-3xl mx-auto';
+
+  // Dynamic Banner Background
+  let bannerBgClass = 'bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border-indigo-500/30';
+  switch (appSettings.jemaat_banner_bg) {
+    case 'GRADIENT_GOLD':
+      bannerBgClass = 'bg-gradient-to-r from-neutral-950 via-amber-950 to-neutral-900 border-amber-500/30';
+      break;
+    case 'GRADIENT_EMERALD':
+      bannerBgClass = 'bg-gradient-to-r from-stone-950 via-emerald-950 to-stone-900 border-emerald-500/30';
+      break;
+    case 'GRADIENT_PURPLE':
+      bannerBgClass = 'bg-gradient-to-r from-neutral-950 via-purple-950 to-neutral-900 border-purple-500/30';
+      break;
+    case 'OBSIDIAN_NIGHT':
+      bannerBgClass = 'bg-gradient-to-r from-black via-slate-950 to-black border-slate-800';
+      break;
+    case 'OCEAN_BLUE':
+      bannerBgClass = 'bg-gradient-to-r from-slate-950 via-blue-950 to-slate-900 border-blue-500/30';
+      break;
+    case 'GRADIENT_INDIGO':
+    default:
+      bannerBgClass = 'bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border-indigo-500/30';
+      break;
+  }
+
   const handleToggleEditing = (open?: boolean) => {
     const nextState = open !== undefined ? open : !isEditing;
     if (nextState) {
@@ -117,7 +216,6 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
     setIsEditing(nextState);
   };
 
-  // Handle Offline Image Upload via FileReader Base64
   const handleImageFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -135,7 +233,6 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
     }
   };
 
-  // Save Profile Changes
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editName.trim()) {
@@ -147,7 +244,6 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
     const allJemaat = StorageManager.getJemaat();
     const finalPhoto = editPhotoUrl.trim() || photoPreview || DEFAULT_CHURCH_LOGO;
 
-    // Find target jemaat record to update
     let updatedJemaatList = [...allJemaat];
     let targetIndex = updatedJemaatList.findIndex(
       (j) =>
@@ -191,7 +287,6 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
     StorageManager.saveJemaat(updatedJemaatList);
     setJemaatData(updatedRecord);
 
-    // Update currentUser and allUsers in StorageManager
     const updatedUser: User = {
       ...activeUser,
       nama: editName.trim(),
@@ -205,7 +300,6 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
     const updatedUsers = allUsers.map((u) => (u.user_id === activeUser.user_id ? updatedUser : u));
     StorageManager.saveUsers(updatedUsers);
 
-    // Notify application system of updates
     window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { action: 'profile_updated' } }));
 
     StorageManager.logActivity(
@@ -221,10 +315,51 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
     }, 1200);
   };
 
+  const handleSendPrayer = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!prayerContent.trim()) {
+      alert('Isi permohonan doa wajib diisi.');
+      return;
+    }
+
+    const currentPrayers = StorageManager.getPrayerRequests();
+    const newReq: PrayerRequest = {
+      prayer_id: `DOA-${Date.now().toString().slice(-4)}`,
+      jemaat_name: jemaatData?.nama_lengkap || currentUser.nama || 'Jemaat FC',
+      topik: prayerTopic,
+      permohonan: prayerContent.trim(),
+      tanggal: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }),
+      status: 'Diterima',
+      is_private: true
+    };
+
+    StorageManager.savePrayerRequests([newReq, ...currentPrayers]);
+    StorageManager.logActivity(currentUser.username, `Mengirimkan permohonan doa topic: ${prayerTopic}`, 'PrayerRequest');
+
+    setPrayerContent('');
+    setPrayerSuccess('Permohonan doa Anda telah terkirim ke Tim Doa Syafaat Gereja!');
+    setTimeout(() => setPrayerSuccess(''), 4000);
+  };
+
+  const latestRenungan = renunganList.length > 0 ? renunganList[0] : null;
+
   return (
-    <div className="space-y-6 pb-12 animate-fade-in">
-      {/* Profile Welcome Banner */}
-      <div className="rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border border-slate-800 p-6 sm:p-8 shadow-xl text-white relative overflow-hidden">
+    <div className={`space-y-6 pb-12 animate-fade-in ${widthClass}`}>
+      {/* 1. Ticker Running Pengumuman Banner */}
+      {appSettings.show_jemaat_announcement_banner !== false && appSettings.jemaat_announcement_text && (
+        <div className="p-3.5 sm:p-4 rounded-2xl bg-indigo-950/80 border border-indigo-500/40 text-white flex items-center gap-3 shadow-lg overflow-hidden">
+          <div className="px-3 py-1 rounded-xl bg-indigo-600 text-[10px] sm:text-xs font-extrabold uppercase tracking-wider shrink-0 flex items-center gap-1.5 shadow">
+            <Bell className="w-3.5 h-3.5 text-amber-300 animate-bounce" />
+            <span>Pengumuman</span>
+          </div>
+          <div className="overflow-hidden flex-1 text-xs sm:text-sm font-semibold text-indigo-100">
+            <p className="inline-block font-medium leading-relaxed">{appSettings.jemaat_announcement_text}</p>
+          </div>
+        </div>
+      )}
+
+      {/* 2. Welcome Banner */}
+      <div className={`rounded-3xl ${bannerBgClass} border p-6 sm:p-8 shadow-xl text-white relative overflow-hidden`}>
         <div className="absolute right-0 top-0 translate-x-8 -translate-y-8 w-48 h-48 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none" />
 
         <div className="flex flex-col sm:flex-row items-center justify-between gap-6 relative z-10">
@@ -250,14 +385,14 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
             <div className="space-y-1">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] sm:text-xs font-bold uppercase tracking-wider">
                 <ShieldCheck className="w-3.5 h-3.5" />
-                <span>Portal Anggota Jemaat Terverifikasi</span>
+                <span>{appSettings.jemaat_banner_title || 'Shalom & Selamat Datang'}</span>
               </span>
               <h2 className="text-xl sm:text-3xl font-extrabold text-white tracking-tight">
                 Shalom, {jemaatData?.nama_lengkap || currentUser.nama}
               </h2>
               <p className="text-xs sm:text-sm text-slate-300">
-                ID Jemaat: <strong className="text-indigo-300 font-mono">{jemaatData?.jemaat_id}</strong> • Wilayah:{' '}
-                <span className="text-indigo-300 font-semibold">{jemaatData?.wilayah || 'Sektor Utama'}</span>
+                {appSettings.jemaat_banner_subtitle || 'Portal Layanan Jemaat Resmi & Sistem Informasi Terpadu'} • ID:{' '}
+                <strong className="text-indigo-300 font-mono">{jemaatData?.jemaat_id}</strong>
               </p>
             </div>
           </div>
@@ -272,7 +407,7 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
         </div>
       </div>
 
-      {/* EDIT PROFILE FORM SECTION */}
+      {/* 3. EDIT PROFILE FORM SECTION */}
       {isEditing && (
         <div className="rounded-3xl bg-slate-900/95 border-2 border-indigo-500/50 p-6 shadow-2xl text-white space-y-6 animate-slide-down">
           <div className="flex items-center justify-between border-b border-slate-800 pb-4">
@@ -296,7 +431,7 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
           )}
 
           <form onSubmit={handleSaveProfile} className="space-y-6">
-            {/* PHOTO EDIT SECTION (OFFLINE vs ONLINE) */}
+            {/* PHOTO EDIT SECTION */}
             <div className="p-4 sm:p-5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-4">
               <label className="text-xs font-bold text-indigo-300 uppercase tracking-wider block">
                 Opsi Ganti Foto Profil:
@@ -325,7 +460,7 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
                       : 'bg-slate-800/80 text-slate-400 hover:text-white'
                   }`}
                 >
-                  <Link className="w-4 h-4" />
+                  <LinkIcon className="w-4 h-4" />
                   <span>Link URL Gambar (Online)</span>
                 </button>
               </div>
@@ -357,7 +492,6 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
                 </div>
               )}
 
-              {/* Live Preview */}
               {photoPreview && (
                 <div className="flex items-center gap-3 pt-2 border-t border-slate-800">
                   <span className="text-xs text-slate-400">Preview Foto Baru:</span>
@@ -437,86 +571,282 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
         </div>
       )}
 
-      {/* Member Profile Details Card */}
-      <div className={`rounded-3xl ${theme.cardClass} space-y-4`}>
-        <h3 className="text-base font-bold flex items-center justify-between border-b border-white/10 pb-3">
-          <div className="flex items-center gap-2">
-            <UserCheck className={`w-5 h-5 ${theme.accentText}`} />
-            <span>Informasi Keanggotaan & Data Jemaat</span>
-          </div>
-          <span className="text-xs text-slate-400 font-normal">Sektor: {jemaatData?.wilayah || 'Utama'}</span>
-        </h3>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-xs">
-          <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-1">
-            <span className="text-slate-400 block font-semibold">Identitas KTP / KK:</span>
-            <p className="font-mono text-slate-200 font-bold text-sm">{jemaatData?.nik || '-'}</p>
-            <p className="text-[11px] text-slate-400">No. KK: {jemaatData?.no_kk || '-'}</p>
-          </div>
-
-          <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-1">
-            <span className="text-slate-400 block font-semibold">Status Sacraments:</span>
-            <p className="text-emerald-400 font-bold">Baptis: {jemaatData?.status_baptis || 'Sudah'}</p>
-            <p className="text-blue-400 font-bold">Sidi: {jemaatData?.status_sidi || 'Sudah'}</p>
-          </div>
-
-          <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-1">
-            <span className="text-slate-400 block font-semibold">Komisi & Pelayanan:</span>
-            <p className={`${theme.accentText} font-bold text-sm`}>{jemaatData?.komisi || 'Jemaat Umum'}</p>
-            <p className="text-[11px] text-slate-400">Status Keanggotaan: {jemaatData?.status || 'Aktif'}</p>
-          </div>
-
-          <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-1">
-            <span className="text-slate-400 block font-semibold flex items-center gap-1">
-              <Phone className={`w-3.5 h-3.5 ${theme.accentText}`} />
-              <span>Kontak HP / WA:</span>
+      {/* 4. Feed Video Media Sosial (If Enabled by SuperAdmin) */}
+      {appSettings.show_jemaat_social_video !== false && parsedVideo.isValid && (
+        <div className={`rounded-3xl ${theme.cardClass} space-y-4`}>
+          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <Tv className="w-5 h-5 text-indigo-400" />
+              <span>Tayangan Video Ibadah & Khotbah Terbaru</span>
+            </h3>
+            <span className="text-[11px] text-indigo-300 font-bold bg-indigo-500/20 px-2.5 py-1 rounded-full border border-indigo-500/30">
+              {activeVideoItem?.judul || 'Streaming YouTube'}
             </span>
-            <p className="text-slate-200 font-bold text-xs">{jemaatData?.nomor_hp || currentUser.no_hp || '-'}</p>
           </div>
 
-          <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-1">
-            <span className="text-slate-400 block font-semibold flex items-center gap-1">
-              <Mail className={`w-3.5 h-3.5 ${theme.accentText}`} />
-              <span>Email:</span>
-            </span>
-            <p className="text-slate-200 font-bold text-xs truncate">{jemaatData?.email || currentUser.email || '-'}</p>
+          <div className="relative aspect-video rounded-2xl overflow-hidden bg-black border border-white/10 shadow-2xl">
+            <iframe
+              src={parsedVideo.embedUrl}
+              title={activeVideoItem?.judul || 'Video Stream'}
+              className="w-full h-full border-0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
           </div>
 
-          <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-1">
-            <span className="text-slate-400 block font-semibold flex items-center gap-1">
-              <MapPin className={`w-3.5 h-3.5 ${theme.accentText}`} />
-              <span>Alamat Domisili:</span>
-            </span>
-            <p className="text-slate-200 font-bold text-xs">{jemaatData?.alamat || '-'}</p>
+          {allJemaatVideos.length > 1 && (
+            <div className="pt-2 border-t border-white/10">
+              <span className="text-xs font-bold text-slate-300 block mb-2">Daftar Video Lainnya:</span>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {allJemaatVideos.map((v) => (
+                  <button
+                    key={v.id}
+                    type="button"
+                    onClick={() => setActiveVideoUrl(v.video_url)}
+                    className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                      currentVideoUrl === v.video_url
+                        ? 'bg-indigo-600/30 border-indigo-500 text-white font-bold'
+                        : 'bg-white/5 border-white/10 text-slate-400 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    <div className="text-xs truncate">{v.judul}</div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">{v.kategori}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 5. Member Profile Details & Status Sakramen Card */}
+      {appSettings.show_jemaat_sacraments_card !== false && (
+        <div className={`rounded-3xl ${theme.cardClass} space-y-4`}>
+          <h3 className="text-base font-bold flex items-center justify-between border-b border-white/10 pb-3">
+            <div className="flex items-center gap-2">
+              <UserCheck className={`w-5 h-5 ${theme.accentText}`} />
+              <span>Informasi Keanggotaan & Status Sakramen</span>
+            </div>
+            <span className="text-xs text-slate-400 font-normal">Sektor: {jemaatData?.wilayah || 'Utama'}</span>
+          </h3>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-xs">
+            <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-1">
+              <span className="text-slate-400 block font-semibold">Identitas KTP / KK:</span>
+              <p className="font-mono text-slate-200 font-bold text-sm">{jemaatData?.nik || '-'}</p>
+              <p className="text-[11px] text-slate-400">No. KK: {jemaatData?.no_kk || '-'}</p>
+            </div>
+
+            <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-1">
+              <span className="text-slate-400 block font-semibold">Status Sakramen Gereja:</span>
+              <p className="text-emerald-400 font-bold">Baptis Kudus: {jemaatData?.status_baptis || 'Sudah'}</p>
+              <p className="text-blue-400 font-bold">Sidi Gereja: {jemaatData?.status_sidi || 'Sudah'}</p>
+            </div>
+
+            <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-1">
+              <span className="text-slate-400 block font-semibold">Komisi & Pelayanan:</span>
+              <p className={`${theme.accentText} font-bold text-sm`}>{jemaatData?.komisi || 'Jemaat Umum'}</p>
+              <p className="text-[11px] text-slate-400">Status Keanggotaan: {jemaatData?.status || 'Aktif'}</p>
+            </div>
+
+            <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-1">
+              <span className="text-slate-400 block font-semibold flex items-center gap-1">
+                <Phone className={`w-3.5 h-3.5 ${theme.accentText}`} />
+                <span>Kontak HP / WA:</span>
+              </span>
+              <p className="text-slate-200 font-bold text-xs">{jemaatData?.nomor_hp || currentUser.no_hp || '-'}</p>
+            </div>
+
+            <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-1">
+              <span className="text-slate-400 block font-semibold flex items-center gap-1">
+                <Mail className={`w-3.5 h-3.5 ${theme.accentText}`} />
+                <span>Email:</span>
+              </span>
+              <p className="text-slate-200 font-bold text-xs truncate">{jemaatData?.email || currentUser.email || '-'}</p>
+            </div>
+
+            <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-1">
+              <span className="text-slate-400 block font-semibold flex items-center gap-1">
+                <MapPin className={`w-3.5 h-3.5 ${theme.accentText}`} />
+                <span>Alamat Domisili:</span>
+              </span>
+              <p className="text-slate-200 font-bold text-xs">{jemaatData?.alamat || '-'}</p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Riwayat Catatan Persembahan Personal */}
-      <div className={`rounded-3xl ${theme.cardClass} space-y-4`}>
-        <h3 className="text-base font-bold flex items-center gap-2 border-b border-white/10 pb-3">
-          <DollarSign className="w-5 h-5 text-emerald-400" />
-          <span>Catatan Histori Persembahan Personal</span>
-        </h3>
+      {/* 6. Renungan Harian Widget (If Enabled) */}
+      {appSettings.show_jemaat_daily_renungan !== false && latestRenungan && (
+        <div className={`rounded-3xl ${theme.cardClass} space-y-4`}>
+          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-amber-400" />
+              <span>Renungan Harian Terbaru</span>
+            </h3>
+            <span className="text-xs text-amber-300 font-semibold">{latestRenungan.tanggal}</span>
+          </div>
 
-        {personalOfferings.length === 0 ? (
-          <p className="text-xs text-slate-400 py-3">Belum ada data persembahan tercatat.</p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {personalOfferings.map((po) => (
-              <div key={po.persembahan_id} className="p-4 rounded-2xl bg-white/5 border border-white/10 text-xs space-y-1">
-                <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
-                  {po.kategori || 'Gereja'}
-                </span>
-                <p className="font-extrabold text-white text-base mt-1">
-                  Rp {po.jumlah.toLocaleString('id-ID')}
+          <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-white space-y-3">
+            <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold inline-block border border-amber-500/30">
+              📖 {latestRenungan.ayat || latestRenungan.ayat_alkitab || 'Ayat Alkitab Hari Ini'}
+            </span>
+            <h4 className="text-lg font-extrabold text-amber-200">{latestRenungan.judul}</h4>
+            <p className="text-xs sm:text-sm text-slate-200 leading-relaxed whitespace-pre-line line-clamp-4">
+              {latestRenungan.isi}
+            </p>
+            {latestRenungan.penulis && (
+              <p className="text-[11px] text-amber-400 font-semibold pt-2 border-t border-amber-500/20">
+                Oleh: {latestRenungan.penulis}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 7. Event & Jadwal Ibadah Widget (If Enabled) */}
+      {appSettings.show_jemaat_event_jadwal !== false && eventsList.length > 0 && (
+        <div className={`rounded-3xl ${theme.cardClass} space-y-4`}>
+          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-emerald-400" />
+              <span>Jadwal Ibadah & Agenda Gereja Mendatang</span>
+            </h3>
+            <span className="text-xs text-slate-400">{eventsList.length} Agenda</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {eventsList.slice(0, 4).map((evt) => (
+              <div key={evt.event_id} className="p-4 rounded-2xl bg-white/5 border border-white/10 text-xs space-y-1.5 hover:border-indigo-500/50 transition-all">
+                <div className="flex items-center justify-between text-indigo-300 font-bold">
+                  <span>{evt.kategori || 'Ibadah Raya'}</span>
+                  <span className="text-[10px] bg-indigo-500/20 px-2 py-0.5 rounded-full border border-indigo-500/30">
+                    {evt.jam} WIB
+                  </span>
+                </div>
+                <h5 className="font-extrabold text-white text-sm">{evt.nama}</h5>
+                <p className="text-slate-300 flex items-center gap-1 text-[11px]">
+                  <Calendar className="w-3 h-3 text-emerald-400" />
+                  <span>{evt.tanggal}</span>
+                  {evt.lokasi && (
+                    <>
+                      • <MapPin className="w-3 h-3 text-rose-400" />
+                      <span>{evt.lokasi}</span>
+                    </>
+                  )}
                 </p>
-                <p className="text-slate-400">{po.tanggal} • {po.metode_pembayaran || 'Tunai'}</p>
+                {evt.pembicara && (
+                  <p className="text-slate-400 text-[10px] italic pt-1 border-t border-white/5">
+                    Pembicara: {evt.pembicara}
+                  </p>
+                )}
               </div>
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* 8. Form Kirim Permohonan Doa Jemaat (If Enabled) */}
+      {appSettings.show_jemaat_quick_doa !== false && (
+        <div className={`rounded-3xl ${theme.cardClass} space-y-4`}>
+          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <Heart className="w-5 h-5 text-rose-400" />
+              <span>Kirim Permohonan Doa Syafaat Jemaat</span>
+            </h3>
+            <span className="text-xs text-slate-400">Kerahasiaan Terjamin</span>
+          </div>
+
+          {prayerSuccess && (
+            <div className="p-3.5 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-2">
+              <Check className="w-4 h-4" />
+              <span>{prayerSuccess}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSendPrayer} className="space-y-3 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-slate-300 mb-1 font-semibold">Kategori Doa:</label>
+                <select
+                  value={prayerTopic}
+                  onChange={(e) => setPrayerTopic(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950/80 border border-slate-700 text-white font-semibold focus:outline-none focus:border-indigo-500"
+                >
+                  <option value="Kesehatan & Pemulihan">Kesehatan & Pemulihan Sakit</option>
+                  <option value="Keluarga & Pernikahan">Keharmonisan Keluarga & Rumah Tangga</option>
+                  <option value="Pekerjaan & Usaha">Pekerjaan, Karir & Usaha Bisnis</option>
+                  <option value="Masa Depan & Studi">Studi & Masa Depan Anak</option>
+                  <option value="Kekuatan Iman & Ucapan Syukur">Kekuatan Kerohanian & Ucapan Syukur</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-slate-300 mb-1 font-semibold">Nama Pemohon (Otomatis):</label>
+                <input
+                  type="text"
+                  readOnly
+                  value={jemaatData?.nama_lengkap || currentUser.nama}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950/50 border border-slate-800 text-slate-400 font-semibold"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-slate-300 mb-1 font-semibold">Isi Pokok Permohonan Doa:</label>
+              <textarea
+                rows={3}
+                required
+                value={prayerContent}
+                onChange={(e) => setPrayerContent(e.target.value)}
+                placeholder="Tuliskan isi pokok doa Anda secara khusus..."
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950/80 border border-slate-700 text-white text-xs focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button
+                type="submit"
+                className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-2 shadow-lg shadow-rose-600/30 transition-all cursor-pointer"
+              >
+                <Send className="w-4 h-4" />
+                <span>Kirimkan Pokok Doa ke Tim Doa Syafaat</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* 9. Riwayat Catatan Persembahan Personal (If Enabled) */}
+      {appSettings.show_jemaat_offering_history !== false && (
+        <div className={`rounded-3xl ${theme.cardClass} space-y-4`}>
+          <h3 className="text-base font-bold flex items-center justify-between border-b border-white/10 pb-3">
+            <div className="flex items-center gap-2">
+              <DollarSign className="w-5 h-5 text-emerald-400" />
+              <span>Catatan Histori Persembahan Personal</span>
+            </div>
+            <span className="text-xs text-slate-400 font-normal">Tercatat: {personalOfferings.length} Data</span>
+          </h3>
+
+          {personalOfferings.length === 0 ? (
+            <p className="text-xs text-slate-400 py-3">Belum ada data persembahan personal tercatat.</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {personalOfferings.map((po) => (
+                <div key={po.persembahan_id} className="p-4 rounded-2xl bg-white/5 border border-white/10 text-xs space-y-1">
+                  <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
+                    {po.kategori || 'Gereja'}
+                  </span>
+                  <p className="font-extrabold text-white text-base mt-1">
+                    Rp {po.jumlah.toLocaleString('id-ID')}
+                  </p>
+                  <p className="text-slate-400">{po.tanggal} • {po.metode_pembayaran || 'Tunai'}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

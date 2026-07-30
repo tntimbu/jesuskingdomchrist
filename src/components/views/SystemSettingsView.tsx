@@ -168,9 +168,12 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
   const handleSaveMeta = (e: React.FormEvent) => {
     e.preventDefault();
     onUpdateSettings(metaForm);
-    StorageManager.logActivity(currentUser.username, 'Memperbarui konfigurasi metadata sistem & API', 'System Settings');
+    StorageManager.saveSettings(metaForm);
+    window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { action: 'settings_updated' } }));
+    StorageManager.logActivity(currentUser.username, 'Memperbarui kustomisasi tampilan portal jemaat & dashboard', 'System Settings');
     setSavedSuccess(true);
-    setTimeout(() => setSavedSuccess(false), 2000);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(() => setSavedSuccess(false), 4000);
   };
 
   const handleCopyGASCode = () => {
@@ -924,6 +927,56 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                     placeholder="Contoh: Ibadah Raya Minggu ini pukul 09:00 WIB..."
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-slate-400 mb-2 font-semibold">Pengaturan Lebar Kartu Dashboard Jemaat</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { id: 'CONTAINED', label: '🛡️ Standard (Max 5XL)', desc: 'Rekomendasi Desktop & Tablet' },
+                      { id: 'FULL', label: '🖥️ Full Width (100%)', desc: 'Memenuhi Seluruh Layar' },
+                      { id: 'COMPACT', label: '📱 Compact Mobile', desc: 'Rapat Rapi Fokus Hape' }
+                    ].map((cw) => (
+                      <button
+                        type="button"
+                        key={cw.id}
+                        onClick={() => setMetaForm({ ...metaForm, jemaat_card_width: cw.id as any })}
+                        className={`p-2.5 rounded-xl bg-slate-950 border text-left transition-all ${
+                          (metaForm.jemaat_card_width || 'CONTAINED') === cw.id
+                            ? 'border-indigo-500 ring-2 ring-indigo-500/50 text-white'
+                            : 'border-slate-800 text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        <div className="font-bold text-[11px]">{cw.label}</div>
+                        <div className="text-[9px] text-slate-500 mt-0.5">{cw.desc}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-slate-400 mb-2 font-semibold">Ukuran Kepadatan Padding Kartu (Density)</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { id: 'COMPACT', label: '⚡ Ringkas', desc: 'Padding Kecil (Hape)' },
+                      { id: 'NORMAL', label: '⚖️ Normal', desc: 'Padding Standar' },
+                      { id: 'SPACIOUS', label: '✨ Lega', desc: 'Padding Luas & Mewah' }
+                    ].map((cs) => (
+                      <button
+                        type="button"
+                        key={cs.id}
+                        onClick={() => setMetaForm({ ...metaForm, card_size: cs.id as any })}
+                        className={`p-2.5 rounded-xl bg-slate-950 border text-left transition-all ${
+                          (metaForm.card_size || 'NORMAL') === cs.id
+                            ? 'border-indigo-500 ring-2 ring-indigo-500/50 text-white'
+                            : 'border-slate-800 text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        <div className="font-bold text-[11px]">{cs.label}</div>
+                        <div className="text-[9px] text-slate-500 mt-0.5">{cs.desc}</div>
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <div>
