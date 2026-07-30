@@ -35,3 +35,41 @@ self.addEventListener('fetch', (event) => {
       .catch(() => caches.match(event.request))
   );
 });
+
+// Push event for background status bar notification with sound/vibration
+self.addEventListener('push', (event) => {
+  let data = {};
+  if (event.data) {
+    try {
+      data = event.data.json();
+    } catch (e) {
+      data = { body: event.data.text() };
+    }
+  }
+
+  const title = data.title || 'Notifikasi GKFC CMS Pro';
+  const options = {
+    body: data.body || 'Ada pesan atau pengumuman gereja terbaru.',
+    icon: 'https://images.unsplash.com/photo-1548625361-185966347898?w=192&auto=format&fit=crop&q=80',
+    badge: 'https://images.unsplash.com/photo-1548625361-185966347898?w=192&auto=format&fit=crop&q=80',
+    vibrate: [200, 100, 200, 100, 200, 100, 400],
+    tag: 'gkfc-general-notif',
+    renotify: true,
+    requireInteraction: true,
+    data: { url: '/' }
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if ('focus' in client) return client.focus();
+      }
+      if (clients.openWindow) return clients.openWindow('/');
+    })
+  );
+});

@@ -3,6 +3,11 @@ import { User, AppSettings, NotificationItem } from '../types';
 import { StorageManager } from '../utils/storage';
 import { DEFAULT_CHURCH_LOGO } from '../data/initialData';
 import {
+  triggerStatusBarNotification,
+  requestAndSaveFCMToken,
+  playNotificationChimeSound
+} from '../utils/firebaseMessaging';
+import {
   Bell,
   Clock,
   Calendar,
@@ -17,7 +22,8 @@ import {
   EyeOff,
   Wand2,
   AlertCircle,
-  Check
+  Check,
+  Volume2
 } from 'lucide-react';
 
 interface NavbarHeaderProps {
@@ -305,6 +311,44 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
                     <span>Tandai Semua</span>
                   </button>
                 )}
+              </div>
+
+              {/* Push Notification HP Controls */}
+              <div className="p-2.5 rounded-xl bg-indigo-950/60 border border-indigo-500/30 space-y-2 text-[11px]">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-indigo-200 flex items-center gap-1.5">
+                    <Smartphone className="w-3.5 h-3.5 text-indigo-400" />
+                    Notifikasi Status Bar HP & Suara
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playNotificationChimeSound();
+                      triggerStatusBarNotification(
+                        '🔔 Notifikasi GKFC CMS Pro',
+                        'Suara lonceng & notifikasi di status bar HP aktif! Notifikasi tetap muncul saat aplikasi ditutup.'
+                      );
+                    }}
+                    className="px-2 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[10px] flex items-center gap-1 cursor-pointer"
+                  >
+                    <Volume2 className="w-3 h-3" />
+                    Tes Suara
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const token = await requestAndSaveFCMToken();
+                    if (token) {
+                      alert('✅ Notifikasi Push HP (FCM) BERHASIL DIAKTIFKAN!\nToken Perangkat HP Anda telah terdaftar. Notifikasi akan muncul di atas bar HP dengan suara lonceng & getar.');
+                    } else {
+                      triggerStatusBarNotification('GKFC Church Notification', 'Izin Notifikasi HP Aktif! Suara lonceng dan getar siap digunakan.');
+                    }
+                  }}
+                  className="w-full py-1.5 rounded-lg bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/40 font-bold text-[10px] text-center transition-all cursor-pointer"
+                >
+                  ⚡ Aktifkan / Izinkan Notifikasi Bar HP (FCM)
+                </button>
               </div>
 
               <div className="max-h-72 overflow-y-auto space-y-2 pr-1">

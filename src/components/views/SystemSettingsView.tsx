@@ -3,6 +3,11 @@ import { User, AppSettings, ActivityLog, LoginHistory } from '../../types';
 import { StorageManager } from '../../utils/storage';
 import { generateGASScriptCode } from '../../utils/googleSheetsGAS';
 import { testFirestoreConnection, getActiveFirebaseConfig, reconnectRealtimeCloudSync } from '../../utils/firebaseSync';
+import {
+  triggerStatusBarNotification,
+  requestAndSaveFCMToken,
+  playNotificationChimeSound
+} from '../../utils/firebaseMessaging';
 import { DEFAULT_CHURCH_LOGO } from '../../data/initialData';
 import {
   Settings,
@@ -1259,6 +1264,52 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                   }
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-[11px]"
                 />
+              </div>
+            </div>
+
+            {/* FCM Push Notification Setup & Tester Card */}
+            <div className="p-4 rounded-2xl bg-indigo-950/40 border border-indigo-500/30 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-xs font-extrabold text-indigo-200 flex items-center gap-1.5">
+                    <span>🔔 Firebase Cloud Messaging (FCM) & Notifikasi Status Bar HP</span>
+                  </h4>
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    Notifikasi push dikirim melalui Service Worker bawaan sehingga tetap muncul di status bar atas HP dengan suara lonceng & getar meskipun aplikasi sedang ditutup.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    playNotificationChimeSound();
+                    triggerStatusBarNotification(
+                      '🔔 Pengumuman Ibadah GKFC',
+                      'Ibadah Raya Minggu akan dimulai pukul 09.00 WIB. Selamat beribadah!',
+                      '/'
+                    );
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md shadow-indigo-600/30 flex items-center gap-1.5 cursor-pointer"
+                >
+                  ⚡ Tes Send Notifikasi Status Bar HP (Suara & Getar)
+                </button>
+
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const token = await requestAndSaveFCMToken();
+                    if (token) {
+                      alert(`✅ FCM TOKEN BERHASIL DIPEROLEH & DISIMPAN:\n\n${token}\n\nToken ini telah disimpan di Cloud Firestore untuk pengiriman notifikasi push HP.`);
+                    } else {
+                      alert('Notifikasi aktif di browser/HP Anda.');
+                    }
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/40 font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+                >
+                  📱 Registrasi FCM Token Perangkat Ini
+                </button>
               </div>
             </div>
 
