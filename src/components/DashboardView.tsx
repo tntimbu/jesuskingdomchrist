@@ -539,10 +539,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     ]
   };
 
-  let widthClass = 'max-w-7xl mx-auto px-2 sm:px-4';
-  if (settings.jemaat_card_width === 'FULL') widthClass = 'w-full px-1 sm:px-4';
-  if (settings.jemaat_card_width === 'COMPACT' || settings.jemaat_card_width === 'MOBILE_COMPACT') widthClass = 'max-w-3xl mx-auto px-1 sm:px-3';
-  if (settings.jemaat_card_width === 'CONTAINED') widthClass = 'max-w-5xl mx-auto px-2 sm:px-4';
+  let widthClass = 'w-full px-0 sm:px-1';
+  if (settings.jemaat_card_width === 'FULL') widthClass = 'w-full px-0 sm:px-1';
+  if (settings.jemaat_card_width === 'COMPACT' || settings.jemaat_card_width === 'MOBILE_COMPACT') widthClass = 'max-w-4xl mx-auto px-1 sm:px-3';
+  if (settings.jemaat_card_width === 'CONTAINED') widthClass = 'max-w-7xl mx-auto px-1 sm:px-3';
 
   let bannerBgClass = 'bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 border-indigo-500/50 shadow-xl shadow-indigo-900/20';
   switch (settings.jemaat_banner_bg) {

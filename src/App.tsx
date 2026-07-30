@@ -230,7 +230,7 @@ export default function App() {
       />
 
       {/* Content Layout */}
-      <div className="flex flex-1 w-full max-w-[1600px] mx-auto px-2 sm:px-4">
+      <div className="flex flex-1 w-full mx-auto px-1 sm:px-3">
         {/* Sidebar */}
         <Sidebar
           currentUser={effectiveUser}
@@ -241,7 +241,7 @@ export default function App() {
         />
 
         {/* Main Content Area */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 min-w-0 pb-20 lg:pb-8">
+        <main className="flex-1 p-2 sm:p-4 lg:p-5 min-w-0 pb-20 lg:pb-8">
           {activeTab === 'dashboard' && (
             <DashboardView
               currentUser={effectiveUser}
