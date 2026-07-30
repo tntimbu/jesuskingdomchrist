@@ -66,6 +66,16 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
   const [testingFirebase, setTestingFirebase] = useState(false);
   const [firebaseStatusMsg, setFirebaseStatusMsg] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
 
+  // FCM Payload Code Generator Modal State
+  const [showFcmModal, setShowFcmModal] = useState(false);
+  const [fcmTitle, setFcmTitle] = useState('🔔 Notifikasi Penting Gereja');
+  const [fcmBody, setFcmBody] = useState('Shalom jemaat, Ibadah Raya Minggu akan dimulai pukul 09.00 WIB.');
+  const [fcmChannelId, setFcmChannelId] = useState('high_importance_channel');
+  const [fcmSound, setFcmSound] = useState('default');
+  const [fcmTargetToken, setFcmTargetToken] = useState('PASTE_TARGET_FCM_DEVICE_TOKEN_HERE');
+  const [activeFcmTab, setActiveFcmTab] = useState<'JSON' | 'NODE' | 'CURL' | 'ANDROID'>('JSON');
+  const [copiedFcmCode, setCopiedFcmCode] = useState(false);
+
   const handleTestFirebaseConnection = async () => {
     setTestingFirebase(true);
     setFirebaseStatusMsg({ type: 'info', text: 'Sedang menguji koneksi ke Firebase Cloud Firestore...' });
@@ -1310,6 +1320,15 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                 >
                   📱 Registrasi FCM Token Perangkat Ini
                 </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowFcmModal(true)}
+                  className="px-3.5 py-2 rounded-xl bg-purple-600/40 hover:bg-purple-600/60 text-purple-200 border border-purple-500/40 font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Code className="w-3.5 h-3.5" />
+                  <span>🛠️ Generator Code Payload FCM (Status Bar & Bunyi)</span>
+                </button>
               </div>
             </div>
 
@@ -1955,6 +1974,315 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Modal Generator Code Payload FCM */}
+      {showFcmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-3xl my-8 rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div>
+                <h3 className="text-base font-bold text-indigo-300 flex items-center gap-2">
+                  <Code className="w-5 h-5 text-purple-400" />
+                  <span>Generator Code Payload FCM (Heads-Up & Sound Status Bar HP)</span>
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Format JSON, Node.js Admin SDK, cURL, dan Android Channel Setup agar notifikasi muncul diatas layar dan berbunyi meskipun aplikasi ditutup.
+                </p>
+              </div>
+              <button onClick={() => setShowFcmModal(false)} className="text-slate-400 hover:text-white font-bold text-lg px-2">
+                ✕
+              </button>
+            </div>
+
+            {/* Config Input Form */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs p-4 bg-slate-950 rounded-2xl border border-slate-800">
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">Judul Notifikasi (Title)</label>
+                <input
+                  type="text"
+                  value={fcmTitle}
+                  onChange={(e) => setFcmTitle(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-bold"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">Channel ID Android (Penting!)</label>
+                <input
+                  type="text"
+                  value={fcmChannelId}
+                  onChange={(e) => setFcmChannelId(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono"
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="block text-slate-400 mb-1 font-semibold">Isi Pesan Notifikasi (Body)</label>
+                <input
+                  type="text"
+                  value={fcmBody}
+                  onChange={(e) => setFcmBody(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">Nama File Suara (Sound)</label>
+                <input
+                  type="text"
+                  value={fcmSound}
+                  onChange={(e) => setFcmSound(e.target.value)}
+                  placeholder="default"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">FCM Device Token Tujuan</label>
+                <input
+                  type="text"
+                  value={fcmTargetToken}
+                  onChange={(e) => setFcmTargetToken(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-[11px]"
+                />
+              </div>
+            </div>
+
+            {/* Code Tabs */}
+            <div className="flex items-center gap-2 border-b border-slate-800 pb-2">
+              {[
+                { id: 'JSON', label: '📄 FCM HTTP v1 JSON' },
+                { id: 'NODE', label: '🟢 Node.js Admin SDK' },
+                { id: 'CURL', label: '💻 cURL Command' },
+                { id: 'ANDROID', label: '🤖 Android Kotlin Channel' }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveFcmTab(tab.id as any)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    activeFcmTab === tab.id
+                      ? 'bg-purple-600 text-white shadow'
+                      : 'bg-slate-800 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Code Output Viewer */}
+            <div className="relative rounded-2xl bg-slate-950 border border-slate-800 p-4 font-mono text-xs text-indigo-200 overflow-x-auto max-h-80">
+              <button
+                onClick={() => {
+                  let textToCopy = '';
+                  if (activeFcmTab === 'JSON') {
+                    textToCopy = JSON.stringify(
+                      {
+                        message: {
+                          token: fcmTargetToken,
+                          notification: { title: fcmTitle, body: fcmBody },
+                          android: {
+                            priority: 'HIGH',
+                            notification: {
+                              channel_id: fcmChannelId,
+                              sound: fcmSound,
+                              default_sound: true,
+                              default_vibrate_timings: true,
+                              notification_priority: 'PRIORITY_MAX',
+                              visibility: 'PUBLIC'
+                            }
+                          },
+                          apns: {
+                            headers: { 'apns-priority': '10' },
+                            payload: { aps: { sound: fcmSound, badge: 1 } }
+                          }
+                        }
+                      },
+                      null,
+                      2
+                    );
+                  } else if (activeFcmTab === 'NODE') {
+                    textToCopy = `const admin = require('firebase-admin');\n\nasync function sendPushNotification(token) {\n  await admin.messaging().send({\n    token: token,\n    notification: {\n      title: '${fcmTitle}',\n      body: '${fcmBody}'\n    },\n    android: {\n      priority: 'high',\n      notification: {\n        channelId: '${fcmChannelId}',\n        sound: '${fcmSound}',\n        priority: 'max'\n      }\n    }\n  });\n}`;
+                  } else if (activeFcmTab === 'CURL') {
+                    textToCopy = `curl -X POST https://fcm.googleapis.com/v1/projects/YOUR_PROJECT_ID/messages:send \\\n  -H "Authorization: Bearer YOUR_OAUTH_TOKEN" \\\n  -H "Content-Type: application/json" \\\n  -d '{"message":{"token":"${fcmTargetToken}","notification":{"title":"${fcmTitle}","body":"${fcmBody}"},"android":{"priority":"HIGH","notification":{"channel_id":"${fcmChannelId}","sound":"${fcmSound}"}}}}'`;
+                  } else {
+                    textToCopy = `if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {\n    val channel = NotificationChannel(\n        "${fcmChannelId}",\n        "Pemberitahuan Utama",\n        NotificationManager.IMPORTANCE_HIGH\n    ).apply {\n        description = "Channel notifikasi status bar dan bunyi"\n        enableVibration(true)\n    }\n    val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager\n    notificationManager.createNotificationChannel(channel)\n}`;
+                  }
+
+                  navigator.clipboard.writeText(textToCopy);
+                  setCopiedFcmCode(true);
+                  setTimeout(() => setCopiedFcmCode(false), 2000);
+                }}
+                className="absolute top-3 right-3 px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-[11px] font-sans font-bold flex items-center gap-1.5 shadow"
+              >
+                {copiedFcmCode ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copiedFcmCode ? 'Tersalin!' : 'Salin Kode'}</span>
+              </button>
+
+              <pre className="whitespace-pre-wrap leading-relaxed">
+                {activeFcmTab === 'JSON' &&
+                  JSON.stringify(
+                    {
+                      message: {
+                        token: fcmTargetToken,
+                        notification: {
+                          title: fcmTitle,
+                          body: fcmBody
+                        },
+                        data: {
+                          click_action: 'FLUTTER_NOTIFICATION_CLICK',
+                          url: '/'
+                        },
+                        android: {
+                          priority: 'HIGH',
+                          notification: {
+                            channel_id: fcmChannelId,
+                            sound: fcmSound,
+                            default_sound: true,
+                            default_vibrate_timings: true,
+                            notification_priority: 'PRIORITY_MAX',
+                            visibility: 'PUBLIC',
+                            icon: 'ic_notification'
+                          }
+                        },
+                        apns: {
+                          headers: {
+                            'apns-priority': '10'
+                          },
+                          payload: {
+                            aps: {
+                              alert: {
+                                title: fcmTitle,
+                                body: fcmBody
+                              },
+                              sound: fcmSound,
+                              badge: 1,
+                              'content-available': 1
+                            }
+                          }
+                        },
+                        webpush: {
+                          headers: {
+                            Urgency: 'high'
+                          },
+                          notification: {
+                            title: fcmTitle,
+                            body: fcmBody,
+                            requireInteraction: true,
+                            vibrate: [200, 100, 200]
+                          }
+                        }
+                      }
+                    },
+                    null,
+                    2
+                  )}
+
+                {activeFcmTab === 'NODE' &&
+                  `// Node.js Backend Code (Firebase Admin SDK)
+const admin = require('firebase-admin');
+
+async function sendHeadsUpNotification(targetToken) {
+  const message = {
+    token: targetToken,
+    notification: {
+      title: '${fcmTitle}',
+      body: '${fcmBody}'
+    },
+    android: {
+      priority: 'high',
+      notification: {
+        channelId: '${fcmChannelId}',
+        sound: '${fcmSound}',
+        defaultSound: true,
+        defaultVibrateTimings: true,
+        priority: 'max',
+        visibility: 'public'
+      }
+    },
+    apns: {
+      headers: { 'apns-priority': '10' },
+      payload: {
+        aps: {
+          sound: '${fcmSound}',
+          badge: 1
+        }
+      }
+    }
+  };
+
+  const response = await admin.messaging().send(message);
+  console.log('Success sending FCM push notification:', response);
+}`}
+
+                {activeFcmTab === 'CURL' &&
+                  `# FCM HTTP v1 REST API cURL Command
+curl -X POST https://fcm.googleapis.com/v1/projects/YOUR_PROJECT_ID/messages:send \\
+  -H "Authorization: Bearer YOUR_OAUTH_ACCESS_TOKEN" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "message": {
+      "token": "${fcmTargetToken}",
+      "notification": {
+        "title": "${fcmTitle}",
+        "body": "${fcmBody}"
+      },
+      "android": {
+        "priority": "HIGH",
+        "notification": {
+          "channel_id": "${fcmChannelId}",
+          "sound": "${fcmSound}",
+          "notification_priority": "PRIORITY_MAX"
+        }
+      }
+    }
+  }'`}
+
+                {activeFcmTab === 'ANDROID' &&
+                  `// Android Native / Flutter (Kotlin) - Wajib buat NotificationChannel High Importance
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.os.Build
+
+fun createHighImportanceChannel(context: Context) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val channelId = "${fcmChannelId}"
+        val channelName = "Notifikasi Utama Status Bar"
+        val importance = NotificationManager.IMPORTANCE_HIGH
+        
+        val channel = NotificationChannel(channelId, channelName, importance).apply {
+            description = "Channel untuk mambuat notifikasi memunculkan banner status bar & suara saat app ditutup"
+            enableVibration(true)
+            vibrationPattern = longArrayOf(200, 100, 200, 100, 200)
+        }
+        
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(channel)
+    }
+}`}
+              </pre>
+            </div>
+
+            <div className="p-3 bg-purple-950/40 border border-purple-500/30 text-purple-200 rounded-xl text-[11px] space-y-1">
+              <div className="font-bold">🔑 Kunci Utama Agar Notifikasi Muncul di Status Bar & Berbunyi saat App Ditutup:</div>
+              <ul className="list-disc list-inside space-y-0.5 text-slate-300">
+                <li><code className="text-amber-300 font-mono">android.priority = "HIGH"</code> (memaksa OS tidak menunda pesan).</li>
+                <li><code className="text-amber-300 font-mono">android.notification.channel_id</code> harus cocok dengan <code className="text-amber-300 font-mono">IMPORTANCE_HIGH</code> di Android HP.</li>
+                <li><code className="text-amber-300 font-mono">android.notification.sound = "default"</code> (atau nama file audio di res/raw).</li>
+                <li><code className="text-amber-300 font-mono">apns.headers["apns-priority"] = "10"</code> untuk perangkat iOS / Apple iPhone.</li>
+              </ul>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button
+                onClick={() => setShowFcmModal(false)}
+                className="px-5 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold text-slate-200"
+              >
+                Tutup
+              </button>
+            </div>
           </div>
         </div>
       )}
