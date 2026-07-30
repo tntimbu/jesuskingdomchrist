@@ -68,51 +68,100 @@ export const RenunganAudioPlayer: React.FC<RenunganAudioPlayerProps> = ({
     return content;
   };
 
-  // Break text into readable sentence chunks to avoid Chrome speech synthesis timeouts
+  // Break text into readable sentence chunks safely without lookbehind regex
   const prepareSentences = () => {
     const rawText = getCleanText();
     const chunks = rawText
-      .split(/(?<=[.!?])\s+/)
+      .replace(/([.!?])\s+/g, '$1|#|')
+      .split('|#|')
       .map((s) => s.trim())
       .filter((s) => s.length > 0);
     return chunks.length > 0 ? chunks : [rawText];
   };
 
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const stopAudioFallback = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+  };
+
   const speakSentenceAtIndex = (index: number, chunks: string[]) => {
-    if (!('speechSynthesis' in window) || index >= chunks.length || !isPlayingRef.current) {
+    if (index >= chunks.length || !isPlayingRef.current) {
       setIsPlaying(false);
       setIsPaused(false);
       isPlayingRef.current = false;
       return;
     }
 
-    // Chrome resume workaround
-    window.speechSynthesis.resume();
-
     const sentenceText = chunks[index];
-    const utterance = new SpeechSynthesisUtterance(sentenceText);
-    utterance.lang = 'id-ID';
-    utterance.rate = speedRef.current;
-    utterance.pitch = 1.0;
 
-    // Find best Indonesian voice or fallback
-    const availableVoices = voices.length > 0 ? voices : (typeof window !== 'undefined' && 'speechSynthesis' in window ? window.speechSynthesis.getVoices() : []);
-    const indonesianVoice = availableVoices.find(
-      (v) => v.lang.includes('id') || v.lang.includes('ID') || v.name.toLowerCase().includes('indonesia') || v.lang.includes('ms')
-    );
-    if (indonesianVoice) {
-      utterance.voice = indonesianVoice;
+    if (!('speechSynthesis' in window)) {
+      playAudioFallback(sentenceText, index, chunks);
+      return;
     }
 
-    utterance.onend = () => {
+    try {
+      window.speechSynthesis.resume();
+      const utterance = new SpeechSynthesisUtterance(sentenceText);
+      utterance.lang = 'id-ID';
+      utterance.rate = speedRef.current;
+      utterance.pitch = 1.0;
+
+      // Find best Indonesian voice or fallback
+      const availableVoices = voices.length > 0 ? voices : (typeof window !== 'undefined' && 'speechSynthesis' in window ? window.speechSynthesis.getVoices() : []);
+      const indonesianVoice = availableVoices.find(
+        (v) => v.lang.includes('id') || v.lang.includes('ID') || v.name.toLowerCase().includes('indonesia') || v.lang.includes('ms')
+      );
+      if (indonesianVoice) {
+        utterance.voice = indonesianVoice;
+      }
+
+      utterance.onend = () => {
+        if (isPlayingRef.current) {
+          const nextIndex = index + 1;
+          setCurrentSentenceIndex(nextIndex);
+          if (nextIndex < chunks.length) {
+            speakSentenceAtIndex(nextIndex, chunks);
+          } else {
+            setIsPlaying(false);
+            setIsPaused(false);
+            isPlayingRef.current = false;
+            setCurrentSentenceIndex(0);
+          }
+        }
+      };
+
+      utterance.onerror = (e) => {
+        console.warn('SpeechSynthesis error event, trying fallback:', e);
+        // Fallback to HTML Audio if SpeechSynthesis throws error
+        playAudioFallback(sentenceText, index, chunks);
+      };
+
+      window.speechSynthesis.speak(utterance);
+    } catch (err) {
+      console.warn('SpeechSynthesis exception, playing fallback:', err);
+      playAudioFallback(sentenceText, index, chunks);
+    }
+  };
+
+  const playAudioFallback = (sentenceText: string, index: number, chunks: string[]) => {
+    stopAudioFallback();
+    const encodedText = encodeURIComponent(sentenceText.slice(0, 200));
+    const ttsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=id&q=${encodedText}`;
+    
+    const audio = new Audio(ttsUrl);
+    audio.playbackRate = speedRef.current;
+    audioRef.current = audio;
+
+    audio.onended = () => {
       if (isPlayingRef.current) {
         const nextIndex = index + 1;
         setCurrentSentenceIndex(nextIndex);
         if (nextIndex < chunks.length) {
-          // Speak next sentence with a small delay for smooth transition
-          setTimeout(() => {
-            speakSentenceAtIndex(nextIndex, chunks);
-          }, 80);
+          speakSentenceAtIndex(nextIndex, chunks);
         } else {
           setIsPlaying(false);
           setIsPaused(false);
@@ -122,13 +171,10 @@ export const RenunganAudioPlayer: React.FC<RenunganAudioPlayerProps> = ({
       }
     };
 
-    utterance.onerror = (e) => {
-      console.warn('SpeechSynthesis error event:', e);
-      // Try continuing to next sentence if error occurs
+    audio.onerror = () => {
+      // If fallback fails too, try next sentence or stop
       if (isPlayingRef.current && index + 1 < chunks.length) {
-        setTimeout(() => {
-          speakSentenceAtIndex(index + 1, chunks);
-        }, 100);
+        speakSentenceAtIndex(index + 1, chunks);
       } else {
         setIsPlaying(false);
         setIsPaused(false);
@@ -136,18 +182,29 @@ export const RenunganAudioPlayer: React.FC<RenunganAudioPlayerProps> = ({
       }
     };
 
-    window.speechSynthesis.speak(utterance);
+    audio.play().catch(() => {
+      // If audio.play() blocked, try next chunk or stop
+      if (isPlayingRef.current && index + 1 < chunks.length) {
+        speakSentenceAtIndex(index + 1, chunks);
+      } else {
+        setIsPlaying(false);
+        setIsPaused(false);
+        isPlayingRef.current = false;
+      }
+    });
   };
 
   const handlePlay = () => {
-    if (!('speechSynthesis' in window)) {
-      alert('Maaf, peramban Anda tidak mendukung fitur pembaca suara AI.');
-      return;
-    }
+    stopAudioFallback();
 
-    // Cancel any ongoing old speech ONCE at the start of new play
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.resume();
+    if ('speechSynthesis' in window) {
+      try {
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.resume();
+      } catch (e) {
+        // ignore
+      }
+    }
 
     // Play gentle audio chime confirmation
     try {
@@ -157,7 +214,12 @@ export const RenunganAudioPlayer: React.FC<RenunganAudioPlayerProps> = ({
     }
 
     if (isPaused) {
-      window.speechSynthesis.resume();
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.resume();
+      }
+      if (audioRef.current) {
+        audioRef.current.play();
+      }
       setIsPaused(false);
       setIsPlaying(true);
       isPlayingRef.current = true;
@@ -171,28 +233,35 @@ export const RenunganAudioPlayer: React.FC<RenunganAudioPlayerProps> = ({
     setIsPaused(false);
     setCurrentSentenceIndex(0);
 
-    setTimeout(() => {
-      speakSentenceAtIndex(0, chunks);
-    }, 150);
+    // Call synchronously to preserve user gesture activation
+    speakSentenceAtIndex(0, chunks);
   };
 
   const handlePause = () => {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.pause();
-      setIsPaused(true);
-      setIsPlaying(false);
-      isPlayingRef.current = false;
     }
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+    setIsPaused(true);
+    setIsPlaying(false);
+    isPlayingRef.current = false;
   };
 
   const handleStop = () => {
+    stopAudioFallback();
     if ('speechSynthesis' in window) {
-      isPlayingRef.current = false;
-      window.speechSynthesis.cancel();
-      setIsPlaying(false);
-      setIsPaused(false);
-      setCurrentSentenceIndex(0);
+      try {
+        window.speechSynthesis.cancel();
+      } catch (e) {
+        // ignore
+      }
     }
+    isPlayingRef.current = false;
+    setIsPlaying(false);
+    setIsPaused(false);
+    setCurrentSentenceIndex(0);
   };
 
   const toggleSpeed = () => {

@@ -1018,22 +1018,27 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   )}
                 </div>
 
-                <div className="pt-3 border-t border-white/10 flex items-center justify-between gap-2 flex-wrap text-xs">
-                  <span className="text-[11px] text-slate-400 truncate">Oleh: {latestRenungan?.penulis || 'Gembala Sidang'}</span>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {latestRenungan && (
+                <div className="pt-3 border-t border-white/10 space-y-2">
+                  <div className="flex items-center justify-between text-[11px] text-slate-400">
+                    <span>Oleh: <strong className="text-slate-200 font-semibold">{latestRenungan?.penulis || 'Gembala Sidang'}</strong></span>
+                    <span className="text-[10px] text-slate-400">{latestRenungan?.tanggal || 'Hari Ini'}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2 pt-1">
+                    {latestRenungan ? (
                       <button
                         onClick={() => setSelectedRenunganForModal(latestRenungan)}
-                        className="px-2.5 py-1 rounded-xl bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 font-bold flex items-center gap-1 cursor-pointer text-[11px] border border-amber-500/30 transition-all shadow-sm"
+                        className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-extrabold flex items-center gap-1.5 cursor-pointer text-xs border border-amber-500/30 transition-all shadow-sm"
                         title="Baca Layar Penuh"
                       >
-                        <Maximize2 className="w-3 h-3 text-amber-300" />
+                        <Maximize2 className="w-3.5 h-3.5 text-amber-300" />
                         <span>Baca Layar Penuh</span>
                       </button>
-                    )}
+                    ) : <div />}
+
                     <button
                       onClick={() => onNavigate('renungan')}
-                      className="px-2.5 py-1 rounded-xl bg-indigo-600/80 hover:bg-indigo-600 text-white font-bold flex items-center gap-1 cursor-pointer text-[11px] border border-indigo-400/30 transition-all shadow-sm"
+                      className="px-3 py-1.5 rounded-xl bg-indigo-600/90 hover:bg-indigo-600 text-white font-extrabold flex items-center gap-1.5 cursor-pointer text-xs border border-indigo-400/30 transition-all shadow-md shadow-indigo-600/20"
                     >
                       <span>Kumpulan Renungan &rarr;</span>
                     </button>
