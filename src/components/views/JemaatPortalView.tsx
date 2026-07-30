@@ -25,8 +25,19 @@ interface JemaatPortalViewProps {
 }
 
 export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser, settings }) => {
-  const [jemaatData, setJemaatData] = useState<Jemaat | null>(null);
-  const [personalOfferings, setPersonalOfferings] = useState<Persembahan[]>([]);
+  const initialJemaat = React.useMemo(() => {
+    const activeUser = StorageManager.getCurrentUser() || currentUser;
+    const allJemaat = StorageManager.getJemaat();
+    return (
+      allJemaat.find((j) => activeUser.jemaat_id && j.jemaat_id === activeUser.jemaat_id) ||
+      allJemaat.find((j) => j.nama_lengkap.toLowerCase() === activeUser.nama.toLowerCase()) ||
+      allJemaat[0] ||
+      null
+    );
+  }, [currentUser]);
+
+  const [jemaatData, setJemaatData] = useState<Jemaat | null>(initialJemaat);
+  const [personalOfferings, setPersonalOfferings] = useState<Persembahan[]>(() => StorageManager.getPersembahan());
   const theme = getThemeClasses(settings);
 
   // Edit Profile State
@@ -36,15 +47,15 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
     isEditingRef.current = isEditing;
   }, [isEditing]);
 
-  const [editName, setEditName] = useState('');
-  const [editEmail, setEditEmail] = useState('');
-  const [editPhone, setEditPhone] = useState('');
-  const [editAddress, setEditAddress] = useState('');
+  const [editName, setEditName] = useState(initialJemaat?.nama_lengkap ?? currentUser.nama ?? '');
+  const [editEmail, setEditEmail] = useState(initialJemaat?.email ?? currentUser.email ?? '');
+  const [editPhone, setEditPhone] = useState(initialJemaat?.nomor_hp ?? currentUser.no_hp ?? '');
+  const [editAddress, setEditAddress] = useState(initialJemaat?.alamat ?? '');
   
   // Photo Edit Mode: 'OFFLINE' (file upload) | 'ONLINE' (url)
   const [photoMode, setPhotoMode] = useState<'OFFLINE' | 'ONLINE'>('OFFLINE');
-  const [editPhotoUrl, setEditPhotoUrl] = useState('');
-  const [photoPreview, setPhotoPreview] = useState('');
+  const [editPhotoUrl, setEditPhotoUrl] = useState(initialJemaat?.foto ?? currentUser.foto ?? '');
+  const [photoPreview, setPhotoPreview] = useState(initialJemaat?.foto ?? currentUser.foto ?? '');
   const [saveSuccess, setSaveSuccess] = useState('');
 
   const loadData = React.useCallback(() => {

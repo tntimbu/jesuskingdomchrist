@@ -111,16 +111,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshToast, setRefreshToast] = useState('');
 
-  // Data state
-  const [jemaatList, setJemaatList] = useState<Jemaat[]>([]);
-  const [persembahanList, setPersembahanList] = useState<Persembahan[]>([]);
-  const [eventsList, setEventsList] = useState<EventSchedule[]>([]);
-  const [renunganList, setRenunganList] = useState<Renungan[]>([]);
-  const [pengumumanList, setPengumumanList] = useState<Pengumuman[]>([]);
-  const [prayerRequests, setPrayerRequests] = useState<PrayerRequest[]>([]);
-  const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
-  const [featuredVideos, setFeaturedVideos] = useState<FeaturedVideo[]>([]);
-  const [galleryList, setGalleryList] = useState<GalleryItem[]>([]);
+  // Data state initialized lazily for instant flicker-free rendering
+  const [jemaatList, setJemaatList] = useState<Jemaat[]>(() => StorageManager.getJemaat());
+  const [persembahanList, setPersembahanList] = useState<Persembahan[]>(() => StorageManager.getPersembahan());
+  const [eventsList, setEventsList] = useState<EventSchedule[]>(() => StorageManager.getEvents());
+  const [renunganList, setRenunganList] = useState<Renungan[]>(() => StorageManager.getRenungan());
+  const [pengumumanList, setPengumumanList] = useState<Pengumuman[]>(() => StorageManager.getPengumuman());
+  const [prayerRequests, setPrayerRequests] = useState<PrayerRequest[]>(() => StorageManager.getPrayerRequests());
+  const [activityLogs, setActivityLogs] = useState<ActivityLog[]>(() => StorageManager.getActivityLogs());
+  const [featuredVideos, setFeaturedVideos] = useState<FeaturedVideo[]>(() => StorageManager.getFeaturedVideos());
+  const [galleryList, setGalleryList] = useState<GalleryItem[]>(() => StorageManager.getGallery());
   const [activeVideoUrl, setActiveVideoUrl] = useState<string>('');
 
   // Prayer Request Form State
@@ -134,7 +134,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [saveSuccessMsg, setSaveSuccessMsg] = useState(false);
 
   // Notifications State
-  const [notificationsList, setNotificationsList] = useState<NotificationItem[]>([]);
+  const [notificationsList, setNotificationsList] = useState<NotificationItem[]>(() => StorageManager.getNotifications());
   const [dismissedNotifIds, setDismissedNotifIds] = useState<string[]>([]);
   const [isCreateNotifModalOpen, setIsCreateNotifModalOpen] = useState(false);
   const [newNotifForm, setNewNotifForm] = useState({
@@ -301,30 +301,100 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const latestPengumuman = pengumumanList.length > 0 ? pengumumanList[0] : null;
   const latestEvent = eventsList.length > 0 ? eventsList[0] : null;
 
-  // Parsed Video Social Link (Priority: active selected video > featured video galeri > settings URL)
-  const activeFeaturedVideo = featuredVideos.find((v) => v.is_active) || featuredVideos[0];
-  const rawVideoUrl = activeVideoUrl || activeFeaturedVideo?.video_url || settings.video_url || '';
+  // Combined list of all available videos from Featured Videos, Galeri Videos, and Settings
+  const allDashboardVideos = React.useMemo(() => {
+    const combined: {
+      id: string;
+      judul: string;
+      video_url: string;
+      kategori: string;
+      platform: string;
+      is_active?: boolean;
+    }[] = [];
+
+    const addedUrls = new Set<string>();
+
+    // 1. Featured Social Videos (Managed in Galeri -> Video Media Sosial / Stream)
+    featuredVideos.forEach((v) => {
+      const url = v.video_url ? v.video_url.trim() : '';
+      if (url && parseSocialVideoUrl(url).isValid && !addedUrls.has(url)) {
+        addedUrls.add(url);
+        combined.push({
+          id: v.video_id,
+          judul: v.judul,
+          video_url: url,
+          kategori: v.kategori || 'Video Utama',
+          platform: v.platform || 'YouTube',
+          is_active: v.is_active
+        });
+      }
+    });
+
+    // 2. Videos uploaded in Galeri (where tipe === 'Video' or video_url exists)
+    galleryList.forEach((g) => {
+      const url = (g.video_url || (g.tipe === 'Video' ? g.foto : '')).trim();
+      if (url && parseSocialVideoUrl(url).isValid && !addedUrls.has(url)) {
+        addedUrls.add(url);
+        combined.push({
+          id: g.gallery_id,
+          judul: g.judul,
+          video_url: url,
+          kategori: g.kategori || 'Galeri Video',
+          platform: 'YouTube'
+        });
+      }
+    });
+
+    // 3. Fallback Settings Video URL
+    if (settings.video_url && parseSocialVideoUrl(settings.video_url).isValid) {
+      const sUrl = settings.video_url.trim();
+      if (!addedUrls.has(sUrl)) {
+        addedUrls.add(sUrl);
+        combined.unshift({
+          id: 'SETTING-VID',
+          judul: settings.video_title || 'Tayangan Video Terbaru',
+          video_url: sUrl,
+          kategori: 'Ibadah Utama',
+          platform: 'YouTube',
+          is_active: true
+        });
+      }
+    }
+
+    return combined;
+  }, [featuredVideos, galleryList, settings.video_url, settings.video_title]);
+
+  // Determine current active video item & video title
+  const activeSelectedVideo = allDashboardVideos.find((v) => v.video_url === activeVideoUrl);
+  const activeFeatured = allDashboardVideos.find((v) => v.is_active) || allDashboardVideos[0];
+  const currentVideoItem = activeSelectedVideo || activeFeatured;
+
+  const rawVideoUrl = activeVideoUrl || currentVideoItem?.video_url || settings.video_url || '';
   const currentVideoUrl = rawVideoUrl && rawVideoUrl.includes('5qap5aO4i9A')
     ? 'https://www.youtube.com/watch?v=wX2S6AebnI8'
     : rawVideoUrl;
   const parsedVideo = parseSocialVideoUrl(currentVideoUrl);
+  const currentVideoDisplayTitle = currentVideoItem?.judul || settings.video_title || 'Tayangan Ibadah Raya & Khotbah Terbaru';
 
   // Stable User Avatar Source to prevent flashing/kedipan
   const userAvatarSrc = React.useMemo(() => {
     if (currentUser.foto) return currentUser.foto;
+    const jId = currentUser.jemaat_id;
+    const jName = currentUser.nama?.toLowerCase();
+
     const foundInState = jemaatList.find(
-      (j) => (currentUser.jemaat_id && j.jemaat_id === currentUser.jemaat_id) || j.nama_lengkap.toLowerCase() === currentUser.nama.toLowerCase()
+      (j) => (jId && j.jemaat_id === jId) || (jName && j.nama_lengkap.toLowerCase() === jName)
     );
     if (foundInState?.foto) return foundInState.foto;
 
     const storedJemaat = StorageManager.getJemaat();
     const foundInStorage = storedJemaat.find(
-      (j) => (currentUser.jemaat_id && j.jemaat_id === currentUser.jemaat_id) || j.nama_lengkap.toLowerCase() === currentUser.nama.toLowerCase()
+      (j) => (jId && j.jemaat_id === jId) || (jName && j.nama_lengkap.toLowerCase() === jName)
     );
     if (foundInStorage?.foto) return foundInStorage.foto;
 
     return settings.logo || DEFAULT_CHURCH_LOGO;
-  }, [currentUser, jemaatList, settings.logo]);
+  }, [currentUser.foto, currentUser.jemaat_id, currentUser.nama, jemaatList, settings.logo]);
 
   // Submit Jemaat Prayer Request
   const handleSubmitPrayer = (e: React.FormEvent) => {
@@ -1017,7 +1087,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       <span className="text-[11px] text-slate-400 capitalize">Media: {parsedVideo.type}</span>
                     </div>
                     <h3 className="text-base sm:text-lg font-bold text-white mt-0.5">
-                      {settings.video_title || 'Tayangan Ibadah Raya & Khotbah Terbaru'}
+                      {currentVideoDisplayTitle}
                     </h3>
                   </div>
                 </div>
@@ -1068,7 +1138,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
 
               {/* Gallery Video & Photo Stream Playlist Selector */}
-              {featuredVideos.length > 0 && (
+              {allDashboardVideos.length > 0 && (
                 <div className="pt-3 border-t border-white/10 space-y-2">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-bold text-slate-300 flex items-center gap-1.5">
@@ -1077,16 +1147,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     </span>
                     <button
                       onClick={() => onNavigate('galeri')}
-                      className="text-indigo-400 hover:text-indigo-300 font-semibold text-[11px]"
+                      className="text-indigo-400 hover:text-indigo-300 font-semibold text-[11px] cursor-pointer"
                     >
                       Buka Galeri Media &rarr;
                     </button>
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {featuredVideos.map((v) => (
+                    {allDashboardVideos.map((v) => (
                       <button
-                        key={v.video_id}
+                        key={v.id}
                         type="button"
                         onClick={() => setActiveVideoUrl(v.video_url)}
                         className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${

@@ -26,8 +26,8 @@ interface GaleriViewProps {
 export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser }) => {
   const isAdmin = currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN';
   const [activeTab, setActiveTab] = useState<'GALLERY' | 'SOCIAL_VIDEOS'>('GALLERY');
-  const [galleryList, setGalleryList] = useState<GalleryItem[]>([]);
-  const [featuredVideos, setFeaturedVideos] = useState<FeaturedVideo[]>([]);
+  const [galleryList, setGalleryList] = useState<GalleryItem[]>(() => StorageManager.getGallery());
+  const [featuredVideos, setFeaturedVideos] = useState<FeaturedVideo[]>(() => StorageManager.getFeaturedVideos());
   const [activeType, setActiveType] = useState<'ALL' | 'Foto' | 'Video'>('ALL');
   const [selectedCategory, setSelectedCategory] = useState<string>('SEMUA');
   
@@ -66,7 +66,7 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser }) => {
     window.addEventListener('storage', handleSync);
     window.addEventListener('focus', handleSync);
 
-    const intervalId = setInterval(loadData, 1500);
+    const intervalId = setInterval(loadData, 1000);
 
     return () => {
       window.removeEventListener('cms_data_changed', handleSync);
@@ -77,20 +77,24 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser }) => {
   }, []);
 
   const loadData = () => {
-    setGalleryList(StorageManager.getGallery());
-    setFeaturedVideos(StorageManager.getFeaturedVideos());
+    const g = StorageManager.getGallery();
+    setGalleryList((prev) => (JSON.stringify(prev) !== JSON.stringify(g) ? g : prev));
+    const f = StorageManager.getFeaturedVideos();
+    setFeaturedVideos((prev) => (JSON.stringify(prev) !== JSON.stringify(f) ? f : prev));
   };
 
   const handleSaveMedia = (e: React.FormEvent) => {
     e.preventDefault();
     if (!mediaForm.judul) return;
 
+    const vUrl = mediaForm.video_url || (mediaForm.tipe === 'Video' ? mediaForm.foto : '');
+
     const newItem: GalleryItem = {
       gallery_id: `GAL-2026-${(galleryList.length + 1).toString().padStart(3, '0')}`,
       judul: mediaForm.judul,
       tipe: mediaForm.tipe,
       foto: mediaForm.foto || (mediaForm.tipe === 'Foto' ? 'https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=800&auto=format&fit=crop&q=80' : 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=800&auto=format&fit=crop&q=80'),
-      video_url: mediaForm.video_url,
+      video_url: vUrl,
       kategori: mediaForm.kategori,
       tanggal: mediaForm.tanggal,
       keterangan: mediaForm.keterangan,
@@ -100,6 +104,26 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser }) => {
     const updated = [newItem, ...galleryList];
     setGalleryList(updated);
     StorageManager.saveGallery(updated);
+
+    // Auto sync video items to Featured Videos for live stream stream display
+    if (mediaForm.tipe === 'Video' && vUrl) {
+      const parsed = parseSocialVideoUrl(vUrl);
+      const newFeat: FeaturedVideo = {
+        video_id: `VID-${Date.now().toString().slice(-4)}`,
+        judul: mediaForm.judul,
+        video_url: vUrl,
+        keterangan: mediaForm.keterangan,
+        is_active: true,
+        tanggal: mediaForm.tanggal,
+        platform: parsed.type === 'youtube' ? 'YouTube' : parsed.type === 'tiktok' ? 'TikTok' : parsed.type === 'instagram' ? 'Instagram' : 'Direct',
+        kategori: mediaForm.kategori
+      };
+      const existing = StorageManager.getFeaturedVideos().map((v) => ({ ...v, is_active: false }));
+      const updatedFeats = [newFeat, ...existing];
+      StorageManager.saveFeaturedVideos(updatedFeats);
+      setFeaturedVideos(updatedFeats);
+    }
+
     StorageManager.logActivity(currentUser.username, `Mengunggah media galeri: ${newItem.judul}`, 'Galeri');
 
     setIsAddModalOpen(false);
