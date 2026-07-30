@@ -270,16 +270,60 @@ export const StorageManager = {
   getKasPengeluaran: (): KasPengeluaran[] => getItem(KEYS.KAS_PENGELUARAN, defaultKas),
   saveKasPengeluaran: (list: KasPengeluaran[]): void => setItem(KEYS.KAS_PENGELUARAN, list),
 
-  getDoa: (): Doa[] => getItem(KEYS.DOA, defaultDoa),
+  getDoa: (): Doa[] => {
+    const items = getItem<Doa[]>(KEYS.DOA, defaultDoa);
+    const seen = new Set<string>();
+    return items.map((item, idx) => {
+      let id = item.doa_id || `DOA-2026-${idx + 1}`;
+      if (seen.has(id)) {
+        id = `${id}-${idx}`;
+      }
+      seen.add(id);
+      return { ...item, doa_id: id };
+    });
+  },
   saveDoa: (list: Doa[]): void => setItem(KEYS.DOA, list),
 
-  getPengumuman: (): Pengumuman[] => getItem(KEYS.PENGUMUMAN, initialPengumuman),
+  getPengumuman: (): Pengumuman[] => {
+    const items = getItem<Pengumuman[]>(KEYS.PENGUMUMAN, initialPengumuman);
+    const seen = new Set<string>();
+    return items.map((item, idx) => {
+      let id = item.pengumuman_id || `PNG-${idx + 1}`;
+      if (seen.has(id)) {
+        id = `${id}-${idx}`;
+      }
+      seen.add(id);
+      return { ...item, pengumuman_id: id };
+    });
+  },
   savePengumuman: (list: Pengumuman[]): void => setItem(KEYS.PENGUMUMAN, list),
 
-  getRenungan: (): Renungan[] => getItem(KEYS.RENUNGAN, initialRenungan),
+  getRenungan: (): Renungan[] => {
+    const items = getItem<Renungan[]>(KEYS.RENUNGAN, initialRenungan);
+    const seen = new Set<string>();
+    return items.map((item, idx) => {
+      let id = item.renungan_id || `RNG-${idx + 1}`;
+      if (seen.has(id)) {
+        id = `${id}-${idx}`;
+      }
+      seen.add(id);
+      return { ...item, renungan_id: id };
+    });
+  },
   saveRenungan: (list: Renungan[]): void => setItem(KEYS.RENUNGAN, list),
 
-  getEvents: (): EventSchedule[] => getItem(KEYS.EVENTS, initialEvents),
+  getEvents: (): EventSchedule[] => {
+    const items = getItem<EventSchedule[]>(KEYS.EVENTS, initialEvents);
+    const seen = new Set<string>();
+    return items.map((item, idx) => {
+      let id = item.event_id || `EVT-2026-${idx + 1}`;
+      if (seen.has(id)) {
+        id = `${id}-${idx}`;
+      }
+      seen.add(id);
+      return { ...item, event_id: id };
+    });
+  },
   saveEvents: (list: EventSchedule[]): void => setItem(KEYS.EVENTS, list),
 
   getGallery: (): GalleryItem[] => getItem(KEYS.GALLERY, initialGallery),
@@ -355,28 +399,39 @@ export const StorageManager = {
   getPrayerRequests: (): PrayerRequest[] => getItem(KEYS.PRAYER_REQUESTS, initialPrayerRequests),
   savePrayerRequests: (list: PrayerRequest[]): void => setItem(KEYS.PRAYER_REQUESTS, list),
 
-  getEventReservations: (): EventReservation[] => getItem(KEYS.EVENT_RESERVATIONS, [
-    {
-      reservation_id: 'RES-2026-001',
-      event_id: 'EVT-2026-001',
-      nama_jemaat: 'Bpk. Herman Setyawan',
-      nomor_wa: '081234567890',
-      jumlah_kursi: 3,
-      catatan: 'Duduk di barisan tengah bersama keluarga',
-      tanggal_reservasi: '2026-07-28 10:15',
-      status: 'TERKONFIRMASI'
-    },
-    {
-      reservation_id: 'RES-2026-002',
-      event_id: 'EVT-2026-001',
-      nama_jemaat: 'Ibu Maria Setyawati',
-      nomor_wa: '081987654321',
-      jumlah_kursi: 2,
-      catatan: 'Membawa lansia',
-      tanggal_reservasi: '2026-07-29 14:20',
-      status: 'TERKONFIRMASI'
-    }
-  ]),
+  getEventReservations: (): EventReservation[] => {
+    const items = getItem<EventReservation[]>(KEYS.EVENT_RESERVATIONS, [
+      {
+        reservation_id: 'RES-2026-001',
+        event_id: 'EVT-2026-001',
+        nama_jemaat: 'Bpk. Herman Setyawan',
+        nomor_wa: '081234567890',
+        jumlah_kursi: 3,
+        catatan: 'Duduk di barisan tengah bersama keluarga',
+        tanggal_reservasi: '2026-07-28 10:15',
+        status: 'TERKONFIRMASI'
+      },
+      {
+        reservation_id: 'RES-2026-002',
+        event_id: 'EVT-2026-001',
+        nama_jemaat: 'Ibu Maria Setyawati',
+        nomor_wa: '081987654321',
+        jumlah_kursi: 2,
+        catatan: 'Membawa lansia',
+        tanggal_reservasi: '2026-07-29 14:20',
+        status: 'TERKONFIRMASI'
+      }
+    ]);
+    const seen = new Set<string>();
+    return items.map((item, idx) => {
+      let id = item.reservation_id || `RES-2026-${idx + 1}`;
+      if (seen.has(id)) {
+        id = `${id}-${idx}`;
+      }
+      seen.add(id);
+      return { ...item, reservation_id: id };
+    });
+  },
   saveEventReservations: (list: EventReservation[]): void => setItem(KEYS.EVENT_RESERVATIONS, list),
 
   getCurrentUser: (): User | null => {

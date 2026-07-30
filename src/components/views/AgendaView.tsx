@@ -119,8 +119,9 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
     e.preventDefault();
     if (!eventForm.nama) return;
 
+    const uniqueSuffix = `${Date.now().toString().slice(-4)}${Math.random().toString(36).substring(2, 5)}`;
     const newE: EventSchedule = {
-      event_id: `EVT-2026-${(eventsList.length + 1).toString().padStart(3, '0')}`,
+      event_id: `EVT-2026-${uniqueSuffix}`,
       nama: eventForm.nama,
       kategori: eventForm.kategori,
       tanggal: eventForm.tanggal,
@@ -320,9 +321,9 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {(jadwalRutinList.length > 0 ? jadwalRutinList : eventsList).map((e) => (
+            {(jadwalRutinList.length > 0 ? jadwalRutinList : eventsList).map((e, idx) => (
               <div
-                key={e.event_id}
+                key={`rutin-${e.event_id || 'evt'}-${idx}`}
                 className="rounded-3xl bg-slate-900 border border-slate-800 p-5 shadow-sm text-white hover:border-indigo-500/40 transition-all space-y-3 flex flex-col justify-between"
               >
                 <div className="space-y-2">
@@ -400,7 +401,7 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {eventsList.map((e) => {
+            {(upcomingEventsList.length > 0 ? upcomingEventsList : eventsList).map((e, idx) => {
               const eventResList = reservationsList.filter((r) => isMatchingEvent(r.event_id, e.event_id) && r.status !== 'DIBATALKAN');
               const totalBookedSeats = eventResList.reduce((acc, curr) => acc + curr.jumlah_kursi, 0);
               const maxSeats = e.kuota_kursi || 150;
@@ -411,7 +412,7 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
 
               return (
                 <div
-                  key={e.event_id}
+                  key={`upcoming-${e.event_id || 'evt'}-${idx}`}
                   className="rounded-3xl bg-slate-900 border-2 border-amber-500/30 p-5 shadow-xl text-white hover:border-amber-500/70 transition-all space-y-4 flex flex-col justify-between relative overflow-hidden"
                 >
                   <div className="space-y-2.5">
@@ -536,9 +537,9 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {doaList.map((d) => (
+            {doaList.map((d, idx) => (
               <div
-                key={d.doa_id}
+                key={`doa-${d.doa_id || 'doa'}-${idx}`}
                 className="rounded-3xl bg-slate-900 border border-slate-800 p-5 shadow-sm text-white hover:border-rose-500/40 transition-all space-y-3 flex flex-col justify-between"
               >
                 <div className="space-y-2">
