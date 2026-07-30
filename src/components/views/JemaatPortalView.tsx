@@ -586,12 +586,12 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
       {/* 4. Feed Video Media Sosial (If Enabled by SuperAdmin) */}
       {appSettings.show_jemaat_social_video !== false && parsedVideo.isValid && (
         <div className={`rounded-3xl ${theme.cardClass} ${cardPaddingClass} transition-all duration-300 space-y-4`}>
-          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-3">
             <h3 className="text-base font-bold text-white flex items-center gap-2">
-              <Tv className="w-5 h-5 text-indigo-400" />
-              <span>Tayangan Video Ibadah & Khotbah Terbaru</span>
+              <Tv className="w-5 h-5 text-indigo-400 shrink-0" />
+              <span>Tayangan Video &amp; Pengumuman Ibadah</span>
             </h3>
-            <span className="text-[11px] text-indigo-300 font-bold bg-indigo-500/20 px-2.5 py-1 rounded-full border border-indigo-500/30">
+            <span className="text-[11px] text-indigo-300 font-bold bg-indigo-500/20 px-3 py-1 rounded-full border border-indigo-500/30 truncate max-w-xs self-start sm:self-auto">
               {activeVideoItem?.judul || 'Streaming YouTube'}
             </span>
           </div>

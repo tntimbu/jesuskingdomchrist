@@ -909,20 +909,58 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-200 text-xs flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-indigo-400 shrink-0" />
-              <span>
-                <strong>Portal Informasi Terfokus Jemaat:</strong> Menampilkan 1 update informasi terbaru dari SuperAdmin/Admin untuk menjaga tampilan tetap bersih.
-              </span>
+          <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-slate-900/80 backdrop-blur-xl border border-indigo-500/30 text-white shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shadow-inner shrink-0">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-extrabold text-sm sm:text-base text-white tracking-tight">
+                  Portal Informasi Terfokus Jemaat
+                </h3>
+                <p className="text-xs text-slate-300 mt-0.5">
+                  Renungan harian, pengumuman resmi &amp; tayangan ibadah gereja terupdate
+                </p>
+              </div>
             </div>
             <button
               onClick={() => onNavigate('media')}
-              className="text-xs font-bold text-indigo-400 hover:underline shrink-0"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-indigo-600/90 hover:bg-indigo-600 text-white font-bold text-xs border border-indigo-400/30 shadow-md shadow-indigo-600/20 transition-all cursor-pointer shrink-0 self-start sm:self-auto"
             >
-              Arsip Lengkap &rarr;
+              <span>Lihat Arsip Lengkap</span>
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
+
+          {/* Video Streaming / Pengumuman Ibadah Utama */}
+          {parsedVideo.isValid && (
+            <div className={`rounded-3xl ${cardStyleClass} text-white space-y-4 transition-all duration-300`}>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                    <Tv className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-sm sm:text-base text-white">Tayangan & Pengumuman Ibadah</h3>
+                    <p className="text-xs text-slate-400">Streaming ibadah &amp; khotbah resmi gereja</p>
+                  </div>
+                </div>
+                <span className="text-[11px] text-indigo-300 font-bold bg-indigo-500/20 px-3 py-1 rounded-full border border-indigo-500/30 truncate max-w-xs self-start sm:self-auto">
+                  {currentVideoDisplayTitle}
+                </span>
+              </div>
+
+              <div className="relative aspect-video rounded-2xl overflow-hidden bg-black border border-white/10 shadow-2xl">
+                <iframe
+                  src={parsedVideo.embedUrl}
+                  title={currentVideoDisplayTitle}
+                  className="w-full h-full border-0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* 1. Latest Renungan Utama */}
