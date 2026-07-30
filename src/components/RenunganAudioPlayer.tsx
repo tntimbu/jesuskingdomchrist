@@ -88,7 +88,6 @@ export const RenunganAudioPlayer: React.FC<RenunganAudioPlayerProps> = ({
 
     // Chrome resume workaround
     window.speechSynthesis.resume();
-    window.speechSynthesis.cancel();
 
     const sentenceText = chunks[index];
     const utterance = new SpeechSynthesisUtterance(sentenceText);
@@ -97,9 +96,9 @@ export const RenunganAudioPlayer: React.FC<RenunganAudioPlayerProps> = ({
     utterance.pitch = 1.0;
 
     // Find best Indonesian voice or fallback
-    const availableVoices = voices.length > 0 ? voices : window.speechSynthesis.getVoices();
+    const availableVoices = voices.length > 0 ? voices : (typeof window !== 'undefined' && 'speechSynthesis' in window ? window.speechSynthesis.getVoices() : []);
     const indonesianVoice = availableVoices.find(
-      (v) => v.lang.includes('id') || v.lang.includes('ID') || v.name.toLowerCase().includes('indonesia')
+      (v) => v.lang.includes('id') || v.lang.includes('ID') || v.name.toLowerCase().includes('indonesia') || v.lang.includes('ms')
     );
     if (indonesianVoice) {
       utterance.voice = indonesianVoice;
@@ -110,8 +109,10 @@ export const RenunganAudioPlayer: React.FC<RenunganAudioPlayerProps> = ({
         const nextIndex = index + 1;
         setCurrentSentenceIndex(nextIndex);
         if (nextIndex < chunks.length) {
-          // Speak next sentence
-          speakSentenceAtIndex(nextIndex, chunks);
+          // Speak next sentence with a small delay for smooth transition
+          setTimeout(() => {
+            speakSentenceAtIndex(nextIndex, chunks);
+          }, 80);
         } else {
           setIsPlaying(false);
           setIsPaused(false);
@@ -125,7 +126,9 @@ export const RenunganAudioPlayer: React.FC<RenunganAudioPlayerProps> = ({
       console.warn('SpeechSynthesis error event:', e);
       // Try continuing to next sentence if error occurs
       if (isPlayingRef.current && index + 1 < chunks.length) {
-        speakSentenceAtIndex(index + 1, chunks);
+        setTimeout(() => {
+          speakSentenceAtIndex(index + 1, chunks);
+        }, 100);
       } else {
         setIsPlaying(false);
         setIsPaused(false);
@@ -141,6 +144,10 @@ export const RenunganAudioPlayer: React.FC<RenunganAudioPlayerProps> = ({
       alert('Maaf, peramban Anda tidak mendukung fitur pembaca suara AI.');
       return;
     }
+
+    // Cancel any ongoing old speech ONCE at the start of new play
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.resume();
 
     // Play gentle audio chime confirmation
     try {

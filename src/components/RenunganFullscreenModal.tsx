@@ -33,48 +33,48 @@ export const RenunganFullscreenModal: React.FC<RenunganFullscreenModalProps> = (
       >
         {/* Top Sticky Header bar */}
         <div
-          className={`px-4 sm:px-8 py-4 flex items-center justify-between border-b shrink-0 ${
+          className={`px-3 sm:px-6 py-3.5 flex items-center justify-between gap-2 sm:gap-4 border-b shrink-0 overflow-hidden ${
             isLightMode ? 'border-amber-200/80 bg-amber-100/60' : 'border-white/10 bg-slate-950/80'
           }`}
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
             <button
               onClick={onClose}
-              className={`p-2 rounded-2xl transition-all cursor-pointer ${
+              className={`p-2 rounded-2xl transition-all cursor-pointer shrink-0 ${
                 isLightMode ? 'bg-amber-200/70 text-slate-800 hover:bg-amber-300' : 'bg-white/10 text-white hover:bg-white/20'
               }`}
               title="Tutup Mode Layar Penuh"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <div>
-              <span className="text-[10px] font-extrabold tracking-widest uppercase text-indigo-400 block">
+            <div className="min-w-0 flex-1">
+              <span className="text-[10px] font-extrabold tracking-widest uppercase text-indigo-400 block truncate">
                 Mode Membaca Layar Penuh
               </span>
-              <h3 className="text-sm sm:text-base font-extrabold truncate max-w-xs sm:max-w-md">
+              <h3 className="text-xs sm:text-base font-extrabold truncate text-white dark:text-white">
                 {renungan.judul}
               </h3>
             </div>
           </div>
 
           {/* Controls: Font Size, Theme, Copy, Close */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {/* Font size adjustment */}
-            <div className={`flex items-center gap-1 px-2 py-1 rounded-xl border text-xs font-bold ${
+            <div className={`flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-1 rounded-xl border text-xs font-bold ${
               isLightMode ? 'bg-amber-200/50 border-amber-300 text-slate-800' : 'bg-slate-800 border-slate-700 text-slate-200'
             }`}>
-              <Type className="w-3.5 h-3.5 opacity-70" />
+              <Type className="w-3.5 h-3.5 opacity-70 hidden sm:inline" />
               <button
                 onClick={() => setFontSize((prev) => Math.max(13, prev - 1))}
-                className="px-1.5 py-0.5 hover:bg-white/20 rounded cursor-pointer"
+                className="px-1 py-0.5 hover:bg-white/20 rounded cursor-pointer text-[10px] sm:text-xs"
                 title="Kecilkan Teks"
               >
                 A-
               </button>
-              <span className="text-[10px]">{fontSize}px</span>
+              <span className="text-[10px] px-0.5">{fontSize}px</span>
               <button
                 onClick={() => setFontSize((prev) => Math.min(26, prev + 1))}
-                className="px-1.5 py-0.5 hover:bg-white/20 rounded cursor-pointer"
+                className="px-1 py-0.5 hover:bg-white/20 rounded cursor-pointer text-[10px] sm:text-xs"
                 title="Besarkan Teks"
               >
                 A+
@@ -120,7 +120,7 @@ export const RenunganFullscreenModal: React.FC<RenunganFullscreenModalProps> = (
         </div>
 
         {/* Modal Scrollable Body */}
-        <div className="p-5 sm:p-8 overflow-y-auto space-y-6 flex-1">
+        <div className="p-4 sm:p-8 overflow-y-auto space-y-6 flex-1 break-words">
           {/* Audio Player Bar */}
           <div className="rounded-2xl overflow-hidden shadow-lg">
             <RenunganAudioPlayer
@@ -143,22 +143,22 @@ export const RenunganFullscreenModal: React.FC<RenunganFullscreenModalProps> = (
               <span className="font-mono opacity-70 text-xs">{renungan.tanggal || 'Hari Ini'}</span>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight leading-tight break-words">
               {renungan.judul}
             </h1>
 
             {(renungan.ayat || renungan.ayat_alkitab) && (
-              <div className={`p-4 rounded-2xl border flex items-start gap-3 ${
+              <div className={`p-3.5 sm:p-4 rounded-2xl border flex items-start gap-3 break-words ${
                 isLightMode
                   ? 'bg-amber-100/80 border-amber-300/80 text-amber-950'
                   : 'bg-amber-500/10 border-amber-500/30 text-amber-300'
               }`}>
                 <Sparkles className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-                <div>
+                <div className="min-w-0 flex-1">
                   <span className="text-[10px] uppercase font-extrabold tracking-wider block opacity-80">
                     Nats Alkitab Utama:
                   </span>
-                  <p className="font-serif font-bold text-base sm:text-lg italic mt-0.5">
+                  <p className="font-serif font-bold text-sm sm:text-base md:text-lg italic mt-0.5 break-words">
                     &ldquo;{renungan.ayat || renungan.ayat_alkitab}&rdquo;
                   </p>
                 </div>
@@ -173,7 +173,7 @@ export const RenunganFullscreenModal: React.FC<RenunganFullscreenModalProps> = (
           {/* Main Content Text */}
           <div
             style={{ fontSize: `${fontSize}px` }}
-            className={`font-sans leading-relaxed sm:leading-loose whitespace-pre-line tracking-normal space-y-4 ${
+            className={`font-sans leading-relaxed sm:leading-loose whitespace-pre-line tracking-normal space-y-4 break-words ${
               isLightMode ? 'text-slate-800' : 'text-slate-200'
             }`}
           >
