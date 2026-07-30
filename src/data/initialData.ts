@@ -59,6 +59,8 @@ export const initialSettings: AppSettings = {
   video_title: 'Tayangan Ibadah Raya & Khotbah Terbaru',
   video_description: 'Saksikan siaran ulang ibadah minggu & firman Tuhan yang memberkati.',
   video_enabled: true,
+  show_apk_download_button: true,
+  apk_download_url: 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing',
   header_title: 'Gereja Kemenangan Faith Center Pro',
   header_subtitle: 'Sistem Informasi Management & Portal Layanan Jemaat',
   theme_preset: 'DARK_SLATE',

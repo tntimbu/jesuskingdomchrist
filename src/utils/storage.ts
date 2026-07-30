@@ -20,7 +20,8 @@ import {
   ActivityLog,
   LoginHistory,
   PrayerRequest,
-  FeaturedVideo
+  FeaturedVideo,
+  EventReservation
 } from '../types';
 
 import {
@@ -71,6 +72,7 @@ const KEYS = {
   ACTIVITY_LOGS: 'cms_pro_activity_logs',
   LOGIN_HISTORY: 'cms_pro_login_history',
   PRAYER_REQUESTS: 'cms_pro_prayer_requests',
+  EVENT_RESERVATIONS: 'cms_pro_event_reservations',
   CURRENT_USER: 'cms_pro_current_user'
 };
 
@@ -352,6 +354,30 @@ export const StorageManager = {
 
   getPrayerRequests: (): PrayerRequest[] => getItem(KEYS.PRAYER_REQUESTS, initialPrayerRequests),
   savePrayerRequests: (list: PrayerRequest[]): void => setItem(KEYS.PRAYER_REQUESTS, list),
+
+  getEventReservations: (): EventReservation[] => getItem(KEYS.EVENT_RESERVATIONS, [
+    {
+      reservation_id: 'RES-2026-001',
+      event_id: 'EVT-2026-001',
+      nama_jemaat: 'Bpk. Herman Setyawan',
+      nomor_wa: '081234567890',
+      jumlah_kursi: 3,
+      catatan: 'Duduk di barisan tengah bersama keluarga',
+      tanggal_reservasi: '2026-07-28 10:15',
+      status: 'TERKONFIRMASI'
+    },
+    {
+      reservation_id: 'RES-2026-002',
+      event_id: 'EVT-2026-001',
+      nama_jemaat: 'Ibu Maria Setyawati',
+      nomor_wa: '081987654321',
+      jumlah_kursi: 2,
+      catatan: 'Membawa lansia',
+      tanggal_reservasi: '2026-07-29 14:20',
+      status: 'TERKONFIRMASI'
+    }
+  ]),
+  saveEventReservations: (list: EventReservation[]): void => setItem(KEYS.EVENT_RESERVATIONS, list),
 
   getCurrentUser: (): User | null => {
     const saved = getItem<User | null>(KEYS.CURRENT_USER, null);

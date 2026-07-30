@@ -1106,6 +1106,43 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
               </div>
             </div>
 
+            {/* Section 5: Kontrol Tombol Floating Download Aplikasi Mobile (.APK Android) */}
+            <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-xl">
+              <h3 className="text-base font-bold pb-3 border-b border-slate-800 flex items-center justify-between">
+                <span className="flex items-center gap-2 text-emerald-400">
+                  <Sparkles className="w-5 h-5 text-emerald-400" />
+                  <span>5. Kontrol Tombol Melayang Download APK Mobile Android</span>
+                </span>
+                <span className="text-[10px] font-semibold text-slate-400">Mobile APK Download Control</span>
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <label className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-slate-700 flex items-center justify-between cursor-pointer transition-all sm:col-span-2">
+                  <div>
+                    <div className="font-bold text-xs text-emerald-300">Tampilkan Tombol Floating Download APK Mobile Android</div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">Jika diaktifkan, tombol melayang untuk mengunduh file .APK akan tampil di sudut kanan bawah dashboard.</div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={metaForm.show_apk_download_button !== false}
+                    onChange={(e) => setMetaForm({ ...metaForm, show_apk_download_button: e.target.checked })}
+                    className="rounded border-slate-700 text-emerald-600 focus:ring-emerald-500 w-5 h-5 shrink-0"
+                  />
+                </label>
+
+                <div className="sm:col-span-2 space-y-1">
+                  <label className="block text-slate-300 font-semibold text-xs">Link Tautan Download File .APK (Google Drive / Direct URL):</label>
+                  <input
+                    type="url"
+                    value={metaForm.apk_download_url || 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing'}
+                    onChange={(e) => setMetaForm({ ...metaForm, apk_download_url: e.target.value })}
+                    placeholder="https://drive.google.com/file/d/..."
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-xs"
+                  />
+                </div>
+              </div>
+            </div>
+
             {/* Save Button */}
             <div className="flex justify-end pt-3 border-t border-slate-800">
               <button

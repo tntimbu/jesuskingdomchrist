@@ -260,15 +260,19 @@ export default function App() {
 
           {activeTab === 'keuangan' && <KeuanganView currentUser={effectiveUser} />}
 
-          {(activeTab === 'jadwal' || activeTab === 'agenda') && (
+          {activeTab === 'jadwal' && (
             <AgendaView currentUser={effectiveUser} mode="JADWAL" />
+          )}
+
+          {activeTab === 'agenda' && (
+            <AgendaView currentUser={effectiveUser} mode="AGENDA" />
           )}
 
           {activeTab === 'doa' && (
             <AgendaView currentUser={effectiveUser} mode="DOA" />
           )}
 
-          {(activeTab === 'pengumuman' || activeTab === 'media') && (
+          {activeTab === 'pengumuman' && (
             <MediaView currentUser={currentUser} mode="PENGUMUMAN" />
           )}
 
@@ -276,7 +280,13 @@ export default function App() {
             <MediaView currentUser={currentUser} mode="RENUNGAN" />
           )}
 
-          {activeTab === 'galeri' && <GaleriView currentUser={currentUser} />}
+          {activeTab === 'galeri' && (
+            <GaleriView currentUser={currentUser} initialTab="GALLERY" />
+          )}
+
+          {activeTab === 'media' && (
+            <GaleriView currentUser={currentUser} initialTab="SOCIAL_VIDEOS" />
+          )}
 
           {activeTab === 'laporan' && <LaporanView currentUser={currentUser} />}
 

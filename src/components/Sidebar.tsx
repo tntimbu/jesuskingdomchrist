@@ -7,10 +7,12 @@ import {
   FileText,
   DollarSign,
   CalendarDays,
+  Sparkles,
   Heart,
   Megaphone,
   BookOpen,
-  Image,
+  Image as ImageIcon,
+  Video,
   FileSpreadsheet,
   Settings,
   UserCheck,
@@ -85,8 +87,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'jadwal',
-      label: 'Jadwal & Event Ibadah',
+      label: 'Jadwal Ibadah Rutin',
       icon: CalendarDays,
+      roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
+    },
+    {
+      id: 'agenda',
+      label: 'Upcoming Events & Reservasi',
+      icon: Sparkles,
       roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
     },
     {
@@ -109,8 +117,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'galeri',
-      label: 'Galeri Foto & Video',
-      icon: Image,
+      label: 'Galeri Foto Kegiatan',
+      icon: ImageIcon,
+      roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
+    },
+    {
+      id: 'media',
+      label: 'Galeri Video & Streaming',
+      icon: Video,
       roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
     },
     {
@@ -121,7 +135,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'jemaat_portal',
-      label: 'Portal Jemaat Mandiri',
+      label: 'Profil Jemaat Saya',
       icon: UserCheck,
       roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
     },
@@ -141,7 +155,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Navigation Category Header */}
         <div>
           <p className="px-3 text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-3 truncate">
-            Main Menu CMS Pro
+            {currentUser.role === 'JEMAAT' ? 'Menu Portal Jemaat GKFC' : 'Main Menu CMS Pro'}
           </p>
           <nav className="space-y-1">
             {filteredItems.map((item) => {

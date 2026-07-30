@@ -157,6 +157,18 @@ export interface EventSchedule {
   kategori?: string;
   pembicara?: string;
   keterangan?: string;
+  kuota_kursi?: number;
+}
+
+export interface EventReservation {
+  reservation_id: string;
+  event_id: string;
+  nama_jemaat: string;
+  nomor_wa: string;
+  jumlah_kursi: number;
+  catatan?: string;
+  tanggal_reservasi: string;
+  status: 'TERKONFIRMASI' | 'MENUNGGU' | 'DIBATALKAN';
 }
 
 export interface GalleryItem {
@@ -208,6 +220,9 @@ export interface AppSettings {
   video_title?: string;
   video_description?: string;
   video_enabled?: boolean;
+  // Floating APK Download Control (Admin / SuperAdmin)
+  show_apk_download_button?: boolean;
+  apk_download_url?: string;
   // Dashboard Visual Customization
   header_title?: string;
   header_subtitle?: string;

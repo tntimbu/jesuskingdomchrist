@@ -21,11 +21,18 @@ import {
 
 interface GaleriViewProps {
   currentUser: User;
+  initialTab?: 'GALLERY' | 'SOCIAL_VIDEOS';
 }
 
-export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser }) => {
+export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser, initialTab = 'GALLERY' }) => {
   const isAdmin = currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN';
-  const [activeTab, setActiveTab] = useState<'GALLERY' | 'SOCIAL_VIDEOS'>('GALLERY');
+  const [activeTab, setActiveTab] = useState<'GALLERY' | 'SOCIAL_VIDEOS'>(initialTab);
+
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
   const [galleryList, setGalleryList] = useState<GalleryItem[]>(() => StorageManager.getGallery());
   const [featuredVideos, setFeaturedVideos] = useState<FeaturedVideo[]>(() => StorageManager.getFeaturedVideos());
   const [activeType, setActiveType] = useState<'ALL' | 'Foto' | 'Video'>('ALL');
