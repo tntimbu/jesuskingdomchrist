@@ -1000,7 +1000,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       )}
                       <p
                         onClick={() => setSelectedRenunganForModal(latestRenungan)}
-                        className="text-xs text-slate-300 line-clamp-4 leading-relaxed cursor-pointer hover:text-slate-100 text-justify [text-align-last:left]"
+                        className="text-xs text-slate-300 line-clamp-4 leading-relaxed cursor-pointer hover:text-slate-100 text-left break-words"
                       >
                         {latestRenungan.isi}
                       </p>
@@ -1061,8 +1061,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                   {latestPengumuman ? (
                     <div className="mt-3 space-y-2">
-                      <h3 className="font-extrabold text-base text-white text-justify [text-align-last:left]">{latestPengumuman.judul}</h3>
-                      <p className="text-xs text-slate-300 line-clamp-4 leading-relaxed text-justify [text-align-last:left] whitespace-pre-line">
+                      <h3 className="font-extrabold text-base text-white text-left tracking-tight">{latestPengumuman.judul}</h3>
+                      <p className="text-xs text-slate-300 line-clamp-4 leading-relaxed text-left break-words whitespace-pre-line">
                         {latestPengumuman.isi}
                       </p>
                     </div>

@@ -339,57 +339,63 @@ export const RenunganAudioPlayer: React.FC<RenunganAudioPlayerProps> = ({
   }
 
   return (
-    <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-indigo-950/90 via-slate-900 to-indigo-950 border border-indigo-500/40 shadow-lg text-white space-y-3 my-2">
-      <div className="flex items-center justify-between gap-2">
+    <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-950/80 border border-indigo-500/30 shadow-md text-white space-y-3 my-2.5">
+      {/* Top Info Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-slate-800/80">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 shadow-inner">
+          <div className="p-2 rounded-xl bg-indigo-500/15 text-indigo-300 border border-indigo-500/20 shrink-0">
             <Volume2 className="w-4 h-4 text-amber-400 animate-pulse" />
           </div>
           <div>
-            <h4 className="text-xs sm:text-sm font-extrabold text-white flex items-center gap-1.5">
-              <span>Pemutar Suara AI Renungan Harian</span>
-              <span className="px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 text-[9px] font-extrabold uppercase border border-amber-500/30">
-                TTS AI Active
+            <div className="flex items-center gap-2 flex-wrap">
+              <h4 className="text-xs sm:text-sm font-bold text-white tracking-tight">
+                Pembaca Suara AI Renungan
+              </h4>
+              <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 text-[10px] font-semibold border border-emerald-500/30">
+                Bahasa Indonesia
               </span>
-            </h4>
-            <p className="text-[10px] sm:text-xs text-slate-300">
-              Dengarkan renungan dibacakan otomatis oleh suara AI Bahasa Indonesia
+            </div>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              Dengarkan pembacaan firman Tuhan secara otomatis oleh AI
             </p>
           </div>
         </div>
 
-        <button
-          onClick={toggleSpeed}
-          className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-[10px] font-extrabold text-indigo-200 border border-white/20 transition-all cursor-pointer shrink-0"
-          title="Ubah Kecepatan Bicara"
-        >
-          {speed}x
-        </button>
+        <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
+          <button
+            onClick={toggleSpeed}
+            className="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-[11px] font-semibold text-indigo-300 border border-indigo-500/30 transition-all cursor-pointer whitespace-nowrap flex items-center gap-1 shadow-sm"
+            title="Klik untuk mengubah kecepatan pembacaan AI"
+          >
+            <span className="text-slate-400 text-[10px]">Kecepatan:</span>
+            <span className="font-bold text-amber-300">{speed}x</span>
+          </button>
+        </div>
       </div>
 
-      {/* Control Buttons & Soundwave Visualizer */}
-      <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/10 flex-wrap">
+      {/* Control Action Row */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2">
           {!isPlaying ? (
             <button
               onClick={handlePlay}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 via-indigo-600 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white text-xs font-bold shadow-lg shadow-indigo-600/30 transition-all cursor-pointer"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/20 transition-all cursor-pointer whitespace-nowrap active:scale-95"
             >
-              <Play className="w-4 h-4 fill-current text-white" />
-              <span>{isPaused ? 'Lanjutkan Suara AI' : 'Putar Suara AI Renungan'}</span>
+              <Play className="w-3.5 h-3.5 fill-current text-white" />
+              <span>{isPaused ? 'Lanjutkan Pembacaan AI' : 'Putar Suara Renungan'}</span>
             </button>
           ) : (
             <div className="flex items-center gap-2">
               <button
                 onClick={handlePause}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all cursor-pointer whitespace-nowrap active:scale-95"
               >
                 <Pause className="w-3.5 h-3.5" />
                 <span>Jeda (Pause)</span>
               </button>
               <button
                 onClick={handleStop}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 text-xs font-bold transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-xs font-bold transition-all cursor-pointer whitespace-nowrap active:scale-95"
               >
                 <Square className="w-3.5 h-3.5 fill-current" />
                 <span>Stop</span>
@@ -398,14 +404,16 @@ export const RenunganAudioPlayer: React.FC<RenunganAudioPlayerProps> = ({
           )}
         </div>
 
-        {/* Animated Sound Wave Effect */}
+        {/* Animated Sound Wave Visualizer when playing */}
         {isPlaying && (
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-500/20 border border-indigo-500/30">
-            <span className="w-1 h-3 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-            <span className="w-1 h-4 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-            <span className="w-1 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-            <span className="w-1 h-3.5 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '450ms' }} />
-            <span className="text-[10px] font-extrabold text-amber-300 ml-1">AI Sedang Membaca...</span>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-950/60 border border-indigo-500/25">
+            <div className="flex items-center gap-1">
+              <span className="w-1 h-3 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-1 h-4 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-1 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+              <span className="w-1 h-3.5 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '450ms' }} />
+            </div>
+            <span className="text-[11px] font-semibold text-amber-300">AI Membaca...</span>
           </div>
         )}
       </div>

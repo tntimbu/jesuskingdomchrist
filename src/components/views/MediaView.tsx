@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Pengumuman, Renungan, User } from '../../types';
 import { StorageManager } from '../../utils/storage';
-import { Megaphone, BookOpen, Plus, Heart, Share2, Sparkles, X, Trash2, Volume2, Maximize2 } from 'lucide-react';
+import { Megaphone, BookOpen, Plus, Heart, Share2, Sparkles, X, Trash2, Volume2, Maximize2, Edit3 } from 'lucide-react';
 import { RenunganAudioPlayer } from '../RenunganAudioPlayer';
 import { RenunganFullscreenModal } from '../RenunganFullscreenModal';
 
@@ -23,6 +23,7 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
   // Modals
   const [isPengumumanModal, setIsPengumumanModal] = useState(false);
   const [isRenunganModal, setIsRenunganModal] = useState(false);
+  const [editingRenunganId, setEditingRenunganId] = useState<string | null>(null);
   const [selectedRenunganForModal, setSelectedRenunganForModal] = useState<Renungan | null>(null);
 
   // Forms
@@ -39,7 +40,7 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
     ayat_alkitab: 'Filipi 4:13',
     isi: '',
     tanggal: new Date().toISOString().slice(0, 10),
-    penulis: 'Pdt. Dr. Herman Setyawan'
+    penulis: currentUser.nama || 'Pdt. Dr. Herman Setyawan'
   });
 
   useEffect(() => {
@@ -67,6 +68,30 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
     setRenunganList(StorageManager.getRenungan());
   };
 
+  const handleOpenAddRenungan = () => {
+    setEditingRenunganId(null);
+    setRenunganForm({
+      judul: '',
+      ayat_alkitab: '',
+      isi: '',
+      tanggal: new Date().toISOString().slice(0, 10),
+      penulis: currentUser.nama || 'Pdt. Dr. Herman Setyawan'
+    });
+    setIsRenunganModal(true);
+  };
+
+  const handleOpenEditRenungan = (r: Renungan) => {
+    setEditingRenunganId(r.renungan_id);
+    setRenunganForm({
+      judul: r.judul,
+      ayat_alkitab: r.ayat_alkitab || r.ayat || '',
+      isi: r.isi,
+      tanggal: r.tanggal || new Date().toISOString().slice(0, 10),
+      penulis: r.penulis || 'Pdt. Dr. Herman Setyawan'
+    });
+    setIsRenunganModal(true);
+  };
+
   const handleSavePengumuman = (e: React.FormEvent) => {
     e.preventDefault();
     if (!pengumumanForm.judul || !pengumumanForm.isi) return;
@@ -91,20 +116,41 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
     e.preventDefault();
     if (!renunganForm.judul || !renunganForm.isi) return;
 
-    const newR: Renungan = {
-      renungan_id: `RNG-2026-${(renunganList.length + 1).toString().padStart(3, '0')}`,
-      judul: renunganForm.judul,
-      ayat_alkitab: renunganForm.ayat_alkitab,
-      isi: renunganForm.isi,
-      tanggal: renunganForm.tanggal,
-      penulis: renunganForm.penulis
-    };
+    let updated: Renungan[];
 
-    const updated = [newR, ...renunganList];
+    if (editingRenunganId) {
+      updated = renunganList.map((item) =>
+        item.renungan_id === editingRenunganId
+          ? {
+              ...item,
+              judul: renunganForm.judul,
+              ayat_alkitab: renunganForm.ayat_alkitab,
+              ayat: renunganForm.ayat_alkitab,
+              isi: renunganForm.isi,
+              tanggal: renunganForm.tanggal,
+              penulis: renunganForm.penulis
+            }
+          : item
+      );
+      StorageManager.logActivity(currentUser.username, `Mengedit renungan: ${renunganForm.judul}`, 'Media & Renungan');
+    } else {
+      const newR: Renungan = {
+        renungan_id: `RNG-2026-${Date.now().toString().slice(-4)}`,
+        judul: renunganForm.judul,
+        ayat_alkitab: renunganForm.ayat_alkitab,
+        ayat: renunganForm.ayat_alkitab,
+        isi: renunganForm.isi,
+        tanggal: renunganForm.tanggal,
+        penulis: renunganForm.penulis
+      };
+      updated = [newR, ...renunganList];
+      StorageManager.logActivity(currentUser.username, `Menerbitkan renungan: ${newR.judul}`, 'Media & Renungan');
+    }
+
     setRenunganList(updated);
     StorageManager.saveRenungan(updated);
-    StorageManager.logActivity(currentUser.username, `Menerbitkan renungan: ${newR.judul}`, 'Media & Renungan');
     setIsRenunganModal(false);
+    setEditingRenunganId(null);
   };
 
   const handleDeletePengumuman = (id: string, e: React.MouseEvent) => {
@@ -210,8 +256,8 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
                   <span className="text-xs text-slate-400">{p.tanggal}</span>
                 </div>
 
-                <h4 className="text-lg font-bold text-white leading-snug tracking-tight text-justify [text-align-last:left]">{p.judul}</h4>
-                <p className="text-xs text-slate-300 leading-relaxed text-justify [text-align-last:left] whitespace-pre-line">{p.isi}</p>
+                <h4 className="text-lg font-bold text-white leading-snug tracking-tight text-left">{p.judul}</h4>
+                <p className="text-xs text-slate-300 leading-relaxed text-left break-words whitespace-pre-line">{p.isi}</p>
 
                 <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-500 font-medium">
                   <span>Diterbitkan oleh: {p.penulis}</span>
@@ -245,8 +291,8 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
             <h3 className="text-sm font-bold text-white uppercase tracking-wider">Santapan Rohani & Renungan Harian</h3>
             {currentUser.role !== 'JEMAAT' && (
               <button
-                onClick={() => setIsRenunganModal(true)}
-                className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md flex items-center gap-1.5"
+                onClick={handleOpenAddRenungan}
+                className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md flex items-center gap-1.5 cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Tulis Renungan Baru</span>
@@ -279,16 +325,28 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
                       <Volume2 className="w-4 h-4 text-amber-400 animate-pulse" />
                       <span>Audio Pembaca AI</span>
                     </span>
-                    <span className="text-xs text-slate-400 ml-1">Penulis: {r.penulis}</span>
+                    <span className="text-xs text-indigo-300 bg-indigo-500/10 px-2 py-1 rounded-lg border border-indigo-500/20 font-semibold">
+                      Penulis: {r.penulis || 'Pdt. Dr. Herman Setyawan'}
+                    </span>
                     {currentUser.role !== 'JEMAAT' && (
-                      <button
-                        onClick={(e) => handleDeleteRenungan(r.renungan_id, e)}
-                        className="p-1.5 rounded-lg bg-rose-900/40 text-rose-300 hover:bg-rose-900/80 transition-all flex items-center gap-1 text-[11px]"
-                        title="Hapus Renungan"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        <span>Hapus</span>
-                      </button>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => handleOpenEditRenungan(r)}
+                          className="px-2.5 py-1.5 rounded-lg bg-indigo-900/60 text-indigo-200 hover:bg-indigo-900/90 transition-all flex items-center gap-1 text-[11px] font-semibold border border-indigo-500/30 cursor-pointer"
+                          title="Edit Renungan"
+                        >
+                          <Edit3 className="w-3.5 h-3.5 text-indigo-300" />
+                          <span>Edit</span>
+                        </button>
+                        <button
+                          onClick={(e) => handleDeleteRenungan(r.renungan_id, e)}
+                          className="px-2.5 py-1.5 rounded-lg bg-rose-900/40 text-rose-300 hover:bg-rose-900/80 transition-all flex items-center gap-1 text-[11px] font-semibold border border-rose-500/20 cursor-pointer"
+                          title="Hapus Renungan"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Hapus</span>
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -296,7 +354,7 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
                 <div>
                   <h4
                     onClick={() => setSelectedRenunganForModal(r)}
-                    className="text-xl font-extrabold text-white tracking-tight cursor-pointer hover:text-indigo-300 transition-colors"
+                    className="text-xl font-extrabold text-white tracking-tight cursor-pointer hover:text-indigo-300 transition-colors text-left"
                   >
                     {r.judul}
                   </h4>
@@ -307,7 +365,7 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
 
                 <div
                   onClick={() => setSelectedRenunganForModal(r)}
-                  className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 text-xs text-slate-200 leading-relaxed font-sans cursor-pointer hover:border-slate-700 text-justify [text-align-last:left] whitespace-pre-line"
+                  className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 text-xs sm:text-sm text-slate-200 leading-relaxed font-sans cursor-pointer hover:border-slate-700 text-left break-words whitespace-pre-line"
                 >
                   {r.isi}
                 </div>
@@ -331,7 +389,7 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
           <div className="w-full max-w-md rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <h3 className="text-base font-bold">Terbitkan Pengumuman Baru</h3>
-              <button onClick={() => setIsPengumumanModal(false)} className="text-slate-400 hover:text-white">
+              <button onClick={() => setIsPengumumanModal(false)} className="text-slate-400 hover:text-white cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -379,53 +437,87 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
         </div>
       )}
 
-      {/* Modal Renungan */}
+      {/* Modal Renungan (Tulis / Edit) */}
       {isRenunganModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl">
+          <div className="w-full max-w-lg rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <h3 className="text-base font-bold">Tulis Renungan Harian</h3>
-              <button onClick={() => setIsRenunganModal(false)} className="text-slate-400 hover:text-white">
+              <h3 className="text-base font-bold flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-indigo-400" />
+                <span>{editingRenunganId ? 'Edit Renungan Harian' : 'Tulis Renungan Harian Baru'}</span>
+              </h3>
+              <button onClick={() => setIsRenunganModal(false)} className="text-slate-400 hover:text-white cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <form onSubmit={handleSaveRenungan} className="space-y-3 text-xs">
+            <form onSubmit={handleSaveRenungan} className="space-y-3.5 text-xs">
               <div>
-                <label className="block text-slate-400 mb-1">Judul Renungan *</label>
+                <label className="block text-slate-300 font-semibold mb-1">Judul Renungan *</label>
                 <input
                   type="text"
                   required
                   placeholder="Contoh: Pengharapan Yang Teguh"
                   value={renunganForm.judul}
                   onChange={(e) => setRenunganForm({ ...renunganForm, judul: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-sm focus:border-indigo-500 focus:outline-none"
                 />
               </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-300 font-semibold mb-1">Nama Penulis Renungan *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Contoh: Pdt. Dr. Herman Setyawan"
+                    value={renunganForm.penulis}
+                    onChange={(e) => setRenunganForm({ ...renunganForm, penulis: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:border-indigo-500 focus:outline-none"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">Anda bebas mengetik nama hamba Tuhan / penulis renungan ini.</p>
+                </div>
+
+                <div>
+                  <label className="block text-slate-300 font-semibold mb-1">Tanggal Renungan</label>
+                  <input
+                    type="date"
+                    required
+                    value={renunganForm.tanggal}
+                    onChange={(e) => setRenunganForm({ ...renunganForm, tanggal: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:border-indigo-500 focus:outline-none"
+                  />
+                </div>
+              </div>
+
               <div>
-                <label className="block text-slate-400 mb-1">Ayat Alkitab Kunci</label>
+                <label className="block text-slate-300 font-semibold mb-1">Ayat Alkitab Kunci</label>
                 <input
                   type="text"
+                  placeholder="Contoh: Filipi 4:13"
                   value={renunganForm.ayat_alkitab}
                   onChange={(e) => setRenunganForm({ ...renunganForm, ayat_alkitab: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:border-indigo-500 focus:outline-none"
                 />
               </div>
+
               <div>
-                <label className="block text-slate-400 mb-1">Isi Pesan Renungan *</label>
+                <label className="block text-slate-300 font-semibold mb-1">Isi Pesan Renungan *</label>
                 <textarea
                   required
-                  rows={4}
+                  rows={6}
+                  placeholder="Tuliskan renungan firman Tuhan..."
                   value={renunganForm.isi}
                   onChange={(e) => setRenunganForm({ ...renunganForm, isi: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs focus:border-indigo-500 focus:outline-none leading-relaxed"
                 />
               </div>
-              <div className="flex justify-end gap-2 pt-2">
-                <button type="button" onClick={() => setIsRenunganModal(false)} className="px-4 py-2 text-slate-300">
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+                <button type="button" onClick={() => setIsRenunganModal(false)} className="px-4 py-2 text-slate-300 hover:text-white cursor-pointer font-medium">
                   Batal
                 </button>
-                <button type="submit" className="px-4 py-2 bg-indigo-600 rounded-xl font-bold">
-                  Simpan Renungan
+                <button type="submit" className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-bold cursor-pointer shadow-lg text-white">
+                  {editingRenunganId ? 'Simpan Perubahan Renungan' : 'Simpan & Terbitkan Renungan'}
                 </button>
               </div>
             </form>
