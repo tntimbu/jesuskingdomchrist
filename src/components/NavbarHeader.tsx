@@ -24,13 +24,16 @@ import {
   Wand2,
   AlertCircle,
   Check,
-  Volume2
+  Volume2,
+  LogIn
 } from 'lucide-react';
 
 interface NavbarHeaderProps {
   currentUser: User;
   settings: AppSettings;
   onLogout: () => void;
+  onOpenLogin?: () => void;
+  isGuest?: boolean;
   onUpdateCurrentUser?: (updatedUser: User) => void;
   onOpenMobileMenu?: () => void;
   onInstallPWA?: () => void;
@@ -41,6 +44,8 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
   currentUser,
   settings,
   onLogout,
+  onOpenLogin,
+  isGuest,
   onUpdateCurrentUser,
   onOpenMobileMenu,
   onInstallPWA,
@@ -380,69 +385,81 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
           )}
         </div>
 
-        {/* User Profile Dropdown */}
+        {/* User Profile Dropdown or Login Button for Guest */}
         <div className="relative">
-          <button
-            onClick={() => {
-              setShowUserDropdown(!showUserDropdown);
-              setShowNotifDropdown(false);
-            }}
-            className="flex items-center gap-2.5 p-1.5 pr-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all"
-          >
-            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center font-bold text-white text-xs shadow-md shadow-indigo-500/20">
-              {currentUser.nama.slice(0, 2).toUpperCase()}
-            </div>
-            <div className="hidden lg:block text-left">
-              <p className="text-xs font-bold leading-tight text-white truncate max-w-[120px]">
-                {currentUser.nama}
-              </p>
-              <span className={`inline-block px-1.5 py-0.2 rounded text-[9px] font-bold mt-0.5 ${getRoleBadge(currentUser.role)}`}>
-                {currentUser.role}
-              </span>
-            </div>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden lg:block" />
-          </button>
-
-          {showUserDropdown && (
-            <div className="absolute right-0 mt-3 w-60 rounded-2xl bg-[#0f172a]/95 backdrop-blur-2xl border border-white/10 shadow-2xl p-2 z-50 text-white space-y-1">
-              <div className="p-3 bg-white/5 rounded-xl mb-1 border border-white/10">
-                <p className="text-xs font-bold text-white truncate">{currentUser.nama}</p>
-                <p className="text-[11px] text-slate-400 truncate mt-0.5">{currentUser.email}</p>
-                <span className={`inline-block px-2 py-0.5 rounded-full border text-[10px] font-bold mt-1.5 ${getRoleBadge(currentUser.role)}`}>
-                  Role: {currentUser.role}
-                </span>
-              </div>
-
+          {isGuest || currentUser.user_id === 'guest' ? (
+            <button
+              onClick={onOpenLogin}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-500 via-indigo-600 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white text-xs font-bold shadow-md shadow-indigo-500/20 transition-all cursor-pointer border border-indigo-400/30"
+            >
+              <LogIn className="w-4 h-4" />
+              <span>Masuk / Login</span>
+            </button>
+          ) : (
+            <>
               <button
                 onClick={() => {
-                  setShowUserDropdown(false);
-                  setSelfError('');
-                  setSelfSuccess('');
-                  setSelfForm({
-                    username: currentUser.username,
-                    nama: currentUser.nama,
-                    email: currentUser.email || '',
-                    no_hp: currentUser.no_hp || '',
-                    old_password: '',
-                    new_password: '',
-                    confirm_password: ''
-                  });
-                  setIsSelfModalOpen(true);
+                  setShowUserDropdown(!showUserDropdown);
+                  setShowNotifDropdown(false);
                 }}
-                className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-indigo-300 hover:bg-indigo-500/10 text-xs font-semibold transition-all text-left"
+                className="flex items-center gap-2.5 p-1.5 pr-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all"
               >
-                <KeyRound className="w-4 h-4 text-amber-400" />
-                <span>Ubah Username & Password</span>
+                <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center font-bold text-white text-xs shadow-md shadow-indigo-500/20">
+                  {currentUser.nama.slice(0, 2).toUpperCase()}
+                </div>
+                <div className="hidden lg:block text-left">
+                  <p className="text-xs font-bold leading-tight text-white truncate max-w-[120px]">
+                    {currentUser.nama}
+                  </p>
+                  <span className={`inline-block px-1.5 py-0.2 rounded text-[9px] font-bold mt-0.5 ${getRoleBadge(currentUser.role)}`}>
+                    {currentUser.role}
+                  </span>
+                </div>
+                <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden lg:block" />
               </button>
 
-              <button
-                onClick={onLogout}
-                className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-rose-400 hover:bg-rose-500/10 text-xs font-semibold transition-all text-left"
-              >
-                <LogOut className="w-4 h-4" />
-                <span>Keluar (Logout)</span>
-              </button>
-            </div>
+              {showUserDropdown && (
+                <div className="absolute right-0 mt-3 w-60 rounded-2xl bg-[#0f172a]/95 backdrop-blur-2xl border border-white/10 shadow-2xl p-2 z-50 text-white space-y-1">
+                  <div className="p-3 bg-white/5 rounded-xl mb-1 border border-white/10">
+                    <p className="text-xs font-bold text-white truncate">{currentUser.nama}</p>
+                    <p className="text-[11px] text-slate-400 truncate mt-0.5">{currentUser.email}</p>
+                    <span className={`inline-block px-2 py-0.5 rounded-full border text-[10px] font-bold mt-1.5 ${getRoleBadge(currentUser.role)}`}>
+                      Role: {currentUser.role}
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setShowUserDropdown(false);
+                      setSelfError('');
+                      setSelfSuccess('');
+                      setSelfForm({
+                        username: currentUser.username,
+                        nama: currentUser.nama,
+                        email: currentUser.email || '',
+                        no_hp: currentUser.no_hp || '',
+                        old_password: '',
+                        new_password: '',
+                        confirm_password: ''
+                      });
+                      setIsSelfModalOpen(true);
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-indigo-300 hover:bg-indigo-500/10 text-xs font-semibold transition-all text-left"
+                  >
+                    <KeyRound className="w-4 h-4 text-amber-400" />
+                    <span>Ubah Username & Password</span>
+                  </button>
+
+                  <button
+                    onClick={onLogout}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-rose-400 hover:bg-rose-500/10 text-xs font-semibold transition-all text-left"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Keluar (Logout)</span>
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

@@ -26,9 +26,22 @@ import { SplashScreen } from './components/SplashScreen';
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isLoginPageOpen, setIsLoginPageOpen] = useState(!StorageManager.getCurrentUser());
   const [settings, setSettings] = useState<AppSettings>(StorageManager.getSettings());
   const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Default Guest user for public browsing when not logged in
+  const GUEST_USER: User = {
+    user_id: 'guest',
+    username: 'tamu_jemaat',
+    nama: 'Tamu Jemaat (Publik)',
+    role: 'JEMAAT',
+    email: 'jemaat@gkfc-cms.org',
+    status: 'Aktif'
+  };
+
+  const effectiveUser = currentUser || GUEST_USER;
 
   // PWA Install Prompt State
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -39,6 +52,7 @@ export default function App() {
     const savedUser = StorageManager.getCurrentUser();
     if (savedUser) {
       setCurrentUser(savedUser);
+      setIsLoginPageOpen(false);
       // Restore tab from sessionStorage or default to 'dashboard'
       const savedTab = (sessionStorage.getItem('cms_active_tab') as NavTab) || 'dashboard';
       setActiveTab(savedTab);
@@ -101,9 +115,9 @@ export default function App() {
     }
   };
 
-  // Intercept Android Back Button / Browser Navigation to show Exit Confirmation Modal
+  // Intercept Android Back Button / Browser Navigation to show Exit Confirmation Modal when logged in
   useEffect(() => {
-    if (!currentUser) return;
+    if (!currentUser || isLoginPageOpen) return;
 
     // Push history state to enable popstate interception for back button
     window.history.pushState({ page: 'cms' }, '', window.location.href);
@@ -118,7 +132,7 @@ export default function App() {
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };
-  }, [currentUser]);
+  }, [currentUser, isLoginPageOpen]);
 
   const handleInstallPWA = async () => {
     if (deferredPrompt) {
@@ -138,6 +152,7 @@ export default function App() {
 
   const handleLoginSuccess = (user: User) => {
     setCurrentUser(user);
+    setIsLoginPageOpen(false);
     if (user.role === 'JEMAAT') {
       setActiveTab('jemaat_portal');
     } else {
@@ -163,6 +178,7 @@ export default function App() {
     StorageManager.clearCurrentUser();
     setCurrentUser(null);
     setIsLogoutConfirmOpen(false);
+    setIsLoginPageOpen(true);
   };
 
   const handleUpdateSettings = (newSettings: AppSettings) => {
@@ -175,12 +191,13 @@ export default function App() {
     return <SplashScreen settings={settings} onFinish={() => setShowSplash(false)} />;
   }
 
-  // If not logged in, show Glassmorphism Login Page
-  if (!currentUser) {
+  // If login view is explicitly open
+  if (isLoginPageOpen) {
     return (
       <LoginPage
         settings={settings}
         onLoginSuccess={handleLoginSuccess}
+        onClose={() => setIsLoginPageOpen(false)}
         onInstallPWA={handleInstallPWA}
         canInstallPWA={!!deferredPrompt || true}
       />
@@ -201,7 +218,9 @@ export default function App() {
 
       {/* Main Top Header */}
       <NavbarHeader
-        currentUser={currentUser}
+        currentUser={effectiveUser}
+        isGuest={!currentUser}
+        onOpenLogin={() => setIsLoginPageOpen(true)}
         settings={settings}
         onLogout={requestLogout}
         onUpdateCurrentUser={(updatedUser) => setCurrentUser(updatedUser)}
@@ -214,7 +233,7 @@ export default function App() {
       <div className="flex flex-1 w-full max-w-[1600px] mx-auto px-2 sm:px-4">
         {/* Sidebar */}
         <Sidebar
-          currentUser={currentUser}
+          currentUser={effectiveUser}
           activeTab={activeTab}
           onSelectTab={handleSelectTab}
           isMobileOpen={isMobileMenuOpen}
@@ -225,7 +244,7 @@ export default function App() {
         <main className="flex-1 p-4 sm:p-6 lg:p-8 min-w-0 pb-20 lg:pb-8">
           {activeTab === 'dashboard' && (
             <DashboardView
-              currentUser={currentUser}
+              currentUser={effectiveUser}
               settings={settings}
               onNavigate={handleSelectTab}
               onUpdateSettings={handleUpdateSettings}
@@ -233,20 +252,20 @@ export default function App() {
             />
           )}
 
-          {activeTab === 'jemaat' && <JemaatView currentUser={currentUser} />}
+          {activeTab === 'jemaat' && <JemaatView currentUser={effectiveUser} />}
 
-          {activeTab === 'wilayah' && <WilayahView currentUser={currentUser} />}
+          {activeTab === 'wilayah' && <WilayahView currentUser={effectiveUser} />}
 
-          {activeTab === 'administrasi' && <AdministrasiView currentUser={currentUser} />}
+          {activeTab === 'administrasi' && <AdministrasiView currentUser={effectiveUser} />}
 
-          {activeTab === 'keuangan' && <KeuanganView currentUser={currentUser} />}
+          {activeTab === 'keuangan' && <KeuanganView currentUser={effectiveUser} />}
 
           {(activeTab === 'jadwal' || activeTab === 'agenda') && (
-            <AgendaView currentUser={currentUser} mode="JADWAL" />
+            <AgendaView currentUser={effectiveUser} mode="JADWAL" />
           )}
 
           {activeTab === 'doa' && (
-            <AgendaView currentUser={currentUser} mode="DOA" />
+            <AgendaView currentUser={effectiveUser} mode="DOA" />
           )}
 
           {(activeTab === 'pengumuman' || activeTab === 'media') && (
