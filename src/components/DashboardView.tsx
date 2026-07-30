@@ -18,6 +18,8 @@ import { StorageManager } from '../utils/storage';
 import { parseSocialVideoUrl } from '../utils/videoHelper';
 import { DEFAULT_CHURCH_LOGO } from '../data/initialData';
 import { playNotificationChime, playWarningChime } from '../utils/soundHelper';
+import { RenunganAudioPlayer } from './RenunganAudioPlayer';
+import { FloatingApkDownloadButton } from './FloatingApkDownloadButton';
 import {
   Users,
   DollarSign,
@@ -932,36 +934,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </button>
           </div>
 
-          {/* Video Streaming / Pengumuman Ibadah Utama */}
-          {parsedVideo.isValid && (
-            <div className={`rounded-3xl ${cardStyleClass} text-white space-y-4 transition-all duration-300`}>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
-                    <Tv className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-sm sm:text-base text-white">Tayangan & Pengumuman Ibadah</h3>
-                    <p className="text-xs text-slate-400">Streaming ibadah &amp; khotbah resmi gereja</p>
-                  </div>
-                </div>
-                <span className="text-[11px] text-indigo-300 font-bold bg-indigo-500/20 px-3 py-1 rounded-full border border-indigo-500/30 truncate max-w-xs self-start sm:self-auto">
-                  {currentVideoDisplayTitle}
-                </span>
-              </div>
-
-              <div className="relative aspect-video rounded-2xl overflow-hidden bg-black border border-white/10 shadow-2xl">
-                <iframe
-                  src={parsedVideo.embedUrl}
-                  title={currentVideoDisplayTitle}
-                  className="w-full h-full border-0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              </div>
-            </div>
-          )}
-
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* 1. Latest Renungan Utama */}
             {settings.show_renungan_widget !== false && (
@@ -986,6 +958,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       <p className="text-xs text-slate-300 line-clamp-4 leading-relaxed">
                         {latestRenungan.isi}
                       </p>
+
+                      {/* Pemutar Audio Renungan Dibaca oleh AI */}
+                      <RenunganAudioPlayer
+                        text={latestRenungan.isi}
+                        title={latestRenungan.judul}
+                        verse={latestRenungan.ayat}
+                        writer={latestRenungan.penulis}
+                      />
                     </div>
                   ) : (
                     <p className="text-xs text-slate-400 py-6 text-center">Belum ada data renungan terbaru.</p>
@@ -2002,6 +1982,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* Floating APK Download Button for Android */}
+      <FloatingApkDownloadButton />
     </div>
   );
 };

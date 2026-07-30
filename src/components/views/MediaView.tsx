@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Pengumuman, Renungan, User } from '../../types';
 import { StorageManager } from '../../utils/storage';
 import { Megaphone, BookOpen, Plus, Heart, Share2, Sparkles, X, Trash2 } from 'lucide-react';
+import { RenunganAudioPlayer } from '../RenunganAudioPlayer';
 
 interface MediaViewProps {
   currentUser: User;
@@ -289,6 +290,14 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
                 <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 text-xs text-slate-200 leading-relaxed font-sans">
                   "{r.isi}"
                 </div>
+
+                {/* Pemutar Audio Renungan Dibaca oleh AI */}
+                <RenunganAudioPlayer
+                  text={r.isi}
+                  title={r.judul}
+                  verse={r.ayat_alkitab}
+                  writer={r.penulis}
+                />
               </div>
             ))}
           </div>

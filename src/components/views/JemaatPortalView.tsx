@@ -4,6 +4,7 @@ import { StorageManager } from '../../utils/storage';
 import { DEFAULT_CHURCH_LOGO } from '../../data/initialData';
 import { getThemeClasses } from '../../utils/themeHelper';
 import { parseSocialVideoUrl } from '../../utils/videoHelper';
+import { RenunganAudioPlayer } from '../RenunganAudioPlayer';
 import {
   UserCheck,
   Edit3,
@@ -711,6 +712,14 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
                 Oleh: {latestRenungan.penulis}
               </p>
             )}
+
+            {/* Pemutar Audio Renungan AI */}
+            <RenunganAudioPlayer
+              text={latestRenungan.isi}
+              title={latestRenungan.judul}
+              verse={latestRenungan.ayat || latestRenungan.ayat_alkitab}
+              writer={latestRenungan.penulis}
+            />
           </div>
         </div>
       )}
