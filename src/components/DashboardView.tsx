@@ -575,7 +575,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   }
 
   return (
-    <div className={`space-y-6 pb-12 transition-all duration-300 ${widthClass}`}>
+    <div className={`space-y-6 pb-2 sm:pb-4 transition-all duration-300 ${widthClass}`}>
       {/* Welcome Card Banner with Dynamic Custom Header */}
       <div className={`relative rounded-3xl ${bannerBgClass} ${cardStyleClass} overflow-hidden text-white transition-all duration-300`}>
         <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -1061,8 +1061,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                   {latestPengumuman ? (
                     <div className="mt-3 space-y-2">
-                      <h3 className="font-extrabold text-base text-white">{latestPengumuman.judul}</h3>
-                      <p className="text-xs text-slate-300 line-clamp-4 leading-relaxed">
+                      <h3 className="font-extrabold text-base text-white text-justify [text-align-last:left]">{latestPengumuman.judul}</h3>
+                      <p className="text-xs text-slate-300 line-clamp-4 leading-relaxed text-justify [text-align-last:left] whitespace-pre-line">
                         {latestPengumuman.isi}
                       </p>
                     </div>

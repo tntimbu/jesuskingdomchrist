@@ -256,7 +256,7 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
   const displayPhoto = photoPreview || jemaatData?.foto || currentUser.foto || DEFAULT_CHURCH_LOGO;
 
   return (
-    <div className={`space-y-6 pb-12 transition-all duration-300 ${widthClass}`}>
+    <div className={`space-y-6 pb-2 sm:pb-4 transition-all duration-300 ${widthClass}`}>
       {/* 1. Header Banner Profil User / Jemaat */}
       <div className={`relative rounded-3xl ${bannerBgClass} p-6 sm:p-8 overflow-hidden text-white transition-all border shadow-2xl`}>
         <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />

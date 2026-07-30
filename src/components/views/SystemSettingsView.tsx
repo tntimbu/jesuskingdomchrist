@@ -537,7 +537,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
   });
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 pb-2 sm:pb-4">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
         <div>

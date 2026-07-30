@@ -104,22 +104,32 @@ export const RenunganAudioPlayer: React.FC<RenunganAudioPlayerProps> = ({
     }
 
     try {
-      window.speechSynthesis.resume();
+      // Clear previous queue to prevent mobile browser audio deadlock
+      window.speechSynthesis.cancel();
+
       const utterance = new SpeechSynthesisUtterance(sentenceText);
       utterance.lang = 'id-ID';
       utterance.rate = speedRef.current;
       utterance.pitch = 1.0;
 
-      // Find best Indonesian voice or fallback
-      const availableVoices = voices.length > 0 ? voices : (typeof window !== 'undefined' && 'speechSynthesis' in window ? window.speechSynthesis.getVoices() : []);
+      // Find best Indonesian voice dynamically on mobile or desktop
+      const freshVoices = window.speechSynthesis.getVoices();
+      const availableVoices = freshVoices.length > 0 ? freshVoices : voices;
       const indonesianVoice = availableVoices.find(
-        (v) => v.lang.includes('id') || v.lang.includes('ID') || v.name.toLowerCase().includes('indonesia') || v.lang.includes('ms')
+        (v) => v.lang.toLowerCase().startsWith('id') || v.name.toLowerCase().includes('indonesia') || v.lang.toLowerCase().startsWith('ms')
       );
       if (indonesianVoice) {
         utterance.voice = indonesianVoice;
       }
 
+      let startTimer: NodeJS.Timeout | null = null;
+
+      utterance.onstart = () => {
+        if (startTimer) clearTimeout(startTimer);
+      };
+
       utterance.onend = () => {
+        if (startTimer) clearTimeout(startTimer);
         if (isPlayingRef.current) {
           const nextIndex = index + 1;
           setCurrentSentenceIndex(nextIndex);
@@ -135,12 +145,22 @@ export const RenunganAudioPlayer: React.FC<RenunganAudioPlayerProps> = ({
       };
 
       utterance.onerror = (e) => {
-        console.warn('SpeechSynthesis error event, trying fallback:', e);
-        // Fallback to HTML Audio if SpeechSynthesis throws error
+        if (startTimer) clearTimeout(startTimer);
+        console.warn('SpeechSynthesis error event on mobile, trying fallback:', e);
         playAudioFallback(sentenceText, index, chunks);
       };
 
       window.speechSynthesis.speak(utterance);
+      // Essential for Android Chrome/Safari mobile power management
+      window.speechSynthesis.resume();
+
+      // Mobile Chrome unfreeze heartbeat safety
+      startTimer = setTimeout(() => {
+        if (isPlayingRef.current && ('speechSynthesis' in window)) {
+          window.speechSynthesis.resume();
+        }
+      }, 1000);
+
     } catch (err) {
       console.warn('SpeechSynthesis exception, playing fallback:', err);
       playAudioFallback(sentenceText, index, chunks);

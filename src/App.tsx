@@ -241,7 +241,7 @@ export default function App() {
         />
 
         {/* Main Content Area */}
-        <main className="flex-1 p-2 sm:p-4 lg:p-5 min-w-0 pb-20 lg:pb-8">
+        <main className="flex-1 p-2 sm:p-4 lg:p-5 min-w-0 pb-16 lg:pb-6">
           {activeTab === 'dashboard' && (
             <DashboardView
               currentUser={effectiveUser}

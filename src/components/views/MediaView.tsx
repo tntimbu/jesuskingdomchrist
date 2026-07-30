@@ -210,8 +210,8 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
                   <span className="text-xs text-slate-400">{p.tanggal}</span>
                 </div>
 
-                <h4 className="text-lg font-bold text-white leading-snug">{p.judul}</h4>
-                <p className="text-xs text-slate-300 leading-relaxed">{p.isi}</p>
+                <h4 className="text-lg font-bold text-white leading-snug tracking-tight text-justify [text-align-last:left]">{p.judul}</h4>
+                <p className="text-xs text-slate-300 leading-relaxed text-justify [text-align-last:left] whitespace-pre-line">{p.isi}</p>
 
                 <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-500 font-medium">
                   <span>Diterbitkan oleh: {p.penulis}</span>
