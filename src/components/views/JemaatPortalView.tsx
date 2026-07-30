@@ -182,7 +182,7 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
   // Dynamic Layout Width
   let widthClass = 'max-w-5xl mx-auto';
   if (appSettings.jemaat_card_width === 'FULL') widthClass = 'w-full';
-  if (appSettings.jemaat_card_width === 'COMPACT') widthClass = 'max-w-3xl mx-auto';
+  if (appSettings.jemaat_card_width === 'COMPACT' || appSettings.jemaat_card_width === 'MOBILE_COMPACT') widthClass = 'max-w-3xl mx-auto';
   if (appSettings.jemaat_card_width === 'CONTAINED') widthClass = 'max-w-5xl mx-auto';
 
   // Dynamic Card Density

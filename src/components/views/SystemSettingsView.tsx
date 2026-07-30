@@ -933,52 +933,76 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 mb-2 font-semibold">Pengaturan Lebar Kartu Dashboard Jemaat</label>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-slate-400 font-semibold text-xs sm:text-sm">Pengaturan Lebar Kartu Dashboard Jemaat</label>
+                    <span className="text-[10px] text-indigo-400 font-mono font-semibold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">Pilih 1 Ukuran Lebar</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     {[
                       { id: 'CONTAINED', label: '🛡️ Standard (Max 5XL)', desc: 'Rekomendasi Desktop & Tablet' },
                       { id: 'FULL', label: '🖥️ Full Width (100%)', desc: 'Memenuhi Seluruh Layar' },
-                      { id: 'COMPACT', label: '📱 Compact Mobile', desc: 'Rapat Rapi Fokus Hape' }
-                    ].map((cw) => (
-                      <button
-                        type="button"
-                        key={cw.id}
-                        onClick={() => setMetaForm({ ...metaForm, jemaat_card_width: cw.id as any })}
-                        className={`p-2.5 rounded-xl bg-slate-950 border text-left transition-all ${
-                          (metaForm.jemaat_card_width || 'CONTAINED') === cw.id
-                            ? 'border-indigo-500 ring-2 ring-indigo-500/50 text-white'
-                            : 'border-slate-800 text-slate-400 hover:text-slate-200'
-                        }`}
-                      >
-                        <div className="font-bold text-[11px]">{cw.label}</div>
-                        <div className="text-[9px] text-slate-500 mt-0.5">{cw.desc}</div>
-                      </button>
-                    ))}
+                      { id: 'MOBILE_COMPACT', label: '📱 Compact Mobile', desc: 'Rapat Rapi Fokus Hape' }
+                    ].map((cw) => {
+                      const isSelected =
+                        (metaForm.jemaat_card_width || 'CONTAINED') === cw.id ||
+                        (cw.id === 'MOBILE_COMPACT' && metaForm.jemaat_card_width === 'COMPACT');
+                      return (
+                        <button
+                          type="button"
+                          key={cw.id}
+                          onClick={() => setMetaForm({ ...metaForm, jemaat_card_width: cw.id as any })}
+                          className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                            isSelected
+                              ? 'border-indigo-500 bg-indigo-950/60 ring-2 ring-indigo-500/50 text-white shadow-lg'
+                              : 'border-slate-800 bg-slate-950 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between w-full mb-1">
+                            <span className="font-bold text-[11px]">{cw.label}</span>
+                            <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 ${isSelected ? 'border-indigo-400 bg-indigo-500' : 'border-slate-600'}`}>
+                              {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                            </div>
+                          </div>
+                          <div className="text-[9px] text-slate-500">{cw.desc}</div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 mb-2 font-semibold">Ukuran Kepadatan Padding Kartu (Density)</label>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-slate-400 font-semibold text-xs sm:text-sm">Ukuran Kepadatan Padding Kartu (Density)</label>
+                    <span className="text-[10px] text-indigo-400 font-mono font-semibold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">Pilih 1 Padding</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     {[
                       { id: 'COMPACT', label: '⚡ Ringkas', desc: 'Padding Kecil (Hape)' },
                       { id: 'NORMAL', label: '⚖️ Normal', desc: 'Padding Standar' },
                       { id: 'SPACIOUS', label: '✨ Lega', desc: 'Padding Luas & Mewah' }
-                    ].map((cs) => (
-                      <button
-                        type="button"
-                        key={cs.id}
-                        onClick={() => setMetaForm({ ...metaForm, card_size: cs.id as any })}
-                        className={`p-2.5 rounded-xl bg-slate-950 border text-left transition-all ${
-                          (metaForm.card_size || 'NORMAL') === cs.id
-                            ? 'border-indigo-500 ring-2 ring-indigo-500/50 text-white'
-                            : 'border-slate-800 text-slate-400 hover:text-slate-200'
-                        }`}
-                      >
-                        <div className="font-bold text-[11px]">{cs.label}</div>
-                        <div className="text-[9px] text-slate-500 mt-0.5">{cs.desc}</div>
-                      </button>
-                    ))}
+                    ].map((cs) => {
+                      const isSelected = (metaForm.card_size || 'NORMAL') === cs.id;
+                      return (
+                        <button
+                          type="button"
+                          key={cs.id}
+                          onClick={() => setMetaForm({ ...metaForm, card_size: cs.id as any })}
+                          className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                            isSelected
+                              ? 'border-indigo-500 bg-indigo-950/60 ring-2 ring-indigo-500/50 text-white shadow-lg'
+                              : 'border-slate-800 bg-slate-950 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between w-full mb-1">
+                            <span className="font-bold text-[11px]">{cs.label}</span>
+                            <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 ${isSelected ? 'border-indigo-400 bg-indigo-500' : 'border-slate-600'}`}>
+                              {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                            </div>
+                          </div>
+                          <div className="text-[9px] text-slate-500">{cs.desc}</div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 

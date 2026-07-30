@@ -541,7 +541,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   let widthClass = 'max-w-7xl mx-auto';
   if (settings.jemaat_card_width === 'FULL') widthClass = 'w-full';
-  if (settings.jemaat_card_width === 'COMPACT') widthClass = 'max-w-3xl mx-auto';
+  if (settings.jemaat_card_width === 'COMPACT' || settings.jemaat_card_width === 'MOBILE_COMPACT') widthClass = 'max-w-3xl mx-auto';
   if (settings.jemaat_card_width === 'CONTAINED') widthClass = 'max-w-5xl mx-auto';
 
   return (
@@ -1665,49 +1665,71 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
               {/* Section 4: Pengaturan Lebar Kartu & Layout Dashboard Jemaat */}
               <div className="space-y-3 bg-slate-950 p-4 rounded-2xl border border-slate-800">
-                <label className="font-bold text-indigo-300 block">Pengaturan Lebar Kartu Dashboard Jemaat & Mobile View</label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="flex items-center justify-between">
+                  <label className="font-bold text-indigo-300 block text-xs sm:text-sm">Pengaturan Lebar Kartu Dashboard Jemaat & Mobile View</label>
+                  <span className="text-[10px] text-indigo-400 font-mono font-semibold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">Pilih 1 Opsional</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   {[
                     { id: 'CONTAINED', label: '🛡️ Standard (Max 5XL)', desc: 'Rekomendasi Desktop' },
                     { id: 'FULL', label: '🖥️ Full Width (100%)', desc: 'Layar Penuh' },
-                    { id: 'COMPACT', label: '📱 Compact Mobile', desc: 'Fokus Hape' }
-                  ].map((cw) => (
-                    <button
-                      type="button"
-                      key={cw.id}
-                      onClick={() => setCustomForm({ ...customForm, jemaat_card_width: cw.id as any })}
-                      className={`p-2 rounded-xl text-left border transition-all ${
-                        (customForm.jemaat_card_width || 'CONTAINED') === cw.id
-                          ? 'border-indigo-500 bg-indigo-600/20 text-white font-bold'
-                          : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      <div className="font-bold text-[11px]">{cw.label}</div>
-                      <div className="text-[9px] text-slate-500 mt-0.5">{cw.desc}</div>
-                    </button>
-                  ))}
+                    { id: 'MOBILE_COMPACT', label: '📱 Compact Mobile', desc: 'Fokus Hape' }
+                  ].map((cw) => {
+                    const isSelected =
+                      (customForm.jemaat_card_width || 'CONTAINED') === cw.id ||
+                      (cw.id === 'MOBILE_COMPACT' && customForm.jemaat_card_width === 'COMPACT');
+                    return (
+                      <button
+                        type="button"
+                        key={cw.id}
+                        onClick={() => setCustomForm({ ...customForm, jemaat_card_width: cw.id as any })}
+                        className={`p-2.5 rounded-xl text-left border transition-all cursor-pointer flex flex-col justify-between ${
+                          isSelected
+                            ? 'border-indigo-500 bg-indigo-600/20 text-white font-bold ring-1 ring-indigo-500/50'
+                            : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between w-full mb-1">
+                          <span className="font-bold text-[11px]">{cw.label}</span>
+                          <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 ${isSelected ? 'border-indigo-400 bg-indigo-500' : 'border-slate-600'}`}>
+                            {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                          </div>
+                        </div>
+                        <div className="text-[9px] text-slate-500">{cw.desc}</div>
+                      </button>
+                    );
+                  })}
                 </div>
 
-                <label className="font-bold text-indigo-300 block pt-2">Ukuran Density / Padding Kartu</label>
+                <div className="flex items-center justify-between pt-2">
+                  <label className="font-bold text-indigo-300 block text-xs sm:text-sm">Ukuran Density / Padding Kartu</label>
+                  <span className="text-[10px] text-indigo-400 font-mono font-semibold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">Pilih 1 Padding</span>
+                </div>
                 <div className="grid grid-cols-3 gap-2">
                   {[
                     { id: 'COMPACT', label: '⚡ Ringkas (Hape)' },
                     { id: 'NORMAL', label: '⚖️ Normal Standar' },
                     { id: 'SPACIOUS', label: '✨ Lega & Mewah' }
-                  ].map((cs) => (
-                    <button
-                      type="button"
-                      key={cs.id}
-                      onClick={() => setCustomForm({ ...customForm, card_size: cs.id as any })}
-                      className={`p-2 rounded-xl text-center border text-xs transition-all ${
-                        (customForm.card_size || 'NORMAL') === cs.id
-                          ? 'border-indigo-500 bg-indigo-600/20 text-white font-bold'
-                          : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      {cs.label}
-                    </button>
-                  ))}
+                  ].map((cs) => {
+                    const isSelected = (customForm.card_size || 'NORMAL') === cs.id;
+                    return (
+                      <button
+                        type="button"
+                        key={cs.id}
+                        onClick={() => setCustomForm({ ...customForm, card_size: cs.id as any })}
+                        className={`p-2 rounded-xl text-center border text-xs transition-all cursor-pointer flex items-center justify-between px-2.5 ${
+                          isSelected
+                            ? 'border-indigo-500 bg-indigo-600/20 text-white font-bold ring-1 ring-indigo-500/50'
+                            : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        <span className="truncate">{cs.label}</span>
+                        <div className={`w-3 h-3 rounded-full border flex items-center justify-center shrink-0 ml-1 ${isSelected ? 'border-indigo-400 bg-indigo-500' : 'border-slate-600'}`}>
+                          {isSelected && <div className="w-1 h-1 rounded-full bg-white" />}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
 
                 <div className="pt-2 space-y-2">
