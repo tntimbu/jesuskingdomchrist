@@ -56,6 +56,12 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
   // Metadata Form State
   const [metaForm, setMetaForm] = useState<AppSettings>(settings);
   const [savedSuccess, setSavedSuccess] = useState(false);
+
+  useEffect(() => {
+    if (settings) {
+      setMetaForm(settings);
+    }
+  }, [settings]);
   const [copiedCode, setCopiedCode] = useState(false);
 
   // GAS Sync & Testing State

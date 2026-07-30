@@ -180,37 +180,37 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
   const parsedVideo = parseSocialVideoUrl(currentVideoUrl);
 
   // Dynamic Layout Width
-  let widthClass = 'max-w-5xl mx-auto';
-  if (appSettings.jemaat_card_width === 'FULL') widthClass = 'w-full';
-  if (appSettings.jemaat_card_width === 'COMPACT' || appSettings.jemaat_card_width === 'MOBILE_COMPACT') widthClass = 'max-w-3xl mx-auto';
-  if (appSettings.jemaat_card_width === 'CONTAINED') widthClass = 'max-w-5xl mx-auto';
+  let widthClass = 'max-w-5xl mx-auto px-2 sm:px-4';
+  if (appSettings.jemaat_card_width === 'FULL') widthClass = 'w-full px-1 sm:px-4';
+  if (appSettings.jemaat_card_width === 'COMPACT' || appSettings.jemaat_card_width === 'MOBILE_COMPACT') widthClass = 'max-w-3xl mx-auto px-1 sm:px-3';
+  if (appSettings.jemaat_card_width === 'CONTAINED') widthClass = 'max-w-5xl mx-auto px-2 sm:px-4';
 
   // Dynamic Card Density
-  let cardPaddingClass = 'p-6 sm:p-8';
-  if (appSettings.card_size === 'COMPACT') cardPaddingClass = 'p-3.5 sm:p-5';
-  if (appSettings.card_size === 'SPACIOUS') cardPaddingClass = 'p-6 sm:p-10';
+  let cardPaddingClass = 'p-5 sm:p-6';
+  if (appSettings.card_size === 'COMPACT') cardPaddingClass = 'p-3.5 sm:p-4 text-xs';
+  if (appSettings.card_size === 'SPACIOUS') cardPaddingClass = 'p-6 sm:p-8 text-sm';
 
   // Dynamic Banner Background
-  let bannerBgClass = 'bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border-indigo-500/30';
+  let bannerBgClass = 'bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 border-indigo-500/50 shadow-xl shadow-indigo-900/20';
   switch (appSettings.jemaat_banner_bg) {
     case 'GRADIENT_GOLD':
-      bannerBgClass = 'bg-gradient-to-r from-neutral-950 via-amber-950 to-neutral-900 border-amber-500/30';
+      bannerBgClass = 'bg-gradient-to-r from-amber-950 via-yellow-900 to-amber-950 border-amber-500/50 shadow-xl shadow-amber-900/20';
       break;
     case 'GRADIENT_EMERALD':
-      bannerBgClass = 'bg-gradient-to-r from-stone-950 via-emerald-950 to-stone-900 border-emerald-500/30';
+      bannerBgClass = 'bg-gradient-to-r from-emerald-950 via-teal-900 to-emerald-950 border-emerald-500/50 shadow-xl shadow-emerald-900/20';
       break;
     case 'GRADIENT_PURPLE':
-      bannerBgClass = 'bg-gradient-to-r from-neutral-950 via-purple-950 to-neutral-900 border-purple-500/30';
+      bannerBgClass = 'bg-gradient-to-r from-purple-950 via-fuchsia-900 to-purple-950 border-purple-500/50 shadow-xl shadow-purple-900/20';
       break;
     case 'OBSIDIAN_NIGHT':
-      bannerBgClass = 'bg-gradient-to-r from-black via-slate-950 to-black border-slate-800';
+      bannerBgClass = 'bg-gradient-to-r from-slate-950 via-neutral-900 to-slate-950 border-slate-700 shadow-xl shadow-black/40';
       break;
     case 'OCEAN_BLUE':
-      bannerBgClass = 'bg-gradient-to-r from-slate-950 via-blue-950 to-slate-900 border-blue-500/30';
+      bannerBgClass = 'bg-gradient-to-r from-slate-950 via-blue-900 to-cyan-950 border-cyan-500/50 shadow-xl shadow-cyan-900/20';
       break;
     case 'GRADIENT_INDIGO':
     default:
-      bannerBgClass = 'bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border-indigo-500/30';
+      bannerBgClass = 'bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 border-indigo-500/50 shadow-xl shadow-indigo-900/20';
       break;
   }
 
@@ -371,7 +371,7 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
       )}
 
       {/* 2. Welcome Banner */}
-      <div className={`rounded-3xl ${bannerBgClass} border p-6 sm:p-8 shadow-xl text-white relative overflow-hidden`}>
+      <div className={`rounded-3xl ${bannerBgClass} border ${cardPaddingClass} text-white relative overflow-hidden transition-all duration-300`}>
         <div className="absolute right-0 top-0 translate-x-8 -translate-y-8 w-48 h-48 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none" />
 
         <div className="flex flex-col sm:flex-row items-center justify-between gap-6 relative z-10">
@@ -585,7 +585,7 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
 
       {/* 4. Feed Video Media Sosial (If Enabled by SuperAdmin) */}
       {appSettings.show_jemaat_social_video !== false && parsedVideo.isValid && (
-        <div className={`rounded-3xl ${theme.cardClass} space-y-4`}>
+        <div className={`rounded-3xl ${theme.cardClass} ${cardPaddingClass} transition-all duration-300 space-y-4`}>
           <div className="flex items-center justify-between border-b border-white/10 pb-3">
             <h3 className="text-base font-bold text-white flex items-center gap-2">
               <Tv className="w-5 h-5 text-indigo-400" />
@@ -629,11 +629,10 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
             </div>
           )}
         </div>
-      )}
-
-      {/* 5. Member Profile Details & Status Sakramen Card */}
+      )}      {/* 5. Member Profile Details & Status Sakramen Card */}
       {appSettings.show_jemaat_sacraments_card !== false && (
-        <div className={`rounded-3xl ${theme.cardClass} space-y-4`}>
+        <div className={`rounded-3xl ${theme.cardClass} ${cardPaddingClass} transition-all duration-300 space-y-4`}>
+
           <h3 className="text-base font-bold flex items-center justify-between border-b border-white/10 pb-3">
             <div className="flex items-center gap-2">
               <UserCheck className={`w-5 h-5 ${theme.accentText}`} />
@@ -690,7 +689,7 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
 
       {/* 6. Renungan Harian Widget (If Enabled) */}
       {appSettings.show_jemaat_daily_renungan !== false && latestRenungan && (
-        <div className={`rounded-3xl ${theme.cardClass} space-y-4`}>
+        <div className={`rounded-3xl ${theme.cardClass} ${cardPaddingClass} transition-all duration-300 space-y-4`}>
           <div className="flex items-center justify-between border-b border-white/10 pb-3">
             <h3 className="text-base font-bold text-white flex items-center gap-2">
               <BookOpen className="w-5 h-5 text-amber-400" />
@@ -718,7 +717,7 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
 
       {/* 7. Event & Jadwal Ibadah Widget (If Enabled) */}
       {appSettings.show_jemaat_event_jadwal !== false && eventsList.length > 0 && (
-        <div className={`rounded-3xl ${theme.cardClass} space-y-4`}>
+        <div className={`rounded-3xl ${theme.cardClass} ${cardPaddingClass} transition-all duration-300 space-y-4`}>
           <div className="flex items-center justify-between border-b border-white/10 pb-3">
             <h3 className="text-base font-bold text-white flex items-center gap-2">
               <Calendar className="w-5 h-5 text-emerald-400" />
@@ -760,7 +759,7 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
 
       {/* 8. Form Kirim Permohonan Doa Jemaat (If Enabled) */}
       {appSettings.show_jemaat_quick_doa !== false && (
-        <div className={`rounded-3xl ${theme.cardClass} space-y-4`}>
+        <div className={`rounded-3xl ${theme.cardClass} ${cardPaddingClass} transition-all duration-300 space-y-4`}>
           <div className="flex items-center justify-between border-b border-white/10 pb-3">
             <h3 className="text-base font-bold text-white flex items-center gap-2">
               <Heart className="w-5 h-5 text-rose-400" />
@@ -831,7 +830,7 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
 
       {/* 9. Riwayat Catatan Persembahan Personal (If Enabled) */}
       {appSettings.show_jemaat_offering_history !== false && (
-        <div className={`rounded-3xl ${theme.cardClass} space-y-4`}>
+        <div className={`rounded-3xl ${theme.cardClass} ${cardPaddingClass} transition-all duration-300 space-y-4`}>
           <h3 className="text-base font-bold flex items-center justify-between border-b border-white/10 pb-3">
             <div className="flex items-center gap-2">
               <DollarSign className="w-5 h-5 text-emerald-400" />

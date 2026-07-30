@@ -539,15 +539,38 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     ]
   };
 
-  let widthClass = 'max-w-7xl mx-auto';
-  if (settings.jemaat_card_width === 'FULL') widthClass = 'w-full';
-  if (settings.jemaat_card_width === 'COMPACT' || settings.jemaat_card_width === 'MOBILE_COMPACT') widthClass = 'max-w-3xl mx-auto';
-  if (settings.jemaat_card_width === 'CONTAINED') widthClass = 'max-w-5xl mx-auto';
+  let widthClass = 'max-w-7xl mx-auto px-2 sm:px-4';
+  if (settings.jemaat_card_width === 'FULL') widthClass = 'w-full px-1 sm:px-4';
+  if (settings.jemaat_card_width === 'COMPACT' || settings.jemaat_card_width === 'MOBILE_COMPACT') widthClass = 'max-w-3xl mx-auto px-1 sm:px-3';
+  if (settings.jemaat_card_width === 'CONTAINED') widthClass = 'max-w-5xl mx-auto px-2 sm:px-4';
+
+  let bannerBgClass = 'bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 border-indigo-500/50 shadow-xl shadow-indigo-900/20';
+  switch (settings.jemaat_banner_bg) {
+    case 'GRADIENT_GOLD':
+      bannerBgClass = 'bg-gradient-to-r from-amber-950 via-yellow-900 to-amber-950 border-amber-500/50 shadow-xl shadow-amber-900/20';
+      break;
+    case 'GRADIENT_EMERALD':
+      bannerBgClass = 'bg-gradient-to-r from-emerald-950 via-teal-900 to-emerald-950 border-emerald-500/50 shadow-xl shadow-emerald-900/20';
+      break;
+    case 'GRADIENT_PURPLE':
+      bannerBgClass = 'bg-gradient-to-r from-purple-950 via-fuchsia-900 to-purple-950 border-purple-500/50 shadow-xl shadow-purple-900/20';
+      break;
+    case 'OBSIDIAN_NIGHT':
+      bannerBgClass = 'bg-gradient-to-r from-slate-950 via-neutral-900 to-slate-950 border-slate-700 shadow-xl shadow-black/40';
+      break;
+    case 'OCEAN_BLUE':
+      bannerBgClass = 'bg-gradient-to-r from-slate-950 via-blue-900 to-cyan-950 border-cyan-500/50 shadow-xl shadow-cyan-900/20';
+      break;
+    case 'GRADIENT_INDIGO':
+    default:
+      bannerBgClass = 'bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 border-indigo-500/50 shadow-xl shadow-indigo-900/20';
+      break;
+  }
 
   return (
     <div className={`space-y-6 pb-12 transition-all duration-300 ${widthClass}`}>
       {/* Welcome Card Banner with Dynamic Custom Header */}
-      <div className={`relative rounded-3xl ${cardStyleClass} p-6 sm:p-8 overflow-hidden text-white`}>
+      <div className={`relative rounded-3xl ${bannerBgClass} ${cardStyleClass} overflow-hidden text-white transition-all duration-300`}>
         <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -904,7 +927,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* 1. Latest Renungan Utama */}
             {settings.show_renungan_widget !== false && (
-              <div className={`rounded-3xl ${cardStyleClass} p-6 text-white space-y-3 flex flex-col justify-between`}>
+              <div className={`rounded-3xl ${cardStyleClass} text-white space-y-3 flex flex-col justify-between transition-all duration-300`}>
                 <div>
                   <div className="flex items-center justify-between pb-3 border-b border-white/10">
                     <span className="px-2.5 py-1 rounded-xl bg-indigo-500/20 text-indigo-300 font-bold text-[10px] border border-indigo-500/30 flex items-center gap-1">
@@ -946,7 +969,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
             {/* 2. Latest Pengumuman */}
             {settings.show_pengumuman_widget !== false && (
-              <div className={`rounded-3xl ${cardStyleClass} p-6 text-white space-y-3 flex flex-col justify-between`}>
+              <div className={`rounded-3xl ${cardStyleClass} text-white space-y-3 flex flex-col justify-between transition-all duration-300`}>
                 <div>
                   <div className="flex items-center justify-between pb-3 border-b border-white/10">
                     <span className="px-2.5 py-1 rounded-xl bg-emerald-500/20 text-emerald-300 font-bold text-[10px] border border-emerald-500/30 flex items-center gap-1">
@@ -983,7 +1006,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
             {/* 3. Latest Upcoming Event */}
             {settings.show_event_widget !== false && (
-              <div className={`rounded-3xl ${cardStyleClass} p-6 text-white space-y-3 flex flex-col justify-between`}>
+              <div className={`rounded-3xl ${cardStyleClass} text-white space-y-3 flex flex-col justify-between transition-all duration-300`}>
                 <div>
                   <div className="flex items-center justify-between pb-3 border-b border-white/10">
                     <span className="px-2.5 py-1 rounded-xl bg-amber-500/20 text-amber-300 font-bold text-[10px] border border-amber-500/30 flex items-center gap-1">
@@ -1033,7 +1056,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           {/* Direct Prayer Request Form for Jemaat */}
           {settings.show_prayer_widget !== false && (
-            <div className={`rounded-3xl ${cardStyleClass} p-6 text-white space-y-4`}>
+            <div className={`rounded-3xl ${cardStyleClass} text-white space-y-4 transition-all duration-300`}>
               <div className="flex items-center gap-2 pb-3 border-b border-white/10">
                 <HeartHandshake className="w-5 h-5 text-pink-400" />
                 <div>
@@ -1094,7 +1117,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           {/* Featured Social Media Video Player Widget for Jemaat (At the Very Bottom) */}
           {settings.show_video_widget !== false && settings.video_enabled !== false && (
-            <div className={`rounded-3xl ${cardStyleClass} p-6 overflow-hidden text-white space-y-4`}>
+            <div className={`rounded-3xl ${cardStyleClass} overflow-hidden text-white space-y-4 transition-all duration-300`}>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
                 <div className="flex items-center gap-3">
                   <div className="p-2.5 rounded-2xl bg-red-500/20 border border-red-500/30 text-red-400 animate-pulse">
@@ -1208,7 +1231,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           {settings.show_stat_cards !== false && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Total Jemaat Card */}
-              <div className={`rounded-2xl ${cardStyleClass} p-5 hover:border-white/20 transition-all text-white`}>
+              <div className={`rounded-2xl ${cardStyleClass} hover:border-white/20 transition-all text-white`}>
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Jemaat</span>
                   <div className="w-9 h-9 rounded-xl bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 flex items-center justify-center">
@@ -1231,7 +1254,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
 
               {/* Total Keluarga Card */}
-              <div className={`rounded-2xl ${cardStyleClass} p-5 hover:border-white/20 transition-all text-white`}>
+              <div className={`rounded-2xl ${cardStyleClass} hover:border-white/20 transition-all text-white`}>
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Kepala Keluarga</span>
                   <div className="w-9 h-9 rounded-xl bg-blue-500/20 border border-blue-500/30 text-blue-300 flex items-center justify-center">
@@ -1250,7 +1273,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
 
               {/* Total Persembahan Card */}
-              <div className={`rounded-2xl ${cardStyleClass} p-5 hover:border-white/20 transition-all text-white`}>
+              <div className={`rounded-2xl ${cardStyleClass} hover:border-white/20 transition-all text-white`}>
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Kas Persembahan</span>
                   <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 flex items-center justify-center">
@@ -1269,7 +1292,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
 
               {/* Event Mendatang Card */}
-              <div className={`rounded-2xl ${cardStyleClass} p-5 hover:border-white/20 transition-all text-white`}>
+              <div className={`rounded-2xl ${cardStyleClass} hover:border-white/20 transition-all text-white`}>
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Jadwal & Event</span>
                   <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-300 flex items-center justify-center">
@@ -1730,6 +1753,39 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       </button>
                     );
                   })}
+                </div>
+
+                <div className="pt-2 space-y-1.5">
+                  <label className="block text-indigo-300 font-bold text-xs sm:text-sm">Style Background Banner Jemaat</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                    {[
+                      { id: 'GRADIENT_INDIGO', label: '🌌 Royal Twilight' },
+                      { id: 'GRADIENT_GOLD', label: '👑 Golden Grace' },
+                      { id: 'GRADIENT_EMERALD', label: '🌿 Emerald Divine' },
+                      { id: 'GRADIENT_PURPLE', label: '🔮 Amethyst Majesty' },
+                      { id: 'OBSIDIAN_NIGHT', label: '🖤 Obsidian Night' },
+                      { id: 'OCEAN_BLUE', label: '🌊 Ocean Waves' }
+                    ].map((gb) => {
+                      const isSelected = (customForm.jemaat_banner_bg || 'GRADIENT_INDIGO') === gb.id;
+                      return (
+                        <button
+                          type="button"
+                          key={gb.id}
+                          onClick={() => setCustomForm({ ...customForm, jemaat_banner_bg: gb.id as any })}
+                          className={`p-2 rounded-xl border text-left text-[11px] font-bold transition-all cursor-pointer flex items-center justify-between ${
+                            isSelected
+                              ? 'border-indigo-500 bg-indigo-950/80 ring-1 ring-indigo-500/50 text-white'
+                              : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-slate-200'
+                          }`}
+                        >
+                          <span className="truncate">{gb.label}</span>
+                          <div className={`w-3 h-3 rounded-full border flex items-center justify-center shrink-0 ml-1 ${isSelected ? 'border-indigo-400 bg-indigo-500' : 'border-slate-600'}`}>
+                            {isSelected && <div className="w-1 h-1 rounded-full bg-white" />}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 <div className="pt-2 space-y-2">
