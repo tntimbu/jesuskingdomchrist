@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Pengumuman, Renungan, User } from '../../types';
 import { StorageManager } from '../../utils/storage';
-import { Megaphone, BookOpen, Plus, Heart, Share2, Sparkles, X, Trash2 } from 'lucide-react';
+import { Megaphone, BookOpen, Plus, Heart, Share2, Sparkles, X, Trash2, Volume2 } from 'lucide-react';
 import { RenunganAudioPlayer } from '../RenunganAudioPlayer';
 
 interface MediaViewProps {
@@ -258,15 +258,19 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
                 key={r.renungan_id}
                 className="rounded-3xl bg-slate-900 border border-slate-800 p-6 shadow-xl text-white space-y-4 hover:border-indigo-500/40 transition-all"
               >
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center gap-2">
                     <Sparkles className="w-5 h-5 text-amber-400" />
                     <span className="text-xs font-bold text-amber-300 uppercase tracking-wider">
                       Renungan Tanggal: {r.tanggal}
                     </span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs text-slate-400">Penulis: {r.penulis}</span>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="px-2.5 py-1 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold flex items-center gap-1.5 shadow-sm">
+                      <Volume2 className="w-4 h-4 text-amber-400 animate-pulse" />
+                      <span>Audio Pembaca AI</span>
+                    </span>
+                    <span className="text-xs text-slate-400 ml-1">Penulis: {r.penulis}</span>
                     {currentUser.role !== 'JEMAAT' && (
                       <button
                         onClick={(e) => handleDeleteRenungan(r.renungan_id, e)}
@@ -283,7 +287,7 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
                 <div>
                   <h4 className="text-xl font-extrabold text-white tracking-tight">{r.judul}</h4>
                   <div className="mt-2 inline-block px-3 py-1 rounded-xl bg-indigo-950/80 border border-indigo-500/30 text-indigo-300 font-semibold text-xs">
-                    Bacaan Alkitab: {r.ayat_alkitab}
+                    Bacaan Alkitab: {r.ayat_alkitab || r.ayat}
                   </div>
                 </div>
 
@@ -295,7 +299,7 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
                 <RenunganAudioPlayer
                   text={r.isi}
                   title={r.judul}
-                  verse={r.ayat_alkitab}
+                  verse={r.ayat_alkitab || r.ayat}
                   writer={r.penulis}
                 />
               </div>
