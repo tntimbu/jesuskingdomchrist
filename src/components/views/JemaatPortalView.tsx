@@ -717,8 +717,18 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
             )}
 
             <div
+              lang="id"
               onClick={() => setSelectedRenunganForModal(latestRenungan)}
-              className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800 text-xs sm:text-sm text-slate-200 leading-relaxed font-sans cursor-pointer hover:border-slate-700 text-left break-words line-clamp-5 whitespace-pre-line"
+              className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800 text-xs sm:text-sm text-slate-200 leading-relaxed font-sans cursor-pointer hover:border-slate-700 text-justify hyphens-auto [text-align-last:left] [text-justify:inter-word] break-words line-clamp-5 whitespace-pre-line"
+              style={{
+                textAlign: 'justify',
+                textJustify: 'inter-word',
+                hyphens: 'auto',
+                WebkitHyphens: 'auto',
+                textAlignLast: 'left',
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
+              }}
             >
               {latestRenungan.isi}
             </div>

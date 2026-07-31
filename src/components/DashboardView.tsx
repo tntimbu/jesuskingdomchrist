@@ -999,8 +999,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         </p>
                       )}
                       <p
+                        lang="id"
                         onClick={() => setSelectedRenunganForModal(latestRenungan)}
-                        className="text-xs text-slate-300 line-clamp-4 leading-relaxed cursor-pointer hover:text-slate-100 text-left break-words"
+                        className="text-xs text-slate-300 line-clamp-4 leading-relaxed cursor-pointer hover:text-slate-100 text-justify hyphens-auto [text-align-last:left] [text-justify:inter-word] break-words"
+                        style={{
+                          textAlign: 'justify',
+                          textJustify: 'inter-word',
+                          hyphens: 'auto',
+                          WebkitHyphens: 'auto',
+                          textAlignLast: 'left',
+                          wordBreak: 'break-word',
+                          overflowWrap: 'break-word',
+                        }}
                       >
                         {latestRenungan.isi}
                       </p>
@@ -1062,7 +1072,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   {latestPengumuman ? (
                     <div className="mt-3 space-y-2">
                       <h3 className="font-extrabold text-base text-white text-left tracking-tight">{latestPengumuman.judul}</h3>
-                      <p className="text-xs text-slate-300 line-clamp-4 leading-relaxed text-left break-words whitespace-pre-line">
+                      <p
+                        lang="id"
+                        className="text-xs text-slate-300 line-clamp-4 leading-relaxed text-justify hyphens-auto [text-align-last:left] [text-justify:inter-word] break-words whitespace-pre-line"
+                        style={{
+                          textAlign: 'justify',
+                          textJustify: 'inter-word',
+                          hyphens: 'auto',
+                          WebkitHyphens: 'auto',
+                          textAlignLast: 'left',
+                          wordBreak: 'break-word',
+                          overflowWrap: 'break-word',
+                        }}
+                      >
                         {latestPengumuman.isi}
                       </p>
                     </div>

@@ -172,8 +172,18 @@ export const RenunganFullscreenModal: React.FC<RenunganFullscreenModalProps> = (
 
           {/* Main Content Text */}
           <div
-            style={{ fontSize: `${fontSize}px` }}
-            className={`font-sans leading-relaxed sm:leading-loose whitespace-pre-line tracking-normal space-y-4 break-words text-left ${
+            lang="id"
+            style={{
+              fontSize: `${fontSize}px`,
+              textAlign: 'justify',
+              textJustify: 'inter-word',
+              hyphens: 'auto',
+              WebkitHyphens: 'auto',
+              textAlignLast: 'left',
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word',
+            }}
+            className={`font-sans leading-relaxed sm:leading-loose whitespace-pre-line tracking-normal space-y-4 break-words text-justify hyphens-auto [text-align-last:left] [text-justify:inter-word] ${
               isLightMode ? 'text-slate-900' : 'text-slate-100'
             }`}
           >

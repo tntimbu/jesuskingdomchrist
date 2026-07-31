@@ -257,7 +257,21 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
                 </div>
 
                 <h4 className="text-lg font-bold text-white leading-snug tracking-tight text-left">{p.judul}</h4>
-                <p className="text-xs text-slate-300 leading-relaxed text-left break-words whitespace-pre-line">{p.isi}</p>
+                <p
+                  lang="id"
+                  className="text-xs text-slate-300 leading-relaxed text-justify hyphens-auto [text-align-last:left] [text-justify:inter-word] break-words whitespace-pre-line"
+                  style={{
+                    textAlign: 'justify',
+                    textJustify: 'inter-word',
+                    hyphens: 'auto',
+                    WebkitHyphens: 'auto',
+                    textAlignLast: 'left',
+                    wordBreak: 'break-word',
+                    overflowWrap: 'break-word',
+                  }}
+                >
+                  {p.isi}
+                </p>
 
                 <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-500 font-medium">
                   <span>Diterbitkan oleh: {p.penulis}</span>
@@ -364,8 +378,18 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
                 </div>
 
                 <div
+                  lang="id"
                   onClick={() => setSelectedRenunganForModal(r)}
-                  className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 text-xs sm:text-sm text-slate-200 leading-relaxed font-sans cursor-pointer hover:border-slate-700 text-left break-words whitespace-pre-line"
+                  className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 text-xs sm:text-sm text-slate-200 leading-relaxed font-sans cursor-pointer hover:border-slate-700 text-justify hyphens-auto [text-align-last:left] [text-justify:inter-word] break-words whitespace-pre-line"
+                  style={{
+                    textAlign: 'justify',
+                    textJustify: 'inter-word',
+                    hyphens: 'auto',
+                    WebkitHyphens: 'auto',
+                    textAlignLast: 'left',
+                    wordBreak: 'break-word',
+                    overflowWrap: 'break-word',
+                  }}
                 >
                   {r.isi}
                 </div>
