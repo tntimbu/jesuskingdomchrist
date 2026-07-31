@@ -78,9 +78,16 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
     e.preventDefault();
     if (!baptisForm.nama_jemaat) return;
     const settings = StorageManager.getSettings();
+    const allJ = StorageManager.getJemaat();
+    const matchedJ = allJ.find(
+      (j) =>
+        j.nama_lengkap.toLowerCase().includes(baptisForm.nama_jemaat.toLowerCase()) ||
+        baptisForm.nama_jemaat.toLowerCase().includes(j.nama_lengkap.toLowerCase())
+    );
+
     const newB: Baptisan = {
       baptisan_id: `BAP-2026-${(baptisanList.length + 1).toString().padStart(3, '0')}`,
-      jemaat_id: 'JMT-GEN',
+      jemaat_id: matchedJ ? matchedJ.jemaat_id : 'JMT-GEN',
       nama_jemaat: baptisForm.nama_jemaat,
       tanggal: baptisForm.tanggal,
       pendeta: baptisForm.pendeta,
@@ -92,6 +99,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
     setBaptisanList(updated);
     StorageManager.saveBaptisan(updated);
     StorageManager.logActivity(currentUser.username, `Input Surat Baptisan: ${newB.nama_jemaat}`, 'Administrasi Sacraments');
+    window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { action: 'baptisan_updated' } }));
     setIsBaptisModal(false);
     setBaptisForm({
       nama_jemaat: '',
@@ -112,6 +120,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
     setBaptisanList(updated);
     StorageManager.saveBaptisan(updated);
     StorageManager.logActivity(currentUser.username, `Upload Surat Baptisan ID: ${baptisan_id}`, 'Administrasi Sacraments');
+    window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { action: 'baptisan_file_uploaded' } }));
     setUploadTargetId(null);
     setUploadUrlInput('');
   };

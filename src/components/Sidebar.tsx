@@ -135,7 +135,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'jemaat_portal',
-      label: 'Profil Jemaat Saya',
+      label: 'Portal Jemaat Saya',
       icon: UserCheck,
       roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
     },
