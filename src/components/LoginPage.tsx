@@ -13,7 +13,10 @@ import {
   RefreshCw,
   Smartphone,
   ArrowLeft,
-  X
+  X,
+  AlertTriangle,
+  LogOut,
+  Home
 } from 'lucide-react';
 
 interface LoginPageProps {
@@ -41,19 +44,28 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const [resetEmail, setResetEmail] = useState('');
   const [resetSent, setResetSent] = useState(false);
 
-  // Handle popstate if needed without pushing redundant history state
+  // Android Back Button / Navigation Intercept State
+  const [isAndroidExitModalOpen, setIsAndroidExitModalOpen] = useState(false);
+
+  // Push history state so Android Back Button can be cleanly intercepted
   useEffect(() => {
+    try {
+      window.history.pushState({ page: 'login' }, '', window.location.href);
+    } catch (e) {}
+
     const handlePopState = () => {
-      if (onClose) {
-        onClose();
-      }
+      // Re-push state so user isn't kicked off login unexpectedly
+      try {
+        window.history.pushState({ page: 'login' }, '', window.location.href);
+      } catch (e) {}
+      setIsAndroidExitModalOpen(true);
     };
 
     window.addEventListener('popstate', handlePopState);
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };
-  }, [onClose]);
+  }, []);
 
   // Quick Account Switcher for Demo Ease
   const handleQuickRoleSelect = (roleName: string) => {
@@ -403,6 +415,67 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Android Back Button Exit / Navigation Modal */}
+      <AnimatePresence>
+        {isAndroidExitModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-6 text-white space-y-5 text-center"
+            >
+              <div className="w-14 h-14 rounded-2xl bg-amber-500/20 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto shadow-lg shadow-amber-500/20">
+                <AlertTriangle className="w-7 h-7" />
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold text-white">Navigasi Kembali Android</h3>
+                <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                  Anda sedang berada di halaman Login. Pilih opsi tindakan yang ingin Anda lakukan:
+                </p>
+              </div>
+
+              <div className="space-y-2.5 pt-1">
+                {onClose && (
+                  <button
+                    onClick={() => {
+                      setIsAndroidExitModalOpen(false);
+                      onClose();
+                    }}
+                    className="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 transition-all cursor-pointer"
+                  >
+                    <Home className="w-4 h-4" />
+                    <span>Masuk Mode Publik (Dashboard)</span>
+                  </button>
+                )}
+
+                <button
+                  onClick={() => {
+                    setIsAndroidExitModalOpen(false);
+                    // Try window close or soft exit
+                    try {
+                      window.close();
+                    } catch (e) {}
+                  }}
+                  className="w-full py-2.5 px-4 rounded-xl bg-rose-950/60 hover:bg-rose-900/80 border border-rose-800/80 text-rose-200 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Tutup / Keluar Aplikasi</span>
+                </button>
+
+                <button
+                  onClick={() => setIsAndroidExitModalOpen(false)}
+                  className="w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition-all border border-slate-700 cursor-pointer"
+                >
+                  Batal (Tetap di Halaman Login)
+                </button>
+              </div>
             </motion.div>
           </div>
         )}

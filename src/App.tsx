@@ -178,6 +178,12 @@ export default function App() {
     StorageManager.clearCurrentUser();
     setCurrentUser(null);
     setIsLogoutConfirmOpen(false);
+
+    // Cleanly replace history state so logout stays on login page
+    try {
+      window.history.replaceState({ page: 'login' }, '', window.location.href);
+    } catch (e) {}
+
     setIsLoginPageOpen(true);
   };
 
