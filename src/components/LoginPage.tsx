@@ -4,9 +4,6 @@ import { User, AppSettings } from '../types';
 import { StorageManager } from '../utils/storage';
 import { DEFAULT_CHURCH_LOGO } from '../data/initialData';
 import {
-  ShieldCheck,
-  UserCheck,
-  Church,
   Lock,
   Mail,
   Eye,
@@ -44,11 +41,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const [resetEmail, setResetEmail] = useState('');
   const [resetSent, setResetSent] = useState(false);
 
-  // Intercept Android Device Back Button / Browser Back Button
+  // Handle popstate if needed without pushing redundant history state
   useEffect(() => {
-    // Push history state so back button triggers popstate
-    window.history.pushState({ page: 'login' }, '', window.location.href);
-
     const handlePopState = () => {
       if (onClose) {
         onClose();
@@ -228,83 +222,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 </p>
               </div>
 
-              {/* Demo Account Role Switcher */}
-              <div className="space-y-2.5 pt-2 border-t border-slate-800/80">
-                <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold">
-                  Pilih Role Demo (Klik Otomatis Isi):
-                </p>
-                <div className="space-y-2">
-                  <button
-                    type="button"
-                    onClick={() => handleQuickRoleSelect('SUPER_ADMIN')}
-                    className={`w-full flex items-center justify-between p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
-                      username === 'superadmin'
-                        ? 'bg-indigo-950/90 border-indigo-500 text-white shadow-md shadow-indigo-950/50 ring-1 ring-indigo-500/50'
-                        : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:bg-slate-800/80'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-400">
-                        <ShieldCheck className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold leading-tight">Super Admin</p>
-                        <p className="text-[10px] text-slate-400">Akses Penuh Sistem & Pengaturan</p>
-                      </div>
-                    </div>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-semibold border border-indigo-500/30">
-                      Utama
-                    </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleQuickRoleSelect('ADMIN')}
-                    className={`w-full flex items-center justify-between p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
-                      username === 'adminsekretariat'
-                        ? 'bg-blue-950/90 border-blue-500 text-white shadow-md shadow-blue-950/50 ring-1 ring-blue-500/50'
-                        : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:bg-slate-800/80'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="p-1.5 rounded-lg bg-blue-500/20 text-blue-400">
-                        <UserCheck className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold leading-tight">Admin Sekretariat</p>
-                        <p className="text-[10px] text-slate-400">Manajemen Data & Keuangan</p>
-                      </div>
-                    </div>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-semibold border border-blue-500/30">
-                      Sekretaris
-                    </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleQuickRoleSelect('JEMAAT')}
-                    className={`w-full flex items-center justify-between p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
-                      username === 'jemaat01'
-                        ? 'bg-emerald-950/90 border-emerald-500 text-white shadow-md shadow-emerald-950/50 ring-1 ring-emerald-500/50'
-                        : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:bg-slate-800/80'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-400">
-                        <Church className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold leading-tight">Anggota Jemaat</p>
-                        <p className="text-[10px] text-slate-400">Portal & Kartu Digital Jemaat</p>
-                      </div>
-                    </div>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30">
-                      Anggota
-                    </span>
-                  </button>
-                </div>
-              </div>
-
               {/* Security Banner Footer */}
               <div className="p-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-200 text-[11px] flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-indigo-400 shrink-0" />
@@ -436,20 +353,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   )}
                 </button>
               </form>
-
-              {/* Guest Access Alternative Option */}
-              {onClose && (
-                <div className="pt-3 border-t border-slate-800/80 text-center space-y-2">
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="w-full py-2.5 px-4 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/80 text-slate-300 hover:text-white font-semibold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <ArrowLeft className="w-3.5 h-3.5 text-indigo-400" />
-                    <span>Lanjut Sebagai Tamu / Jemaat (Tanpa Login)</span>
-                  </button>
-                </div>
-              )}
             </div>
           </div>
         </motion.div>

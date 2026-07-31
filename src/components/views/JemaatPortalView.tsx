@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { User, Jemaat, AppSettings, Renungan } from '../../types';
+import { User, Jemaat, AppSettings } from '../../types';
 import { StorageManager } from '../../utils/storage';
 import { DEFAULT_CHURCH_LOGO } from '../../data/initialData';
 import { getThemeClasses } from '../../utils/themeHelper';
-import { RenunganAudioPlayer } from '../RenunganAudioPlayer';
-import { RenunganFullscreenModal } from '../RenunganFullscreenModal';
 import {
   UserCheck,
   Edit3,
@@ -23,10 +21,7 @@ import {
   Award,
   Sparkles,
   Lock,
-  Key,
-  BookOpen,
-  Volume2,
-  Maximize2
+  Key
 } from 'lucide-react';
 
 interface JemaatPortalViewProps {
@@ -76,15 +71,9 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordMsg, setPasswordMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // Renungan State
-  const [renunganList, setRenunganList] = useState<Renungan[]>([]);
-  const [selectedRenunganForModal, setSelectedRenunganForModal] = useState<Renungan | null>(null);
-
   const loadData = React.useCallback(() => {
     const freshSettings = StorageManager.getSettings();
     setAppSettings((prev) => (JSON.stringify(prev) !== JSON.stringify(freshSettings) ? freshSettings : prev));
-
-    setRenunganList(StorageManager.getRenungan());
 
     const activeUser = StorageManager.getCurrentUser() || currentUser;
     const allJemaat = StorageManager.getJemaat();
@@ -672,84 +661,6 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
           </div>
         </div>
       </div>
-
-      {/* 6. Renungan Harian & Pemutar Audio Teks AI untuk Jemaat */}
-      {renunganList.length > 0 && (() => {
-        const latestRenungan = renunganList[0];
-        return (
-          <div className={`rounded-3xl ${theme.cardClass} p-6 sm:p-8 space-y-4 border-2 border-indigo-500/40 shadow-2xl text-white relative overflow-hidden transition-all`}>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-2xl bg-indigo-600 text-white shadow-lg">
-                  <BookOpen className="w-6 h-6" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
-                      <Sparkles className="w-3 h-3 text-amber-400" />
-                      <span>Renungan Harian &amp; Audio AI</span>
-                    </span>
-                    <span className="text-xs text-slate-400 font-mono">{latestRenungan.tanggal || 'Hari Ini'}</span>
-                  </div>
-                  <h3
-                    onClick={() => setSelectedRenunganForModal(latestRenungan)}
-                    className="text-lg sm:text-xl font-extrabold text-white mt-1 cursor-pointer hover:text-indigo-300 transition-colors"
-                  >
-                    {latestRenungan.judul}
-                  </h3>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setSelectedRenunganForModal(latestRenungan)}
-                className="px-4 py-2 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 border border-indigo-500/40 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer self-start sm:self-auto shrink-0"
-              >
-                <Maximize2 className="w-4 h-4 text-indigo-400" />
-                <span>Baca Layar Penuh</span>
-              </button>
-            </div>
-
-            {(latestRenungan.ayat || latestRenungan.ayat_alkitab) && (
-              <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-semibold italic flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
-                <span>Nats Alkitab: &ldquo;{latestRenungan.ayat || latestRenungan.ayat_alkitab}&rdquo;</span>
-              </div>
-            )}
-
-            <div
-              lang="id"
-              onClick={() => setSelectedRenunganForModal(latestRenungan)}
-              className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800 text-xs sm:text-sm text-slate-200 leading-relaxed font-sans cursor-pointer hover:border-slate-700 text-justify hyphens-auto [text-align-last:left] [text-justify:inter-word] break-words line-clamp-5 whitespace-pre-line"
-              style={{
-                textAlign: 'justify',
-                textJustify: 'inter-word',
-                hyphens: 'auto',
-                WebkitHyphens: 'auto',
-                textAlignLast: 'left',
-                wordBreak: 'break-word',
-                overflowWrap: 'break-word',
-              }}
-            >
-              {latestRenungan.isi}
-            </div>
-
-            <div className="pt-2">
-              <RenunganAudioPlayer
-                text={latestRenungan.isi}
-                title={latestRenungan.judul}
-                verse={latestRenungan.ayat || latestRenungan.ayat_alkitab}
-                writer={latestRenungan.penulis}
-              />
-            </div>
-          </div>
-        );
-      })()}
-
-      {/* Fullscreen Renungan Modal for Jemaat Portal */}
-      <RenunganFullscreenModal
-        renungan={selectedRenunganForModal}
-        onClose={() => setSelectedRenunganForModal(null)}
-      />
     </div>
   );
 };

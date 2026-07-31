@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Renungan } from '../types';
-import { RenunganAudioPlayer } from './RenunganAudioPlayer';
-import { X, BookOpen, Volume2, Sparkles, Share2, Copy, Check, Type, Sun, Moon, ArrowLeft } from 'lucide-react';
+import { X, BookOpen, Sparkles, Share2, Copy, Check, Type, Sun, Moon, ArrowLeft } from 'lucide-react';
 
 interface RenunganFullscreenModalProps {
   renungan: Renungan | null;
@@ -121,16 +120,6 @@ export const RenunganFullscreenModal: React.FC<RenunganFullscreenModalProps> = (
 
         {/* Modal Scrollable Body */}
         <div className="p-4 sm:p-8 overflow-y-auto space-y-6 flex-1 break-words">
-          {/* Audio Player Bar */}
-          <div className="rounded-2xl overflow-hidden shadow-lg">
-            <RenunganAudioPlayer
-              text={renungan.isi}
-              title={renungan.judul}
-              verse={renungan.ayat || renungan.ayat_alkitab}
-              writer={renungan.penulis}
-            />
-          </div>
-
           {/* Devotional Header details */}
           <div className="space-y-3 pb-4 border-b border-indigo-500/20">
             <div className="flex items-center justify-between flex-wrap gap-2 text-xs">
@@ -191,12 +180,7 @@ export const RenunganFullscreenModal: React.FC<RenunganFullscreenModalProps> = (
           </div>
 
           {/* Footer inside Modal */}
-          <div className="pt-6 border-t border-indigo-500/20 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-            <div className="flex items-center gap-2 opacity-70 text-[11px]">
-              <Volume2 className="w-4 h-4 text-indigo-400" />
-              <span>Gunakan pemutar suara AI di atas jika ingin mendengarkan audio renungan.</span>
-            </div>
-
+          <div className="pt-6 border-t border-indigo-500/20 flex items-center justify-end gap-4 text-xs">
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <button
                 onClick={handleCopy}

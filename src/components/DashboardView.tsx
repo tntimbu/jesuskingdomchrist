@@ -18,7 +18,6 @@ import { StorageManager } from '../utils/storage';
 import { parseSocialVideoUrl } from '../utils/videoHelper';
 import { DEFAULT_CHURCH_LOGO } from '../data/initialData';
 import { playNotificationChime, playWarningChime } from '../utils/soundHelper';
-import { RenunganAudioPlayer } from './RenunganAudioPlayer';
 import { RenunganFullscreenModal } from './RenunganFullscreenModal';
 import { FloatingApkDownloadButton } from './FloatingApkDownloadButton';
 import {
@@ -1014,14 +1013,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       >
                         {latestRenungan.isi}
                       </p>
-
-                      {/* Pemutar Audio Renungan Dibaca oleh AI */}
-                      <RenunganAudioPlayer
-                        text={latestRenungan.isi}
-                        title={latestRenungan.judul}
-                        verse={latestRenungan.ayat || latestRenungan.ayat_alkitab}
-                        writer={latestRenungan.penulis}
-                      />
                     </div>
                   ) : (
                     <p className="text-xs text-slate-400 py-6 text-center">Belum ada data renungan terbaru.</p>
