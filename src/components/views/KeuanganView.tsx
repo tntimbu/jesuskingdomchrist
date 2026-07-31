@@ -32,6 +32,7 @@ export const KeuanganView: React.FC<KeuanganViewProps> = ({ currentUser }) => {
   const [kasList, setKasList] = useState<KasPengeluaran[]>([]);
 
   // Filter & Search states for Persembahan
+  const isAdmin = currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN';
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'TERVERIFIKASI' | 'DITOLAK'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -405,7 +406,7 @@ export const KeuanganView: React.FC<KeuanganViewProps> = ({ currentUser }) => {
           </button>
         </div>
 
-        {activeTab === 'PERSEMBAHAN' && (
+        {isAdmin && activeTab === 'PERSEMBAHAN' && (
           <button
             onClick={() => setIsPersembahanModal(true)}
             className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-md flex items-center gap-1.5 cursor-pointer shrink-0"
@@ -415,7 +416,7 @@ export const KeuanganView: React.FC<KeuanganViewProps> = ({ currentUser }) => {
           </button>
         )}
 
-        {activeTab === 'KAS' && (
+        {isAdmin && activeTab === 'KAS' && (
           <button
             onClick={() => setIsKasModal(true)}
             className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md flex items-center gap-1.5 cursor-pointer shrink-0"
@@ -500,13 +501,13 @@ export const KeuanganView: React.FC<KeuanganViewProps> = ({ currentUser }) => {
                     <th className="p-3.5">Status Verifikasi</th>
                     <th className="p-3.5">Keterangan</th>
                     <th className="p-3.5 text-right">Jumlah (Rp)</th>
-                    <th className="p-3.5 text-center">Aksi / Kontrol</th>
+                    {isAdmin && <th className="p-3.5 text-center">Aksi / Kontrol</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60">
                   {filteredPersembahan.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="p-8 text-center text-slate-500 text-xs">
+                      <td colSpan={isAdmin ? 7 : 6} className="p-8 text-center text-slate-500 text-xs">
                         Tidak ada data persembahan untuk filter ini.
                       </td>
                     </tr>
@@ -578,37 +579,39 @@ export const KeuanganView: React.FC<KeuanganViewProps> = ({ currentUser }) => {
                               Rp {p.jumlah.toLocaleString('id-ID')}
                             </span>
                           </td>
-                          <td className="p-3.5">
-                            <div className="flex items-center justify-center gap-1.5">
-                              {isPending && (
-                                <>
-                                  <button
-                                    onClick={() => handleVerifyPersembahan(p.persembahan_id)}
-                                    className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold flex items-center gap-1 shadow cursor-pointer transition-all active:scale-95"
-                                    title="Verifikasi & Terima (Saldo Bertambah)"
-                                  >
-                                    <Check className="w-3.5 h-3.5" />
-                                    <span>Verifikasi</span>
-                                  </button>
-                                  <button
-                                    onClick={() => handleRejectPersembahan(p.persembahan_id)}
-                                    className="px-2 py-1 rounded-lg bg-rose-600/30 hover:bg-rose-600/60 text-rose-300 border border-rose-500/40 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all"
-                                    title="Tolak Transaksi"
-                                  >
-                                    <X className="w-3.5 h-3.5" />
-                                  </button>
-                                </>
-                              )}
+                          {isAdmin && (
+                            <td className="p-3.5">
+                              <div className="flex items-center justify-center gap-1.5">
+                                {isPending && (
+                                  <>
+                                    <button
+                                      onClick={() => handleVerifyPersembahan(p.persembahan_id)}
+                                      className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold flex items-center gap-1 shadow cursor-pointer transition-all active:scale-95"
+                                      title="Verifikasi & Terima (Saldo Bertambah)"
+                                    >
+                                      <Check className="w-3.5 h-3.5" />
+                                      <span>Verifikasi</span>
+                                    </button>
+                                    <button
+                                      onClick={() => handleRejectPersembahan(p.persembahan_id)}
+                                      className="px-2 py-1 rounded-lg bg-rose-600/30 hover:bg-rose-600/60 text-rose-300 border border-rose-500/40 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all"
+                                      title="Tolak Transaksi"
+                                    >
+                                      <X className="w-3.5 h-3.5" />
+                                    </button>
+                                  </>
+                                )}
 
-                              <button
-                                onClick={() => handleDeletePersembahan(p.persembahan_id)}
-                                className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/30 text-rose-400 border border-rose-500/20 transition-all cursor-pointer"
-                                title="Hapus Riwayat Persembahan Ini"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </td>
+                                <button
+                                  onClick={() => handleDeletePersembahan(p.persembahan_id)}
+                                  className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/30 text-rose-400 border border-rose-500/20 transition-all cursor-pointer"
+                                  title="Hapus Riwayat Persembahan Ini"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </td>
+                          )}
                         </tr>
                       );
                     })
@@ -632,7 +635,7 @@ export const KeuanganView: React.FC<KeuanganViewProps> = ({ currentUser }) => {
                   <th className="p-3.5">Keterangan Transaksi</th>
                   <th className="p-3.5">PIC / Penanggung Jawab</th>
                   <th className="p-3.5 text-right">Jumlah (Rp)</th>
-                  <th className="p-3.5 text-center">Aksi</th>
+                  {isAdmin && <th className="p-3.5 text-center">Aksi</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
@@ -652,15 +655,17 @@ export const KeuanganView: React.FC<KeuanganViewProps> = ({ currentUser }) => {
                     <td className={`p-3.5 text-right font-bold text-sm ${k.tipe === 'Penerimaan' ? 'text-emerald-400' : 'text-rose-400'}`}>
                       {k.tipe === 'Penerimaan' ? '+' : '-'} Rp {k.jumlah.toLocaleString('id-ID')}
                     </td>
-                    <td className="p-3.5 text-center">
-                      <button
-                        onClick={() => handleDeleteKas(k.kas_id)}
-                        className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/30 text-rose-400 border border-rose-500/20 transition-all cursor-pointer"
-                        title="Hapus Riwayat Kas Ini"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </td>
+                    {isAdmin && (
+                      <td className="p-3.5 text-center">
+                        <button
+                          onClick={() => handleDeleteKas(k.kas_id)}
+                          className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/30 text-rose-400 border border-rose-500/20 transition-all cursor-pointer"
+                          title="Hapus Riwayat Kas Ini"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -681,7 +686,7 @@ export const KeuanganView: React.FC<KeuanganViewProps> = ({ currentUser }) => {
                   <th className="p-3.5">Kategori / Peruntukan</th>
                   <th className="p-3.5">Keterangan</th>
                   <th className="p-3.5 text-right">Jumlah (Rp)</th>
-                  <th className="p-3.5 text-center">Aksi</th>
+                  {isAdmin && <th className="p-3.5 text-center">Aksi</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
@@ -701,15 +706,17 @@ export const KeuanganView: React.FC<KeuanganViewProps> = ({ currentUser }) => {
                     <td className="p-3.5 text-right font-bold text-emerald-400 text-sm">
                       + Rp {d.jumlah.toLocaleString('id-ID')}
                     </td>
-                    <td className="p-3.5 text-center">
-                      <button
-                        onClick={() => handleDeleteDonasi(d.donasi_id)}
-                        className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/30 text-rose-400 border border-rose-500/20 transition-all cursor-pointer"
-                        title="Hapus Donasi Ini"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </td>
+                    {isAdmin && (
+                      <td className="p-3.5 text-center">
+                        <button
+                          onClick={() => handleDeleteDonasi(d.donasi_id)}
+                          className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/30 text-rose-400 border border-rose-500/20 transition-all cursor-pointer"
+                          title="Hapus Donasi Ini"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

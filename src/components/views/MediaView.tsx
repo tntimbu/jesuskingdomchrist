@@ -3,6 +3,7 @@ import { Pengumuman, Renungan, User } from '../../types';
 import { StorageManager } from '../../utils/storage';
 import { Megaphone, BookOpen, Plus, Heart, Share2, Sparkles, X, Trash2, Volume2, Maximize2, Edit3 } from 'lucide-react';
 import { RenunganFullscreenModal } from '../RenunganFullscreenModal';
+import { RenunganAudioPlayer } from '../RenunganAudioPlayer';
 
 interface MediaViewProps {
   currentUser: User;
@@ -317,57 +318,26 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
             {renunganList.map((r) => (
               <div
                 key={r.renungan_id}
-                className="rounded-3xl bg-slate-900 border border-slate-800 p-6 shadow-xl text-white space-y-4 hover:border-indigo-500/40 transition-all"
+                className="rounded-3xl bg-slate-900 border border-slate-800 p-5 sm:p-6 shadow-xl text-white space-y-4 hover:border-indigo-500/40 transition-all"
               >
-                <div className="flex items-center justify-between flex-wrap gap-2">
+                {/* Header Info */}
+                <div className="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-slate-800/80">
                   <div className="flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-amber-400" />
+                    <Sparkles className="w-4 h-4 text-amber-400" />
                     <span className="text-xs font-bold text-amber-300 uppercase tracking-wider">
-                      Renungan Tanggal: {r.tanggal}
+                      Tanggal: {r.tanggal}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <button
-                      onClick={() => setSelectedRenunganForModal(r)}
-                      className="px-3 py-1.5 rounded-xl bg-indigo-600/90 hover:bg-indigo-600 text-white font-bold text-xs border border-indigo-400/30 shadow flex items-center gap-1.5 transition-all cursor-pointer"
-                    >
-                      <Maximize2 className="w-3.5 h-3.5 text-amber-300" />
-                      <span>Baca Layar Penuh</span>
-                    </button>
-                    <span className="px-2.5 py-1 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold flex items-center gap-1.5 shadow-sm">
-                      <Volume2 className="w-4 h-4 text-amber-400 animate-pulse" />
-                      <span>Audio Pembaca AI</span>
-                    </span>
-                    <span className="text-xs text-indigo-300 bg-indigo-500/10 px-2 py-1 rounded-lg border border-indigo-500/20 font-semibold">
-                      Penulis: {r.penulis || 'Pdt. Dr. Herman Setyawan'}
-                    </span>
-                    {currentUser.role !== 'JEMAAT' && (
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => handleOpenEditRenungan(r)}
-                          className="px-2.5 py-1.5 rounded-lg bg-indigo-900/60 text-indigo-200 hover:bg-indigo-900/90 transition-all flex items-center gap-1 text-[11px] font-semibold border border-indigo-500/30 cursor-pointer"
-                          title="Edit Renungan"
-                        >
-                          <Edit3 className="w-3.5 h-3.5 text-indigo-300" />
-                          <span>Edit</span>
-                        </button>
-                        <button
-                          onClick={(e) => handleDeleteRenungan(r.renungan_id, e)}
-                          className="px-2.5 py-1.5 rounded-lg bg-rose-900/40 text-rose-300 hover:bg-rose-900/80 transition-all flex items-center gap-1 text-[11px] font-semibold border border-rose-500/20 cursor-pointer"
-                          title="Hapus Renungan"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                          <span>Hapus</span>
-                        </button>
-                      </div>
-                    )}
-                  </div>
+                  <span className="text-xs text-indigo-300 bg-indigo-500/10 px-2.5 py-1 rounded-xl border border-indigo-500/20 font-semibold">
+                    Penulis: {r.penulis || 'Pdt. Dr. Herman Setyawan'}
+                  </span>
                 </div>
 
+                {/* Title & Verse */}
                 <div>
                   <h4
                     onClick={() => setSelectedRenunganForModal(r)}
-                    className="text-xl font-extrabold text-white tracking-tight cursor-pointer hover:text-indigo-300 transition-colors text-left"
+                    className="text-lg sm:text-xl font-extrabold text-white tracking-tight cursor-pointer hover:text-indigo-300 transition-colors text-left"
                   >
                     {r.judul}
                   </h4>
@@ -376,6 +346,7 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
                   </div>
                 </div>
 
+                {/* Devotional Text Snippet */}
                 <div
                   lang="id"
                   onClick={() => setSelectedRenunganForModal(r)}
@@ -391,6 +362,49 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
                   }}
                 >
                   {r.isi}
+                </div>
+
+                {/* Horizontal Action Bar (Tombol Jejer Kesamping) */}
+                <div className="pt-3 border-t border-slate-800 flex items-center justify-between gap-2.5 flex-wrap">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <button
+                      onClick={() => setSelectedRenunganForModal(r)}
+                      className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md shadow-indigo-600/20 flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
+                    >
+                      <Maximize2 className="w-3.5 h-3.5 text-amber-300" />
+                      <span>Baca Layar Penuh</span>
+                    </button>
+
+                    {/* Integrated AI Audio Player side-by-side */}
+                    <RenunganAudioPlayer
+                      text={r.isi}
+                      title={r.judul}
+                      verse={r.ayat_alkitab || r.ayat}
+                      writer={r.penulis}
+                      compact={true}
+                    />
+                  </div>
+
+                  {currentUser.role !== 'JEMAAT' && (
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => handleOpenEditRenungan(r)}
+                        className="px-3 py-2 rounded-xl bg-indigo-900/50 hover:bg-indigo-900/80 text-indigo-200 transition-all flex items-center gap-1.5 text-xs font-semibold border border-indigo-500/30 cursor-pointer active:scale-95"
+                        title="Edit Renungan"
+                      >
+                        <Edit3 className="w-3.5 h-3.5 text-indigo-300" />
+                        <span>Edit</span>
+                      </button>
+                      <button
+                        onClick={(e) => handleDeleteRenungan(r.renungan_id, e)}
+                        className="px-3 py-2 rounded-xl bg-rose-900/40 hover:bg-rose-900/80 text-rose-300 transition-all flex items-center gap-1.5 text-xs font-semibold border border-rose-500/20 cursor-pointer active:scale-95"
+                        title="Hapus Renungan"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Hapus</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
