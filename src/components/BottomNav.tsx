@@ -6,7 +6,7 @@ import { LayoutDashboard, Users, DollarSign, CalendarDays, BookOpen, MoreHorizon
 interface BottomNavProps {
   activeTab: NavTab;
   onSelectTab: (tab: NavTab) => void;
-  currentUser: User;
+  currentUser?: User | null;
   onOpenMobileMenu: () => void;
 }
 
@@ -16,7 +16,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   currentUser,
   onOpenMobileMenu
 }) => {
-  const isJemaat = currentUser.role === 'JEMAAT';
+  const isJemaat = (currentUser?.role || 'JEMAAT') === 'JEMAAT';
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 bg-slate-950/90 backdrop-blur-2xl border-t border-white/10 lg:hidden px-2 py-2 flex items-center justify-around text-slate-400 shadow-2xl">

@@ -294,7 +294,7 @@ export default function App() {
 
           {activeTab === 'settings' && (
             <SystemSettingsView
-              currentUser={currentUser}
+              currentUser={effectiveUser}
               settings={settings}
               onUpdateSettings={handleUpdateSettings}
             />
@@ -306,7 +306,7 @@ export default function App() {
       <BottomNav
         activeTab={activeTab}
         onSelectTab={handleSelectTab}
-        currentUser={currentUser}
+        currentUser={effectiveUser}
         onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
       />
 
