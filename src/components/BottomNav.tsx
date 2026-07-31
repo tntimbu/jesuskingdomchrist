@@ -78,8 +78,10 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
       {/* 5. LAINNYA */}
       <button
-        onClick={onOpenMobileMenu}
-        className="flex flex-col items-center gap-1 p-1 rounded-xl text-[10px] font-medium text-slate-400 hover:text-slate-200 transition-all cursor-pointer"
+        onClick={() => onSelectTab('lainnya')}
+        className={`flex flex-col items-center gap-1 p-1 rounded-xl text-[10px] font-medium transition-all cursor-pointer ${
+          activeTab === 'lainnya' ? 'text-indigo-400 font-bold scale-105' : 'hover:text-slate-200'
+        }`}
       >
         <MoreHorizontal className="w-5 h-5" />
         <span>Lainnya</span>

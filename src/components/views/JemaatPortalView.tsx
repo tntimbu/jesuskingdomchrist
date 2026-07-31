@@ -39,7 +39,12 @@ import {
   Grid,
   Calendar,
   Ticket,
-  Megaphone
+  Megaphone,
+  Trash2,
+  Maximize2,
+  Eye,
+  EyeOff,
+  Building
 } from 'lucide-react';
 
 interface JemaatPortalViewProps {
@@ -94,10 +99,13 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordMsg, setPasswordMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // Transfer Persembahan Digital State
+  // Transfer Persembahan Digital & QRIS State
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+  const [isQrisFullscreenOpen, setIsQrisFullscreenOpen] = useState(false);
   const [copiedBankNum, setCopiedBankNum] = useState(false);
   const [transferMsg, setTransferMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [myPersembahan, setMyPersembahan] = useState<Persembahan[]>([]);
+  const [showAllHistory, setShowAllHistory] = useState(false);
   const [transferForm, setTransferForm] = useState({
     jenis: 'Persembahan Perpuluhan',
     jumlah: 500000,
@@ -106,6 +114,77 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
     keterangan: '',
     bukti_transfer: ''
   });
+
+  const handleCopyBank = () => {
+    const num = appSettings.rekening_bank_nomor || '527-089-1122';
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(num);
+      setCopiedBankNum(true);
+      setTimeout(() => setCopiedBankNum(false), 2000);
+    }
+  };
+
+  const handleDeletePersembahan = (persembahanId: string) => {
+    if (confirm('Apakah Anda yakin ingin menghapus / menyembunyikan riwayat transfer persembahan ini?')) {
+      const allP = StorageManager.getPersembahan();
+      const updatedP = allP.filter((p) => p.persembahan_id !== persembahanId);
+      StorageManager.savePersembahan(updatedP);
+      setMyPersembahan((prev) => prev.filter((p) => p.persembahan_id !== persembahanId));
+      StorageManager.logActivity(currentUser.username, 'Menghapus riwayat transfer persembahan', 'Portal Jemaat');
+    }
+  };
+
+  const handleSubmitTransfer = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!transferForm.jumlah || transferForm.jumlah <= 0) {
+      setTransferMsg({ type: 'error', text: 'Jumlah nominal persembahan harus lebih dari Rp 0!' });
+      return;
+    }
+
+    const allPersembahan = StorageManager.getPersembahan();
+    const newTransfer: Persembahan = {
+      persembahan_id: `TRS-2026-${Date.now().toString().slice(-4)}`,
+      tanggal: new Date().toISOString().slice(0, 10),
+      jenis: transferForm.jenis,
+      kategori: transferForm.jenis,
+      jumlah: Number(transferForm.jumlah),
+      keterangan: transferForm.keterangan || `Transfer persembahan oleh ${transferForm.nama_pengirim}`,
+      metode_pembayaran: transferForm.metode_pembayaran,
+      nama_pengirim: transferForm.nama_pengirim || currentUser.nama,
+      jemaat_id: jemaatData?.jemaat_id || currentUser.jemaat_id || currentUser.user_id,
+      status: 'PENDING',
+      bukti_transfer: transferForm.bukti_transfer
+    };
+
+    const updated = [newTransfer, ...allPersembahan];
+    StorageManager.savePersembahan(updated);
+    setMyPersembahan((prev) => [newTransfer, ...prev]);
+    StorageManager.logActivity(
+      currentUser.username,
+      `Mengirim Konfirmasi Transfer Persembahan Rp ${newTransfer.jumlah.toLocaleString('id-ID')}`,
+      'Portal Jemaat'
+    );
+
+    window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { action: 'persembahan_updated' } }));
+
+    setTransferMsg({
+      type: 'success',
+      text: '✅ Konfirmasi transfer persembahan berhasil dikirim! Admin/Bendahara gereja akan memverifikasi transaksi Anda.'
+    });
+
+    setTimeout(() => {
+      setIsTransferModalOpen(false);
+      setTransferMsg(null);
+      setTransferForm({
+        jenis: 'Persembahan Perpuluhan',
+        jumlah: 500000,
+        metode_pembayaran: 'Transfer Bank',
+        nama_pengirim: jemaatData?.nama_lengkap || currentUser.nama || '',
+        keterangan: '',
+        bukti_transfer: ''
+      });
+    }, 2500);
+  };
 
   // Events & Reservation State
   const [eventsList, setEventsList] = useState<EventSchedule[]>(() => StorageManager.getEvents());
@@ -225,6 +304,17 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
           (n.istri && n.istri.toLowerCase().includes(userName))
       );
       setMyPernikahan(matchedN.length > 0 ? matchedN : allN);
+
+      // Load Persembahan History for user
+      const allP = StorageManager.getPersembahan();
+      const userJemaatId = found?.jemaat_id || activeUser.jemaat_id || activeUser.user_id;
+      const filteredP = allP.filter(
+        (p) =>
+          (p.jemaat_id && p.jemaat_id === userJemaatId) ||
+          (p.nama_pengirim && p.nama_pengirim.toLowerCase().includes(userName)) ||
+          (p.nama_pengirim && userName.includes(p.nama_pengirim.toLowerCase()))
+      );
+      setMyPersembahan(filteredP);
     }
   }, [currentUser]);
 
@@ -367,67 +457,6 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
     }, 2000);
   };
 
-  // Copy Bank Account Number
-  const handleCopyBank = () => {
-    if (appSettings.rekening_bank_nomor) {
-      navigator.clipboard.writeText(appSettings.rekening_bank_nomor);
-      setCopiedBankNum(true);
-      setTimeout(() => setCopiedBankNum(false), 2000);
-    }
-  };
-
-  // Submit Transfer Persembahan
-  const handleSubmitTransfer = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!transferForm.jumlah || transferForm.jumlah <= 0) {
-      setTransferMsg({ type: 'error', text: 'Jumlah nominal persembahan harus lebih dari Rp 0!' });
-      return;
-    }
-
-    const activeUser = StorageManager.getCurrentUser() || currentUser;
-    const allPersembahan = StorageManager.getPersembahan();
-
-    const newTransfer: Persembahan = {
-      persembahan_id: `TRS-2026-${Date.now().toString().slice(-4)}`,
-      tanggal: new Date().toISOString().slice(0, 10),
-      jenis: transferForm.jenis,
-      kategori: transferForm.jenis,
-      jumlah: Number(transferForm.jumlah),
-      keterangan: transferForm.keterangan || `Transfer persembahan oleh ${transferForm.nama_pengirim}`,
-      metode_pembayaran: transferForm.metode_pembayaran,
-      nama_pengirim: transferForm.nama_pengirim || activeUser.nama,
-      jemaat_id: jemaatData?.jemaat_id || activeUser.jemaat_id || activeUser.user_id,
-      status: 'PENDING',
-      bukti_transfer: transferForm.bukti_transfer
-    };
-
-    const updated = [newTransfer, ...allPersembahan];
-    StorageManager.savePersembahan(updated);
-    StorageManager.logActivity(
-      activeUser.username,
-      `Mengirim Konfirmasi Transfer Persembahan Rp ${newTransfer.jumlah.toLocaleString('id-ID')}`,
-      'Portal Jemaat'
-    );
-
-    setTransferMsg({
-      type: 'success',
-      text: '✅ Konfirmasi transfer persembahan berhasil dikirim! Admin/Bendahara gereja akan memverifikasi transaksi Anda.'
-    });
-
-    setTimeout(() => {
-      setIsTransferModalOpen(false);
-      setTransferMsg(null);
-      setTransferForm({
-        jenis: 'Persembahan Perpuluhan',
-        jumlah: 500000,
-        metode_pembayaran: 'Transfer Bank',
-        nama_pengirim: jemaatData?.nama_lengkap || currentUser.nama || '',
-        keterangan: '',
-        bukti_transfer: ''
-      });
-    }, 2500);
-  };
-
   // Dynamic Layout Width
   let widthClass = 'w-full px-0 sm:px-1';
   if (appSettings.jemaat_card_width === 'COMPACT' || appSettings.jemaat_card_width === 'MOBILE_COMPACT') widthClass = 'max-w-4xl mx-auto px-1 sm:px-3';
@@ -512,115 +541,193 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
         )}
       </div>
 
-      {/* MENU UTAMA & FITUR PORTAL JEMAAT (COLORFUL QUICK BUTTONS) */}
-      <div className={`p-5 sm:p-6 rounded-3xl ${theme.cardClass} text-white space-y-4 shadow-xl border border-white/10`}>
-        <div className="flex items-center justify-between pb-3 border-b border-white/10">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-teal-500 via-indigo-600 to-purple-600 text-white shadow-lg shadow-teal-500/20">
-              <Grid className="w-5 h-5" />
+      {/* SECTION TRANSFER PERSEMBAHAN DIGITAL & QRIS BARCODE */}
+      <div className={`p-6 sm:p-8 rounded-3xl ${theme.cardClass} text-white space-y-6 shadow-2xl border border-emerald-500/30 relative overflow-hidden`}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+          <div className="flex items-center gap-3.5">
+            <div className="p-3 rounded-2xl bg-gradient-to-tr from-emerald-500 via-teal-600 to-emerald-700 text-white shadow-xl shadow-emerald-500/20">
+              <DollarSign className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-sm sm:text-base font-extrabold text-white tracking-wide">
-                Menu Utama & Akses Cepat Jemaat
+              <h3 className="text-base sm:text-xl font-extrabold text-white tracking-tight">
+                Transfer Persembahan &amp; QRIS Digital
               </h3>
-              <p className="text-[11px] text-slate-400">Navigasi pelayanan mandiri, sakramen & persembahan</p>
+              <p className="text-xs text-slate-300">
+                Salurkan persembahan perpuluhan, kolekte &amp; pembangunan secara digital &amp; akuntabel
+              </p>
             </div>
           </div>
-          <span className="px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 text-[10px] font-extrabold border border-teal-500/30 uppercase tracking-wider">
-            Portal Mandiri
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {/* 1. Transfer Persembahan */}
+          
           <button
             onClick={() => setIsTransferModalOpen(true)}
-            className="p-4 rounded-2xl bg-gradient-to-br from-emerald-950/90 via-slate-900 to-slate-950 hover:from-emerald-900 hover:to-emerald-950 border border-emerald-500/30 hover:border-emerald-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
+            className="px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-extrabold text-xs shadow-xl shadow-emerald-600/30 flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0"
           >
-            <div className="flex items-center justify-between">
-              <div className="p-2.5 rounded-xl bg-emerald-600 text-white shadow-lg group-hover:scale-110 transition-transform">
-                <DollarSign className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                Mandiri
-              </span>
-            </div>
-            <div>
-              <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-emerald-300 transition-colors block">
-                Transfer Persembahan
-              </span>
-              <span className="text-[10px] text-slate-400 block mt-0.5">Transfer Bank & QRIS</span>
-            </div>
+            <Send className="w-4 h-4" />
+            <span>Konfirmasi Transfer Baru</span>
           </button>
+        </div>
 
-          {/* 2. Reservasi Kursi Event */}
-          <button
-            onClick={() => {
-              if (eventsList.length > 0) handleOpenReservationModal(eventsList[0]);
-              else alert('Belum ada jadwal event mendatang.');
-            }}
-            className="p-4 rounded-2xl bg-gradient-to-br from-amber-950/90 via-slate-900 to-slate-950 hover:from-amber-900 hover:to-amber-950 border border-amber-500/30 hover:border-amber-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2.5 rounded-xl bg-amber-600 text-white shadow-lg group-hover:scale-110 transition-transform">
-                <Ticket className="w-5 h-5" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Card 1: Rekening Bank Resmi */}
+          <div className="p-6 bg-slate-950/80 rounded-2xl border border-white/10 space-y-4 flex flex-col justify-between">
+            <div className="space-y-3">
+              <span className="text-[10px] font-extrabold text-emerald-400 uppercase tracking-widest block flex items-center gap-1.5">
+                <Building className="w-3.5 h-3.5" />
+                <span>Rekening Bank Resmi Gereja</span>
+              </span>
+              <div>
+                <h4 className="text-sm font-bold text-slate-300">Bank BCA Cabang Utama</h4>
+                <p className="text-xl sm:text-2xl font-mono font-extrabold text-emerald-400 mt-1 tracking-wider">
+                  {appSettings.rekening_bank_nomor || '527-089-1122'}
+                </p>
+                <p className="text-xs text-slate-300 font-semibold mt-0.5">
+                  a.n. {appSettings.rekening_bank_nama || 'Gereja Kemenangan Faith Center'}
+                </p>
               </div>
-              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                {eventsList.length} Event
-              </span>
             </div>
-            <div>
-              <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-amber-300 transition-colors block">
-                Reservasi Kursi Event
-              </span>
-              <span className="text-[10px] text-slate-400 block mt-0.5">Pesan tempat ibadah</span>
-            </div>
-          </button>
 
-          {/* 3. Dokumen Surat Sakramen */}
-          <button
-            onClick={() => {
-              const el = document.getElementById('sakramen-section');
-              if (el) el.scrollIntoView({ behavior: 'smooth' });
-            }}
-            className="p-4 rounded-2xl bg-gradient-to-br from-purple-950/90 via-slate-900 to-slate-950 hover:from-purple-900 hover:to-purple-950 border border-purple-500/30 hover:border-purple-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2.5 rounded-xl bg-purple-600 text-white shadow-lg group-hover:scale-110 transition-transform">
-                <FileText className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                Surat Saya
-              </span>
-            </div>
-            <div>
-              <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-purple-300 transition-colors block">
-                Dokumen & Sakramen
-              </span>
-              <span className="text-[10px] text-slate-400 block mt-0.5">Surat Baptis, Sidi, Nikah</span>
-            </div>
-          </button>
+            <button
+              onClick={handleCopyBank}
+              className="w-full py-2.5 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center justify-center gap-2 border border-white/10 transition-all cursor-pointer"
+            >
+              {copiedBankNum ? (
+                <>
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <span className="text-emerald-300">Nomor Rekening Berhasil Disalin!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4 text-emerald-400" />
+                  <span>Salin Nomor Rekening BCA</span>
+                </>
+              )}
+            </button>
+          </div>
 
-          {/* 4. Edit Data Profil Diri */}
-          <button
-            onClick={() => setIsEditing(!isEditing)}
-            className="p-4 rounded-2xl bg-gradient-to-br from-indigo-950/90 via-slate-900 to-slate-950 hover:from-indigo-900 hover:to-indigo-950 border border-indigo-500/30 hover:border-indigo-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2.5 rounded-xl bg-indigo-600 text-white shadow-lg group-hover:scale-110 transition-transform">
-                <Edit3 className="w-5 h-5" />
+          {/* Card 2: QRIS Digital (Perbesar & Tap Fullscreen) */}
+          <div className="lg:col-span-2 p-6 bg-slate-950/80 rounded-2xl border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="space-y-3 flex-1 text-center sm:text-left">
+              <span className="text-[10px] font-extrabold text-teal-400 uppercase tracking-widest block flex items-center justify-center sm:justify-start gap-1.5">
+                <QrCode className="w-3.5 h-3.5" />
+                <span>QRIS All Payment / E-Wallet</span>
+              </span>
+              <h4 className="text-base font-extrabold text-white">
+                Pindai Barcode QRIS Bebas Biaya Admin
+              </h4>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Mendukung semua aplikasi M-Banking (BCA, Mandiri, BRI, BNI) serta E-Wallet (GoPay, OVO, Dana, ShopeePay, LinkAja).
+              </p>
+              <button
+                onClick={() => setIsQrisFullscreenOpen(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-extrabold transition-all cursor-pointer"
+              >
+                <Maximize2 className="w-4 h-4" />
+                <span>Tampilkan QRIS Layar Penuh</span>
+              </button>
+            </div>
+
+            {/* QRIS Image Box */}
+            <div
+              onClick={() => setIsQrisFullscreenOpen(true)}
+              className="shrink-0 p-3.5 bg-white rounded-2xl border-4 border-emerald-500 shadow-2xl cursor-pointer group hover:scale-105 transition-all relative overflow-hidden flex flex-col items-center justify-center"
+            >
+              <img
+                src={appSettings.qris_image_url || 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=GEREJA_KEMENANGAN_FAITH_CENTER_QRIS_PERSEMBAHAN'}
+                alt="QRIS Persembahan"
+                className="w-36 h-36 sm:w-44 sm:h-44 object-contain"
+              />
+              <div className="absolute inset-0 bg-emerald-950/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white text-[10px] font-extrabold transition-opacity p-2 text-center gap-1">
+                <Maximize2 className="w-6 h-6 text-emerald-300" />
+                <span>Klik untuk Layar Penuh</span>
               </div>
-              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                Data Diri
-              </span>
             </div>
-            <div>
-              <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-indigo-300 transition-colors block">
-                Ubah Profil & Foto
-              </span>
-              <span className="text-[10px] text-slate-400 block mt-0.5">Update No HP & Alamat</span>
+          </div>
+        </div>
+
+        {/* Card 3: RIWAYAT PERSEMBAHAN TRANSFER SAYA (WITH DELETE BUTTON & COLLAPSE) */}
+        <div className="p-6 bg-slate-950/90 rounded-2xl border border-white/10 space-y-4 pt-5">
+          <div className="flex items-center justify-between pb-3 border-b border-white/10">
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-emerald-400" />
+              <h4 className="text-sm font-extrabold text-white">Riwayat Transfer Persembahan Saya</h4>
             </div>
-          </button>
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/30">
+                {myPersembahan.length} Transaksi
+              </span>
+              {myPersembahan.length > 3 && (
+                <button
+                  onClick={() => setShowAllHistory(!showAllHistory)}
+                  className="px-3 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 text-[10px] font-extrabold flex items-center gap-1 transition-all cursor-pointer"
+                >
+                  {showAllHistory ? (
+                    <>
+                      <EyeOff className="w-3 h-3" />
+                      <span>Sembunyikan Sebagian</span>
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="w-3 h-3" />
+                      <span>Tampilkan Semua ({myPersembahan.length})</span>
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          </div>
+
+          {myPersembahan.length > 0 ? (
+            <div className="space-y-3">
+              {(showAllHistory ? myPersembahan : myPersembahan.slice(0, 3)).map((item) => (
+                <div
+                  key={item.persembahan_id}
+                  className="p-4 rounded-xl bg-white/5 border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-emerald-500/30 transition-all"
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+                        {item.persembahan_id}
+                      </span>
+                      <span className="text-xs font-bold text-white">{item.jenis}</span>
+                    </div>
+                    <p className="text-[11px] text-slate-400">
+                      Tgl: {item.tanggal} • Oleh: {item.nama_pengirim} ({item.metode_pembayaran})
+                    </p>
+                    {item.keterangan && <p className="text-[10px] text-slate-500 italic">{item.keterangan}</p>}
+                  </div>
+
+                  <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0">
+                    <div className="text-right">
+                      <p className="text-sm font-mono font-extrabold text-emerald-400">
+                        Rp {item.jumlah.toLocaleString('id-ID')}
+                      </p>
+                      <span
+                        className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full inline-block mt-0.5 border ${
+                          item.status === 'TERVERIFIKASI'
+                            ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                            : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                        }`}
+                      >
+                        {item.status === 'TERVERIFIKASI' ? 'VERIFIED' : 'PENDING VERIFICATION'}
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={() => handleDeletePersembahan(item.persembahan_id)}
+                      title="Hapus / Sembunyikan Riwayat Ini"
+                      className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-all cursor-pointer"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-4 bg-white/5 rounded-xl text-center text-xs text-slate-400">
+              Belum ada riwayat konfirmasi transfer persembahan digital dari Anda.
+            </div>
+          )}
         </div>
       </div>
 
@@ -1232,6 +1339,193 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL KONFIRMASI TRANSFER PERSEMBAHAN */}
+      {isTransferModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-7 text-white space-y-5 shadow-2xl relative overflow-hidden">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                  <DollarSign className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-white">Konfirmasi Transfer Persembahan</h3>
+                  <p className="text-[11px] text-slate-400">Pencatatan persembahan digital &amp; verifikasi kas</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsTransferModalOpen(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {transferMsg && (
+              <div
+                className={`p-3.5 rounded-2xl text-xs font-bold border ${
+                  transferMsg.type === 'success'
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                    : 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                }`}
+              >
+                {transferMsg.text}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmitTransfer} className="space-y-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-300 mb-1 font-semibold">Jenis Persembahan *</label>
+                  <select
+                    value={transferForm.jenis}
+                    onChange={(e) => setTransferForm({ ...transferForm, jenis: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold"
+                  >
+                    <option value="Persembahan Perpuluhan">Persembahan Perpuluhan</option>
+                    <option value="Persembahan Kolekte Ibadah">Persembahan Kolekte Ibadah</option>
+                    <option value="Persembahan Pembangunan">Persembahan Pembangunan</option>
+                    <option value="Persembahan Diakonia & Sosial">Persembahan Diakonia &amp; Sosial</option>
+                    <option value="Persembahan Misi & Evangelisasi">Persembahan Misi &amp; Evangelisasi</option>
+                    <option value="Persembahan Syukur Ucapan">Persembahan Syukur Ucapan</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-slate-300 mb-1 font-semibold">Metode Pembayaran *</label>
+                  <select
+                    value={transferForm.metode_pembayaran}
+                    onChange={(e) => setTransferForm({ ...transferForm, metode_pembayaran: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold"
+                  >
+                    <option value="Transfer Bank">Transfer Bank BCA / Mandiri</option>
+                    <option value="QRIS Digital">Barcode QRIS Digital</option>
+                    <option value="Tunai Kebaktian">Tunai di Amplop Ibadah</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-slate-300 mb-1 font-semibold">Nominal Persembahan (Rp) *</label>
+                  <input
+                    type="number"
+                    required
+                    min={1000}
+                    step={5000}
+                    value={transferForm.jumlah}
+                    onChange={(e) => setTransferForm({ ...transferForm, jumlah: Number(e.target.value) })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-emerald-400 font-mono font-extrabold text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-300 mb-1 font-semibold">Nama Pengirim / Atas Nama *</label>
+                  <input
+                    type="text"
+                    required
+                    value={transferForm.nama_pengirim}
+                    onChange={(e) => setTransferForm({ ...transferForm, nama_pengirim: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-300 mb-1 font-semibold">Catatan / Doa Singkat (Opsional)</label>
+                <input
+                  type="text"
+                  placeholder="Misal: Perpuluhan bulan ini / Doa ucapan syukur kelangsungan keluarga"
+                  value={transferForm.keterangan}
+                  onChange={(e) => setTransferForm({ ...transferForm, keterangan: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                />
+              </div>
+
+              <div className="pt-3 border-t border-slate-800 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsTransferModalOpen(false)}
+                  className="px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-bold"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-extrabold flex items-center gap-2 shadow-lg shadow-emerald-600/30 cursor-pointer"
+                >
+                  <Send className="w-4 h-4" />
+                  <span>Kirim Konfirmasi Transfer</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* LIGHTBOX FULLSCREEN QRIS MODAL */}
+      {isQrisFullscreenOpen && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center p-4 sm:p-6 bg-black/95 backdrop-blur-2xl animate-fade-in">
+          <div className="w-full max-w-lg bg-slate-900 border-2 border-emerald-500/50 rounded-3xl p-6 sm:p-8 text-center text-white space-y-6 shadow-2xl relative overflow-hidden">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div className="flex items-center gap-2.5 text-left">
+                <div className="p-2.5 rounded-xl bg-emerald-500 text-slate-950 font-extrabold">
+                  <QrCode className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-extrabold text-white">QRIS Resmi Gereja</h3>
+                  <p className="text-[11px] text-emerald-400 font-mono font-bold">NMID: ID10202688921</p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setIsQrisFullscreenOpen(false)}
+                className="p-2 rounded-xl bg-white/10 text-slate-300 hover:text-white hover:bg-white/20 transition-all cursor-pointer"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Huge QRIS Image Container */}
+            <div className="p-4 bg-white rounded-3xl border-4 border-emerald-500 shadow-2xl mx-auto w-72 h-72 sm:w-96 sm:h-96 flex items-center justify-center">
+              <img
+                src={appSettings.qris_image_url || 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=GEREJA_KEMENANGAN_FAITH_CENTER_QRIS_PERSEMBAHAN'}
+                alt="QRIS Fullscreen"
+                className="w-full h-full object-contain"
+              />
+            </div>
+
+            <div className="space-y-2 text-center">
+              <h4 className="text-sm font-extrabold text-white uppercase tracking-wider">
+                {appSettings.nama_gereja || 'GEREJA KEMENANGAN FAITH CENTER'}
+              </h4>
+              <p className="text-xs text-slate-300 max-w-sm mx-auto leading-relaxed">
+                Arahkan kamera scanner M-Banking atau E-Wallet Anda ke layar ini. Transaksi terdaftar langsung ke akun kas gereja.
+              </p>
+            </div>
+
+            <div className="pt-4 border-t border-white/10 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <button
+                onClick={() => setIsQrisFullscreenOpen(false)}
+                className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-xl shadow-emerald-600/30 transition-all cursor-pointer"
+              >
+                Tutup Layar Penuh
+              </button>
+              <a
+                href={appSettings.qris_image_url || 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=GEREJA_KEMENANGAN_FAITH_CENTER_QRIS_PERSEMBAHAN'}
+                target="_blank"
+                rel="noreferrer"
+                download="QRIS_Gereja.png"
+                className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/10 flex items-center justify-center gap-2 transition-all cursor-pointer"
+              >
+                <Download className="w-4 h-4" />
+                <span>Simpan Gambar QRIS</span>
+              </a>
+            </div>
           </div>
         </div>
       )}

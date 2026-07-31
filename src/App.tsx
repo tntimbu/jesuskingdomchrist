@@ -21,6 +21,7 @@ import { GaleriView } from './components/views/GaleriView';
 import { LaporanView } from './components/views/LaporanView';
 import { JemaatPortalView } from './components/views/JemaatPortalView';
 import { SystemSettingsView } from './components/views/SystemSettingsView';
+import { LainnyaView } from './components/views/LainnyaView';
 import { SplashScreen } from './components/SplashScreen';
 
 export default function App() {
@@ -303,6 +304,14 @@ export default function App() {
               currentUser={effectiveUser}
               settings={settings}
               onUpdateSettings={handleUpdateSettings}
+            />
+          )}
+
+          {activeTab === 'lainnya' && (
+            <LainnyaView
+              currentUser={effectiveUser}
+              onNavigate={handleSelectTab}
+              settings={settings}
             />
           )}
         </main>

@@ -16,6 +16,7 @@ import {
   FileSpreadsheet,
   Settings,
   UserCheck,
+  Grid,
   ChevronRight
 } from 'lucide-react';
 
@@ -34,7 +35,8 @@ export type NavTab =
   | 'jemaat_portal'
   | 'settings'
   | 'agenda'
-  | 'media';
+  | 'media'
+  | 'lainnya';
 
 interface SidebarProps {
   currentUser: User;
@@ -144,6 +146,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Pengaturan & Custom Tampilan',
       icon: Settings,
       roles: ['SUPER_ADMIN', 'ADMIN']
+    },
+    {
+      id: 'lainnya',
+      label: 'Menu Lainnya & All Modul',
+      icon: Grid,
+      roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
     }
   ];
 

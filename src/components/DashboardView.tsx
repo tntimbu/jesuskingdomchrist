@@ -831,218 +831,134 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         )}
       </div>
 
-      {/* MENU UTAMA & MODUL PELAYANAN (COLORFUL QUICK ACTION GRID) */}
-      <div className={`p-5 sm:p-6 rounded-3xl ${cardStyleClass} text-white space-y-4`}>
-        <div className="flex items-center justify-between pb-3 border-b border-white/10">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-600 to-pink-600 text-white shadow-lg shadow-indigo-500/20">
-              <Grid className="w-5 h-5" />
+      {/* MENU UTAMA & MODUL PELAYANAN (HANYA DITAMPILKAN UNTUK ADMIN DI DASHBOARD HOME, UNTUK JEMAAT DIALIKAN KE MENU LAINNYA) */}
+      {isAdmin && (
+        <div className={`p-5 sm:p-6 rounded-3xl ${cardStyleClass} text-white space-y-4`}>
+          <div className="flex items-center justify-between pb-3 border-b border-white/10">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-600 to-pink-600 text-white shadow-lg shadow-indigo-500/20">
+                <Grid className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm sm:text-base font-extrabold text-white tracking-wide">
+                  Panel Quick Access Admin
+                </h3>
+                <p className="text-[11px] text-slate-400">Akses cepat manajemen sistem &amp; modul pelayanan</p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-sm sm:text-base font-extrabold text-white tracking-wide">
-                Menu Utama & Modul Pelayanan
-              </h3>
-              <p className="text-[11px] text-slate-400">Akses cepat dan interaktif ke seluruh fitur sistem</p>
-            </div>
+            <span className="px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-extrabold border border-indigo-500/30 uppercase tracking-wider">
+              Admin Shortcuts
+            </span>
           </div>
-          <span className="px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-extrabold border border-indigo-500/30 uppercase tracking-wider">
-            {isAdmin ? 'Admin Menu' : 'Menu Jemaat'}
-          </span>
-        </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-          {/* 1. Jemaat & KK */}
-          <button
-            onClick={() => onNavigate('jemaat')}
-            className="p-4 rounded-2xl bg-gradient-to-br from-indigo-950/90 via-slate-900 to-slate-950 hover:from-indigo-900/90 hover:to-indigo-950 border border-indigo-500/30 hover:border-indigo-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2.5 rounded-xl bg-blue-600 text-white shadow-lg group-hover:scale-110 transition-transform">
-                <Users className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
-                {jemaatList.length} Jiwa
-              </span>
-            </div>
-            <div>
-              <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-blue-300 transition-colors block">
-                Data Jemaat & KK
-              </span>
-              <span className="text-[10px] text-slate-400 block mt-0.5">Database, KK & KTA</span>
-            </div>
-          </button>
-
-          {/* 2. Keuangan & Kas */}
-          <button
-            onClick={() => onNavigate('keuangan')}
-            className="p-4 rounded-2xl bg-gradient-to-br from-emerald-950/90 via-slate-900 to-slate-950 hover:from-emerald-900/90 hover:to-emerald-950 border border-emerald-500/30 hover:border-emerald-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2.5 rounded-xl bg-emerald-600 text-white shadow-lg group-hover:scale-110 transition-transform">
-                <DollarSign className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                Kas & Transfer
-              </span>
-            </div>
-            <div>
-              <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-emerald-300 transition-colors block">
-                Keuangan & Kas
-              </span>
-              <span className="text-[10px] text-slate-400 block mt-0.5">Kas, Persembahan & Bank</span>
-            </div>
-          </button>
-
-          {/* 3. Administrasi & Sakramen */}
-          <button
-            onClick={() => onNavigate('administrasi')}
-            className="p-4 rounded-2xl bg-gradient-to-br from-purple-950/90 via-slate-900 to-slate-950 hover:from-purple-900/90 hover:to-purple-950 border border-purple-500/30 hover:border-purple-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2.5 rounded-xl bg-purple-600 text-white shadow-lg group-hover:scale-110 transition-transform">
-                <FileText className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                Surat Sakramen
-              </span>
-            </div>
-            <div>
-              <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-purple-300 transition-colors block">
-                Administrasi Surat
-              </span>
-              <span className="text-[10px] text-slate-400 block mt-0.5">Baptis, Sidi & Pernikahan</span>
-            </div>
-          </button>
-
-          {/* 4. Agenda & Reservasi */}
-          <button
-            onClick={() => onNavigate('agenda')}
-            className="p-4 rounded-2xl bg-gradient-to-br from-amber-950/90 via-slate-900 to-slate-950 hover:from-amber-900/90 hover:to-amber-950 border border-amber-500/30 hover:border-amber-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2.5 rounded-xl bg-amber-600 text-white shadow-lg group-hover:scale-110 transition-transform">
-                <Calendar className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                {eventsList.length} Event
-              </span>
-            </div>
-            <div>
-              <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-amber-300 transition-colors block">
-                Agenda & Event
-              </span>
-              <span className="text-[10px] text-slate-400 block mt-0.5">Jadwal & Reservasi Kursi</span>
-            </div>
-          </button>
-
-          {/* 5. Warta & Pengumuman */}
-          <button
-            onClick={() => onNavigate('warta')}
-            className="p-4 rounded-2xl bg-gradient-to-br from-cyan-950/90 via-slate-900 to-slate-950 hover:from-cyan-900/90 hover:to-cyan-950 border border-cyan-500/30 hover:border-cyan-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2.5 rounded-xl bg-cyan-600 text-white shadow-lg group-hover:scale-110 transition-transform">
-                <Megaphone className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-                Warta Minggu
-              </span>
-            </div>
-            <div>
-              <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-cyan-300 transition-colors block">
-                Warta & Renungan
-              </span>
-              <span className="text-[10px] text-slate-400 block mt-0.5">Pengumuman & Khotbah</span>
-            </div>
-          </button>
-
-          {/* 6. Galeri Foto */}
-          <button
-            onClick={() => onNavigate('galeri')}
-            className="p-4 rounded-2xl bg-gradient-to-br from-rose-950/90 via-slate-900 to-slate-950 hover:from-rose-900/90 hover:to-rose-950 border border-rose-500/30 hover:border-rose-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2.5 rounded-xl bg-rose-600 text-white shadow-lg group-hover:scale-110 transition-transform">
-                <ImageIcon className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30">
-                Dokumentasi
-              </span>
-            </div>
-            <div>
-              <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-rose-300 transition-colors block">
-                Galeri & Foto
-              </span>
-              <span className="text-[10px] text-slate-400 block mt-0.5">Album & Video Kegiatan</span>
-            </div>
-          </button>
-
-          {/* 7. Laporan & Export */}
-          <button
-            onClick={() => onNavigate('laporan')}
-            className="p-4 rounded-2xl bg-gradient-to-br from-blue-950/90 via-slate-900 to-slate-950 hover:from-blue-900/90 hover:to-blue-950 border border-blue-500/30 hover:border-blue-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2.5 rounded-xl bg-blue-700 text-white shadow-lg group-hover:scale-110 transition-transform">
-                <BarChart3 className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
-                Export PDF/Excel
-              </span>
-            </div>
-            <div>
-              <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-blue-300 transition-colors block">
-                Laporan & Cetak
-              </span>
-              <span className="text-[10px] text-slate-400 block mt-0.5">Cetak Data & Grafik</span>
-            </div>
-          </button>
-
-          {/* 8. Portal Jemaat Saya */}
-          <button
-            onClick={() => onNavigate('jemaat_portal')}
-            className="p-4 rounded-2xl bg-gradient-to-br from-teal-950/90 via-slate-900 to-slate-950 hover:from-teal-900/90 hover:to-teal-950 border border-teal-500/30 hover:border-teal-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <div className="p-2.5 rounded-xl bg-teal-600 text-white shadow-lg group-hover:scale-110 transition-transform">
-                <UserCheck className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30">
-                Portal Jemaat
-              </span>
-            </div>
-            <div>
-              <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-teal-300 transition-colors block">
-                Portal Jemaat Saya
-              </span>
-              <span className="text-[10px] text-slate-400 block mt-0.5">KTA, Doa & Transfer</span>
-            </div>
-          </button>
-
-          {/* 9. Pengaturan System (SuperAdmin) */}
-          {isAdmin && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+            {/* 1. Jemaat & KK */}
             <button
-              onClick={() => onNavigate('settings')}
-              className="p-4 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 hover:from-slate-800 hover:to-slate-900 border border-slate-700 hover:border-slate-500 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
+              onClick={() => onNavigate('jemaat')}
+              className="p-4 rounded-2xl bg-gradient-to-br from-indigo-950/90 via-slate-900 to-slate-950 hover:from-indigo-900/90 hover:to-indigo-950 border border-indigo-500/30 hover:border-indigo-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
             >
               <div className="flex items-center justify-between">
-                <div className="p-2.5 rounded-xl bg-slate-700 text-white shadow-lg group-hover:scale-110 transition-transform">
-                  <Settings className="w-5 h-5" />
+                <div className="p-2.5 rounded-xl bg-blue-600 text-white shadow-lg group-hover:scale-110 transition-transform">
+                  <Users className="w-5 h-5" />
                 </div>
-                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
-                  Settings
+                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                  {jemaatList.length} Jiwa
                 </span>
               </div>
               <div>
-                <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-slate-200 transition-colors block">
-                  Pengaturan System
+                <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-blue-300 transition-colors block">
+                  Data Jemaat &amp; KK
                 </span>
-                <span className="text-[10px] text-slate-400 block mt-0.5">Custom Visual & User</span>
+                <span className="text-[10px] text-slate-400 block mt-0.5">Database, KK &amp; KTA</span>
               </div>
             </button>
-          )}
+
+            {/* 2. Keuangan & Kas */}
+            <button
+              onClick={() => onNavigate('keuangan')}
+              className="p-4 rounded-2xl bg-gradient-to-br from-emerald-950/90 via-slate-900 to-slate-950 hover:from-emerald-900/90 hover:to-emerald-950 border border-emerald-500/30 hover:border-emerald-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
+            >
+              <div className="flex items-center justify-between">
+                <div className="p-2.5 rounded-xl bg-emerald-600 text-white shadow-lg group-hover:scale-110 transition-transform">
+                  <DollarSign className="w-5 h-5" />
+                </div>
+                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  Kas &amp; Transfer
+                </span>
+              </div>
+              <div>
+                <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-emerald-300 transition-colors block">
+                  Keuangan &amp; Kas
+                </span>
+                <span className="text-[10px] text-slate-400 block mt-0.5">Kas, Persembahan &amp; Bank</span>
+              </div>
+            </button>
+
+            {/* 3. Administrasi & Sakramen */}
+            <button
+              onClick={() => onNavigate('administrasi')}
+              className="p-4 rounded-2xl bg-gradient-to-br from-purple-950/90 via-slate-900 to-slate-950 hover:from-purple-900/90 hover:to-purple-950 border border-purple-500/30 hover:border-purple-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
+            >
+              <div className="flex items-center justify-between">
+                <div className="p-2.5 rounded-xl bg-purple-600 text-white shadow-lg group-hover:scale-110 transition-transform">
+                  <FileText className="w-5 h-5" />
+                </div>
+                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                  Surat Sakramen
+                </span>
+              </div>
+              <div>
+                <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-purple-300 transition-colors block">
+                  Administrasi Surat
+                </span>
+                <span className="text-[10px] text-slate-400 block mt-0.5">Baptis, Sidi &amp; Pernikahan</span>
+              </div>
+            </button>
+
+            {/* 4. Agenda & Reservasi */}
+            <button
+              onClick={() => onNavigate('agenda')}
+              className="p-4 rounded-2xl bg-gradient-to-br from-amber-950/90 via-slate-900 to-slate-950 hover:from-amber-900/90 hover:to-amber-950 border border-amber-500/30 hover:border-amber-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
+            >
+              <div className="flex items-center justify-between">
+                <div className="p-2.5 rounded-xl bg-amber-600 text-white shadow-lg group-hover:scale-110 transition-transform">
+                  <Calendar className="w-5 h-5" />
+                </div>
+                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  {eventsList.length} Event
+                </span>
+              </div>
+              <div>
+                <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-amber-300 transition-colors block">
+                  Agenda &amp; Event
+                </span>
+                <span className="text-[10px] text-slate-400 block mt-0.5">Jadwal &amp; Reservasi Kursi</span>
+              </div>
+            </button>
+
+            {/* 5. Menu Lainnya */}
+            <button
+              onClick={() => onNavigate('lainnya')}
+              className="p-4 rounded-2xl bg-gradient-to-br from-cyan-950/90 via-slate-900 to-slate-950 hover:from-cyan-900/90 hover:to-cyan-950 border border-cyan-500/30 hover:border-cyan-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
+            >
+              <div className="flex items-center justify-between">
+                <div className="p-2.5 rounded-xl bg-cyan-600 text-white shadow-lg group-hover:scale-110 transition-transform">
+                  <Grid className="w-5 h-5" />
+                </div>
+                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                  All Modul
+                </span>
+              </div>
+              <div>
+                <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-cyan-300 transition-colors block">
+                  Menu Lainnya
+                </span>
+                <span className="text-[10px] text-slate-400 block mt-0.5">Semua Modul &amp; Fitur</span>
+              </div>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* KARTU NOTIFIKASI MENGAMBANG DI ATAS LAYAR (FLOATING OVERLAY TOP NOTIFICATION) DENGAN BUNYI SUARA */}
       {(() => {
