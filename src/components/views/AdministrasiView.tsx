@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Baptisan, Sidi, Pernikahan, User, Jemaat } from '../../types';
 import { StorageManager } from '../../utils/storage';
 import { exportToPDF } from '../../utils/exportTools';
-import { FileText, Plus, Award, Heart, Scroll, Printer, Download, X, Trash2 } from 'lucide-react';
+import { FileText, Plus, Award, Heart, Scroll, Printer, Download, X, Trash2, Upload, CheckCircle, ExternalLink } from 'lucide-react';
 
 interface AdministrasiViewProps {
   currentUser: User;
@@ -20,12 +20,17 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
   const [isSidiModal, setIsSidiModal] = useState(false);
   const [isNikahModal, setIsNikahModal] = useState(false);
 
+  // Upload file state for specific Baptisan
+  const [uploadTargetId, setUploadTargetId] = useState<string | null>(null);
+  const [uploadUrlInput, setUploadUrlInput] = useState<string>('');
+
   // Form states
   const [baptisForm, setBaptisForm] = useState({
     nama_jemaat: '',
     tanggal: new Date().toISOString().slice(0, 10),
     pendeta: 'Pdt. Dr. Herman Setyawan, M.Th',
-    lokasi: 'Sanctuary Main Hall GKFC Pro'
+    lokasi: 'Gedung Sanctuary Utama',
+    file_surat_baptis: ''
   });
 
   const [sidiForm, setSidiForm] = useState({
@@ -39,7 +44,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
     istri: '',
     tanggal: new Date().toISOString().slice(0, 10),
     pendeta: 'Pdt. Dr. Herman Setyawan, M.Th',
-    lokasi: 'Gedung Utama GKFC Pro'
+    lokasi: 'Gedung Sanctuary Utama'
   });
 
   useEffect(() => {
@@ -72,6 +77,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
   const handleSaveBaptis = (e: React.FormEvent) => {
     e.preventDefault();
     if (!baptisForm.nama_jemaat) return;
+    const settings = StorageManager.getSettings();
     const newB: Baptisan = {
       baptisan_id: `BAP-2026-${(baptisanList.length + 1).toString().padStart(3, '0')}`,
       jemaat_id: 'JMT-GEN',
@@ -79,25 +85,48 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
       tanggal: baptisForm.tanggal,
       pendeta: baptisForm.pendeta,
       lokasi: baptisForm.lokasi,
-      nomor_surat: `BAP/GKFC/2026/${baptisForm.tanggal.slice(5, 7)}/${(baptisanList.length + 1).toString().padStart(3, '0')}`
+      nomor_surat: `BAP/${settings.nama_gereja ? settings.nama_gereja.slice(0, 4).toUpperCase() : 'GKFC'}/2026/${baptisForm.tanggal.slice(5, 7)}/${(baptisanList.length + 1).toString().padStart(3, '0')}`,
+      file_surat_baptis: baptisForm.file_surat_baptis
     };
     const updated = [newB, ...baptisanList];
     setBaptisanList(updated);
     StorageManager.saveBaptisan(updated);
     StorageManager.logActivity(currentUser.username, `Input Surat Baptisan: ${newB.nama_jemaat}`, 'Administrasi Sacraments');
     setIsBaptisModal(false);
+    setBaptisForm({
+      nama_jemaat: '',
+      tanggal: new Date().toISOString().slice(0, 10),
+      pendeta: 'Pdt. Dr. Herman Setyawan, M.Th',
+      lokasi: 'Gedung Sanctuary Utama',
+      file_surat_baptis: ''
+    });
+  };
+
+  const handleUploadSuratFile = (baptisan_id: string, fileData: string) => {
+    const updated = baptisanList.map((b) => {
+      if (b.baptisan_id === baptisan_id) {
+        return { ...b, file_surat_baptis: fileData };
+      }
+      return b;
+    });
+    setBaptisanList(updated);
+    StorageManager.saveBaptisan(updated);
+    StorageManager.logActivity(currentUser.username, `Upload Surat Baptisan ID: ${baptisan_id}`, 'Administrasi Sacraments');
+    setUploadTargetId(null);
+    setUploadUrlInput('');
   };
 
   const handleSaveSidi = (e: React.FormEvent) => {
     e.preventDefault();
     if (!sidiForm.nama_jemaat) return;
+    const settings = StorageManager.getSettings();
     const newS: Sidi = {
       sidi_id: `SDI-2026-${(sidiList.length + 1).toString().padStart(3, '0')}`,
       jemaat_id: 'JMT-GEN',
       nama_jemaat: sidiForm.nama_jemaat,
       tanggal: sidiForm.tanggal,
       pendeta: sidiForm.pendeta,
-      nomor_surat: `SDI/GKFC/2026/${sidiForm.tanggal.slice(5, 7)}/${(sidiList.length + 1).toString().padStart(3, '0')}`
+      nomor_surat: `SDI/${settings.nama_gereja ? settings.nama_gereja.slice(0, 4).toUpperCase() : 'GKFC'}/2026/${sidiForm.tanggal.slice(5, 7)}/${(sidiList.length + 1).toString().padStart(3, '0')}`
     };
     const updated = [newS, ...sidiList];
     setSidiList(updated);
@@ -109,6 +138,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
   const handleSaveNikah = (e: React.FormEvent) => {
     e.preventDefault();
     if (!nikahForm.suami || !nikahForm.istri) return;
+    const settings = StorageManager.getSettings();
     const newN: Pernikahan = {
       nikah_id: `NKH-2026-${(pernikahanList.length + 1).toString().padStart(3, '0')}`,
       suami: nikahForm.suami,
@@ -116,7 +146,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
       tanggal: nikahForm.tanggal,
       pendeta: nikahForm.pendeta,
       lokasi: nikahForm.lokasi,
-      nomor_surat: `NKH/GKFC/2026/${nikahForm.tanggal.slice(5, 7)}/${(pernikahanList.length + 1).toString().padStart(3, '0')}`
+      nomor_surat: `NKH/${settings.nama_gereja ? settings.nama_gereja.slice(0, 4).toUpperCase() : 'GKFC'}/2026/${nikahForm.tanggal.slice(5, 7)}/${(pernikahanList.length + 1).toString().padStart(3, '0')}`
     };
     const updated = [newN, ...pernikahanList];
     setPernikahanList(updated);
@@ -152,18 +182,22 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
     }
   };
 
-  const cetakSuratBaptisPDF = (b: Baptisan) => {
-    const title = `SURAT BAPTISAN KUDUS (No. ${b.nomor_surat || b.baptisan_id})`;
-    const headers = ['Parameter Surat', 'Keterangan'];
+  // Cetak Berita Acara Baptisan Kudus (PDF)
+  const cetakBeritaAcaraBaptisPDF = (b: Baptisan) => {
+    const settings = StorageManager.getSettings();
+    const churchName = (settings.nama_gereja || 'SYSTEM MANAGEMENT CHURCH').trim();
+    const title = `BERITA ACARA BAPTISAN KUDUS (No. ${b.nomor_surat || b.baptisan_id})`;
+    const headers = ['Parameter Berita Acara', 'Rincian & Keterangan Resmi'];
     const rows = [
-      ['Nomor Registrasi', b.baptisan_id],
-      ['Nomor Surat Resmi', b.nomor_surat || '-'],
-      ['Nama Jemaat Dibaptis', b.nama_jemaat || '-'],
-      ['Tanggal Pelaksanaan', b.tanggal],
+      ['Gereja Penyelenggara', churchName],
+      ['Nomor Berita Acara', b.nomor_surat || b.baptisan_id],
+      ['Nama Jemaat Yang Dibaptis', b.nama_jemaat || '-'],
+      ['Tanggal Pelaksanaan Baptis', b.tanggal],
       ['Pendeta Pembaptis', b.pendeta],
-      ['Lokasi Sacraments', b.lokasi]
+      ['Lokasi Sakramen', b.lokasi],
+      ['Keterangan Status', 'Berita Acara Resmi Sakramen Baptisan Kudus Sah']
     ];
-    exportToPDF(title, headers, rows, undefined, `Surat_Baptis_${b.nama_jemaat}`);
+    exportToPDF(title, headers, rows, settings, `Berita_Acara_Baptis_${b.nama_jemaat || 'Jemaat'}`);
   };
 
   return (
@@ -176,7 +210,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
             <span>Administrasi Sakramen & Surat Gereja</span>
           </h2>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Pencatatan Baptisan Kudus, Peneguhan Sidi, Pemberkatan Pernikahan Kudus, dan Generator Surat Resmi.
+            Pencatatan Baptisan Kudus, Peneguhan Sidi, Pemberkatan Pernikahan Kudus, Upload Surat Baptisan, dan Berita Acara.
           </p>
         </div>
 
@@ -213,10 +247,10 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
       {activeTab === 'BAPTISAN' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider">Record Data Baptisan Kudus</h3>
+            <h3 className="text-sm font-bold text-white uppercase tracking-wider">Record Data Baptisan Kudus & Upload Surat</h3>
             <button
               onClick={() => setIsBaptisModal(true)}
-              className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md flex items-center gap-1.5"
+              className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md flex items-center gap-1.5 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>Input Baptisan Baru</span>
@@ -232,8 +266,8 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                     <th className="p-3.5">Nama Yang Dibaptis</th>
                     <th className="p-3.5">Tanggal Baptis</th>
                     <th className="p-3.5">Pendeta Pembaptis</th>
-                    <th className="p-3.5">Lokasi</th>
-                    <th className="p-3.5 text-center">Cetak Surat</th>
+                    <th className="p-3.5">Dokumen Surat Jadi</th>
+                    <th className="p-3.5 text-center">Cetak Berita Acara</th>
                     <th className="p-3.5 text-center">Aksi</th>
                   </tr>
                 </thead>
@@ -246,20 +280,52 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                       <td className="p-3.5 font-bold text-white text-sm">{b.nama_jemaat || b.jemaat_id}</td>
                       <td className="p-3.5">{b.tanggal}</td>
                       <td className="p-3.5">{b.pendeta}</td>
-                      <td className="p-3.5 text-slate-400">{b.lokasi}</td>
+                      <td className="p-3.5">
+                        {b.file_surat_baptis ? (
+                          <div className="flex items-center gap-2">
+                            <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold flex items-center gap-1">
+                              <CheckCircle className="w-3 h-3 text-emerald-400" />
+                              <span>Surat Jadi Uploaded</span>
+                            </span>
+                            <a
+                              href={b.file_surat_baptis}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 cursor-pointer"
+                              title="Lihat / Download Surat Baptisan"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </a>
+                            <button
+                              onClick={() => setUploadTargetId(b.baptisan_id)}
+                              className="text-[10px] text-slate-400 hover:text-white underline cursor-pointer"
+                            >
+                              Ganti
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setUploadTargetId(b.baptisan_id)}
+                            className="px-2.5 py-1 rounded-xl bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 border border-amber-500/40 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all"
+                          >
+                            <Upload className="w-3 h-3" />
+                            <span>Upload Surat Jadi</span>
+                          </button>
+                        )}
+                      </td>
                       <td className="p-3.5 text-center">
                         <button
-                          onClick={() => cetakSuratBaptisPDF(b)}
-                          className="px-3 py-1.5 rounded-lg bg-indigo-900/40 text-indigo-300 hover:bg-indigo-900/80 inline-flex items-center gap-1 text-[11px] font-semibold"
+                          onClick={() => cetakBeritaAcaraBaptisPDF(b)}
+                          className="px-3 py-1.5 rounded-lg bg-indigo-900/40 text-indigo-300 hover:bg-indigo-900/80 inline-flex items-center gap-1 text-[11px] font-semibold cursor-pointer"
                         >
                           <Printer className="w-3.5 h-3.5" />
-                          <span>PDF</span>
+                          <span>PDF Berita Acara</span>
                         </button>
                       </td>
                       <td className="p-3.5 text-center">
                         <button
                           onClick={() => handleDeleteBaptis(b.baptisan_id, b.nama_jemaat || b.jemaat_id)}
-                          className="p-1.5 rounded-lg bg-rose-900/40 text-rose-300 hover:bg-rose-900/80 transition-all inline-flex items-center gap-1 text-[11px]"
+                          className="p-1.5 rounded-lg bg-rose-900/40 text-rose-300 hover:bg-rose-900/80 transition-all inline-flex items-center gap-1 text-[11px] cursor-pointer"
                           title="Hapus Record"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -274,6 +340,83 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
         </div>
       )}
 
+      {/* Modal Upload Surat Baptisan Jadi */}
+      {uploadTargetId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+          <div className="w-full max-w-md rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <Upload className="w-5 h-5 text-emerald-400" />
+                <h3 className="text-base font-bold">Upload Surat Baptisan Resmi (PDF / Foto)</h3>
+              </div>
+              <button onClick={() => setUploadTargetId(null)} className="text-slate-400 hover:text-white cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Unggah file Surat Baptisan yang telah selesai ditandatangani gereja agar jemaat dapat langsung mengunduhnya dari Portal Jemaat.
+            </p>
+
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="block text-slate-300 mb-1 font-semibold">Pilih File Surat dari Komputer (Foto/PDF)</label>
+                <input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-[11px]"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (evt) => {
+                        if (evt.target?.result) {
+                          handleUploadSuratFile(uploadTargetId, evt.target.result as string);
+                        }
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+              </div>
+
+              <div className="text-center text-[10px] text-slate-500 font-bold uppercase tracking-wider">ATAU</div>
+
+              <div>
+                <label className="block text-slate-300 mb-1 font-semibold">Tautan / URL File Surat Online</label>
+                <input
+                  type="text"
+                  placeholder="https://drive.google.com/file/... atau URL dokumen"
+                  value={uploadUrlInput}
+                  onChange={(e) => setUploadUrlInput(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-[11px]"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+                <button
+                  onClick={() => setUploadTargetId(null)}
+                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-bold cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={() => {
+                    if (uploadUrlInput) {
+                      handleUploadSuratFile(uploadTargetId, uploadUrlInput);
+                    }
+                  }}
+                  disabled={!uploadUrlInput}
+                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold cursor-pointer"
+                >
+                  Simpan File Surat
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Tab 2: Sidi */}
       {activeTab === 'SIDI' && (
         <div className="space-y-4">
@@ -281,7 +424,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
             <h3 className="text-sm font-bold text-white uppercase tracking-wider">Record Data Peneguhan Sidi</h3>
             <button
               onClick={() => setIsSidiModal(true)}
-              className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md flex items-center gap-1.5"
+              className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md flex items-center gap-1.5 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>Input Peneguhan Sidi</span>
@@ -310,7 +453,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                       <td className="p-3.5 text-center">
                         <button
                           onClick={() => handleDeleteSidi(s.sidi_id, s.nama_jemaat || s.jemaat_id)}
-                          className="p-1.5 rounded-lg bg-rose-900/40 text-rose-300 hover:bg-rose-900/80 transition-all inline-flex items-center gap-1 text-[11px]"
+                          className="p-1.5 rounded-lg bg-rose-900/40 text-rose-300 hover:bg-rose-900/80 transition-all inline-flex items-center gap-1 text-[11px] cursor-pointer"
                           title="Hapus Record"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -332,7 +475,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
             <h3 className="text-sm font-bold text-white uppercase tracking-wider">Record Pemberkatan Pernikahan Kudus</h3>
             <button
               onClick={() => setIsNikahModal(true)}
-              className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md flex items-center gap-1.5"
+              className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md flex items-center gap-1.5 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>Input Pernikahan Baru</span>
@@ -363,7 +506,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                       <td className="p-3.5 text-center">
                         <button
                           onClick={() => handleDeleteNikah(n.nikah_id, `${n.suami} & ${n.istri}`)}
-                          className="p-1.5 rounded-lg bg-rose-900/40 text-rose-300 hover:bg-rose-900/80 transition-all inline-flex items-center gap-1 text-[11px]"
+                          className="p-1.5 rounded-lg bg-rose-900/40 text-rose-300 hover:bg-rose-900/80 transition-all inline-flex items-center gap-1 text-[11px] cursor-pointer"
                           title="Hapus Record"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -384,13 +527,13 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
           <div className="w-full max-w-md rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <h3 className="text-base font-bold">Input Data Baptisan Kudus</h3>
-              <button onClick={() => setIsBaptisModal(false)} className="text-slate-400 hover:text-white">
+              <button onClick={() => setIsBaptisModal(false)} className="text-slate-400 hover:text-white cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleSaveBaptis} className="space-y-3 text-xs">
               <div>
-                <label className="block text-slate-400 mb-1">Nama Jemaat Dibaptis *</label>
+                <label className="block text-slate-400 mb-1 font-semibold">Nama Jemaat Dibaptis *</label>
                 <input
                   type="text"
                   required
@@ -401,7 +544,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                 />
               </div>
               <div>
-                <label className="block text-slate-400 mb-1">Tanggal Pelaksanaan</label>
+                <label className="block text-slate-400 mb-1 font-semibold">Tanggal Pelaksanaan</label>
                 <input
                   type="date"
                   value={baptisForm.tanggal}
@@ -410,7 +553,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                 />
               </div>
               <div>
-                <label className="block text-slate-400 mb-1">Pendeta Pembaptis</label>
+                <label className="block text-slate-400 mb-1 font-semibold">Pendeta Pembaptis</label>
                 <input
                   type="text"
                   value={baptisForm.pendeta}
@@ -419,7 +562,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                 />
               </div>
               <div>
-                <label className="block text-slate-400 mb-1">Lokasi Baptisan</label>
+                <label className="block text-slate-400 mb-1 font-semibold">Lokasi Baptisan</label>
                 <input
                   type="text"
                   value={baptisForm.lokasi}
@@ -427,11 +570,32 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                   className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white"
                 />
               </div>
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">Upload File Surat Baptisan Jadi (Opsional)</label>
+                <input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-[11px]"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (evt) => {
+                        if (evt.target?.result) {
+                          setBaptisForm({ ...baptisForm, file_surat_baptis: evt.target.result as string });
+                        }
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+              </div>
+
               <div className="flex justify-end gap-2 pt-2">
-                <button type="button" onClick={() => setIsBaptisModal(false)} className="px-4 py-2 text-slate-300">
+                <button type="button" onClick={() => setIsBaptisModal(false)} className="px-4 py-2 text-slate-300 font-bold cursor-pointer">
                   Batal
                 </button>
-                <button type="submit" className="px-4 py-2 bg-indigo-600 rounded-xl font-bold">
+                <button type="submit" className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-bold cursor-pointer">
                   Simpan Baptisan
                 </button>
               </div>
@@ -446,13 +610,13 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
           <div className="w-full max-w-md rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <h3 className="text-base font-bold">Input Data Peneguhan Sidi</h3>
-              <button onClick={() => setIsSidiModal(false)} className="text-slate-400 hover:text-white">
+              <button onClick={() => setIsSidiModal(false)} className="text-slate-400 hover:text-white cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleSaveSidi} className="space-y-3 text-xs">
               <div>
-                <label className="block text-slate-400 mb-1">Nama Peserta Sidi *</label>
+                <label className="block text-slate-400 mb-1 font-semibold">Nama Peserta Sidi *</label>
                 <input
                   type="text"
                   required
@@ -463,7 +627,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                 />
               </div>
               <div>
-                <label className="block text-slate-400 mb-1">Tanggal Sidi</label>
+                <label className="block text-slate-400 mb-1 font-semibold">Tanggal Sidi</label>
                 <input
                   type="date"
                   value={sidiForm.tanggal}
@@ -472,7 +636,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                 />
               </div>
               <div>
-                <label className="block text-slate-400 mb-1">Pendeta Melayani</label>
+                <label className="block text-slate-400 mb-1 font-semibold">Pendeta Melayani</label>
                 <input
                   type="text"
                   value={sidiForm.pendeta}
@@ -481,10 +645,10 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                 />
               </div>
               <div className="flex justify-end gap-2 pt-2">
-                <button type="button" onClick={() => setIsSidiModal(false)} className="px-4 py-2 text-slate-300">
+                <button type="button" onClick={() => setIsSidiModal(false)} className="px-4 py-2 text-slate-300 font-bold cursor-pointer">
                   Batal
                 </button>
-                <button type="submit" className="px-4 py-2 bg-indigo-600 rounded-xl font-bold">
+                <button type="submit" className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-bold cursor-pointer">
                   Simpan Sidi
                 </button>
               </div>
@@ -499,13 +663,13 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
           <div className="w-full max-w-md rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <h3 className="text-base font-bold">Input Pemberkatan Pernikahan</h3>
-              <button onClick={() => setIsNikahModal(false)} className="text-slate-400 hover:text-white">
+              <button onClick={() => setIsNikahModal(false)} className="text-slate-400 hover:text-white cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
             <form onSubmit={handleSaveNikah} className="space-y-3 text-xs">
               <div>
-                <label className="block text-slate-400 mb-1">Nama Mempelai Pria (Suami) *</label>
+                <label className="block text-slate-400 mb-1 font-semibold">Nama Mempelai Pria (Suami) *</label>
                 <input
                   type="text"
                   required
@@ -516,7 +680,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                 />
               </div>
               <div>
-                <label className="block text-slate-400 mb-1">Nama Mempelai Wanita (Istri) *</label>
+                <label className="block text-slate-400 mb-1 font-semibold">Nama Mempelai Wanita (Istri) *</label>
                 <input
                   type="text"
                   required
@@ -527,7 +691,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                 />
               </div>
               <div>
-                <label className="block text-slate-400 mb-1">Tanggal Pemberkatan</label>
+                <label className="block text-slate-400 mb-1 font-semibold">Tanggal Pemberkatan</label>
                 <input
                   type="date"
                   value={nikahForm.tanggal}
@@ -536,7 +700,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                 />
               </div>
               <div>
-                <label className="block text-slate-400 mb-1">Pendeta Pemberkat</label>
+                <label className="block text-slate-400 mb-1 font-semibold">Pendeta Pemberkat</label>
                 <input
                   type="text"
                   value={nikahForm.pendeta}
@@ -545,10 +709,10 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                 />
               </div>
               <div className="flex justify-end gap-2 pt-2">
-                <button type="button" onClick={() => setIsNikahModal(false)} className="px-4 py-2 text-slate-300">
+                <button type="button" onClick={() => setIsNikahModal(false)} className="px-4 py-2 text-slate-300 font-bold cursor-pointer">
                   Batal
                 </button>
-                <button type="submit" className="px-4 py-2 bg-indigo-600 rounded-xl font-bold">
+                <button type="submit" className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-bold cursor-pointer">
                   Simpan Pernikahan
                 </button>
               </div>

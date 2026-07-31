@@ -68,6 +68,7 @@ export interface Baptisan {
   pendeta: string;
   lokasi: string;
   nomor_surat?: string;
+  file_surat_baptis?: string;
 }
 
 export interface Sidi {
@@ -77,6 +78,7 @@ export interface Sidi {
   tanggal: string;
   pendeta: string;
   nomor_surat?: string;
+  file_surat_sidi?: string;
 }
 
 export interface Pernikahan {
@@ -87,6 +89,7 @@ export interface Pernikahan {
   pendeta: string;
   lokasi?: string;
   nomor_surat?: string;
+  file_surat_nikah?: string;
 }
 
 export interface Persembahan {

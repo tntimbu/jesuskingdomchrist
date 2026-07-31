@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { User, Jemaat, AppSettings, Persembahan } from '../../types';
+import { User, Jemaat, AppSettings, Persembahan, Baptisan, Sidi, Pernikahan } from '../../types';
 import { StorageManager } from '../../utils/storage';
 import { DEFAULT_CHURCH_LOGO } from '../../data/initialData';
 import { getThemeClasses } from '../../utils/themeHelper';
+import { exportToPDF } from '../../utils/exportTools';
 import {
   UserCheck,
   Edit3,
@@ -29,7 +30,12 @@ import {
   Clock,
   XCircle,
   DollarSign,
-  AlertCircle
+  AlertCircle,
+  FileText,
+  Download,
+  Scroll,
+  Printer,
+  ExternalLink
 } from 'lucide-react';
 
 interface JemaatPortalViewProps {
@@ -51,6 +57,11 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
 
   const [appSettings, setAppSettings] = useState<AppSettings>(() => settings || StorageManager.getSettings());
   const [jemaatData, setJemaatData] = useState<Jemaat | null>(initialJemaat);
+
+  // My Sacrament Certificates State
+  const [myBaptisan, setMyBaptisan] = useState<Baptisan[]>([]);
+  const [mySidi, setMySidi] = useState<Sidi[]>([]);
+  const [myPernikahan, setMyPernikahan] = useState<Pernikahan[]>([]);
 
   const theme = getThemeClasses(appSettings);
 
@@ -113,6 +124,38 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
         setEditPhotoUrl(found.foto ?? '');
         setPhotoPreview(found.foto ?? '');
       }
+
+      // Load Sacraments
+      const userName = (found.nama_lengkap || activeUser.nama || '').toLowerCase();
+      const allB = StorageManager.getBaptisan();
+      const allS = StorageManager.getSidi();
+      const allN = StorageManager.getPernikahan();
+
+      setMyBaptisan(
+        allB.filter(
+          (b) =>
+            (found.jemaat_id && b.jemaat_id === found.jemaat_id) ||
+            (b.nama_jemaat && b.nama_jemaat.toLowerCase().includes(userName)) ||
+            (b.nama_jemaat && userName.includes(b.nama_jemaat.toLowerCase()))
+        )
+      );
+
+      setMySidi(
+        allS.filter(
+          (s) =>
+            (found.jemaat_id && s.jemaat_id === found.jemaat_id) ||
+            (s.nama_jemaat && s.nama_jemaat.toLowerCase().includes(userName)) ||
+            (s.nama_jemaat && userName.includes(s.nama_jemaat.toLowerCase()))
+        )
+      );
+
+      setMyPernikahan(
+        allN.filter(
+          (n) =>
+            (n.suami && n.suami.toLowerCase().includes(userName)) ||
+            (n.istri && n.istri.toLowerCase().includes(userName))
+        )
+      );
     }
   }, [currentUser]);
 
@@ -1044,6 +1087,114 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
             </span>
             <p className="text-slate-200 font-bold text-xs">{jemaatData?.alamat || '-'}</p>
           </div>
+        </div>
+      </div>
+
+      {/* 6. Dokumen Surat & Sakramen Gereja Saya */}
+      <div className={`rounded-3xl ${theme.cardClass} p-6 sm:p-8 transition-all duration-300 space-y-4`}>
+        <h3 className="text-base font-bold flex items-center justify-between border-b border-white/10 pb-3">
+          <div className="flex items-center gap-2">
+            <Scroll className={`w-5 h-5 ${theme.accentText}`} />
+            <span>Dokumen Surat & Sakramen Gereja Saya</span>
+          </div>
+          <span className="text-xs text-indigo-300 font-mono">Arsip Surat Resmi</span>
+        </h3>
+
+        <div className="space-y-4">
+          {/* Section Baptisan */}
+          <div>
+            <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <Award className="w-4 h-4 text-emerald-400" />
+              <span>Sakramen Baptisan Kudus</span>
+            </h4>
+
+            {myBaptisan.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                {myBaptisan.map((b) => (
+                  <div key={b.baptisan_id} className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <span className="font-mono text-[10px] text-indigo-300 font-bold block">
+                          {b.nomor_surat || b.baptisan_id}
+                        </span>
+                        <p className="font-bold text-white text-sm mt-0.5">{b.nama_jemaat}</p>
+                        <p className="text-[11px] text-slate-400">Tgl: {b.tanggal} • {b.pendeta}</p>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/30">
+                        Sah Menerima
+                      </span>
+                    </div>
+
+                    <div className="pt-2 border-t border-white/10 flex items-center gap-2">
+                      {b.file_surat_baptis ? (
+                        <a
+                          href={b.file_surat_baptis}
+                          target="_blank"
+                          rel="noreferrer"
+                          download={`Surat_Baptis_${b.nama_jemaat}`}
+                          className="w-full py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer"
+                        >
+                          <Download className="w-4 h-4" />
+                          <span>Download Surat Baptisan (File Asli)</span>
+                        </a>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            const title = `BERITA ACARA BAPTISAN KUDUS (No. ${b.nomor_surat || b.baptisan_id})`;
+                            const headers = ['Parameter Berita Acara', 'Rincian Keterangan'];
+                            const rows = [
+                              ['Gereja Penyelenggara', appSettings.nama_gereja || 'SYSTEM MANAGEMENT CHURCH'],
+                              ['Nomor Surat', b.nomor_surat || b.baptisan_id],
+                              ['Nama Jemaat Dibaptis', b.nama_jemaat],
+                              ['Tanggal Pelaksanaan', b.tanggal],
+                              ['Pendeta Pembaptis', b.pendeta],
+                              ['Status Sacraments', 'Sah Menerima Sakramen Baptisan Kudus']
+                            ];
+                            exportToPDF(title, headers, rows, appSettings, `Berita_Acara_Baptis_${b.nama_jemaat}`);
+                          }}
+                          className="w-full py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer"
+                        >
+                          <Printer className="w-4 h-4" />
+                          <span>Cetak Berita Acara Baptis (PDF)</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-4 bg-white/5 rounded-2xl border border-white/10 text-center text-xs text-slate-400">
+                Belum ada record data baptisan tercatat untuk akun ini. Silakan hubungi Sekretariat Gereja jika data belum masuk.
+              </div>
+            )}
+          </div>
+
+          {/* Section Sidi & Nikah */}
+          {(mySidi.length > 0 || myPernikahan.length > 0) && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs">
+              {mySidi.map((s) => (
+                <div key={s.sidi_id} className="p-3 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] text-blue-300 font-mono font-bold block">SIDI: {s.nomor_surat || s.sidi_id}</span>
+                    <p className="font-bold text-white">{s.nama_jemaat}</p>
+                    <p className="text-[10px] text-slate-400">{s.tanggal} • {s.pendeta}</p>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-bold">Peneguhan Sidi</span>
+                </div>
+              ))}
+
+              {myPernikahan.map((n) => (
+                <div key={n.nikah_id} className="p-3 bg-white/5 rounded-2xl border border-white/10 flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] text-pink-300 font-mono font-bold block">NIKAH: {n.nomor_surat || n.nikah_id}</span>
+                    <p className="font-bold text-white">{n.suami} &amp; {n.istri}</p>
+                    <p className="text-[10px] text-slate-400">{n.tanggal} • {n.pendeta}</p>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300 text-[10px] font-bold">Pemberkatan Nikah</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
