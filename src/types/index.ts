@@ -98,6 +98,11 @@ export interface Persembahan {
   keterangan: string;
   metode_pembayaran?: string;
   petugas?: string;
+  status?: 'TERVERIFIKASI' | 'PENDING' | 'DITOLAK';
+  bukti_transfer?: string;
+  nama_pengirim?: string;
+  jemaat_id?: string;
+  catatan_admin?: string;
 }
 
 export interface Donasi {
@@ -220,6 +225,11 @@ export interface AppSettings {
   video_title?: string;
   video_description?: string;
   video_enabled?: boolean;
+  // Rekening Bank & QRIS Transfer Persembahan Digital
+  rekening_bank_nama?: string;
+  rekening_bank_nomor?: string;
+  rekening_bank_atas_nama?: string;
+  qris_image_url?: string;
   // Floating APK Download Control (Admin / SuperAdmin)
   show_apk_download_button?: boolean;
   apk_download_url?: string;

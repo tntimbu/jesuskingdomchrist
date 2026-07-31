@@ -54,6 +54,11 @@ export const initialSettings: AppSettings = {
   email: 'info@gkfc-cms.org',
   telepon: '+62 21 555-9876',
   warna_tema: '#1e293b',
+  // Rekening Bank & QRIS Transfer Persembahan Digital
+  rekening_bank_nama: 'Bank BCA',
+  rekening_bank_nomor: '527-089-1122',
+  rekening_bank_atas_nama: 'Gereja Kemenangan Faith Center',
+  qris_image_url: 'https://images.unsplash.com/photo-1628155930542-3c7a64e2c833?w=400&auto=format&fit=crop&q=80',
   // Video & Visual Customization Defaults
   video_url: 'https://www.youtube.com/watch?v=wX2S6AebnI8',
   video_title: 'Tayangan Ibadah Raya & Khotbah Terbaru',
@@ -390,34 +395,59 @@ export const initialPersembahan: Persembahan[] = [
   {
     persembahan_id: 'PSB-2026-0701',
     tanggal: '2026-07-26',
+    jenis: 'Persembahan Minggu',
     kategori: 'Persembahan Minggu',
     jumlah: 24850000,
     keterangan: 'Ibadah Raya I & II Minggu 26 Juli 2026',
-    petugas: 'Dkn. Samuel Santoso'
+    metode_pembayaran: 'Tunai',
+    petugas: 'Dkn. Samuel Santoso',
+    status: 'TERVERIFIKASI'
   },
   {
     persembahan_id: 'PSB-2026-0702',
     tanggal: '2026-07-26',
+    jenis: 'Persembahan Perpuluhan',
     kategori: 'Persembahan Perpuluhan',
     jumlah: 48500000,
     keterangan: 'Amplop Perpuluhan Jemaat Bulan Juli',
-    petugas: 'Dkn. Maria Melani'
+    metode_pembayaran: 'Transfer Bank',
+    petugas: 'Dkn. Maria Melani',
+    status: 'TERVERIFIKASI'
   },
   {
     persembahan_id: 'PSB-2026-0703',
-    tanggal: '2026-07-20',
-    kategori: 'Persembahan Pembangunan',
-    jumlah: 15000000,
-    keterangan: 'Dana Renovasi Ruang Sekolah Minggu',
-    petugas: 'Bendahara Gereja'
+    tanggal: '2026-07-28',
+    jenis: 'Persembahan Perpuluhan',
+    kategori: 'Persembahan Perpuluhan',
+    jumlah: 2500000,
+    keterangan: 'Perpuluhan Bulan Juli via Transfer BCA',
+    metode_pembayaran: 'Transfer Bank',
+    nama_pengirim: 'Bpk. Yohanes Pratama',
+    jemaat_id: 'JMT-001',
+    status: 'PENDING',
+    bukti_transfer: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=600&auto=format&fit=crop&q=80'
   },
   {
     persembahan_id: 'PSB-2026-0704',
+    tanggal: '2026-07-20',
+    jenis: 'Persembahan Pembangunan',
+    kategori: 'Persembahan Pembangunan',
+    jumlah: 15000000,
+    keterangan: 'Dana Renovasi Ruang Sekolah Minggu',
+    metode_pembayaran: 'QRIS Digital',
+    petugas: 'Bendahara Gereja',
+    status: 'TERVERIFIKASI'
+  },
+  {
+    persembahan_id: 'PSB-2026-0705',
     tanggal: '2026-07-19',
+    jenis: 'Persembahan Syukur',
     kategori: 'Persembahan Syukur',
     jumlah: 8750000,
     keterangan: 'Ucapan Syukur Kelahiran & Ulang Tahun',
-    petugas: 'Dkn. Samuel Santoso'
+    metode_pembayaran: 'Tunai',
+    petugas: 'Dkn. Samuel Santoso',
+    status: 'TERVERIFIKASI'
   }
 ];
 

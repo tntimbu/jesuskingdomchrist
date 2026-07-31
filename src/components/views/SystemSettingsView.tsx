@@ -34,7 +34,9 @@ import {
   Wand2,
   AlertCircle,
   Image as ImageIcon,
-  Sparkles
+  Sparkles,
+  CreditCard,
+  QrCode
 } from 'lucide-react';
 
 interface SystemSettingsViewProps {
@@ -791,6 +793,124 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                     onChange={(e) => setMetaForm({ ...metaForm, website: e.target.value })}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
                   />
+                </div>
+              </div>
+            </div>
+
+            {/* Section 1.5: Pengaturan Rekening Bank & QRIS Persembahan Digital */}
+            <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-xl">
+              <h3 className="text-base font-bold pb-3 border-b border-slate-800 flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-emerald-400" />
+                  <span>Pengaturan Rekening Bank & QRIS Persembahan Digital</span>
+                </span>
+                <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-1 rounded-full">
+                  Transfer Dashboard Jemaat
+                </span>
+              </h3>
+
+              <p className="text-xs text-slate-400">
+                Informasi bank dan QRIS ini akan ditampilkan kepada jemaat pada Portal Jemaat ketika melakukan transfer persembahan / perpuluhan digital.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-slate-400 mb-1 font-semibold">Nama Bank *</label>
+                  <input
+                    type="text"
+                    placeholder="Contoh: Bank BCA / Mandiri / BRI"
+                    value={metaForm.rekening_bank_nama || ''}
+                    onChange={(e) => setMetaForm({ ...metaForm, rekening_bank_nama: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-400 mb-1 font-semibold">Nomor Rekening Bank *</label>
+                  <input
+                    type="text"
+                    placeholder="Contoh: 527-089-1122"
+                    value={metaForm.rekening_bank_nomor || ''}
+                    onChange={(e) => setMetaForm({ ...metaForm, rekening_bank_nomor: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono font-bold text-emerald-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-400 mb-1 font-semibold">Atas Nama Rekening *</label>
+                  <input
+                    type="text"
+                    placeholder="Contoh: Gereja Kemenangan Faith Center"
+                    value={metaForm.rekening_bank_atas_nama || ''}
+                    onChange={(e) => setMetaForm({ ...metaForm, rekening_bank_atas_nama: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold"
+                  />
+                </div>
+              </div>
+
+              {/* QRIS Image Upload / Link */}
+              <div className="space-y-3 bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                <label className="font-bold text-emerald-300 flex items-center gap-1.5">
+                  <QrCode className="w-4 h-4 text-emerald-400" />
+                  <span>Gambar / Barcode Kode QRIS Gereja</span>
+                </label>
+
+                <div className="flex flex-col sm:flex-row items-center gap-4 bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                  {metaForm.qris_image_url ? (
+                    <div className="shrink-0 relative">
+                      <img
+                        src={metaForm.qris_image_url}
+                        alt="QRIS Preview"
+                        className="w-24 h-24 rounded-2xl object-cover border-2 border-emerald-500/50 shadow-md bg-white p-1"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                      <span className="absolute -bottom-1 -right-1 px-2 py-0.5 bg-emerald-600 text-[9px] font-bold text-white rounded-full">
+                        QRIS Active
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="w-24 h-24 rounded-2xl border-2 border-dashed border-slate-700 flex items-center justify-center text-slate-500 text-xs text-center p-2">
+                      Belum ada QRIS
+                    </div>
+                  )}
+
+                  <div className="flex-1 space-y-2 w-full">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={metaForm.qris_image_url || ''}
+                        placeholder="Paste URL Gambar Kode QRIS atau Upload File..."
+                        onChange={(e) => setMetaForm({ ...metaForm, qris_image_url: e.target.value })}
+                        className="flex-1 px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-[11px]"
+                      />
+                      <label className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shrink-0 transition-all">
+                        <Upload className="w-4 h-4" />
+                        <span>Upload QRIS</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onload = (evt) => {
+                                if (evt.target?.result) {
+                                  setMetaForm({ ...metaForm, qris_image_url: evt.target.result as string });
+                                }
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                        />
+                      </label>
+                    </div>
+                    <p className="text-[10px] text-slate-400">
+                      Format disarankan: PNG / JPEG / WebP / SVG. Gambar QRIS akan dipindai oleh aplikasi mobile banking / m-banking jemaat.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

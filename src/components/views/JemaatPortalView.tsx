@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Jemaat, AppSettings } from '../../types';
+import { User, Jemaat, AppSettings, Persembahan } from '../../types';
 import { StorageManager } from '../../utils/storage';
 import { DEFAULT_CHURCH_LOGO } from '../../data/initialData';
 import { getThemeClasses } from '../../utils/themeHelper';
@@ -21,7 +21,15 @@ import {
   Award,
   Sparkles,
   Lock,
-  Key
+  Key,
+  CreditCard,
+  Send,
+  Copy,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  DollarSign,
+  AlertCircle
 } from 'lucide-react';
 
 interface JemaatPortalViewProps {
@@ -70,6 +78,19 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordMsg, setPasswordMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Transfer Persembahan Digital State
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+  const [copiedBankNum, setCopiedBankNum] = useState(false);
+  const [transferMsg, setTransferMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [transferForm, setTransferForm] = useState({
+    jenis: 'Persembahan Perpuluhan',
+    jumlah: 500000,
+    metode_pembayaran: 'Transfer Bank',
+    nama_pengirim: initialJemaat?.nama_lengkap || currentUser.nama || '',
+    keterangan: '',
+    bukti_transfer: ''
+  });
 
   const loadData = React.useCallback(() => {
     const freshSettings = StorageManager.getSettings();
@@ -232,6 +253,67 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
       setIsChangingPassword(false);
       setPasswordMsg(null);
     }, 2000);
+  };
+
+  // Copy Bank Account Number
+  const handleCopyBank = () => {
+    if (appSettings.rekening_bank_nomor) {
+      navigator.clipboard.writeText(appSettings.rekening_bank_nomor);
+      setCopiedBankNum(true);
+      setTimeout(() => setCopiedBankNum(false), 2000);
+    }
+  };
+
+  // Submit Transfer Persembahan
+  const handleSubmitTransfer = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!transferForm.jumlah || transferForm.jumlah <= 0) {
+      setTransferMsg({ type: 'error', text: 'Jumlah nominal persembahan harus lebih dari Rp 0!' });
+      return;
+    }
+
+    const activeUser = StorageManager.getCurrentUser() || currentUser;
+    const allPersembahan = StorageManager.getPersembahan();
+
+    const newTransfer: Persembahan = {
+      persembahan_id: `TRS-2026-${Date.now().toString().slice(-4)}`,
+      tanggal: new Date().toISOString().slice(0, 10),
+      jenis: transferForm.jenis,
+      kategori: transferForm.jenis,
+      jumlah: Number(transferForm.jumlah),
+      keterangan: transferForm.keterangan || `Transfer persembahan oleh ${transferForm.nama_pengirim}`,
+      metode_pembayaran: transferForm.metode_pembayaran,
+      nama_pengirim: transferForm.nama_pengirim || activeUser.nama,
+      jemaat_id: jemaatData?.jemaat_id || activeUser.jemaat_id || activeUser.user_id,
+      status: 'PENDING',
+      bukti_transfer: transferForm.bukti_transfer
+    };
+
+    const updated = [newTransfer, ...allPersembahan];
+    StorageManager.savePersembahan(updated);
+    StorageManager.logActivity(
+      activeUser.username,
+      `Mengirim Konfirmasi Transfer Persembahan Rp ${newTransfer.jumlah.toLocaleString('id-ID')}`,
+      'Portal Jemaat'
+    );
+
+    setTransferMsg({
+      type: 'success',
+      text: '✅ Konfirmasi transfer persembahan berhasil dikirim! Admin/Bendahara gereja akan memverifikasi transaksi Anda.'
+    });
+
+    setTimeout(() => {
+      setIsTransferModalOpen(false);
+      setTransferMsg(null);
+      setTransferForm({
+        jenis: 'Persembahan Perpuluhan',
+        jumlah: 500000,
+        metode_pembayaran: 'Transfer Bank',
+        nama_pengirim: jemaatData?.nama_lengkap || currentUser.nama || '',
+        keterangan: '',
+        bukti_transfer: ''
+      });
+    }, 2500);
   };
 
   // Dynamic Layout Width
@@ -534,7 +616,310 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
         </div>
       )}
 
-      {/* 4. Digital Member Card (Kartu Anggota Digital Jemaat) */}
+      {/* 3.5 Transfer Persembahan & Perpuluhan Digital Card */}
+      <div className={`rounded-3xl ${theme.cardClass} p-6 sm:p-8 border border-emerald-500/30 shadow-2xl text-white space-y-6 relative overflow-hidden`}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-3 rounded-2xl bg-emerald-600 text-white shadow-lg">
+              <CreditCard className="w-6 h-6" />
+            </div>
+            <div>
+              <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest block">
+                Transfer Digital & QRIS
+              </span>
+              <h3 className="text-lg font-extrabold text-white">Transfer Persembahan & Perpuluhan</h3>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setIsTransferModalOpen(true)}
+            className="px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 transition-all cursor-pointer shrink-0"
+          >
+            <Send className="w-4 h-4" />
+            <span>Kirim / Konfirmasi Transfer</span>
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+          {/* Bank Account Info Card */}
+          <div className="p-5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Rekening Resmi Gereja</span>
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
+                {appSettings.rekening_bank_nama || 'Bank BCA'}
+              </span>
+            </div>
+
+            <div>
+              <span className="text-[10px] text-slate-400 block">Nomor Rekening:</span>
+              <div className="flex items-center justify-between mt-1 bg-slate-900 p-2.5 rounded-xl border border-slate-800">
+                <span className="font-mono text-lg font-black text-white tracking-wider">
+                  {appSettings.rekening_bank_nomor || '527-089-1122'}
+                </span>
+                <button
+                  onClick={handleCopyBank}
+                  className="px-3 py-1.5 rounded-lg bg-emerald-600/30 hover:bg-emerald-600/60 text-emerald-300 border border-emerald-500/40 text-xs font-bold flex items-center gap-1 cursor-pointer transition-all"
+                >
+                  {copiedBankNum ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copiedBankNum ? 'Tersalin!' : 'Salin'}</span>
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <span className="text-[10px] text-slate-400 block">Atas Nama Rekening:</span>
+              <p className="font-bold text-slate-200 text-sm">{appSettings.rekening_bank_atas_nama || 'Gereja Kemenangan Faith Center'}</p>
+            </div>
+          </div>
+
+          {/* QRIS Code Preview Card */}
+          <div className="p-5 rounded-2xl bg-slate-950/80 border border-slate-800 flex flex-col sm:flex-row items-center gap-4">
+            {appSettings.qris_image_url ? (
+              <img
+                src={appSettings.qris_image_url}
+                alt="Barcode QRIS Gereja"
+                className="w-28 h-28 object-contain rounded-xl border-2 border-emerald-500/40 bg-white p-1 shrink-0"
+              />
+            ) : (
+              <div className="w-28 h-28 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-center p-2 text-slate-500 text-[10px]">
+                QRIS Digital
+              </div>
+            )}
+            <div className="space-y-1.5 text-xs text-center sm:text-left">
+              <span className="font-extrabold text-white block">QRIS Persembahan Digital</span>
+              <p className="text-[11px] text-slate-400 leading-relaxed">
+                Pindai QRIS di atas menggunakan GoPay, OVO, Dana, ShopeePay, LinkAja, BCA Mobile, atau aplikasi M-Banking Anda.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Riwayat Transfer Persembahan Saya */}
+        <div className="space-y-3 pt-2">
+          <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+            <Clock className="w-4 h-4 text-indigo-400" />
+            <span>Riwayat Persembahan Transfer Saya</span>
+          </h4>
+
+          {(() => {
+            const allP = StorageManager.getPersembahan();
+            const activeUser = StorageManager.getCurrentUser() || currentUser;
+            const myTransfers = allP.filter(
+              (p) =>
+                (p.jemaat_id && (p.jemaat_id === activeUser.jemaat_id || p.jemaat_id === jemaatData?.jemaat_id)) ||
+                (p.nama_pengirim && p.nama_pengirim.toLowerCase() === (jemaatData?.nama_lengkap || activeUser.nama).toLowerCase())
+            );
+
+            if (myTransfers.length === 0) {
+              return (
+                <div className="p-4 rounded-xl bg-slate-950/50 border border-slate-800 text-center text-xs text-slate-500">
+                  Belum ada riwayat persembahan transfer. Klik "Kirim / Konfirmasi Transfer" di atas untuk mengirim persembahan.
+                </div>
+              );
+            }
+
+            return (
+              <div className="space-y-2">
+                {myTransfers.slice(0, 5).map((p) => {
+                  const isPending = p.status === 'PENDING';
+                  const isVerified = p.status === 'TERVERIFIKASI' || !p.status;
+                  const isRejected = p.status === 'DITOLAK';
+
+                  return (
+                    <div
+                      key={p.persembahan_id}
+                      className="p-3.5 rounded-2xl bg-slate-950/90 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-white">{p.jenis || 'Persembahan'}</span>
+                          <span className="text-[10px] text-slate-400 font-mono">({p.tanggal})</span>
+                        </div>
+                        <p className="text-[11px] text-slate-400">{p.keterangan || '-'}</p>
+                      </div>
+
+                      <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0">
+                        <span className="font-bold text-sm text-emerald-400">
+                          Rp {p.jumlah.toLocaleString('id-ID')}
+                        </span>
+
+                        {isPending && (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-bold">
+                            <Clock className="w-3 h-3 text-amber-400" />
+                            <span>Menunggu Verifikasi</span>
+                          </span>
+                        )}
+                        {isVerified && (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                            <span>Terverifikasi / Diterima</span>
+                          </span>
+                        )}
+                        {isRejected && (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[10px] font-bold">
+                            <XCircle className="w-3 h-3 text-rose-400" />
+                            <span>Ditolak</span>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
+        </div>
+      </div>
+
+      {/* Modal Submit Konfirmasi Transfer */}
+      {isTransferModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+          <div className="w-full max-w-lg rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl overflow-hidden">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <Send className="w-5 h-5 text-emerald-400" />
+                <h3 className="text-base font-bold">Konfirmasi Transfer Persembahan</h3>
+              </div>
+              <button
+                onClick={() => {
+                  setIsTransferModalOpen(false);
+                  setTransferMsg(null);
+                }}
+                className="text-slate-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {transferMsg && (
+              <div
+                className={`p-3.5 rounded-2xl text-xs font-bold border ${
+                  transferMsg.type === 'success'
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                    : 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                }`}
+              >
+                {transferMsg.text}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmitTransfer} className="space-y-3 text-xs">
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">Jenis / Kategori Persembahan *</label>
+                <select
+                  value={transferForm.jenis}
+                  onChange={(e) => setTransferForm({ ...transferForm, jenis: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold"
+                >
+                  <option value="Persembahan Perpuluhan">Persembahan Perpuluhan (10%)</option>
+                  <option value="Persembahan Minggu">Persembahan Minggu</option>
+                  <option value="Persembahan Syukur">Persembahan Syukur</option>
+                  <option value="Persembahan Kasih Diakonia">Diakonia / Pelayanan</option>
+                  <option value="Persembahan Pembangunan">Donasi Pembangunan Gedung</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">Nama Pengirim / Atas Nama Rekening *</label>
+                <input
+                  type="text"
+                  required
+                  value={transferForm.nama_pengirim}
+                  onChange={(e) => setTransferForm({ ...transferForm, nama_pengirim: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">Nominal Persembahan (Rp) *</label>
+                <input
+                  type="number"
+                  required
+                  min={1000}
+                  value={transferForm.jumlah}
+                  onChange={(e) => setTransferForm({ ...transferForm, jumlah: Number(e.target.value) })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono font-extrabold text-sm text-emerald-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">Metode Pembayaran</label>
+                <select
+                  value={transferForm.metode_pembayaran}
+                  onChange={(e) => setTransferForm({ ...transferForm, metode_pembayaran: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                >
+                  <option value="Transfer Bank">Transfer Bank ({appSettings.rekening_bank_nama || 'BCA'})</option>
+                  <option value="QRIS Digital">QRIS Digital Scan</option>
+                </select>
+              </div>
+
+              {/* Upload Bukti Transfer */}
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">Unggah / Upload Foto Bukti Transfer</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    placeholder="URL bukti transfer atau upload file..."
+                    value={transferForm.bukti_transfer}
+                    onChange={(e) => setTransferForm({ ...transferForm, bukti_transfer: e.target.value })}
+                    className="flex-1 px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-[11px] font-mono"
+                  />
+                  <label className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1 cursor-pointer shrink-0">
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Upload Foto</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (evt) => {
+                            if (evt.target?.result) {
+                              setTransferForm({ ...transferForm, bukti_transfer: evt.target.result as string });
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">Catatan / Pokok Doa (Opsional)</label>
+                <input
+                  type="text"
+                  placeholder="Contoh: Ucapan syukur ulang tahun / perpuluhan bulan Juli"
+                  value={transferForm.keterangan}
+                  onChange={(e) => setTransferForm({ ...transferForm, keterangan: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsTransferModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-bold cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 shadow cursor-pointer"
+                >
+                  <Send className="w-4 h-4" />
+                  <span>Kirim Konfirmasi Transfer</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
       <div className="rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-6 sm:p-8 border-2 border-indigo-500/40 shadow-2xl text-white space-y-6 relative overflow-hidden">
         <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
 
