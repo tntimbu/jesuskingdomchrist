@@ -364,6 +364,18 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                     </>
                   )}
                 </button>
+
+                {/* Secondary Exit / Public Mode Button */}
+                {onClose && (
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="w-full py-2.5 px-4 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 hover:text-white border border-slate-700 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer mt-2"
+                  >
+                    <ArrowLeft className="w-4 h-4 text-emerald-400" />
+                    <span>Keluar ke Mode Publik (Tanpa Login)</span>
+                  </button>
+                )}
               </form>
             </div>
           </div>
@@ -458,15 +470,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 <button
                   onClick={() => {
                     setIsAndroidExitModalOpen(false);
-                    // Try window close or soft exit
-                    try {
-                      window.close();
-                    } catch (e) {}
+                    if (onClose) {
+                      onClose();
+                    } else {
+                      window.location.reload();
+                    }
                   }}
                   className="w-full py-2.5 px-4 rounded-xl bg-rose-950/60 hover:bg-rose-900/80 border border-rose-800/80 text-rose-200 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
                 >
                   <LogOut className="w-4 h-4" />
-                  <span>Tutup / Keluar Aplikasi</span>
+                  <span>Tutup Halaman Login / Mode Publik</span>
                 </button>
 
                 <button

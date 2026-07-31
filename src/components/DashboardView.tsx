@@ -64,7 +64,13 @@ import {
   CreditCard,
   Copy,
   CheckCircle2,
-  XCircle
+  XCircle,
+  Ticket,
+  Grid,
+  FileText,
+  BarChart3,
+  UserCheck,
+  Settings
 } from 'lucide-react';
 
 import {
@@ -205,6 +211,70 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         bukti_transfer: ''
       });
     }, 2500);
+  };
+
+  // Event Reservation State & Handler
+  const [isEventResModalOpen, setIsEventResModalOpen] = useState(false);
+  const [selectedEventForRes, setSelectedEventForRes] = useState<EventSchedule | null>(null);
+  const [eventResForm, setEventResForm] = useState({
+    nama_jemaat: currentUser.nama || '',
+    nomor_wa: currentUser.no_hp || '0812-3456-7890',
+    jumlah_kursi: 1,
+    catatan: ''
+  });
+  const [eventResMsg, setEventResMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const handleOpenReservationModal = (evt: EventSchedule) => {
+    setSelectedEventForRes(evt);
+    setEventResForm({
+      nama_jemaat: currentUser.nama || '',
+      nomor_wa: currentUser.no_hp || '0812-3456-7890',
+      jumlah_kursi: 1,
+      catatan: ''
+    });
+    setEventResMsg(null);
+    setIsEventResModalOpen(true);
+  };
+
+  const handleSaveEventReservation = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedEventForRes || !eventResForm.nama_jemaat || !eventResForm.nomor_wa) {
+      setEventResMsg({ type: 'error', text: 'Lengkapi nama dan nomor WhatsApp Anda!' });
+      return;
+    }
+
+    const existingRes = StorageManager.getEventReservations();
+    const newRes = {
+      reservation_id: `RES-2026-${Date.now().toString().slice(-4)}`,
+      event_id: selectedEventForRes.event_id,
+      nama_jemaat: eventResForm.nama_jemaat,
+      nomor_wa: eventResForm.nomor_wa,
+      jumlah_kursi: Number(eventResForm.jumlah_kursi) || 1,
+      catatan: eventResForm.catatan,
+      tanggal_reservasi: new Date().toLocaleString('id-ID'),
+      status: 'TERKONFIRMASI' as const
+    };
+
+    const updated = [newRes, ...existingRes];
+    StorageManager.saveEventReservations(updated);
+    StorageManager.logActivity(
+      currentUser.username,
+      `Melakukan reservasi event "${selectedEventForRes.nama}" sebanyak ${eventResForm.jumlah_kursi} kursi`,
+      'Events'
+    );
+
+    // Broadcast update event to all views & admin
+    window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { action: 'reservation_updated' } }));
+
+    setEventResMsg({
+      type: 'success',
+      text: `✅ Reservasi berhasil! ${eventResForm.jumlah_kursi} kursi terkonfirmasi dan telah terdaftar di Panel Admin.`
+    });
+
+    setTimeout(() => {
+      setIsEventResModalOpen(false);
+      setEventResMsg(null);
+    }, 2000);
   };
 
   // Quick Customizer Modal State
@@ -761,6 +831,219 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         )}
       </div>
 
+      {/* MENU UTAMA & MODUL PELAYANAN (COLORFUL QUICK ACTION GRID) */}
+      <div className={`p-5 sm:p-6 rounded-3xl ${cardStyleClass} text-white space-y-4`}>
+        <div className="flex items-center justify-between pb-3 border-b border-white/10">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-600 to-pink-600 text-white shadow-lg shadow-indigo-500/20">
+              <Grid className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-sm sm:text-base font-extrabold text-white tracking-wide">
+                Menu Utama & Modul Pelayanan
+              </h3>
+              <p className="text-[11px] text-slate-400">Akses cepat dan interaktif ke seluruh fitur sistem</p>
+            </div>
+          </div>
+          <span className="px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-extrabold border border-indigo-500/30 uppercase tracking-wider">
+            {isAdmin ? 'Admin Menu' : 'Menu Jemaat'}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+          {/* 1. Jemaat & KK */}
+          <button
+            onClick={() => onNavigate('jemaat')}
+            className="p-4 rounded-2xl bg-gradient-to-br from-indigo-950/90 via-slate-900 to-slate-950 hover:from-indigo-900/90 hover:to-indigo-950 border border-indigo-500/30 hover:border-indigo-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-2.5 rounded-xl bg-blue-600 text-white shadow-lg group-hover:scale-110 transition-transform">
+                <Users className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                {jemaatList.length} Jiwa
+              </span>
+            </div>
+            <div>
+              <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-blue-300 transition-colors block">
+                Data Jemaat & KK
+              </span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">Database, KK & KTA</span>
+            </div>
+          </button>
+
+          {/* 2. Keuangan & Kas */}
+          <button
+            onClick={() => onNavigate('keuangan')}
+            className="p-4 rounded-2xl bg-gradient-to-br from-emerald-950/90 via-slate-900 to-slate-950 hover:from-emerald-900/90 hover:to-emerald-950 border border-emerald-500/30 hover:border-emerald-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-2.5 rounded-xl bg-emerald-600 text-white shadow-lg group-hover:scale-110 transition-transform">
+                <DollarSign className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                Kas & Transfer
+              </span>
+            </div>
+            <div>
+              <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-emerald-300 transition-colors block">
+                Keuangan & Kas
+              </span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">Kas, Persembahan & Bank</span>
+            </div>
+          </button>
+
+          {/* 3. Administrasi & Sakramen */}
+          <button
+            onClick={() => onNavigate('administrasi')}
+            className="p-4 rounded-2xl bg-gradient-to-br from-purple-950/90 via-slate-900 to-slate-950 hover:from-purple-900/90 hover:to-purple-950 border border-purple-500/30 hover:border-purple-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-2.5 rounded-xl bg-purple-600 text-white shadow-lg group-hover:scale-110 transition-transform">
+                <FileText className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                Surat Sakramen
+              </span>
+            </div>
+            <div>
+              <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-purple-300 transition-colors block">
+                Administrasi Surat
+              </span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">Baptis, Sidi & Pernikahan</span>
+            </div>
+          </button>
+
+          {/* 4. Agenda & Reservasi */}
+          <button
+            onClick={() => onNavigate('agenda')}
+            className="p-4 rounded-2xl bg-gradient-to-br from-amber-950/90 via-slate-900 to-slate-950 hover:from-amber-900/90 hover:to-amber-950 border border-amber-500/30 hover:border-amber-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-2.5 rounded-xl bg-amber-600 text-white shadow-lg group-hover:scale-110 transition-transform">
+                <Calendar className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                {eventsList.length} Event
+              </span>
+            </div>
+            <div>
+              <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-amber-300 transition-colors block">
+                Agenda & Event
+              </span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">Jadwal & Reservasi Kursi</span>
+            </div>
+          </button>
+
+          {/* 5. Warta & Pengumuman */}
+          <button
+            onClick={() => onNavigate('warta')}
+            className="p-4 rounded-2xl bg-gradient-to-br from-cyan-950/90 via-slate-900 to-slate-950 hover:from-cyan-900/90 hover:to-cyan-950 border border-cyan-500/30 hover:border-cyan-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-2.5 rounded-xl bg-cyan-600 text-white shadow-lg group-hover:scale-110 transition-transform">
+                <Megaphone className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                Warta Minggu
+              </span>
+            </div>
+            <div>
+              <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-cyan-300 transition-colors block">
+                Warta & Renungan
+              </span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">Pengumuman & Khotbah</span>
+            </div>
+          </button>
+
+          {/* 6. Galeri Foto */}
+          <button
+            onClick={() => onNavigate('galeri')}
+            className="p-4 rounded-2xl bg-gradient-to-br from-rose-950/90 via-slate-900 to-slate-950 hover:from-rose-900/90 hover:to-rose-950 border border-rose-500/30 hover:border-rose-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-2.5 rounded-xl bg-rose-600 text-white shadow-lg group-hover:scale-110 transition-transform">
+                <ImageIcon className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                Dokumentasi
+              </span>
+            </div>
+            <div>
+              <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-rose-300 transition-colors block">
+                Galeri & Foto
+              </span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">Album & Video Kegiatan</span>
+            </div>
+          </button>
+
+          {/* 7. Laporan & Export */}
+          <button
+            onClick={() => onNavigate('laporan')}
+            className="p-4 rounded-2xl bg-gradient-to-br from-blue-950/90 via-slate-900 to-slate-950 hover:from-blue-900/90 hover:to-blue-950 border border-blue-500/30 hover:border-blue-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-2.5 rounded-xl bg-blue-700 text-white shadow-lg group-hover:scale-110 transition-transform">
+                <BarChart3 className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                Export PDF/Excel
+              </span>
+            </div>
+            <div>
+              <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-blue-300 transition-colors block">
+                Laporan & Cetak
+              </span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">Cetak Data & Grafik</span>
+            </div>
+          </button>
+
+          {/* 8. Portal Jemaat Saya */}
+          <button
+            onClick={() => onNavigate('jemaat_portal')}
+            className="p-4 rounded-2xl bg-gradient-to-br from-teal-950/90 via-slate-900 to-slate-950 hover:from-teal-900/90 hover:to-teal-950 border border-teal-500/30 hover:border-teal-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-2.5 rounded-xl bg-teal-600 text-white shadow-lg group-hover:scale-110 transition-transform">
+                <UserCheck className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30">
+                Portal Jemaat
+              </span>
+            </div>
+            <div>
+              <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-teal-300 transition-colors block">
+                Portal Jemaat Saya
+              </span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">KTA, Doa & Transfer</span>
+            </div>
+          </button>
+
+          {/* 9. Pengaturan System (SuperAdmin) */}
+          {isAdmin && (
+            <button
+              onClick={() => onNavigate('settings')}
+              className="p-4 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 hover:from-slate-800 hover:to-slate-900 border border-slate-700 hover:border-slate-500 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
+            >
+              <div className="flex items-center justify-between">
+                <div className="p-2.5 rounded-xl bg-slate-700 text-white shadow-lg group-hover:scale-110 transition-transform">
+                  <Settings className="w-5 h-5" />
+                </div>
+                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                  Settings
+                </span>
+              </div>
+              <div>
+                <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-slate-200 transition-colors block">
+                  Pengaturan System
+                </span>
+                <span className="text-[10px] text-slate-400 block mt-0.5">Custom Visual & User</span>
+              </div>
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* KARTU NOTIFIKASI MENGAMBANG DI ATAS LAYAR (FLOATING OVERLAY TOP NOTIFICATION) DENGAN BUNYI SUARA */}
       {(() => {
         const activeNotifs = notificationsList.filter(
@@ -1197,6 +1480,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           </div>
                         )}
                       </div>
+
+                      <button
+                        onClick={() => handleOpenReservationModal(latestEvent)}
+                        className="w-full mt-2 py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-500 text-white font-extrabold text-xs shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
+                      >
+                        <Ticket className="w-4 h-4" />
+                        <span>Reservasi Kursi / Kehadiran</span>
+                      </button>
                     </div>
                   ) : (
                     <p className="text-xs text-slate-400 py-6 text-center">Belum ada agenda mendatang.</p>
@@ -2412,6 +2703,112 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 >
                   <Send className="w-3.5 h-3.5" />
                   <span>Kirim Notifikasi Sekarang</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL RESERVASI KURSI / EVENT UNTUK JEMAAT */}
+      {isEventResModalOpen && selectedEventForRes && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 text-white space-y-4 shadow-2xl relative overflow-hidden">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                  <Ticket className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-white">Formulir Reservasi Kursi</h3>
+                  <p className="text-[10px] text-amber-300 font-bold truncate max-w-[200px] sm:max-w-[280px]">
+                    Event: {selectedEventForRes.nama}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsEventResModalOpen(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {eventResMsg && (
+              <div
+                className={`p-3.5 rounded-2xl text-xs font-bold border ${
+                  eventResMsg.type === 'success'
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                    : 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                }`}
+              >
+                {eventResMsg.text}
+              </div>
+            )}
+
+            <form onSubmit={handleSaveEventReservation} className="space-y-3 text-xs">
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">Nama Lengkap Jemaat *</label>
+                <input
+                  type="text"
+                  required
+                  value={eventResForm.nama_jemaat}
+                  onChange={(e) => setEventResForm({ ...eventResForm, nama_jemaat: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold"
+                  placeholder="Nama pemesan kursi..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">Nomor WhatsApp *</label>
+                <input
+                  type="text"
+                  required
+                  value={eventResForm.nomor_wa}
+                  onChange={(e) => setEventResForm({ ...eventResForm, nomor_wa: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono font-semibold"
+                  placeholder="0812xxxxxxx"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">Jumlah Kursi Dipesan *</label>
+                <input
+                  type="number"
+                  required
+                  min={1}
+                  max={20}
+                  value={eventResForm.jumlah_kursi}
+                  onChange={(e) => setEventResForm({ ...eventResForm, jumlah_kursi: Number(e.target.value) })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-amber-400 font-mono font-extrabold text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">Catatan Khusus (Opsional)</label>
+                <input
+                  type="text"
+                  placeholder="Contoh: Butuh kursi lansia / dengan anak-anak"
+                  value={eventResForm.catatan}
+                  onChange={(e) => setEventResForm({ ...eventResForm, catatan: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                />
+              </div>
+
+              <div className="pt-3 border-t border-slate-800 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsEventResModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-bold"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-emerald-600 hover:from-amber-400 hover:to-emerald-500 text-white font-extrabold flex items-center gap-1.5 shadow cursor-pointer"
+                >
+                  <Ticket className="w-4 h-4" />
+                  <span>Kirim Reservasi Ke Admin</span>
                 </button>
               </div>
             </form>

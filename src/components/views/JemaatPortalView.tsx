@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Jemaat, AppSettings, Persembahan, Baptisan, Sidi, Pernikahan } from '../../types';
+import { User, Jemaat, AppSettings, Persembahan, Baptisan, Sidi, Pernikahan, EventSchedule } from '../../types';
 import { StorageManager } from '../../utils/storage';
 import { DEFAULT_CHURCH_LOGO } from '../../data/initialData';
 import { getThemeClasses } from '../../utils/themeHelper';
@@ -35,7 +35,11 @@ import {
   Download,
   Scroll,
   Printer,
-  ExternalLink
+  ExternalLink,
+  Grid,
+  Calendar,
+  Ticket,
+  Megaphone
 } from 'lucide-react';
 
 interface JemaatPortalViewProps {
@@ -103,9 +107,74 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
     bukti_transfer: ''
   });
 
+  // Events & Reservation State
+  const [eventsList, setEventsList] = useState<EventSchedule[]>(() => StorageManager.getEvents());
+  const [isEventResModalOpen, setIsEventResModalOpen] = useState(false);
+  const [selectedEventForRes, setSelectedEventForRes] = useState<EventSchedule | null>(null);
+  const [eventResForm, setEventResForm] = useState({
+    nama_jemaat: initialJemaat?.nama_lengkap || currentUser.nama || '',
+    nomor_wa: initialJemaat?.nomor_hp || currentUser.no_hp || '0812-3456-7890',
+    jumlah_kursi: 1,
+    catatan: ''
+  });
+  const [eventResMsg, setEventResMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const handleOpenReservationModal = (evt: EventSchedule) => {
+    setSelectedEventForRes(evt);
+    setEventResForm({
+      nama_jemaat: jemaatData?.nama_lengkap || currentUser.nama || '',
+      nomor_wa: jemaatData?.nomor_hp || currentUser.no_hp || '0812-3456-7890',
+      jumlah_kursi: 1,
+      catatan: ''
+    });
+    setEventResMsg(null);
+    setIsEventResModalOpen(true);
+  };
+
+  const handleSaveEventReservation = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedEventForRes || !eventResForm.nama_jemaat || !eventResForm.nomor_wa) {
+      setEventResMsg({ type: 'error', text: 'Lengkapi nama dan nomor WhatsApp Anda!' });
+      return;
+    }
+
+    const existingRes = StorageManager.getEventReservations();
+    const newRes = {
+      reservation_id: `RES-2026-${Date.now().toString().slice(-4)}`,
+      event_id: selectedEventForRes.event_id,
+      nama_jemaat: eventResForm.nama_jemaat,
+      nomor_wa: eventResForm.nomor_wa,
+      jumlah_kursi: Number(eventResForm.jumlah_kursi) || 1,
+      catatan: eventResForm.catatan,
+      tanggal_reservasi: new Date().toLocaleString('id-ID'),
+      status: 'TERKONFIRMASI' as const
+    };
+
+    const updated = [newRes, ...existingRes];
+    StorageManager.saveEventReservations(updated);
+    StorageManager.logActivity(
+      currentUser.username,
+      `Melakukan reservasi event "${selectedEventForRes.nama}" sebanyak ${eventResForm.jumlah_kursi} kursi`,
+      'Events'
+    );
+
+    window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { action: 'reservation_updated' } }));
+
+    setEventResMsg({
+      type: 'success',
+      text: `✅ Reservasi berhasil! ${eventResForm.jumlah_kursi} kursi terkonfirmasi dan telah tersimpan ke sistem Admin.`
+    });
+
+    setTimeout(() => {
+      setIsEventResModalOpen(false);
+      setEventResMsg(null);
+    }, 2000);
+  };
+
   const loadData = React.useCallback(() => {
     const freshSettings = StorageManager.getSettings();
     setAppSettings((prev) => (JSON.stringify(prev) !== JSON.stringify(freshSettings) ? freshSettings : prev));
+    setEventsList(StorageManager.getEvents());
 
     const activeUser = StorageManager.getCurrentUser() || currentUser;
     const allJemaat = StorageManager.getJemaat();
@@ -442,6 +511,172 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
           </div>
         )}
       </div>
+
+      {/* MENU UTAMA & FITUR PORTAL JEMAAT (COLORFUL QUICK BUTTONS) */}
+      <div className={`p-5 sm:p-6 rounded-3xl ${theme.cardClass} text-white space-y-4 shadow-xl border border-white/10`}>
+        <div className="flex items-center justify-between pb-3 border-b border-white/10">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-teal-500 via-indigo-600 to-purple-600 text-white shadow-lg shadow-teal-500/20">
+              <Grid className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-sm sm:text-base font-extrabold text-white tracking-wide">
+                Menu Utama & Akses Cepat Jemaat
+              </h3>
+              <p className="text-[11px] text-slate-400">Navigasi pelayanan mandiri, sakramen & persembahan</p>
+            </div>
+          </div>
+          <span className="px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 text-[10px] font-extrabold border border-teal-500/30 uppercase tracking-wider">
+            Portal Mandiri
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {/* 1. Transfer Persembahan */}
+          <button
+            onClick={() => setIsTransferModalOpen(true)}
+            className="p-4 rounded-2xl bg-gradient-to-br from-emerald-950/90 via-slate-900 to-slate-950 hover:from-emerald-900 hover:to-emerald-950 border border-emerald-500/30 hover:border-emerald-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-2.5 rounded-xl bg-emerald-600 text-white shadow-lg group-hover:scale-110 transition-transform">
+                <DollarSign className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                Mandiri
+              </span>
+            </div>
+            <div>
+              <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-emerald-300 transition-colors block">
+                Transfer Persembahan
+              </span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">Transfer Bank & QRIS</span>
+            </div>
+          </button>
+
+          {/* 2. Reservasi Kursi Event */}
+          <button
+            onClick={() => {
+              if (eventsList.length > 0) handleOpenReservationModal(eventsList[0]);
+              else alert('Belum ada jadwal event mendatang.');
+            }}
+            className="p-4 rounded-2xl bg-gradient-to-br from-amber-950/90 via-slate-900 to-slate-950 hover:from-amber-900 hover:to-amber-950 border border-amber-500/30 hover:border-amber-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-2.5 rounded-xl bg-amber-600 text-white shadow-lg group-hover:scale-110 transition-transform">
+                <Ticket className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                {eventsList.length} Event
+              </span>
+            </div>
+            <div>
+              <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-amber-300 transition-colors block">
+                Reservasi Kursi Event
+              </span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">Pesan tempat ibadah</span>
+            </div>
+          </button>
+
+          {/* 3. Dokumen Surat Sakramen */}
+          <button
+            onClick={() => {
+              const el = document.getElementById('sakramen-section');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="p-4 rounded-2xl bg-gradient-to-br from-purple-950/90 via-slate-900 to-slate-950 hover:from-purple-900 hover:to-purple-950 border border-purple-500/30 hover:border-purple-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-2.5 rounded-xl bg-purple-600 text-white shadow-lg group-hover:scale-110 transition-transform">
+                <FileText className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                Surat Saya
+              </span>
+            </div>
+            <div>
+              <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-purple-300 transition-colors block">
+                Dokumen & Sakramen
+              </span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">Surat Baptis, Sidi, Nikah</span>
+            </div>
+          </button>
+
+          {/* 4. Edit Data Profil Diri */}
+          <button
+            onClick={() => setIsEditing(!isEditing)}
+            className="p-4 rounded-2xl bg-gradient-to-br from-indigo-950/90 via-slate-900 to-slate-950 hover:from-indigo-900 hover:to-indigo-950 border border-indigo-500/30 hover:border-indigo-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="p-2.5 rounded-xl bg-indigo-600 text-white shadow-lg group-hover:scale-110 transition-transform">
+                <Edit3 className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                Data Diri
+              </span>
+            </div>
+            <div>
+              <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-indigo-300 transition-colors block">
+                Ubah Profil & Foto
+              </span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">Update No HP & Alamat</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {/* AGENDA & RESERVASI KURSI EVENT TERDEKAT FOR JEMAAT PORTAL */}
+      {eventsList.length > 0 && (
+        <div className={`p-5 sm:p-6 rounded-3xl ${theme.cardClass} text-white space-y-4 border border-amber-500/30 shadow-xl`}>
+          <div className="flex items-center justify-between pb-3 border-b border-white/10">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                <Calendar className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm sm:text-base font-extrabold text-white">
+                  Agenda Ibadah & Event Terdekat
+                </h3>
+                <p className="text-[11px] text-slate-400">Pesan tempat duduk ibadah Anda dan keluarga</p>
+              </div>
+            </div>
+            <span className="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-extrabold border border-amber-500/30">
+              Booking Online
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {eventsList.slice(0, 2).map((evt) => (
+              <div
+                key={evt.event_id}
+                className="p-4 rounded-2xl bg-slate-950/80 border border-amber-500/20 flex flex-col justify-between space-y-3"
+              >
+                <div>
+                  <div className="flex items-center justify-between text-xs text-amber-400 font-bold mb-1">
+                    <span>{evt.tanggal}</span>
+                    <span>Pukul {evt.jam} WIB</span>
+                  </div>
+                  <h4 className="font-extrabold text-base text-white">{evt.nama}</h4>
+                  <p className="text-xs text-slate-400 mt-1 flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                    <span>{evt.lokasi}</span>
+                  </p>
+                  {evt.pembicara && (
+                    <p className="text-[11px] text-slate-500 mt-0.5">Pembicara: {evt.pembicara}</p>
+                  )}
+                </div>
+
+                <button
+                  onClick={() => handleOpenReservationModal(evt)}
+                  className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white font-extrabold text-xs shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
+                >
+                  <Ticket className="w-4 h-4" />
+                  <span>Reservasi Kursi / Tempat Duduk</span>
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* 2. Modal/Card Edit Profil Data Diri */}
       {isEditing && (
@@ -788,7 +1023,7 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
       </div>
 
       {/* 6. Dokumen Surat & Sakramen Gereja Saya */}
-      <div className={`rounded-3xl ${theme.cardClass} p-6 sm:p-8 transition-all duration-300 space-y-4`}>
+      <div id="sakramen-section" className={`rounded-3xl ${theme.cardClass} p-6 sm:p-8 transition-all duration-300 space-y-4`}>
         <h3 className="text-base font-bold flex items-center justify-between border-b border-white/10 pb-3">
           <div className="flex items-center gap-2">
             <Scroll className={`w-5 h-5 ${theme.accentText}`} />
@@ -894,6 +1129,112 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
           )}
         </div>
       </div>
+
+      {/* MODAL RESERVASI KURSI EVENT FOR JEMAAT PORTAL */}
+      {isEventResModalOpen && selectedEventForRes && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 text-white space-y-4 shadow-2xl relative overflow-hidden">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                  <Ticket className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-white">Formulir Reservasi Kursi</h3>
+                  <p className="text-[10px] text-amber-300 font-bold truncate max-w-[200px] sm:max-w-[280px]">
+                    Event: {selectedEventForRes.nama}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsEventResModalOpen(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {eventResMsg && (
+              <div
+                className={`p-3.5 rounded-2xl text-xs font-bold border ${
+                  eventResMsg.type === 'success'
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                    : 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                }`}
+              >
+                {eventResMsg.text}
+              </div>
+            )}
+
+            <form onSubmit={handleSaveEventReservation} className="space-y-3 text-xs">
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">Nama Lengkap Pemesan *</label>
+                <input
+                  type="text"
+                  required
+                  value={eventResForm.nama_jemaat}
+                  onChange={(e) => setEventResForm({ ...eventResForm, nama_jemaat: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold"
+                  placeholder="Nama jemaat..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">Nomor WhatsApp *</label>
+                <input
+                  type="text"
+                  required
+                  value={eventResForm.nomor_wa}
+                  onChange={(e) => setEventResForm({ ...eventResForm, nomor_wa: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono font-semibold"
+                  placeholder="0812xxxxxxx"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">Jumlah Kursi Dipesan *</label>
+                <input
+                  type="number"
+                  required
+                  min={1}
+                  max={20}
+                  value={eventResForm.jumlah_kursi}
+                  onChange={(e) => setEventResForm({ ...eventResForm, jumlah_kursi: Number(e.target.value) })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-amber-400 font-mono font-extrabold text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">Catatan Tambahan (Opsional)</label>
+                <input
+                  type="text"
+                  placeholder="Misal: Posisi dekat lorong / lansia"
+                  value={eventResForm.catatan}
+                  onChange={(e) => setEventResForm({ ...eventResForm, catatan: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                />
+              </div>
+
+              <div className="pt-3 border-t border-slate-800 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsEventResModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-bold"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-emerald-600 hover:from-amber-400 hover:to-emerald-500 text-white font-extrabold flex items-center gap-1.5 shadow cursor-pointer"
+                >
+                  <Ticket className="w-4 h-4" />
+                  <span>Kirim Reservasi Sekarang</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
