@@ -447,7 +447,13 @@ export const StorageManager = {
     return saved;
   },
   saveCurrentUser: (user: User | null): void => setItem(KEYS.CURRENT_USER, user),
-  clearCurrentUser: (): void => localStorage.removeItem(KEYS.CURRENT_USER),
+  clearCurrentUser: (): void => {
+    localStorage.removeItem(KEYS.CURRENT_USER);
+    notifyStorageListeners();
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { key: KEYS.CURRENT_USER } }));
+    }
+  },
 
   resetToDefault: (): void => {
     localStorage.clear();

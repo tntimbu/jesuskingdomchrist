@@ -47,25 +47,25 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   // Android Back Button / Navigation Intercept State
   const [isAndroidExitModalOpen, setIsAndroidExitModalOpen] = useState(false);
 
-  // Push history state so Android Back Button can be cleanly intercepted
-  useEffect(() => {
-    try {
-      window.history.pushState({ page: 'login' }, '', window.location.href);
-    } catch (e) {}
+  // Cleanly exit login page without popstate trapping
+  const handleExitLogin = () => {
+    if (onClose) {
+      onClose();
+    }
+  };
 
-    const handlePopState = () => {
-      // Re-push state so user isn't kicked off login unexpectedly
-      try {
-        window.history.pushState({ page: 'login' }, '', window.location.href);
-      } catch (e) {}
-      setIsAndroidExitModalOpen(true);
+  useEffect(() => {
+    const handlePopState = (e: PopStateEvent) => {
+      if (onClose) {
+        onClose();
+      }
     };
 
     window.addEventListener('popstate', handlePopState);
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };
-  }, []);
+  }, [onClose]);
 
   // Quick Account Switcher for Demo Ease
   const handleQuickRoleSelect = (roleName: string) => {
