@@ -611,35 +611,35 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
 
           {/* Action & Customizer Buttons Header */}
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full md:w-auto">
             {/* Tombol Refresh Data untuk Semua User */}
             <button
               onClick={handleRefreshData}
               disabled={isRefreshing}
-              className="px-3.5 py-2 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 text-xs font-semibold border border-indigo-500/40 flex items-center gap-1.5 transition-all active:scale-95 shadow-sm cursor-pointer"
+              className="px-3 py-2 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 text-xs font-semibold border border-indigo-500/40 flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-sm cursor-pointer w-full sm:w-auto"
               title="Refresh Data Dashboard"
             >
-              <RotateCw className={`w-4 h-4 text-indigo-400 ${isRefreshing ? 'animate-spin' : ''}`} />
-              <span>{isRefreshing ? 'Memuat...' : 'Refresh Data'}</span>
+              <RotateCw className={`w-3.5 h-3.5 text-indigo-400 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span className="truncate">{isRefreshing ? 'Memuat...' : 'Refresh Data'}</span>
             </button>
 
             {isAdmin && (
               <>
                 <button
                   onClick={() => setIsCreateNotifModalOpen(true)}
-                  className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-400 hover:to-rose-500 text-white text-xs font-bold shadow-lg shadow-amber-500/20 flex items-center gap-2 transition-all cursor-pointer"
+                  className="px-3 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-400 hover:to-rose-500 text-white text-xs font-bold shadow-lg shadow-amber-500/20 flex items-center justify-center gap-1.5 transition-all cursor-pointer w-full sm:w-auto"
                   title="Buat Notifikasi atau Peringatan Resmi untuk Jemaat"
                 >
-                  <BellRing className="w-4 h-4 text-amber-200" />
-                  <span>Buat Notifikasi / Peringatan</span>
+                  <BellRing className="w-3.5 h-3.5 text-amber-200 shrink-0" />
+                  <span className="truncate">Buat Notifikasi</span>
                 </button>
 
                 <button
                   onClick={() => setIsCustomizerOpen(true)}
-                  className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition-all cursor-pointer"
+                  className="px-3 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-1.5 transition-all cursor-pointer w-full sm:w-auto"
                 >
-                  <Palette className="w-4 h-4" />
-                  <span>Custom Tampilan & Video</span>
+                  <Palette className="w-3.5 h-3.5 shrink-0" />
+                  <span className="truncate">Custom Tampilan</span>
                 </button>
               </>
             )}
@@ -648,29 +648,28 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <>
                 <button
                   onClick={() => onNavigate('jemaat')}
-                  className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/30 flex items-center gap-1.5 transition-all cursor-pointer"
+                  className="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-1.5 transition-all cursor-pointer w-full sm:w-auto"
                 >
-                  <PlusCircle className="w-4 h-4" />
-                  <span>Tambah Jemaat</span>
+                  <PlusCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span className="truncate">Tambah Jemaat</span>
                 </button>
                 <button
                   onClick={() => onNavigate('keuangan')}
-                  className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 text-xs font-semibold border border-white/10 flex items-center gap-1.5 transition-all cursor-pointer"
+                  className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 text-xs font-semibold border border-white/10 flex items-center justify-center gap-1.5 transition-all cursor-pointer w-full sm:w-auto"
                 >
-                  <DollarSign className="w-4 h-4 text-emerald-400" />
-                  <span>Persembahan</span>
+                  <DollarSign className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span className="truncate">Persembahan</span>
                 </button>
               </>
             )}
 
             <button
               onClick={() => onNavigate('laporan')}
-              className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 text-xs font-semibold border border-white/10 flex items-center gap-1.5 transition-all cursor-pointer"
+              className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 text-xs font-semibold border border-white/10 flex items-center justify-center gap-1.5 transition-all cursor-pointer w-full sm:w-auto"
             >
-              <Download className="w-4 h-4 text-blue-400" />
-              <span>Cetak Laporan</span>
+              <Download className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+              <span className="truncate">Cetak Laporan</span>
             </button>
-
           </div>
         </div>
 
@@ -880,8 +879,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
               {/* Kartu 3: Kas Persembahan */}
               <div
-                onClick={() => onNavigate('jemaat_portal')}
-                className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} border border-emerald-500/30 flex flex-col justify-between space-y-2 cursor-pointer hover:border-emerald-500/60 transition-all`}
+                className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} border border-emerald-500/30 flex flex-col justify-between space-y-2`}
               >
                 <div className="flex items-center justify-between gap-1">
                   <span className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider truncate">Kas Persembahan</span>
@@ -894,16 +892,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     Rp {totalPersembahan.toLocaleString('id-ID')}
                   </span>
                 </div>
-                <div className="pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 truncate flex items-center justify-between">
-                  <span>Kas & Donasi</span>
-                  <ChevronRight className="w-3 h-3 text-emerald-400" />
+                <div className="pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 truncate">
+                  <span>Tercatat di Kas Gereja</span>
                 </div>
               </div>
 
               {/* Kartu 4: Jadwal & Event */}
               <div
-                onClick={() => onNavigate('agenda')}
-                className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} border border-amber-500/30 flex flex-col justify-between space-y-2 cursor-pointer hover:border-amber-500/60 transition-all`}
+                className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} border border-amber-500/30 flex flex-col justify-between space-y-2`}
               >
                 <div className="flex items-center justify-between gap-1">
                   <span className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider truncate">Jadwal & Event</span>
@@ -915,9 +911,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <span className="text-xl sm:text-3xl font-black text-white">{eventsList.length}</span>
                   <span className="text-[10px] sm:text-xs text-slate-400 font-medium">Agenda</span>
                 </div>
-                <div className="pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 truncate flex items-center justify-between">
-                  <span>Ibadah & Event</span>
-                  <ChevronRight className="w-3 h-3 text-amber-400" />
+                <div className="pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 truncate">
+                  <span>Agenda Ibadah & Event</span>
                 </div>
               </div>
             </div>
@@ -1321,84 +1316,74 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         <div className="space-y-6">
           {/* Quick Statistics Cards */}
           {settings.show_stat_cards !== false && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
               {/* Total Jemaat Card */}
-              <div className={`rounded-2xl ${cardStyleClass} hover:border-white/20 transition-all text-white`}>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Jemaat</span>
-                  <div className="w-9 h-9 rounded-xl bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 flex items-center justify-center">
-                    <Users className="w-5 h-5" />
+              <div className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} border border-indigo-500/30 flex flex-col justify-between space-y-2 text-white`}>
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider truncate">Total Jemaat</span>
+                  <div className="p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shadow-md shrink-0">
+                    <Users className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                 </div>
-                <div className="mt-3 flex items-baseline justify-between">
-                  <h3 className="text-2xl font-bold tracking-tight">
-                    {totalJemaat} <span className="text-xs text-slate-400 font-normal">Jiwa</span>
-                  </h3>
-                  <span className="text-xs font-medium text-emerald-400 flex items-center gap-0.5">
-                    <TrendingUp className="w-3.5 h-3.5" /> +4.2%
-                  </span>
+                <div className="flex items-baseline gap-1 flex-wrap">
+                  <span className="text-xl sm:text-3xl font-black text-white">{totalJemaat}</span>
+                  <span className="text-[10px] sm:text-xs text-slate-400 font-medium">Jiwa</span>
                 </div>
-                <div className="mt-2 text-[11px] text-slate-400 flex items-center gap-3 border-t border-white/10 pt-2">
-                  <span>L: {totalLaki} Jiwa</span>
-                  <span>&bull;</span>
-                  <span>P: {totalPerempuan} Jiwa</span>
+                <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[9px] sm:text-[11px] text-slate-300 gap-1">
+                  <span>L: <strong className="text-indigo-300 font-bold">{totalLaki}</strong></span>
+                  <span>P: <strong className="text-pink-300 font-bold">{totalPerempuan}</strong></span>
                 </div>
               </div>
 
               {/* Total Keluarga Card */}
-              <div className={`rounded-2xl ${cardStyleClass} hover:border-white/20 transition-all text-white`}>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Kepala Keluarga</span>
-                  <div className="w-9 h-9 rounded-xl bg-blue-500/20 border border-blue-500/30 text-blue-300 flex items-center justify-center">
-                    <Building2 className="w-5 h-5" />
+              <div className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} border border-purple-500/30 flex flex-col justify-between space-y-2 text-white`}>
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider truncate">Total KK</span>
+                  <div className="p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl bg-purple-500/20 text-purple-400 border border-purple-500/30 shadow-md shrink-0">
+                    <Building2 className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                 </div>
-                <div className="mt-3 flex items-baseline justify-between">
-                  <h3 className="text-2xl font-bold tracking-tight">
-                    {totalKeluarga} <span className="text-xs text-slate-400 font-normal">KK</span>
-                  </h3>
-                  <span className="text-xs font-medium text-slate-400">4 Wilayah</span>
+                <div className="flex items-baseline gap-1.5 flex-wrap">
+                  <span className="text-xl sm:text-3xl font-black text-white">{totalKeluarga}</span>
+                  <span className="text-[10px] sm:text-xs text-slate-400 font-medium">Keluarga</span>
                 </div>
-                <div className="mt-2 text-[11px] text-slate-400 border-t border-white/10 pt-2">
-                  Terdaftar di Database Gereja
+                <div className="pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 truncate">
+                  <span>Kepala Keluarga</span>
                 </div>
               </div>
 
               {/* Total Persembahan Card */}
-              <div className={`rounded-2xl ${cardStyleClass} hover:border-white/20 transition-all text-white`}>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Kas Persembahan</span>
-                  <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 flex items-center justify-center">
-                    <DollarSign className="w-5 h-5" />
+              <div className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} border border-emerald-500/30 flex flex-col justify-between space-y-2 text-white`}>
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider truncate">Kas Persembahan</span>
+                  <div className="p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-md shrink-0">
+                    <DollarSign className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                 </div>
-                <div className="mt-3 flex items-baseline justify-between">
-                  <h3 className="text-xl font-bold tracking-tight text-emerald-400">
+                <div className="flex items-baseline gap-1 flex-wrap">
+                  <span className="text-base sm:text-2xl font-black text-emerald-400 leading-tight">
                     Rp {totalPersembahan.toLocaleString('id-ID')}
-                  </h3>
+                  </span>
                 </div>
-                <div className="mt-2 text-[11px] text-slate-400 border-t border-white/10 pt-2 flex items-center justify-between">
+                <div className="pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 truncate">
                   <span>Tersimpan di Kas</span>
-                  <span className="text-emerald-400 font-semibold">Tercatat</span>
                 </div>
               </div>
 
               {/* Event Mendatang Card */}
-              <div className={`rounded-2xl ${cardStyleClass} hover:border-white/20 transition-all text-white`}>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Jadwal & Event</span>
-                  <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-300 flex items-center justify-center">
-                    <Calendar className="w-5 h-5" />
+              <div className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} border border-amber-500/30 flex flex-col justify-between space-y-2 text-white`}>
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider truncate">Jadwal & Event</span>
+                  <div className="p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shadow-md shrink-0">
+                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                 </div>
-                <div className="mt-3 flex items-baseline justify-between">
-                  <h3 className="text-2xl font-bold tracking-tight">
-                    {eventsList.length} <span className="text-xs text-slate-400 font-normal">Agenda</span>
-                  </h3>
-                  <span className="text-xs font-medium text-amber-400">Minggu Ini</span>
+                <div className="flex items-baseline gap-1.5 flex-wrap">
+                  <span className="text-xl sm:text-3xl font-black text-white">{eventsList.length}</span>
+                  <span className="text-[10px] sm:text-xs text-slate-400 font-medium">Agenda</span>
                 </div>
-                <div className="mt-2 text-[11px] text-slate-400 border-t border-white/10 pt-2 truncate">
-                  {eventsList[0]?.nama || 'Ibadah Raya Minggu'}
+                <div className="pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 truncate">
+                  <span>Ibadah & Agenda</span>
                 </div>
               </div>
             </div>
