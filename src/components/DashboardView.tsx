@@ -12,7 +12,8 @@ import {
   NotificationItem,
   FeaturedVideo,
   GalleryItem,
-  Doa
+  Doa,
+  EventReservation
 } from '../types';
 import { StorageManager } from '../utils/storage';
 import { parseSocialVideoUrl } from '../utils/videoHelper';
@@ -136,6 +137,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>(() => StorageManager.getActivityLogs());
   const [featuredVideos, setFeaturedVideos] = useState<FeaturedVideo[]>(() => StorageManager.getFeaturedVideos());
   const [galleryList, setGalleryList] = useState<GalleryItem[]>(() => StorageManager.getGallery());
+  const [reservationsList, setReservationsList] = useState<EventReservation[]>(() => StorageManager.getEventReservations());
+  const [isAdminResModalOpen, setIsAdminResModalOpen] = useState<boolean>(false);
   const [activeVideoUrl, setActiveVideoUrl] = useState<string>('');
 
   // Prayer Request Form State
@@ -226,8 +229,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   });
   const [eventResMsg, setEventResMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const handleOpenReservationModal = (evt: EventSchedule) => {
-    setSelectedEventForRes(evt);
+  const handleOpenReservationModal = (evt: EventSchedule | null) => {
+    const targetEvt = evt || (eventsList.length > 0 ? eventsList[0] : {
+      event_id: 'EVT-2026-001',
+      nama: 'Ibadah Raya & Kehadiran Jemaat',
+      tanggal: 'Setiap Minggu',
+      jam: '07.00 & 10.00 WIB',
+      lokasi: 'Gereja Utama',
+      kategori: 'Ibadah',
+      pembicara: 'Gembala Sidang',
+      keterangan: 'Ibadah Tatap Muka & Online'
+    });
+    setSelectedEventForRes(targetEvt);
     setEventResForm({
       nama_jemaat: currentUser.nama || '',
       nomor_wa: currentUser.no_hp || '0812-3456-7890',
@@ -246,19 +259,38 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
 
     const existingRes = StorageManager.getEventReservations();
-    const newRes = {
-      reservation_id: `RES-2026-${Date.now().toString().slice(-4)}`,
+    const newRes: EventReservation = {
+      reservation_id: `RES-2026-${Date.now().toString().slice(-4)}${Math.floor(Math.random() * 100)}`,
       event_id: selectedEventForRes.event_id,
       nama_jemaat: eventResForm.nama_jemaat,
       nomor_wa: eventResForm.nomor_wa,
       jumlah_kursi: Number(eventResForm.jumlah_kursi) || 1,
       catatan: eventResForm.catatan,
-      tanggal_reservasi: new Date().toLocaleString('id-ID'),
-      status: 'TERKONFIRMASI' as const
+      tanggal_reservasi: new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }),
+      status: 'TERKONFIRMASI'
     };
 
     const updated = [newRes, ...existingRes];
     StorageManager.saveEventReservations(updated);
+    setReservationsList(updated);
+
+    // Create Admin notification for instant alert
+    const notifForAdmin: NotificationItem = {
+      notif_id: `NTF-RES-${Date.now().toString().slice(-4)}`,
+      user_id: 'ALL',
+      tujuan_role: 'ADMIN',
+      judul: '🎟️ Reservasi Kursi Event Baru',
+      pesan: `${eventResForm.nama_jemaat} telah memesan ${eventResForm.jumlah_kursi} kursi untuk "${selectedEventForRes.nama}". WA: ${eventResForm.nomor_wa}`,
+      status_baca: 'Belum',
+      tanggal: new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }),
+      tipe: 'Penting',
+      pengirim: eventResForm.nama_jemaat,
+      is_pinned: true
+    };
+    const currentNotifs = StorageManager.getNotifications();
+    StorageManager.saveNotifications([notifForAdmin, ...currentNotifs]);
+    setNotificationsList([notifForAdmin, ...currentNotifs]);
+
     StorageManager.logActivity(
       currentUser.username,
       `Melakukan reservasi event "${selectedEventForRes.nama}" sebanyak ${eventResForm.jumlah_kursi} kursi`,
@@ -380,6 +412,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     setFeaturedVideos((prev) => (prev.length !== fv.length || JSON.stringify(prev) !== JSON.stringify(fv) ? fv : prev));
     const g = StorageManager.getGallery();
     setGalleryList((prev) => (prev.length !== g.length || JSON.stringify(prev) !== JSON.stringify(g) ? g : prev));
+    const res = StorageManager.getEventReservations();
+    setReservationsList((prev) => (prev.length !== res.length || JSON.stringify(prev) !== JSON.stringify(res) ? res : prev));
   }, []);
 
   const handleSaveNotification = (e: React.FormEvent) => {
@@ -1395,11 +1429,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                       <button
                         onClick={() => handleOpenReservationModal(latestEvent)}
-                        className="w-full mt-2 py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-500 text-white font-extrabold text-xs shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
+                        className="w-full mt-2 py-2.5 px-3 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-500 text-white font-extrabold text-xs shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95"
                       >
                         <Ticket className="w-4 h-4" />
                         <span>Reservasi Kursi / Kehadiran</span>
                       </button>
+
+                      {!isJemaat && (
+                        <button
+                          onClick={() => setIsAdminResModalOpen(true)}
+                          className="w-full mt-1.5 py-2 px-3 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-amber-300 hover:text-amber-200 border border-amber-500/30 text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                        >
+                          <Ticket className="w-3.5 h-3.5 text-amber-400" />
+                          <span>Daftar Reservasi Jemaat ({reservationsList.length} Pendaftar)</span>
+                        </button>
+                      )}
                     </div>
                   ) : (
                     <p className="text-xs text-slate-400 py-6 text-center">Belum ada agenda mendatang.</p>
@@ -1875,35 +1919,78 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-bold text-slate-300 flex items-center gap-1.5 text-[11px]">
                       <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                      Pilih Tayangan Video &amp; Media Terkait:
+                      Pilihan Tayangan &amp; Informasi Media Stream:
                     </span>
                     <button
                       onClick={() => onNavigate('galeri')}
-                      className="text-indigo-400 hover:text-indigo-300 font-semibold text-[11px] cursor-pointer"
+                      className="text-indigo-400 hover:text-indigo-300 font-semibold text-[11px] cursor-pointer flex items-center gap-1"
                     >
-                      Buka Galeri Media &rarr;
+                      <span>Buka Galeri Media</span>
+                      <ChevronRight className="w-3 h-3" />
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
                     {allDashboardVideos.map((v) => (
                       <button
                         key={v.id}
                         type="button"
                         onClick={() => setActiveVideoUrl(v.video_url)}
-                        className={`p-2 rounded-xl border text-left transition-all cursor-pointer ${
+                        className={`p-2.5 rounded-2xl border text-left transition-all cursor-pointer ${
                           currentVideoUrl === v.video_url
-                            ? 'bg-indigo-950/90 border-indigo-500 text-white shadow-lg ring-1 ring-indigo-500/30'
+                            ? 'bg-gradient-to-r from-indigo-950/90 to-purple-950/90 border-indigo-500 text-white shadow-lg ring-1 ring-indigo-500/30'
                             : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
                         }`}
                       >
-                        <div className="flex items-center gap-1.5 text-[10px] font-bold text-indigo-400">
-                          <Play className="w-3 h-3 fill-current" />
-                          <span>{v.platform || 'Video'} &bull; {v.kategori || 'Ibadah'}</span>
+                        <div className="flex items-center justify-between text-[10px] font-bold text-indigo-400 mb-0.5">
+                          <span className="flex items-center gap-1">
+                            <Play className="w-3 h-3 fill-current" />
+                            {v.platform || 'YouTube'} &bull; {v.kategori || 'Ibadah'}
+                          </span>
+                          {currentVideoUrl === v.video_url && (
+                            <span className="px-1.5 py-0.2 rounded bg-indigo-500/30 text-indigo-200 text-[9px]">
+                              Sedang Diputar
+                            </span>
+                          )}
                         </div>
-                        <p className="text-[11px] font-semibold mt-0.5 truncate">{v.judul}</p>
+                        <p className="text-xs font-bold text-white truncate">{v.judul}</p>
                       </button>
                     ))}
+
+                    {/* Fill empty grid slots proportionally with church streaming information */}
+                    {allDashboardVideos.length < 2 && (
+                      <div className="p-2.5 rounded-2xl bg-white/5 border border-white/10 text-left flex items-center gap-2.5">
+                        <div className="p-2 rounded-xl bg-red-500/20 text-red-400 border border-red-500/30 shrink-0">
+                          <Tv className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-[10px] font-extrabold text-red-300 uppercase tracking-wider">
+                            Jadwal Live Stream
+                          </div>
+                          <p className="text-xs font-bold text-white truncate">Ibadah Minggu 07.00 &amp; 10.00 WIB</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {allDashboardVideos.length < 3 && (
+                      <div
+                        onClick={() => onNavigate('galeri')}
+                        className="p-2.5 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 text-left flex items-center justify-between cursor-pointer transition-all"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shrink-0">
+                            <Video className="w-4 h-4" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-[10px] font-extrabold text-amber-300 uppercase tracking-wider">
+                              Koleksi Khotbah
+                            </div>
+                            <p className="text-xs font-bold text-white truncate">Arsip Khotbah &amp; Pujian Lengkap</p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-slate-400 shrink-0 ml-1" />
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -2639,6 +2726,106 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL REKAP RESERVASI KURSI JEMAAT UNTUK ADMIN */}
+      {isAdminResModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl p-6 text-white space-y-4 shadow-2xl relative overflow-hidden max-h-[85vh] flex flex-col">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                  <Ticket className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-white">Daftar Reservasi Kursi Jemaat</h3>
+                  <p className="text-[11px] text-amber-300 font-bold">
+                    Total {reservationsList.length} Pemesanan ({reservationsList.reduce((acc, r) => acc + (Number(r.jumlah_kursi) || 1), 0)} Kursi)
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsAdminResModalOpen(false)}
+                className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="overflow-y-auto space-y-2.5 pr-1 flex-1">
+              {reservationsList.length === 0 ? (
+                <div className="p-8 text-center text-slate-400 space-y-2">
+                  <Ticket className="w-10 h-10 text-slate-600 mx-auto" />
+                  <p className="text-xs font-bold text-slate-300">Belum Ada Data Reservasi Kursi</p>
+                  <p className="text-[11px]">Reservasi yang dilakukan jemaat dari halaman utama akan otomatis muncul di sini.</p>
+                </div>
+              ) : (
+                reservationsList.map((res) => {
+                  const evtInfo = eventsList.find((e) => e.event_id === res.event_id);
+                  return (
+                    <div
+                      key={res.reservation_id}
+                      className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 transition-all"
+                    >
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-extrabold text-sm text-white">{res.nama_jemaat}</span>
+                          <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-extrabold text-[10px] border border-amber-500/30">
+                            {res.jumlah_kursi} Kursi
+                          </span>
+                          <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-bold text-[10px]">
+                            {res.status || 'TERKONFIRMASI'}
+                          </span>
+                        </div>
+                        <p className="text-xs text-indigo-300 font-semibold">
+                          Event: {evtInfo ? evtInfo.nama : res.event_id}
+                        </p>
+                        <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-400">
+                          <span>WA: <a href={`https://wa.me/${res.nomor_wa.replace(/\D/g, '')}`} target="_blank" rel="noreferrer" className="text-emerald-400 hover:underline font-mono">{res.nomor_wa}</a></span>
+                          <span>Waktu: {res.tanggal_reservasi}</span>
+                          {res.catatan && <span className="italic text-slate-300">"{res.catatan}"</span>}
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          if (confirm(`Hapus reservasi atas nama ${res.nama_jemaat}?`)) {
+                            const updated = reservationsList.filter((r) => r.reservation_id !== res.reservation_id);
+                            StorageManager.saveEventReservations(updated);
+                            setReservationsList(updated);
+                            window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { action: 'reservation_deleted' } }));
+                          }
+                        }}
+                        className="px-2.5 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/40 text-rose-300 border border-rose-500/30 text-[11px] font-bold flex items-center gap-1 cursor-pointer shrink-0 self-end sm:self-center"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Hapus</span>
+                      </button>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="pt-3 border-t border-slate-800 flex items-center justify-between shrink-0">
+              <button
+                onClick={() => {
+                  setIsAdminResModalOpen(false);
+                  onNavigate('agenda');
+                }}
+                className="text-amber-400 hover:text-amber-300 font-bold text-xs flex items-center gap-1"
+              >
+                <span>Buka Kalender &amp; Agenda Lengkap &rarr;</span>
+              </button>
+              <button
+                onClick={() => setIsAdminResModalOpen(false)}
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold"
+              >
+                Tutup
+              </button>
+            </div>
           </div>
         </div>
       )}

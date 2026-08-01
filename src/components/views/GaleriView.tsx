@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { GalleryItem, User, FeaturedVideo } from '../../types';
 import { StorageManager } from '../../utils/storage';
 import { parseSocialVideoUrl } from '../../utils/videoHelper';
@@ -16,7 +16,11 @@ import {
   Calendar,
   Tag,
   CheckCircle2,
-  Tv
+  Tv,
+  HardDrive,
+  FolderPlus,
+  FileImage,
+  UploadCloud
 } from 'lucide-react';
 
 interface GaleriViewProps {
@@ -44,7 +48,33 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser, initialTab 
   const [selectedPhoto, setSelectedPhoto] = useState<GalleryItem | null>(null);
   const [selectedVideo, setSelectedVideo] = useState<GalleryItem | null>(null);
 
-  // Add Gallery Item Form
+  // File input ref for local/offline image uploading
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [offlineFileName, setOfflineFileName] = useState<string>('');
+
+  const handleOfflineFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Mohon pilih file gambar yang valid (JPG, PNG, WEBP, GIF)!');
+      return;
+    }
+
+    setOfflineFileName(file.name);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = event.target?.result as string;
+      if (result) {
+        setMediaForm((prev) => ({
+          ...prev,
+          foto: result,
+          judul: prev.judul || file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ')
+        }));
+      }
+    };
+    reader.readAsDataURL(file);
+  };
   const [mediaForm, setMediaForm] = useState({
     judul: '',
     tipe: 'Foto' as 'Foto' | 'Video',
@@ -261,13 +291,32 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser, initialTab 
           </div>
 
           {isAdmin && (
-            <button
-              onClick={() => (activeTab === 'GALLERY' ? setIsAddModalOpen(true) : setIsVideoModalOpen(true))}
-              className="px-4 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 transition-all active:scale-95"
-            >
-              <Plus className="w-4 h-4" />
-              <span>{activeTab === 'GALLERY' ? 'Upload Foto / Media' : 'Tambah Video Media Sosial'}</span>
-            </button>
+            <div className="flex items-center gap-2">
+              {activeTab === 'GALLERY' && (
+                <button
+                  onClick={() => {
+                    setOfflineFileName('');
+                    setIsAddModalOpen(true);
+                    setTimeout(() => {
+                      fileInputRef.current?.click();
+                    }, 200);
+                  }}
+                  className="px-3.5 py-2.5 rounded-2xl bg-emerald-600/90 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-1.5 transition-all active:scale-95 border border-emerald-400/30 cursor-pointer"
+                  title="Pilih dan upload file gambar dari galeri HP atau disk komputer lokal"
+                >
+                  <HardDrive className="w-4 h-4 text-emerald-200" />
+                  <span>Unggah File Offline (Lokal)</span>
+                </button>
+              )}
+
+              <button
+                onClick={() => (activeTab === 'GALLERY' ? setIsAddModalOpen(true) : setIsVideoModalOpen(true))}
+                className="px-4 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>{activeTab === 'GALLERY' ? 'Tambah Form Media' : 'Tambah Video Media Sosial'}</span>
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -682,15 +731,76 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser, initialTab 
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">URL Foto Gambar / Thumbnail</label>
+              {/* Offline File Upload Method / Local Storage */}
+              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
+                    <HardDrive className="w-4 h-4 text-emerald-400" />
+                    <span>Upload dari Penyimpanan Lokal / Disk Offline</span>
+                  </label>
+                  <span className="text-[10px] text-slate-400">Offline & Direct File</span>
+                </div>
+
                 <input
-                  type="text"
-                  placeholder="https://images.unsplash.com/photo-..."
-                  value={mediaForm.foto}
-                  onChange={(e) => setMediaForm({ ...mediaForm, foto: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs font-mono"
+                  type="file"
+                  ref={fileInputRef}
+                  accept="image/*"
+                  onChange={handleOfflineFileUpload}
+                  className="hidden"
                 />
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-2 shadow cursor-pointer transition-all active:scale-95"
+                  >
+                    <FolderPlus className="w-4 h-4 text-emerald-200" />
+                    <span>Pilih Foto Lokal Disk / HP...</span>
+                  </button>
+
+                  {offlineFileName && (
+                    <span className="text-[11px] text-emerald-300 truncate font-mono">
+                      {offlineFileName}
+                    </span>
+                  )}
+                </div>
+
+                {/* Preview Thumbnail if local image loaded */}
+                {mediaForm.foto && mediaForm.foto.startsWith('data:image/') && (
+                  <div className="relative rounded-xl overflow-hidden border border-emerald-500/40 max-h-32 bg-black flex items-center justify-center">
+                    <img src={mediaForm.foto} alt="Preview Offline" className="h-28 object-cover rounded-lg" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMediaForm((prev) => ({ ...prev, foto: '' }));
+                        setOfflineFileName('');
+                      }}
+                      className="absolute top-2 right-2 p-1.5 rounded-full bg-rose-600 text-white hover:bg-rose-500 shadow cursor-pointer"
+                      title="Hapus foto ini"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+
+                <div className="pt-2 border-t border-slate-800/80">
+                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                    Atau Masukkan URL Gambar Web / Unsplash (Opsional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="https://images.unsplash.com/photo-..."
+                    value={mediaForm.foto}
+                    onChange={(e) => {
+                      setMediaForm({ ...mediaForm, foto: e.target.value });
+                      if (!e.target.value.startsWith('data:image/')) {
+                        setOfflineFileName('');
+                      }
+                    }}
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-mono"
+                  />
+                </div>
               </div>
 
               {mediaForm.tipe === 'Video' && (

@@ -64,11 +64,10 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
     if (!rEventId || !targetEventId) return false;
     const r = rEventId.trim().toLowerCase();
     const t = targetEventId.trim().toLowerCase();
-    return (
-      r === t ||
-      r.replace('evt-2026-', 'evt-') === t.replace('evt-2026-', 'evt-') ||
-      t.replace('evt-2026-', 'evt-') === r.replace('evt-2026-', 'evt-')
-    );
+    if (r === t) return true;
+    const rClean = r.replace(/^evt-2026-|^evt-/, '');
+    const tClean = t.replace(/^evt-2026-|^evt-/, '');
+    return rClean === tClean || (rClean.length >= 3 && tClean.length >= 3 && (rClean.includes(tClean) || tClean.includes(rClean)));
   };
 
   // Forms
