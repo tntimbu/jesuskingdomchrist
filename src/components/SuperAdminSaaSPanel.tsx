@@ -433,6 +433,15 @@ export const SuperAdminSaaSPanel: React.FC<SuperAdminSaaSPanelProps> = ({
                               <option value="NONAKTIF">Set NONAKTIF</option>
                             </select>
 
+                            {/* Edit Button */}
+                            <button
+                              onClick={() => setEditingTenant(item)}
+                              className="p-1.5 rounded-lg bg-slate-900 hover:bg-indigo-950 text-slate-400 hover:text-indigo-300 border border-slate-800 transition-all cursor-pointer"
+                              title="Edit Detail / Nama Gereja"
+                            >
+                              <Edit className="w-3.5 h-3.5" />
+                            </button>
+
                             {/* Delete Button */}
                             <button
                               onClick={() => {
@@ -692,6 +701,152 @@ export const SuperAdminSaaSPanel: React.FC<SuperAdminSaaSPanelProps> = ({
                 >
                   <ShieldCheck className="w-4 h-4" />
                   <span>Aktifkan Akun Gereja</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Existing Tenant Modal */}
+      {editingTenant && (
+        <div className="fixed inset-0 z-[9995] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in text-white overflow-y-auto">
+          <div className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-4 my-auto relative">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                  <Edit className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-white">Edit Data Akun Gereja Pembeli</h3>
+                  <p className="text-xs text-slate-400">
+                    Satu Perubahan Nama Gereja di sini otomatis mensinkronkan seluruh sistem &amp; pengaturan admin.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setEditingTenant(null)}
+                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!editingTenant) return;
+                StorageManager.updateChurchTenantDetails(editingTenant);
+                loadData();
+                setEditingTenant(null);
+                setSuccessMessage(`Data Gereja "${editingTenant.nama_gereja}" berhasil diperbarui!`);
+                setTimeout(() => setSuccessMessage(''), 3000);
+              }}
+              className="space-y-4 text-xs"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div className="sm:col-span-2">
+                  <label className="block text-slate-300 font-bold mb-1">Nama Resmi Gereja Pembeli *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editingTenant.nama_gereja}
+                    onChange={(e) => setEditingTenant({ ...editingTenant, nama_gereja: e.target.value })}
+                    placeholder="Contoh: SYSTEM MANAGEMENT CHURCH / GKI Kebayoran"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-bold text-sm focus:ring-2 focus:ring-amber-500 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-300 font-bold mb-1">Kode Unik Tenant</label>
+                  <input
+                    type="text"
+                    required
+                    value={editingTenant.kode_unik}
+                    onChange={(e) => setEditingTenant({ ...editingTenant, kode_unik: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-amber-400 font-mono font-bold focus:ring-2 focus:ring-amber-500 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-300 font-bold mb-1">Nama Admin Utama</label>
+                  <input
+                    type="text"
+                    value={editingTenant.admin_nama}
+                    onChange={(e) => setEditingTenant({ ...editingTenant, admin_nama: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:ring-2 focus:ring-amber-500 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-300 font-bold mb-1">Nomor WhatsApp Admin</label>
+                  <input
+                    type="text"
+                    value={editingTenant.admin_wa || ''}
+                    onChange={(e) => setEditingTenant({ ...editingTenant, admin_wa: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-emerald-400 font-mono focus:ring-2 focus:ring-amber-500 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-300 font-bold mb-1">Email Admin / Sekretariat</label>
+                  <input
+                    type="email"
+                    value={editingTenant.admin_email || ''}
+                    onChange={(e) => setEditingTenant({ ...editingTenant, admin_email: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:ring-2 focus:ring-amber-500 outline-none"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-slate-300 font-bold mb-1">Alamat Gereja</label>
+                  <input
+                    type="text"
+                    value={editingTenant.alamat || ''}
+                    onChange={(e) => setEditingTenant({ ...editingTenant, alamat: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:ring-2 focus:ring-amber-500 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-300 font-bold mb-1">Tanggal Kadaluarsa Lisensi</label>
+                  <input
+                    type="date"
+                    value={editingTenant.tanggal_kadaluarsa || ''}
+                    onChange={(e) => setEditingTenant({ ...editingTenant, tanggal_kadaluarsa: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-bold focus:ring-2 focus:ring-amber-500 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-300 font-bold mb-1">Status Lisensi</label>
+                  <select
+                    value={editingTenant.status}
+                    onChange={(e) => setEditingTenant({ ...editingTenant, status: e.target.value as ChurchStatus })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-bold focus:ring-2 focus:ring-amber-500 outline-none"
+                  >
+                    <option value="AKTIF">AKTIF</option>
+                    <option value="NONAKTIF">NONAKTIF</option>
+                    <option value="KADALUARSA">KADALUARSA</option>
+                    <option value="DIBLOKIR">DIBLOKIR</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="pt-3 flex items-center justify-end gap-2.5 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setEditingTenant(null)}
+                  className="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="py-2.5 px-6 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-extrabold shadow-lg shadow-emerald-500/20 flex items-center gap-2 cursor-pointer active:scale-95"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>Simpan Perubahan</span>
                 </button>
               </div>
             </form>

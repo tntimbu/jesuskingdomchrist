@@ -243,7 +243,33 @@ export const StorageManager = {
 
   // --- SaaS Multi-Tenant & Buyer Church Management ---
   getTenants: (): ChurchTenant[] => {
-    return getItem<ChurchTenant[]>(KEYS.TENANTS, initialTenants);
+    const tenants = getItem<ChurchTenant[]>(KEYS.TENANTS, initialTenants);
+    const activeTenantId = StorageManager.getActiveTenantId();
+    const currentSettings = StorageManager.getSettings();
+
+    if (currentSettings && currentSettings.nama_gereja) {
+      let needsSync = false;
+      const syncedTenants = tenants.map((t) => {
+        if (t.tenant_id === activeTenantId || (tenants.length === 1 && t.tenant_id === 'CHURCH-001')) {
+          if (t.nama_gereja !== currentSettings.nama_gereja) {
+            needsSync = true;
+            return {
+              ...t,
+              nama_gereja: currentSettings.nama_gereja,
+              ...(currentSettings.email ? { admin_email: currentSettings.email } : {}),
+              ...(currentSettings.telepon ? { admin_wa: currentSettings.telepon } : {}),
+              ...(currentSettings.alamat ? { alamat: currentSettings.alamat } : {})
+            };
+          }
+        }
+        return t;
+      });
+      if (needsSync) {
+        setItem(KEYS.TENANTS, syncedTenants);
+        return syncedTenants;
+      }
+    }
+    return tenants;
   },
   saveTenants: (tenants: ChurchTenant[]): void => setItem(KEYS.TENANTS, tenants),
 
@@ -290,6 +316,40 @@ export const StorageManager = {
       `Membuat Akun Gereja Baru: ${tenant.nama_gereja} (${tenant.kode_unik})`,
       'SaaS'
     );
+  },
+  updateChurchTenantDetails: (updatedTenant: ChurchTenant): void => {
+    const tenants = StorageManager.getTenants();
+    const newTenants = tenants.map((t) => (t.tenant_id === updatedTenant.tenant_id ? updatedTenant : t));
+    StorageManager.saveTenants(newTenants);
+
+    // Sync to tenant's settings
+    const activeTenantId = StorageManager.getActiveTenantId();
+    if (updatedTenant.tenant_id === activeTenantId) {
+      const currentSettings = StorageManager.getSettings();
+      StorageManager.saveSettings({
+        ...currentSettings,
+        nama_gereja: updatedTenant.nama_gereja,
+        email: updatedTenant.admin_email || currentSettings.email,
+        telepon: updatedTenant.admin_wa || currentSettings.telepon,
+        alamat: updatedTenant.alamat || currentSettings.alamat
+      });
+    } else {
+      const tenantSettingsKey = getTenantScopedKey(KEYS.SETTINGS, updatedTenant.tenant_id);
+      try {
+        const raw = localStorage.getItem(tenantSettingsKey);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          parsed.nama_gereja = updatedTenant.nama_gereja;
+          if (updatedTenant.admin_email) parsed.email = updatedTenant.admin_email;
+          if (updatedTenant.admin_wa) parsed.telepon = updatedTenant.admin_wa;
+          if (updatedTenant.alamat) parsed.alamat = updatedTenant.alamat;
+          localStorage.setItem(tenantSettingsKey, JSON.stringify(parsed));
+          pushToCloud(tenantSettingsKey, parsed);
+        }
+      } catch (err) {
+        // ignore
+      }
+    }
   },
   updateChurchTenantStatus: (tenantId: string, status: ChurchStatus, tanggalKadaluarsa?: string): void => {
     const tenants = StorageManager.getTenants();
@@ -371,7 +431,37 @@ export const StorageManager = {
     }
     return settings;
   },
-  saveSettings: (settings: AppSettings): void => setItem(KEYS.SETTINGS, settings),
+  saveSettings: (settings: AppSettings): void => {
+    setItem(KEYS.SETTINGS, settings);
+    if (settings.nama_gereja) {
+      const activeTenantId = StorageManager.getActiveTenantId();
+      const tenants = getItem<ChurchTenant[]>(KEYS.TENANTS, initialTenants);
+      let needsSync = false;
+      const updatedTenants = tenants.map((t) => {
+        if (t.tenant_id === activeTenantId || (tenants.length === 1 && t.tenant_id === 'CHURCH-001')) {
+          if (
+            t.nama_gereja !== settings.nama_gereja ||
+            (settings.email && t.admin_email !== settings.email) ||
+            (settings.telepon && t.admin_wa !== settings.telepon) ||
+            (settings.alamat && t.alamat !== settings.alamat)
+          ) {
+            needsSync = true;
+            return {
+              ...t,
+              nama_gereja: settings.nama_gereja,
+              ...(settings.email ? { admin_email: settings.email } : {}),
+              ...(settings.telepon ? { admin_wa: settings.telepon } : {}),
+              ...(settings.alamat ? { alamat: settings.alamat } : {})
+            };
+          }
+        }
+        return t;
+      });
+      if (needsSync) {
+        setItem(KEYS.TENANTS, updatedTenants);
+      }
+    }
+  },
 
   getUsers: (): User[] => {
     let list = getItem<User[]>(KEYS.USERS, initialUsers);
