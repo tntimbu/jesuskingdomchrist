@@ -21,7 +21,10 @@ import {
   LoginHistory,
   PrayerRequest,
   FeaturedVideo,
-  EventReservation
+  EventReservation,
+  ChurchTenant,
+  ChurchStatus,
+  SuperAdminContact
 } from '../types';
 
 import {
@@ -44,12 +47,17 @@ import {
   initialActivityLogs,
   initialLoginHistory,
   initialPrayerRequests,
-  initialFeaturedVideos
+  initialFeaturedVideos,
+  initialTenants,
+  initialSuperAdminContact
 } from '../data/initialData';
 
 import { pushToCloud, initRealtimeCloudSync } from './firebaseSync';
 
 const KEYS = {
+  TENANTS: 'cms_pro_saas_tenants',
+  ACTIVE_TENANT: 'cms_pro_active_tenant_id',
+  SUPERADMIN_CONTACT: 'cms_pro_superadmin_contact',
   SETTINGS: 'cms_pro_settings',
   USERS: 'cms_pro_users',
   JEMAAT: 'cms_pro_jemaat',
@@ -116,9 +124,31 @@ const defaultDoa: Doa[] = [
   }
 ];
 
+function getTenantScopedKey(baseKey: string, specificTenantId?: string): string {
+  if (
+    baseKey === KEYS.TENANTS ||
+    baseKey === KEYS.ACTIVE_TENANT ||
+    baseKey === KEYS.SUPERADMIN_CONTACT ||
+    baseKey === KEYS.CURRENT_USER
+  ) {
+    return baseKey;
+  }
+
+  let activeId = specificTenantId;
+  if (!activeId && typeof localStorage !== 'undefined') {
+    activeId = localStorage.getItem(KEYS.ACTIVE_TENANT) || 'CHURCH-001';
+  }
+  if (!activeId || activeId === 'CHURCH-001' || activeId === 'ALL') {
+    return baseKey;
+  }
+
+  return `cms_pro_${activeId}_${baseKey.replace('cms_pro_', '')}`;
+}
+
 function getItem<T>(key: string, fallback: T): T {
   try {
-    const item = localStorage.getItem(key);
+    const scopedKey = getTenantScopedKey(key);
+    const item = localStorage.getItem(scopedKey);
     return item ? JSON.parse(item) : fallback;
   } catch (e) {
     console.error(`Error reading ${key} from localStorage:`, e);
@@ -166,9 +196,10 @@ if (typeof window !== 'undefined') {
 
 function setItem<T>(key: string, value: T): void {
   try {
-    localStorage.setItem(key, JSON.stringify(value));
+    const scopedKey = getTenantScopedKey(key);
+    localStorage.setItem(scopedKey, JSON.stringify(value));
     if (typeof window !== 'undefined') {
-      const payload = { key, timestamp: Date.now() };
+      const payload = { key: scopedKey, baseKey: key, timestamp: Date.now() };
       notifyStorageListeners();
       window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: payload }));
       if (syncChannel) {
@@ -179,7 +210,7 @@ function setItem<T>(key: string, value: T): void {
         }
       }
       // Push to Firebase Firestore for cross-device real-time sync
-      pushToCloud(key, value);
+      pushToCloud(scopedKey, value);
     }
   } catch (e) {
     console.error(`Error writing ${key} to localStorage:`, e);
@@ -199,6 +230,129 @@ export const StorageManager = {
     return () => {
       internalListeners.delete(listener);
     };
+  },
+
+  // --- SaaS Multi-Tenant & Buyer Church Management ---
+  getTenants: (): ChurchTenant[] => {
+    return getItem<ChurchTenant[]>(KEYS.TENANTS, initialTenants);
+  },
+  saveTenants: (tenants: ChurchTenant[]): void => setItem(KEYS.TENANTS, tenants),
+
+  getActiveTenantId: (): string => {
+    return getItem<string>(KEYS.ACTIVE_TENANT, 'CHURCH-001');
+  },
+  setActiveTenantId: (tenantId: string): void => {
+    setItem(KEYS.ACTIVE_TENANT, tenantId);
+    notifyStorageListeners();
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { key: KEYS.ACTIVE_TENANT, tenantId } }));
+    }
+  },
+  getActiveTenant: (): ChurchTenant | null => {
+    const activeId = StorageManager.getActiveTenantId();
+    const tenants = StorageManager.getTenants();
+    return tenants.find((t) => t.tenant_id === activeId) || tenants[0] || null;
+  },
+  createChurchTenant: (tenant: ChurchTenant, adminAccount?: User): void => {
+    const currentTenants = StorageManager.getTenants();
+    const updatedTenants = [tenant, ...currentTenants];
+    StorageManager.saveTenants(updatedTenants);
+
+    if (adminAccount) {
+      const currentUsers = getItem<User[]>(KEYS.USERS, initialUsers);
+      const userExists = currentUsers.some((u) => u.username.toLowerCase() === adminAccount.username.toLowerCase());
+      if (!userExists) {
+        setItem(KEYS.USERS, [adminAccount, ...currentUsers]);
+      }
+    }
+
+    const newChurchSettings: AppSettings = {
+      ...initialSettings,
+      nama_gereja: tenant.nama_gereja,
+      email: tenant.admin_email,
+      telepon: tenant.admin_wa,
+      alamat: tenant.alamat
+    };
+    const tenantSettingsKey = getTenantScopedKey(KEYS.SETTINGS, tenant.tenant_id);
+    localStorage.setItem(tenantSettingsKey, JSON.stringify(newChurchSettings));
+
+    StorageManager.logActivity(
+      'SUPER_ADMIN',
+      `Membuat Akun Gereja Baru: ${tenant.nama_gereja} (${tenant.kode_unik})`,
+      'SaaS'
+    );
+  },
+  updateChurchTenantStatus: (tenantId: string, status: ChurchStatus, tanggalKadaluarsa?: string): void => {
+    const tenants = StorageManager.getTenants();
+    const updated = tenants.map((t) => {
+      if (t.tenant_id === tenantId) {
+        return {
+          ...t,
+          status,
+          ...(tanggalKadaluarsa ? { tanggal_kadaluarsa: tanggalKadaluarsa } : {})
+        };
+      }
+      return t;
+    });
+    StorageManager.saveTenants(updated);
+    StorageManager.logActivity(
+      'SUPER_ADMIN',
+      `Mengubah Status Lisensi Gereja ${tenantId} menjadi ${status}`,
+      'SaaS'
+    );
+  },
+  deleteChurchTenant: (tenantId: string): void => {
+    const tenants = StorageManager.getTenants();
+    const updated = tenants.filter((t) => t.tenant_id !== tenantId);
+    StorageManager.saveTenants(updated);
+  },
+  getSuperAdminContact: (): SuperAdminContact => {
+    return getItem<SuperAdminContact>(KEYS.SUPERADMIN_CONTACT, initialSuperAdminContact);
+  },
+  saveSuperAdminContact: (contact: SuperAdminContact): void => {
+    setItem(KEYS.SUPERADMIN_CONTACT, contact);
+  },
+  checkTenantStatus: (tenantId?: string): { isLocked: boolean; reason: 'NONAKTIF' | 'KADALUARSA' | 'DIBLOKIR' | 'NONE'; tenant: ChurchTenant | null; message: string } => {
+    const targetId = tenantId || StorageManager.getActiveTenantId();
+    const tenants = StorageManager.getTenants();
+    const tenant = tenants.find((t) => t.tenant_id === targetId) || tenants[0] || null;
+
+    if (!tenant) {
+      return { isLocked: false, reason: 'NONE', tenant: null, message: '' };
+    }
+
+    if (tenant.status === 'DIBLOKIR') {
+      return {
+        isLocked: true,
+        reason: 'DIBLOKIR',
+        tenant,
+        message: `Akun ${tenant.nama_gereja} telah diblokir oleh SuperAdmin. Hubungi SuperAdmin untuk pengaktifan kembali.`
+      };
+    }
+
+    if (tenant.status === 'NONAKTIF') {
+      return {
+        isLocked: true,
+        reason: 'NONAKTIF',
+        tenant,
+        message: `Akun ${tenant.nama_gereja} sedang dalam status Nonaktif.`
+      };
+    }
+
+    if (tenant.tanggal_kadaluarsa) {
+      const expDate = new Date(tenant.tanggal_kadaluarsa);
+      expDate.setHours(23, 59, 59, 999);
+      if (new Date() > expDate || tenant.status === 'KADALUARSA') {
+        return {
+          isLocked: true,
+          reason: 'KADALUARSA',
+          tenant,
+          message: `Masa berlaku lisensi ${tenant.nama_gereja} telah kadaluarsa pada ${tenant.tanggal_kadaluarsa}. Silahkan lakukan pembayaran untuk perpanjangan.`
+        };
+      }
+    }
+
+    return { isLocked: false, reason: 'NONE', tenant, message: '' };
   },
   getSettings: (): AppSettings => {
     const saved = getItem<AppSettings>(KEYS.SETTINGS, initialSettings);

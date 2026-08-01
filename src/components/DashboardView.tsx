@@ -21,6 +21,7 @@ import { DEFAULT_CHURCH_LOGO } from '../data/initialData';
 import { playNotificationChime, playWarningChime } from '../utils/soundHelper';
 import { RenunganFullscreenModal } from './RenunganFullscreenModal';
 import { FloatingApkDownloadButton } from './FloatingApkDownloadButton';
+import { SuperAdminChatModal } from './SuperAdminChatModal';
 import {
   Users,
   DollarSign,
@@ -43,6 +44,7 @@ import {
   ExternalLink,
   Sparkles,
   BookOpen,
+  MessageCircle,
   Heart,
   Send,
   Video,
@@ -139,6 +141,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [galleryList, setGalleryList] = useState<GalleryItem[]>(() => StorageManager.getGallery());
   const [reservationsList, setReservationsList] = useState<EventReservation[]>(() => StorageManager.getEventReservations());
   const [isAdminResModalOpen, setIsAdminResModalOpen] = useState<boolean>(false);
+  const [isSuperAdminChatModalOpen, setIsSuperAdminChatModalOpen] = useState<boolean>(false);
   const [activeVideoUrl, setActiveVideoUrl] = useState<string>('');
 
   // Prayer Request Form State
@@ -797,6 +800,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           {/* Action & Customizer Buttons Header */}
           <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full md:w-auto">
+            {/* Tombol Chat / Support SuperAdmin (WhatsApp & Email Direct) */}
+            <button
+              onClick={() => setIsSuperAdminChatModalOpen(true)}
+              className="px-3 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-black shadow-lg shadow-emerald-600/20 border border-emerald-400/40 flex items-center justify-center gap-1.5 transition-all cursor-pointer w-full sm:w-auto active:scale-95"
+              title="Hubungi SuperAdmin / Support Billing Aplikasi"
+            >
+              <MessageCircle className="w-3.5 h-3.5 text-emerald-200 fill-current shrink-0" />
+              <span className="truncate">Chat SuperAdmin</span>
+            </button>
+
             {/* Tombol Refresh Data untuk Semua User */}
             <button
               onClick={handleRefreshData}
@@ -2935,6 +2948,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* SuperAdmin Support & Chat Modal */}
+      <SuperAdminChatModal
+        isOpen={isSuperAdminChatModalOpen}
+        onClose={() => setIsSuperAdminChatModalOpen(false)}
+        churchName={settings.nama_gereja}
+      />
 
       {/* Floating APK Download Button for Android */}
       <FloatingApkDownloadButton />

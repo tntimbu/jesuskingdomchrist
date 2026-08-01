@@ -23,6 +23,8 @@ import { JemaatPortalView } from './components/views/JemaatPortalView';
 import { SystemSettingsView } from './components/views/SystemSettingsView';
 import { LainnyaView } from './components/views/LainnyaView';
 import { SplashScreen } from './components/SplashScreen';
+import { SuperAdminSaaSPanel } from './components/SuperAdminSaaSPanel';
+import { TenantLockedScreen } from './components/TenantLockedScreen';
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -31,6 +33,8 @@ export default function App() {
   const [settings, setSettings] = useState<AppSettings>(StorageManager.getSettings());
   const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSaaSPanelOpen, setIsSaaSPanelOpen] = useState(false);
+  const [tenantStatus, setTenantStatus] = useState(() => StorageManager.checkTenantStatus());
 
   // Default Guest user for public browsing when not logged in
   const GUEST_USER: User = {
@@ -90,6 +94,7 @@ export default function App() {
     // Listen for setting changes across components & tabs
     const handleSettingsSync = () => {
       setSettings(StorageManager.getSettings());
+      setTenantStatus(StorageManager.checkTenantStatus());
       const savedUser = StorageManager.getCurrentUser();
       if (savedUser) {
         setCurrentUser(savedUser);
@@ -219,6 +224,19 @@ export default function App() {
     );
   }
 
+  // Check if tenant is locked (NONAKTIF / KADALUARSA / DIBLOKIR)
+  // SuperAdmin always bypasses lock screen for full management access
+  if (tenantStatus.isLocked && effectiveUser.role !== 'SUPER_ADMIN' && !isLoginPageOpen) {
+    return (
+      <TenantLockedScreen
+        tenant={tenantStatus.tenant}
+        reason={tenantStatus.reason}
+        message={tenantStatus.message}
+        onOpenLogin={() => setIsLoginPageOpen(true)}
+      />
+    );
+  }
+
   const theme = getThemeClasses(settings);
 
   return (
@@ -242,6 +260,7 @@ export default function App() {
         onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
         onInstallPWA={handleInstallPWA}
         canInstallPWA={!!deferredPrompt}
+        onOpenSuperAdminSaaSPanel={() => setIsSaaSPanelOpen(true)}
       />
 
       {/* Content Layout */}
@@ -331,6 +350,16 @@ export default function App() {
         onSelectTab={handleSelectTab}
         currentUser={effectiveUser}
         onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
+      />
+
+      {/* SuperAdmin SaaS Multi-Church Master Control Panel */}
+      <SuperAdminSaaSPanel
+        isOpen={isSaaSPanelOpen}
+        onClose={() => setIsSaaSPanelOpen(false)}
+        onSelectTenant={(tenantId) => {
+          setSettings(StorageManager.getSettings());
+          setTenantStatus(StorageManager.checkTenantStatus());
+        }}
       />
 
       {/* KARTU PERINGATAN KONFIRMASI KELUAR APLIKASI */}

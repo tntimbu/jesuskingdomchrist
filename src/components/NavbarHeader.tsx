@@ -25,7 +25,9 @@ import {
   AlertCircle,
   Check,
   Volume2,
-  LogIn
+  LogIn,
+  Building2,
+  ShieldCheck
 } from 'lucide-react';
 
 interface NavbarHeaderProps {
@@ -38,6 +40,7 @@ interface NavbarHeaderProps {
   onOpenMobileMenu?: () => void;
   onInstallPWA?: () => void;
   canInstallPWA?: boolean;
+  onOpenSuperAdminSaaSPanel?: () => void;
 }
 
 export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
@@ -49,7 +52,8 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
   onUpdateCurrentUser,
   onOpenMobileMenu,
   onInstallPWA,
-  canInstallPWA
+  canInstallPWA,
+  onOpenSuperAdminSaaSPanel
 }) => {
   const [timeStr, setTimeStr] = useState('');
   const [dateStr, setDateStr] = useState('');
@@ -272,8 +276,20 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
         </div>
       </div>
 
-      {/* Right section: Install PWA, Notifications, Profile Dropdown */}
+      {/* Right section: SuperAdmin SaaS Switcher, Install PWA, Notifications, Profile Dropdown */}
       <div className="flex items-center gap-2 sm:gap-3">
+        {currentUser.role === 'SUPER_ADMIN' && onOpenSuperAdminSaaSPanel && (
+          <button
+            onClick={onOpenSuperAdminSaaSPanel}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 via-indigo-600 to-purple-600 hover:from-amber-400 hover:to-purple-500 text-white text-xs font-black shadow-lg shadow-amber-500/20 border border-amber-400/40 cursor-pointer active:scale-95 transition-all"
+            title="Kelola & Beralih Akses Akun Gereja SaaS"
+          >
+            <Building2 className="w-3.5 h-3.5 text-amber-300" />
+            <span className="hidden sm:inline">Panel SuperAdmin SaaS</span>
+            <span className="sm:hidden">SaaS</span>
+          </button>
+        )}
+
         {canInstallPWA && (
           <button
             onClick={onInstallPWA}

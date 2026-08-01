@@ -19,8 +19,68 @@ import {
   ActivityLog,
   LoginHistory,
   PrayerRequest,
-  FeaturedVideo
+  FeaturedVideo,
+  ChurchTenant,
+  SuperAdminContact
 } from '../types';
+
+export const initialTenants: ChurchTenant[] = [
+  {
+    tenant_id: 'CHURCH-001',
+    nama_gereja: 'Gereja Kemenangan Faith Center Pro',
+    kode_unik: 'GKFC-01',
+    admin_username: 'adminsekretariat',
+    admin_nama: 'Dkn. Maria Melani',
+    admin_email: 'admin@gkfc-cms.org',
+    admin_wa: '081298765432',
+    alamat: 'Jl. Pemuda No. 77, Jakarta Pusat, DKI Jakarta',
+    status: 'AKTIF',
+    tanggal_pendaftaran: '2025-01-01',
+    tanggal_kadaluarsa: '2028-12-31',
+    paket_langganan: 'PRO_SAAS_ANNUAL',
+    harga_sewa: 'Rp 2.500.000 / Tahun',
+    catatan_admin: 'Lisensi Gereja Utama (SaaS Pro Plan)'
+  },
+  {
+    tenant_id: 'CHURCH-002',
+    nama_gereja: 'Gereja Bethel Indonesia Grace Community',
+    kode_unik: 'GBI-GC02',
+    admin_username: 'admin_gbi',
+    admin_nama: 'Pdt. Andreas Widodo',
+    admin_email: 'admin@gbigrace.org',
+    admin_wa: '081311223344',
+    alamat: 'Jl. Boulevard Raya M3 No. 12, Kelapa Gading',
+    status: 'AKTIF',
+    tanggal_pendaftaran: '2026-03-15',
+    tanggal_kadaluarsa: '2027-03-15',
+    paket_langganan: 'PRO_SAAS_ANNUAL',
+    harga_sewa: 'Rp 3.000.000 / Tahun',
+    catatan_admin: 'Mitra Pembeli Paket SaaS Pro'
+  },
+  {
+    tenant_id: 'CHURCH-003',
+    nama_gereja: 'Gereja Kemah Injil Indonesia Sejahtera',
+    kode_unik: 'GKII-03',
+    admin_username: 'admin_gkii',
+    admin_nama: 'Dkn. Lukas Kurniawan',
+    admin_email: 'sekretariat@gkii-sejahtera.org',
+    admin_wa: '081555443322',
+    alamat: 'Jl. Ahmad Yani No. 102, Bandung',
+    status: 'KADALUARSA',
+    tanggal_pendaftaran: '2025-01-01',
+    tanggal_kadaluarsa: '2026-06-30',
+    paket_langganan: 'BASIC_MONTHLY',
+    harga_sewa: 'Rp 250.000 / Bulan',
+    catatan_admin: 'Masa berlaku lisensi telah habis. Diperlukan pembayaran untuk mengaktifkan kembali.'
+  }
+];
+
+export const initialSuperAdminContact: SuperAdminContact = {
+  nama: 'Pdt. Dr. Herman Setyawan (SuperAdmin SaaS)',
+  wa: '6281234567890',
+  email: 'superadmin@gkfc-cms.org',
+  pesan_default: 'Halo SuperAdmin SaaS, saya ingin konfirmasi pembayaran lisensi aplikasi & pengaktifan kembali akun gereja kami.'
+};
 
 export const DEFAULT_CHURCH_LOGO = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%234f46e5"/><stop offset="100%" stop-color="%237c3aed"/></linearGradient></defs><rect width="200" height="200" rx="48" fill="url(%23g)"/><path d="M100 35 v130 M55 80 h90" stroke="%23ffffff" stroke-width="22" stroke-linecap="round"/><circle cx="100" cy="80" r="10" fill="%23f59e0b"/></svg>`;
 
@@ -117,19 +177,47 @@ export const initialUsers: User[] = [
     no_hp: '+62 811-1234-5678',
     status: 'Aktif',
     created_at: '2025-01-01 08:00',
-    last_login: '2026-07-28 22:15'
+    last_login: '2026-07-28 22:15',
+    tenant_id: 'ALL'
   },
   {
     user_id: 'USR-002',
     username: 'adminsekretariat',
     password_hash: 'admin123',
-    nama: 'Dkn. Maria Melani (Admin Sekretariat)',
+    nama: 'Dkn. Maria Melani (Admin Sekretariat GKFC)',
     role: 'ADMIN',
     email: 'admin@gkfc-cms.org',
     no_hp: '+62 812-9876-5432',
     status: 'Aktif',
     created_at: '2025-01-10 09:30',
-    last_login: '2026-07-28 20:45'
+    last_login: '2026-07-28 20:45',
+    tenant_id: 'CHURCH-001'
+  },
+  {
+    user_id: 'USR-002B',
+    username: 'admin_gbi',
+    password_hash: 'admin123',
+    nama: 'Pdt. Andreas Widodo (Admin GBI Grace)',
+    role: 'ADMIN',
+    email: 'admin@gbigrace.org',
+    no_hp: '+62 813-1122-3344',
+    status: 'Aktif',
+    created_at: '2026-03-15 10:00',
+    last_login: '2026-07-29 11:30',
+    tenant_id: 'CHURCH-002'
+  },
+  {
+    user_id: 'USR-002C',
+    username: 'admin_gkii',
+    password_hash: 'admin123',
+    nama: 'Dkn. Lukas Kurniawan (Admin GKII Sejahtera)',
+    role: 'ADMIN',
+    email: 'sekretariat@gkii-sejahtera.org',
+    no_hp: '+62 815-5544-3322',
+    status: 'Aktif',
+    created_at: '2025-01-01 08:00',
+    last_login: '2026-06-20 09:15',
+    tenant_id: 'CHURCH-003'
   },
   {
     user_id: 'USR-003',
@@ -138,11 +226,12 @@ export const initialUsers: User[] = [
     nama: 'Bpk. Yohanes Pratama',
     role: 'JEMAAT',
     email: 'yohanes.pratama@gmail.com',
-    no_hp: '+62 813-5555-1234',
+    no_hp: '+62 812-3456-7890',
     status: 'Aktif',
-    created_at: '2025-02-15 11:20',
-    last_login: '2026-07-28 19:10',
-    jemaat_id: 'JMT-001'
+    created_at: '2025-02-01 11:00',
+    last_login: '2026-07-28 18:30',
+    jemaat_id: 'JMT-001',
+    tenant_id: 'CHURCH-001'
   },
   {
     user_id: 'USR-004',

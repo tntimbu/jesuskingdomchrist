@@ -1,5 +1,32 @@
 export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'JEMAAT';
 
+export type ChurchStatus = 'AKTIF' | 'NONAKTIF' | 'KADALUARSA' | 'DIBLOKIR';
+
+export interface ChurchTenant {
+  tenant_id: string;
+  nama_gereja: string;
+  kode_unik: string;
+  admin_username: string;
+  admin_password_hash?: string;
+  admin_nama: string;
+  admin_email: string;
+  admin_wa: string;
+  alamat: string;
+  status: ChurchStatus;
+  tanggal_pendaftaran: string;
+  tanggal_kadaluarsa: string;
+  paket_langganan: 'PRO_SAAS_ANNUAL' | 'ENTERPRISE_LIFETIME' | 'BASIC_MONTHLY';
+  harga_sewa?: string;
+  catatan_admin?: string;
+}
+
+export interface SuperAdminContact {
+  nama: string;
+  wa: string;
+  email: string;
+  pesan_default?: string;
+}
+
 export interface User {
   user_id: string;
   username: string;
@@ -13,6 +40,7 @@ export interface User {
   last_login?: string;
   jemaat_id?: string;
   foto?: string;
+  tenant_id?: string;
 }
 
 export interface Jemaat {
