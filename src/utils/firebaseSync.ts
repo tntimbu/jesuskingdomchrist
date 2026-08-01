@@ -4,13 +4,15 @@ import {
   doc,
   setDoc,
   onSnapshot,
+  collection,
+  getDocs,
   Firestore
 } from 'firebase/firestore';
 import defaultFirebaseConfig from '../../firebase-applet-config.json';
 
 const COLLECTION_NAME = 'gkfc_cms';
 
-// Comprehensive Mapping of all LocalStorage keys to Firestore Document IDs
+// Bidirectional Mapping between LocalStorage keys and Firestore Document IDs
 const DOC_MAPPING: Record<string, string> = {
   cms_pro_settings: 'settings',
   cms_pro_users: 'users',
@@ -35,6 +37,38 @@ const DOC_MAPPING: Record<string, string> = {
   cms_pro_activity_logs: 'activity_logs',
   cms_pro_login_history: 'login_history',
   cms_pro_prayer_requests: 'prayer_requests',
+  cms_pro_saas_tenants: 'saas_tenants',
+  cms_pro_active_tenant_id: 'active_tenant_id',
+  cms_pro_superadmin_contact: 'superadmin_contact'
+};
+
+const REVERSE_DOC_MAPPING: Record<string, string> = {
+  settings: 'cms_pro_settings',
+  users: 'cms_pro_users',
+  jemaat: 'cms_pro_jemaat',
+  keluarga: 'cms_pro_keluarga',
+  wilayah: 'cms_pro_wilayah',
+  pelayanan: 'cms_pro_pelayanan',
+  baptisan: 'cms_pro_baptisan',
+  sidi: 'cms_pro_sidi',
+  pernikahan: 'cms_pro_pernikahan',
+  persembahan: 'cms_pro_persembahan',
+  donasi: 'cms_pro_donasi',
+  kas_pengeluaran: 'cms_pro_kas_pengeluaran',
+  doa: 'cms_pro_doa',
+  pengumuman: 'cms_pro_pengumuman',
+  renungan: 'cms_pro_renungan',
+  events: 'cms_pro_events',
+  gallery: 'cms_pro_gallery',
+  featured_videos: 'cms_pro_featured_videos',
+  media_files: 'cms_pro_media_files',
+  notifications: 'cms_pro_notifications',
+  activity_logs: 'cms_pro_activity_logs',
+  login_history: 'cms_pro_login_history',
+  prayer_requests: 'cms_pro_prayer_requests',
+  saas_tenants: 'cms_pro_saas_tenants',
+  active_tenant_id: 'cms_pro_active_tenant_id',
+  superadmin_contact: 'cms_pro_superadmin_contact'
 };
 
 /**
@@ -182,6 +216,26 @@ export async function pushToCloud(storageKey: string, data: any): Promise<void> 
 }
 
 /**
+ * Pushes ALL local storage keys starting with cms_pro_ to Cloud Firestore
+ */
+export async function syncAllLocalKeysToCloud(): Promise<void> {
+  if (typeof localStorage === 'undefined') return;
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith('cms_pro_')) {
+      const val = localStorage.getItem(key);
+      if (val) {
+        try {
+          await pushToCloud(key, JSON.parse(val));
+        } catch (e) {
+          await pushToCloud(key, val);
+        }
+      }
+    }
+  }
+}
+
+/**
  * Tests connection to active Firebase Firestore or custom config
  */
 export async function testFirestoreConnection(overrideConfig?: any): Promise<{ success: boolean; message: string }> {
@@ -234,7 +288,7 @@ export function getCloudSyncStatus(): boolean {
 }
 
 /**
- * Initializes or re-initializes real-time listener for all collections across devices
+ * Initializes or re-initializes real-time listener for ALL collections and tenant documents across devices
  */
 export function initRealtimeCloudSync(onDataReceived?: () => void): () => void {
   // Clear previous active subscriptions if any
@@ -252,19 +306,26 @@ export function initRealtimeCloudSync(onDataReceived?: () => void): () => void {
   const activeConfig = getActiveFirebaseConfig();
   lastActiveProjectId = activeConfig.projectId;
 
-  const attachListeners = (firestoreDb: Firestore) => {
-    Object.entries(DOC_MAPPING).forEach(([storageKey, docId]) => {
-      const docRef = doc(firestoreDb, COLLECTION_NAME, docId);
+  const attachCollectionListener = (firestoreDb: Firestore) => {
+    const colRef = collection(firestoreDb, COLLECTION_NAME);
 
-      const unsubscribe = onSnapshot(
-        docRef,
-        (snapshot) => {
-          syncConnectedStatus = true;
-          if (snapshot.exists()) {
-            const cloudData = snapshot.data();
-            if (cloudData && cloudData.payload !== undefined) {
-              isRemoteUpdating = true;
-              try {
+    const unsubscribe = onSnapshot(
+      colRef,
+      (querySnapshot) => {
+        syncConnectedStatus = true;
+        isRemoteUpdating = true;
+        let hasChanges = false;
+
+        try {
+          querySnapshot.docChanges().forEach((change) => {
+            if (change.type === 'added' || change.type === 'modified') {
+              const docId = change.doc.id;
+              if (docId === 'connection_test') return;
+
+              const storageKey = REVERSE_DOC_MAPPING[docId] || docId;
+              const cloudData = change.doc.data();
+
+              if (cloudData && cloudData.payload !== undefined) {
                 const cloudPayloadStr =
                   typeof cloudData.payload === 'string'
                     ? cloudData.payload
@@ -274,11 +335,7 @@ export function initRealtimeCloudSync(onDataReceived?: () => void): () => void {
 
                 if (currentLocalStr !== cloudPayloadStr) {
                   localStorage.setItem(storageKey, cloudPayloadStr);
-
-                  // Notify app components of remote data updates
-                  window.dispatchEvent(new Event('cms_data_changed'));
-                  window.dispatchEvent(new Event('storage'));
-                  if (onDataReceived) onDataReceived();
+                  hasChanges = true;
 
                   // If settings were updated with new firebaseConfig, check if project switched
                   if (storageKey === 'cms_pro_settings') {
@@ -290,64 +347,46 @@ export function initRealtimeCloudSync(onDataReceived?: () => void): () => void {
                     }
                   }
                 }
-              } finally {
-                isRemoteUpdating = false;
               }
             }
-          } else {
-            // If document does not exist in cloud yet, push initial local data to cloud
-            const initialLocal = localStorage.getItem(storageKey);
-            if (initialLocal) {
-              try {
-                const parsed = JSON.parse(initialLocal);
-                pushToCloud(storageKey, parsed);
-              } catch (e) {
-                pushToCloud(storageKey, initialLocal);
-              }
-            }
-          }
-        },
-        (error) => {
-          console.warn(`[FirebaseSync] Error watching document ${docId}:`, error);
-        }
-      );
+          });
 
-      activeUnsubscribers.push(unsubscribe);
-    });
+          if (hasChanges) {
+            // Notify app components of remote data updates
+            window.dispatchEvent(new Event('cms_data_changed'));
+            window.dispatchEvent(new Event('storage'));
+            if (onDataReceived) onDataReceived();
+          }
+        } finally {
+          isRemoteUpdating = false;
+        }
+      },
+      (error) => {
+        console.warn(`[FirebaseSync] Collection snapshot error for ${COLLECTION_NAME}:`, error);
+      }
+    );
+
+    activeUnsubscribers.push(unsubscribe);
   };
 
-  // Attach primary listeners
+  // Attach primary listener to all documents in collection
   const primaryDb = getFirestoreInstance();
-  attachListeners(primaryDb);
+  attachCollectionListener(primaryDb);
 
-  // If primary is custom, ALSO attach listeners to default project for settings & notifications bridge
+  // If primary is custom, ALSO attach listener to default project
   if (activeConfig.isCustom) {
     try {
       const defaultDb = getDefaultFirestoreInstance();
-      ['cms_pro_settings', 'cms_pro_notifications', 'cms_pro_pengumuman'].forEach((storageKey) => {
-        const docId = DOC_MAPPING[storageKey] || storageKey;
-        const docRef = doc(defaultDb, COLLECTION_NAME, docId);
-        const unsubBridge = onSnapshot(docRef, (snapshot) => {
-          if (snapshot.exists()) {
-            const cloudData = snapshot.data();
-            if (cloudData && cloudData.payload !== undefined) {
-              const cloudPayloadStr = typeof cloudData.payload === 'string' ? cloudData.payload : JSON.stringify(cloudData.payload);
-              const currentLocalStr = localStorage.getItem(storageKey);
-              if (currentLocalStr !== cloudPayloadStr) {
-                localStorage.setItem(storageKey, cloudPayloadStr);
-                window.dispatchEvent(new Event('cms_data_changed'));
-                window.dispatchEvent(new Event('storage'));
-                if (onDataReceived) onDataReceived();
-              }
-            }
-          }
-        });
-        activeUnsubscribers.push(unsubBridge);
-      });
+      attachCollectionListener(defaultDb);
     } catch (e) {
       console.warn('[FirebaseSync] Default bridge listener attach failed:', e);
     }
   }
+
+  // Push all existing local keys to cloud on startup
+  setTimeout(() => {
+    syncAllLocalKeysToCloud().catch((e) => console.warn('[FirebaseSync] Startup push error:', e));
+  }, 1000);
 
   return () => {
     activeUnsubscribers.forEach((unsub) => {

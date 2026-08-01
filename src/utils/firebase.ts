@@ -1,7 +1,8 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore, doc, getDocFromServer, collection, onSnapshot } from 'firebase/firestore';
+import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
 import { AppSettings } from '../types';
+import defaultFirebaseConfig from '../../firebase-applet-config.json';
 
 export enum OperationType {
   CREATE = 'create',
@@ -58,21 +59,14 @@ let firestoreDb: any = null;
 
 export function initFirebase(settings?: AppSettings) {
   try {
-    const config = settings ? {
+    const config = settings && settings.firebase_api_key ? {
       apiKey: settings.firebase_api_key,
       authDomain: settings.firebase_auth_domain,
       projectId: settings.firebase_project_id,
       storageBucket: settings.firebase_storage_bucket,
       messagingSenderId: settings.firebase_messaging_sender_id,
       appId: settings.firebase_app_id
-    } : {
-      apiKey: "AIzaSyDemoKeyCMSPro2026_Enterprise",
-      authDomain: "cmspro-church-app.firebaseapp.com",
-      projectId: "cmspro-church-app",
-      storageBucket: "cmspro-church-app.appspot.com",
-      messagingSenderId: "887766554433",
-      appId: "1:887766554433:web:abc123def456"
-    };
+    } : defaultFirebaseConfig;
 
     if (!getApps().length) {
       firebaseApp = initializeApp(config);
@@ -80,7 +74,9 @@ export function initFirebase(settings?: AppSettings) {
       firebaseApp = getApp();
     }
     
-    firestoreDb = getFirestore(firebaseApp);
+    firestoreDb = defaultFirebaseConfig.firestoreDatabaseId
+      ? getFirestore(firebaseApp, defaultFirebaseConfig.firestoreDatabaseId)
+      : getFirestore(firebaseApp);
     return { app: firebaseApp, db: firestoreDb };
   } catch (err) {
     console.warn('Firebase initialization notice:', err);
