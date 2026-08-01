@@ -12,6 +12,25 @@ import defaultFirebaseConfig from '../../firebase-applet-config.json';
 
 const COLLECTION_NAME = 'gkfc_cms';
 
+/**
+ * Checks if a key represents device-local session or device-specific state.
+ * These keys MUST NOT be synced across devices to prevent one device's login/session from overriding another device.
+ */
+export function isLocalDeviceSessionKey(key: string): boolean {
+  if (!key) return false;
+  const k = key.toLowerCase();
+  return (
+    k === 'cms_pro_current_user' ||
+    k === 'current_user' ||
+    k.includes('current_user') ||
+    k === 'cms_pro_active_tenant_id' ||
+    k === 'active_tenant_id' ||
+    k.includes('active_tenant') ||
+    k === 'cms_pro_fcm_tokens' ||
+    k.includes('fcm_token')
+  );
+}
+
 // Bidirectional Mapping between LocalStorage keys and Firestore Document IDs
 const DOC_MAPPING: Record<string, string> = {
   cms_pro_settings: 'settings',
@@ -38,7 +57,6 @@ const DOC_MAPPING: Record<string, string> = {
   cms_pro_login_history: 'login_history',
   cms_pro_prayer_requests: 'prayer_requests',
   cms_pro_saas_tenants: 'saas_tenants',
-  cms_pro_active_tenant_id: 'active_tenant_id',
   cms_pro_superadmin_contact: 'superadmin_contact'
 };
 
@@ -67,7 +85,6 @@ const REVERSE_DOC_MAPPING: Record<string, string> = {
   login_history: 'cms_pro_login_history',
   prayer_requests: 'cms_pro_prayer_requests',
   saas_tenants: 'cms_pro_saas_tenants',
-  active_tenant_id: 'cms_pro_active_tenant_id',
   superadmin_contact: 'cms_pro_superadmin_contact'
 };
 
@@ -171,8 +188,10 @@ let lastActiveProjectId = '';
  * Pushes updated local data to Cloud Firestore (with Dual-Write Bridge & Fallback)
  */
 export async function pushToCloud(storageKey: string, data: any): Promise<void> {
-  if (isRemoteUpdating) return;
+  if (isRemoteUpdating || isLocalDeviceSessionKey(storageKey)) return;
   const docId = DOC_MAPPING[storageKey] || storageKey;
+  if (isLocalDeviceSessionKey(docId)) return;
+
   const payloadString = JSON.stringify(data);
 
   const activeConfig = getActiveFirebaseConfig();
@@ -222,7 +241,7 @@ export async function syncAllLocalKeysToCloud(): Promise<void> {
   if (typeof localStorage === 'undefined') return;
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
-    if (key && key.startsWith('cms_pro_')) {
+    if (key && key.startsWith('cms_pro_') && !isLocalDeviceSessionKey(key)) {
       const val = localStorage.getItem(key);
       if (val) {
         try {
@@ -320,9 +339,11 @@ export function initRealtimeCloudSync(onDataReceived?: () => void): () => void {
           querySnapshot.docChanges().forEach((change) => {
             if (change.type === 'added' || change.type === 'modified') {
               const docId = change.doc.id;
-              if (docId === 'connection_test') return;
+              if (docId === 'connection_test' || isLocalDeviceSessionKey(docId)) return;
 
               const storageKey = REVERSE_DOC_MAPPING[docId] || docId;
+              if (isLocalDeviceSessionKey(storageKey)) return;
+
               const cloudData = change.doc.data();
 
               if (cloudData && cloudData.payload !== undefined) {

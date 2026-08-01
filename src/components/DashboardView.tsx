@@ -823,15 +823,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </button>
             )}
 
-            {/* Tombol Chat / Support SuperAdmin (WhatsApp & Email Direct) */}
-            <button
-              onClick={() => setIsSuperAdminChatModalOpen(true)}
-              className="px-3 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-black shadow-lg shadow-emerald-600/20 border border-emerald-400/40 flex items-center justify-center gap-1.5 transition-all cursor-pointer w-full sm:w-auto active:scale-95"
-              title="Hubungi SuperAdmin / Support Billing Aplikasi"
-            >
-              <MessageCircle className="w-3.5 h-3.5 text-emerald-200 fill-current shrink-0" />
-              <span className="truncate">Chat SuperAdmin</span>
-            </button>
+            {/* Tombol Chat / Support SuperAdmin (Khusus Admin/SuperAdmin, disembunyikan untuk Jemaat) */}
+            {!isJemaat && (
+              <button
+                onClick={() => setIsSuperAdminChatModalOpen(true)}
+                className="px-3 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-black shadow-lg shadow-emerald-600/20 border border-emerald-400/40 flex items-center justify-center gap-1.5 transition-all cursor-pointer w-full sm:w-auto active:scale-95"
+                title="Hubungi SuperAdmin / Support Billing Aplikasi"
+              >
+                <MessageCircle className="w-3.5 h-3.5 text-emerald-200 fill-current shrink-0" />
+                <span className="truncate">Chat SuperAdmin</span>
+              </button>
+            )}
 
             {/* Tombol Refresh Data untuk Semua User */}
             <button
