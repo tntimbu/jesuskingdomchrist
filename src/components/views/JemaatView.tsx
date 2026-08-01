@@ -137,6 +137,8 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
     e.preventDefault();
     if (!formData.nama_lengkap) return;
 
+    const activeTenantId = currentUser.tenant_id || StorageManager.getActiveTenantId() || 'CHURCH-001';
+
     if (editingJemaat) {
       const updated = jemaatList.map((j) =>
         j.jemaat_id === editingJemaat.jemaat_id ? ({ ...j, ...formData } as Jemaat) : j
@@ -152,7 +154,44 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
       const updated = [newJemaat, ...jemaatList];
       setJemaatList(updated);
       StorageManager.saveJemaat(updated);
-      StorageManager.logActivity(currentUser.username, `Menambahkan jemaat baru: ${newJemaat.nama_lengkap}`, 'Master Jemaat');
+
+      // Auto create user login account for this Jemaat so they can immediately log in
+      const allUsers = StorageManager.getUsers();
+      let derivedUsername = '';
+      if (formData.email && formData.email.includes('@')) {
+        derivedUsername = formData.email.split('@')[0].toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+      }
+      if (!derivedUsername || derivedUsername.length < 3) {
+        derivedUsername = formData.nama_lengkap.toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+      }
+      if (!derivedUsername || derivedUsername.length < 3) {
+        derivedUsername = `jemaat_${newJemaat.jemaat_id.toLowerCase().replace('-', '')}`;
+      }
+
+      let finalUsername = derivedUsername;
+      let counter = 1;
+      while (allUsers.some((u) => u.username.toLowerCase() === finalUsername)) {
+        finalUsername = `${derivedUsername}${counter}`;
+        counter++;
+      }
+
+      const newJemaatUser: User = {
+        user_id: `USR-${(allUsers.length + 1).toString().padStart(3, '0')}`,
+        username: finalUsername,
+        nama: newJemaat.nama_lengkap,
+        email: newJemaat.email || '',
+        no_hp: newJemaat.nomor_hp || '',
+        role: 'JEMAAT',
+        status: 'Aktif',
+        password_hash: 'jemaat123',
+        tenant_id: activeTenantId,
+        created_at: new Date().toLocaleString('id-ID')
+      };
+
+      StorageManager.saveUsers([newJemaatUser, ...allUsers]);
+      StorageManager.logActivity(currentUser.username, `Menambahkan jemaat baru: ${newJemaat.nama_lengkap} & akun login: ${finalUsername}`, 'Master Jemaat');
+
+      alert(`Data Jemaat "${newJemaat.nama_lengkap}" berhasil ditambahkan!\n\nAkun Login Portal Jemaat telah dibuat secara otomatis:\n- Username: ${finalUsername}\n- Password: jemaat123`);
     }
 
     setIsModalOpen(false);

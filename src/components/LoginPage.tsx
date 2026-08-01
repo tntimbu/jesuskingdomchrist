@@ -77,11 +77,17 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       const inputPass = password.trim();
 
       const found = users.find((u) => {
-        const matchesName =
-          u.username.toLowerCase() === inputName ||
-          u.email.toLowerCase() === inputName;
-        const expectedPass = u.password_hash || (u.role === 'JEMAAT' ? 'jemaat123' : 'admin123');
-        return matchesName && expectedPass === inputPass;
+        if (!u || !u.username) return false;
+
+        const cleanUsername = u.username.trim().toLowerCase();
+        const cleanEmail = (u.email && typeof u.email === 'string') ? u.email.trim().toLowerCase() : '';
+        const matchesName = cleanUsername === inputName || (cleanEmail !== '' && cleanEmail === inputName);
+
+        const rawPass = (u.password_hash !== undefined && u.password_hash !== null && String(u.password_hash).trim() !== '')
+          ? String(u.password_hash).trim()
+          : (u.role === 'JEMAAT' ? 'jemaat123' : 'admin123');
+
+        return matchesName && rawPass === inputPass;
       });
 
       if (found) {

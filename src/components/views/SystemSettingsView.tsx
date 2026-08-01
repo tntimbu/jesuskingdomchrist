@@ -356,7 +356,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
       nama: userForm.nama.trim(),
       role: userForm.role,
       status: userForm.status,
-      password_hash: userForm.password_hash,
+      password_hash: userForm.password_hash.trim(),
       tenant_id: assignedTenantId,
       created_at: new Date().toLocaleString('id-ID')
     };
@@ -370,7 +370,8 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
       'User Management'
     );
     setIsUserModal(false);
-    setUserSuccess(`Berhasil membuat user akun baru "${newUser.username}".`);
+    setUserSuccess(`Berhasil membuat user akun baru "${newUser.username}". Password: ${userForm.password_hash.trim()}`);
+    alert(`Akun Pengguna Baru Berhasil Dibuat!\n\nKredensial Login:\n- Role: ${newUser.role}\n- Username: ${newUser.username}\n- Password: ${userForm.password_hash.trim()}`);
     setTimeout(() => setUserSuccess(''), 3000);
   };
 
