@@ -48,6 +48,8 @@ import {
   Play,
   ShieldAlert,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   RotateCw,
   LogOut,
   AlertTriangle,
@@ -284,6 +286,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   // Fullscreen Renungan Modal State
   const [selectedRenunganForModal, setSelectedRenunganForModal] = useState<Renungan | null>(null);
+
+  // Toggle limit display for Riwayat Transfer Persembahan Saya
+  const [showAllMyTransfers, setShowAllMyTransfers] = useState(false);
 
   // Notifications State
   const [notificationsList, setNotificationsList] = useState<NotificationItem[]>(() => StorageManager.getNotifications());
@@ -1270,18 +1275,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       <p
                         lang="id"
                         onClick={() => setSelectedRenunganForModal(latestRenungan)}
-                        className="text-xs text-slate-300 line-clamp-4 leading-relaxed cursor-pointer hover:text-slate-100 text-justify hyphens-auto [text-align-last:left] [text-justify:inter-word] break-words"
-                        style={{
-                          textAlign: 'justify',
-                          textJustify: 'inter-word',
-                          hyphens: 'auto',
-                          WebkitHyphens: 'auto',
-                          textAlignLast: 'left',
-                          wordBreak: 'break-word',
-                          overflowWrap: 'break-word',
-                        }}
+                        className="text-xs text-slate-300 line-clamp-3 leading-relaxed cursor-pointer hover:text-slate-100 text-justify break-words"
                       >
-                        {latestRenungan.isi}
+                        {latestRenungan.isi.length > 180 ? `${latestRenungan.isi.slice(0, 180)}...` : latestRenungan.isi}
                       </p>
                     </div>
                   ) : (
@@ -1299,11 +1295,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     {latestRenungan ? (
                       <button
                         onClick={() => setSelectedRenunganForModal(latestRenungan)}
-                        className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-extrabold flex items-center gap-1.5 cursor-pointer text-xs border border-amber-500/30 transition-all shadow-sm"
-                        title="Baca Layar Penuh"
+                        className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold flex items-center gap-1.5 cursor-pointer text-xs border border-indigo-400/30 transition-all shadow-md active:scale-95"
+                        title="Baca Selengkapnya"
                       >
-                        <Maximize2 className="w-3.5 h-3.5 text-amber-300" />
-                        <span>Baca Layar Penuh</span>
+                        <BookOpen className="w-3.5 h-3.5 text-amber-300" />
+                        <span>Baca Selengkapnya</span>
                       </button>
                     ) : <div />}
 
@@ -1585,9 +1581,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   );
                 }
 
+                const displayedTransfers = showAllMyTransfers ? myTransfers : myTransfers.slice(0, 1);
+
                 return (
                   <div className="space-y-2">
-                    {myTransfers.slice(0, 5).map((p) => {
+                    {displayedTransfers.map((p) => {
                       const isPending = p.status === 'PENDING';
                       const isVerified = p.status === 'TERVERIFIKASI' || !p.status;
                       const isRejected = p.status === 'DITOLAK';
@@ -1595,7 +1593,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       return (
                         <div
                           key={p.persembahan_id}
-                          className="p-3.5 rounded-2xl bg-slate-950/90 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+                          className="p-3.5 rounded-2xl bg-slate-950/90 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-md"
                         >
                           <div className="space-y-1">
                             <div className="flex items-center gap-2">
@@ -1632,6 +1630,25 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         </div>
                       );
                     })}
+
+                    {myTransfers.length > 1 && (
+                      <button
+                        onClick={() => setShowAllMyTransfers(!showAllMyTransfers)}
+                        className="w-full py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-indigo-300 hover:text-indigo-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm mt-1"
+                      >
+                        {showAllMyTransfers ? (
+                          <>
+                            <ChevronUp className="w-4 h-4 text-indigo-400" />
+                            <span>Sembunyikan (Tampilkan 1 Terbaru Saja)</span>
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="w-4 h-4 text-indigo-400" />
+                            <span>Lihat Selengkapnya ({myTransfers.length - 1} riwayat lagi)</span>
+                          </>
+                        )}
+                      </button>
+                    )}
                   </div>
                 );
               })()}

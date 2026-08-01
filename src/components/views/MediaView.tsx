@@ -346,22 +346,14 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
                   </div>
                 </div>
 
-                {/* Devotional Text Snippet */}
+                {/* Devotional Text Short Snippet Preview */}
                 <div
                   lang="id"
                   onClick={() => setSelectedRenunganForModal(r)}
-                  className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 text-xs sm:text-sm text-slate-200 leading-relaxed font-sans cursor-pointer hover:border-slate-700 text-justify hyphens-auto [text-align-last:left] [text-justify:inter-word] break-words whitespace-pre-line"
-                  style={{
-                    textAlign: 'justify',
-                    textJustify: 'inter-word',
-                    hyphens: 'auto',
-                    WebkitHyphens: 'auto',
-                    textAlignLast: 'left',
-                    wordBreak: 'break-word',
-                    overflowWrap: 'break-word',
-                  }}
+                  className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80 text-xs sm:text-sm text-slate-300 leading-relaxed font-sans cursor-pointer hover:border-indigo-500/40 hover:bg-slate-950 transition-all text-justify break-words line-clamp-3 select-none"
+                  title="Klik untuk membaca selengkapnya"
                 >
-                  {r.isi}
+                  {r.isi.length > 200 ? `${r.isi.slice(0, 200)}...` : r.isi}
                 </div>
 
                 {/* Horizontal Action Bar (Tombol Jejer Kesamping) */}
@@ -371,8 +363,8 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
                       onClick={() => setSelectedRenunganForModal(r)}
                       className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md shadow-indigo-600/20 flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
                     >
-                      <Maximize2 className="w-3.5 h-3.5 text-amber-300" />
-                      <span>Baca Layar Penuh</span>
+                      <BookOpen className="w-3.5 h-3.5 text-amber-300" />
+                      <span>Baca Selengkapnya</span>
                     </button>
 
                     {/* Integrated AI Audio Player side-by-side */}

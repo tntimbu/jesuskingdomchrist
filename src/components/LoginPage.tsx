@@ -157,10 +157,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700/80 text-slate-200 text-xs sm:text-sm font-semibold shadow-md transition-all cursor-pointer group"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-emerald-950/80 hover:bg-emerald-900/90 border border-emerald-500/40 text-emerald-300 hover:text-white text-xs sm:text-sm font-bold shadow-lg shadow-emerald-950/40 transition-all cursor-pointer group active:scale-95"
           >
-            <ArrowLeft className="w-4 h-4 text-indigo-400 group-hover:-translate-x-0.5 transition-transform" />
-            <span>Kembali ke Dashboard / Mode Publik</span>
+            <ArrowLeft className="w-4 h-4 text-emerald-400 group-hover:-translate-x-1 transition-transform" />
+            <span>Kembali ke Beranda Utama (Mode Publik)</span>
           </button>
         ) : (
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/80 border border-slate-800 text-xs font-semibold text-indigo-300">
@@ -184,10 +184,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-700/80 text-slate-400 hover:text-white transition-all cursor-pointer"
+              className="px-3 py-2 rounded-2xl bg-rose-950/60 hover:bg-rose-900/80 border border-rose-500/40 text-rose-300 hover:text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-md active:scale-95"
               title="Tutup Halaman Login"
             >
               <X className="w-4 h-4" />
+              <span className="hidden sm:inline">Tutup</span>
             </button>
           )}
         </div>
@@ -370,10 +371,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   <button
                     type="button"
                     onClick={onClose}
-                    className="w-full py-2.5 px-4 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 hover:text-white border border-slate-700 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer mt-2"
+                    className="w-full py-3 px-4 rounded-xl bg-slate-800/90 hover:bg-emerald-950/80 text-emerald-300 hover:text-emerald-200 border border-emerald-500/30 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer mt-3 shadow-md active:scale-95"
                   >
                     <ArrowLeft className="w-4 h-4 text-emerald-400" />
-                    <span>Keluar ke Mode Publik (Tanpa Login)</span>
+                    <span>Keluar ke Mode Publik (Kembali ke Beranda Utama)</span>
                   </button>
                 )}
               </form>

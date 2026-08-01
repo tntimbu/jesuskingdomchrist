@@ -27,7 +27,7 @@ import { SplashScreen } from './components/SplashScreen';
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isLoginPageOpen, setIsLoginPageOpen] = useState(!StorageManager.getCurrentUser());
+  const [isLoginPageOpen, setIsLoginPageOpen] = useState(false);
   const [settings, setSettings] = useState<AppSettings>(StorageManager.getSettings());
   const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -193,12 +193,12 @@ export default function App() {
       sessionStorage.setItem('cms_active_tab', 'dashboard');
     } catch (e) {}
 
-    // Cleanly replace history state so logout stays on login page
+    // Cleanly replace history state
     try {
-      window.history.replaceState({ page: 'login' }, '', window.location.href);
+      window.history.replaceState({ page: 'cms' }, '', window.location.href);
     } catch (e) {}
 
-    setIsLoginPageOpen(true);
+    setIsLoginPageOpen(false);
   };
 
   const handleUpdateSettings = (newSettings: AppSettings) => {
