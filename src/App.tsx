@@ -161,6 +161,15 @@ export default function App() {
     }
   };
 
+  const handleCloseLoginPage = () => {
+    setIsLoginPageOpen(false);
+    // Set active tab back to main church dashboard (Mode Publik)
+    setActiveTab('dashboard');
+    try {
+      sessionStorage.setItem('cms_active_tab', 'dashboard');
+    } catch (e) {}
+  };
+
   // Logout confirmation modal state
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
 
@@ -179,6 +188,10 @@ export default function App() {
     StorageManager.clearCurrentUser();
     setCurrentUser(null);
     setIsLogoutConfirmOpen(false);
+    setActiveTab('dashboard');
+    try {
+      sessionStorage.setItem('cms_active_tab', 'dashboard');
+    } catch (e) {}
 
     // Cleanly replace history state so logout stays on login page
     try {
@@ -204,7 +217,7 @@ export default function App() {
       <LoginPage
         settings={settings}
         onLoginSuccess={handleLoginSuccess}
-        onClose={() => setIsLoginPageOpen(false)}
+        onClose={handleCloseLoginPage}
         onInstallPWA={handleInstallPWA}
         canInstallPWA={!!deferredPrompt || true}
       />
