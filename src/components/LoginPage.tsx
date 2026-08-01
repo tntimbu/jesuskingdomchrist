@@ -44,28 +44,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   const [resetEmail, setResetEmail] = useState('');
   const [resetSent, setResetSent] = useState(false);
 
-  // Android Back Button / Navigation Intercept State
-  const [isAndroidExitModalOpen, setIsAndroidExitModalOpen] = useState(false);
-
-  // Cleanly exit login page without popstate trapping
+  // Cleanly exit login page
   const handleExitLogin = () => {
     if (onClose) {
       onClose();
     }
   };
-
-  useEffect(() => {
-    const handlePopState = (e: PopStateEvent) => {
-      if (onClose) {
-        onClose();
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-    };
-  }, [onClose]);
 
   // Quick Account Switcher for Demo Ease
   const handleQuickRoleSelect = (roleName: string) => {
@@ -157,10 +141,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-emerald-950/80 hover:bg-emerald-900/90 border border-emerald-500/40 text-emerald-300 hover:text-white text-xs sm:text-sm font-bold shadow-lg shadow-emerald-950/40 transition-all cursor-pointer group active:scale-95"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 text-slate-200 hover:text-white text-xs sm:text-sm font-bold shadow-lg transition-all cursor-pointer group active:scale-95"
           >
-            <ArrowLeft className="w-4 h-4 text-emerald-400 group-hover:-translate-x-1 transition-transform" />
-            <span>Kembali ke Beranda Utama (Mode Publik)</span>
+            <ArrowLeft className="w-4 h-4 text-indigo-400 group-hover:-translate-x-1 transition-transform" />
+            <span>Kembali ke Aplikasi</span>
           </button>
         ) : (
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/80 border border-slate-800 text-xs font-semibold text-indigo-300">
@@ -184,7 +168,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-3 py-2 rounded-2xl bg-rose-950/60 hover:bg-rose-900/80 border border-rose-500/40 text-rose-300 hover:text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-md active:scale-95"
+              className="px-3 py-2 rounded-2xl bg-slate-900/90 hover:bg-rose-950/80 border border-slate-700/80 hover:border-rose-500/40 text-slate-300 hover:text-rose-200 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-md active:scale-95"
               title="Tutup Halaman Login"
             >
               <X className="w-4 h-4" />
@@ -365,18 +349,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                     </>
                   )}
                 </button>
-
-                {/* Secondary Exit / Public Mode Button */}
-                {onClose && (
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="w-full py-3 px-4 rounded-xl bg-slate-800/90 hover:bg-emerald-950/80 text-emerald-300 hover:text-emerald-200 border border-emerald-500/30 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer mt-3 shadow-md active:scale-95"
-                  >
-                    <ArrowLeft className="w-4 h-4 text-emerald-400" />
-                    <span>Keluar ke Mode Publik (Kembali ke Beranda Utama)</span>
-                  </button>
-                )}
               </form>
             </div>
           </div>
@@ -428,68 +400,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                   </button>
                 </div>
               </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* Android Back Button Exit / Navigation Modal */}
-      <AnimatePresence>
-        {isAndroidExitModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-6 text-white space-y-5 text-center"
-            >
-              <div className="w-14 h-14 rounded-2xl bg-amber-500/20 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto shadow-lg shadow-amber-500/20">
-                <AlertTriangle className="w-7 h-7" />
-              </div>
-
-              <div className="space-y-2">
-                <h3 className="text-lg font-bold text-white">Navigasi Kembali Android</h3>
-                <p className="text-xs text-slate-300 leading-relaxed font-medium">
-                  Anda sedang berada di halaman Login. Pilih opsi tindakan yang ingin Anda lakukan:
-                </p>
-              </div>
-
-              <div className="space-y-2.5 pt-1">
-                {onClose && (
-                  <button
-                    onClick={() => {
-                      setIsAndroidExitModalOpen(false);
-                      onClose();
-                    }}
-                    className="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 transition-all cursor-pointer"
-                  >
-                    <Home className="w-4 h-4" />
-                    <span>Masuk Mode Publik (Dashboard)</span>
-                  </button>
-                )}
-
-                <button
-                  onClick={() => {
-                    setIsAndroidExitModalOpen(false);
-                    if (onClose) {
-                      onClose();
-                    } else {
-                      window.location.reload();
-                    }
-                  }}
-                  className="w-full py-2.5 px-4 rounded-xl bg-rose-950/60 hover:bg-rose-900/80 border border-rose-800/80 text-rose-200 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>Tutup Halaman Login / Mode Publik</span>
-                </button>
-
-                <button
-                  onClick={() => setIsAndroidExitModalOpen(false)}
-                  className="w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition-all border border-slate-700 cursor-pointer"
-                >
-                  Batal (Tetap di Halaman Login)
-                </button>
-              </div>
             </motion.div>
           </div>
         )}

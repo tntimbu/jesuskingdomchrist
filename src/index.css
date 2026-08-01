@@ -25,9 +25,15 @@
   }
 }
 
+html, body {
+  background-color: #090d16;
+  color: #f8fafc;
+  min-height: 100vh;
+}
+
 body {
-  background-color: #0f172a;
-  background-image: radial-gradient(circle at 0% 0%, #1e293b 0%, #0f172a 100%);
+  background-color: #090d16;
+  background-image: radial-gradient(circle at 0% 0%, #1e293b 0%, #090d16 100%);
   background-attachment: fixed;
   color: #f8fafc;
 }

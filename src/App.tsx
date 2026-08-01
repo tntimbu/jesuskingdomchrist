@@ -35,8 +35,8 @@ export default function App() {
   // Default Guest user for public browsing when not logged in
   const GUEST_USER: User = {
     user_id: 'guest',
-    username: 'tamu_jemaat',
-    nama: 'Tamu Jemaat (Publik)',
+    username: 'pengunjung',
+    nama: 'Jemaat / Pengunjung',
     role: 'JEMAAT',
     email: 'jemaat@gkfc-cms.org',
     status: 'Aktif'
@@ -116,16 +116,11 @@ export default function App() {
     }
   };
 
-  // Intercept Android Back Button / Browser Navigation to show Exit Confirmation Modal when logged in
+  // Handle Android Back Button / Navigation when logged in
   useEffect(() => {
     if (!currentUser || isLoginPageOpen) return;
 
-    // Push history state to enable popstate interception for back button
-    window.history.pushState({ page: 'cms' }, '', window.location.href);
-
     const handlePopState = () => {
-      // Re-push history state to prevent unexpected navigation
-      window.history.pushState({ page: 'cms' }, '', window.location.href);
       setIsLogoutConfirmOpen(true);
     };
 
@@ -340,7 +335,7 @@ export default function App() {
 
       {/* KARTU PERINGATAN KONFIRMASI KELUAR APLIKASI */}
       {isLogoutConfirmOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-[#090d16]/90 backdrop-blur-sm transition-opacity">
           <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-6 text-white space-y-5 text-center">
             <div className="w-14 h-14 rounded-2xl bg-rose-500/20 border border-rose-500/30 text-rose-400 flex items-center justify-center mx-auto shadow-lg shadow-rose-500/20">
               <AlertTriangle className="w-7 h-7" />
