@@ -150,7 +150,15 @@ function getItem<T>(key: string, fallback: T): T {
   try {
     const scopedKey = getTenantScopedKey(key);
     const item = localStorage.getItem(scopedKey);
-    return item ? JSON.parse(item) : fallback;
+    if (!item) return fallback;
+    try {
+      return JSON.parse(item);
+    } catch (parseErr) {
+      if (typeof fallback === 'string') {
+        return item as unknown as T;
+      }
+      return fallback;
+    }
   } catch (e) {
     console.error(`Error reading ${key} from localStorage:`, e);
     return fallback;

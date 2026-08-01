@@ -173,7 +173,7 @@ let lastActiveProjectId = '';
 export async function pushToCloud(storageKey: string, data: any): Promise<void> {
   if (isRemoteUpdating) return;
   const docId = DOC_MAPPING[storageKey] || storageKey;
-  const payloadString = typeof data === 'string' ? data : JSON.stringify(data);
+  const payloadString = JSON.stringify(data);
 
   const activeConfig = getActiveFirebaseConfig();
   let primarySuccess = false;
