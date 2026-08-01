@@ -226,32 +226,32 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
   const theme = getThemeClasses(settings);
 
   return (
-    <header className={`sticky top-0 z-30 h-20 w-full ${theme.isLight ? 'bg-white/90 border-slate-200 text-slate-900' : 'bg-slate-950/80 border-white/10 text-white'} backdrop-blur-xl border-b px-4 sm:px-8 flex items-center justify-between transition-colors duration-300`}>
+    <header className={`sticky top-0 z-30 h-20 w-full ${theme.isLight ? 'bg-white/90 border-slate-200 text-slate-900' : 'bg-slate-950/80 border-white/10 text-white'} backdrop-blur-xl border-b px-3 sm:px-6 flex items-center justify-between transition-colors duration-300`}>
       {/* Left section: Mobile menu toggle & Church Branding */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink">
         <button
           onClick={onOpenMobileMenu}
-          className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 border border-transparent hover:border-white/10 lg:hidden transition-all"
+          className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 border border-transparent hover:border-white/10 lg:hidden transition-all shrink-0"
         >
           <Menu className="w-5 h-5" />
         </button>
 
-        <div className="flex items-center gap-3">
-          <div className="relative group">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="relative group shrink-0">
             <img
               src={settings.logo || DEFAULT_CHURCH_LOGO}
               alt="Logo"
               onError={(e) => {
                 (e.target as HTMLImageElement).src = DEFAULT_CHURCH_LOGO;
               }}
-              className="w-10 h-10 rounded-xl object-cover border border-white/20 shadow-lg shadow-indigo-500/10"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-cover border border-white/20 shadow-lg shadow-indigo-500/10"
             />
           </div>
           <div className="flex flex-col min-w-0">
-            <h1 className="text-xs sm:text-base font-extrabold leading-tight text-white tracking-tight max-w-[160px] sm:max-w-none truncate">
+            <h1 className="text-xs sm:text-base font-extrabold leading-tight text-white tracking-tight max-w-[100px] xs:max-w-[140px] sm:max-w-none truncate">
               {settings.nama_gereja || 'Gereja'}
             </h1>
-            <p className="text-[9px] sm:text-[10px] uppercase tracking-widest text-indigo-400 font-bold leading-none mt-0.5">
+            <p className="text-[8px] sm:text-[10px] uppercase tracking-widest text-indigo-400 font-bold leading-none mt-0.5 truncate">
               Enterprise CMS Pro
             </p>
           </div>
@@ -402,13 +402,14 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
         </div>
 
         {/* User Profile Dropdown or Login Button for Guest */}
-        <div className="relative">
+        <div className="relative shrink-0">
           {isGuest || currentUser.user_id === 'guest' ? (
             <button
               onClick={onOpenLogin}
-              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-500 via-indigo-600 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white text-xs font-bold shadow-md shadow-indigo-500/20 transition-all cursor-pointer border border-indigo-400/30"
+              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 via-indigo-600 to-blue-600 hover:from-indigo-600 hover:to-blue-700 text-white text-xs font-black shadow-lg shadow-indigo-500/25 transition-all cursor-pointer border border-indigo-400/40 active:scale-95 shrink-0 whitespace-nowrap"
+              title="Masuk ke Akun Jemaat / Admin Gereja"
             >
-              <LogIn className="w-4 h-4" />
+              <LogIn className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-200 shrink-0" />
               <span>Masuk / Login</span>
             </button>
           ) : (

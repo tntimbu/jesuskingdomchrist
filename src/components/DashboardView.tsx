@@ -75,7 +75,8 @@ import {
   FileText,
   BarChart3,
   UserCheck,
-  Settings
+  Settings,
+  LogIn
 } from 'lucide-react';
 
 import {
@@ -112,6 +113,7 @@ interface DashboardViewProps {
   onNavigate: (tab: any) => void;
   onUpdateSettings?: (newSettings: AppSettings) => void;
   onLogout?: () => void;
+  onOpenLogin?: () => void;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
@@ -119,11 +121,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   settings,
   onNavigate,
   onUpdateSettings,
-  onLogout
+  onLogout,
+  onOpenLogin
 }) => {
+  const isGuestMode = currentUser.user_id === 'guest' || currentUser.username === 'guest' || currentUser.role === 'GUEST';
   const isSuperAdmin = currentUser.role === 'SUPER_ADMIN';
-  const isAdmin = currentUser.role === 'ADMIN' || isSuperAdmin;
-  const isJemaat = currentUser.role === 'JEMAAT';
+  const isAdmin = (currentUser.role === 'ADMIN' || isSuperAdmin) && !isGuestMode;
+  const isJemaat = currentUser.role === 'JEMAAT' || isGuestMode;
 
   // Refresh & Toast State
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -783,13 +787,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
             <div>
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold uppercase tracking-wider">
-                  Role: {currentUser.role}
-                </span>
+                {isGuestMode ? (
+                  <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-amber-400 shrink-0" />
+                    Mode Tamu / Pengunjung
+                  </span>
+                ) : (
+                  <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold uppercase tracking-wider">
+                    Role: {currentUser.role}
+                  </span>
+                )}
                 <span className="text-xs text-slate-400">Live Portal</span>
               </div>
               <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight mt-1 text-white">
-                Shalom, {currentUser.nama}!
+                {isGuestMode ? 'Shalom, Tamu & Pengunjung!' : `Shalom, ${currentUser.nama}!`}
               </h2>
               <p className="text-slate-300 text-xs sm:text-sm mt-0.5">
                 {settings.header_title || settings.nama_gereja} &bull;{' '}
@@ -800,6 +811,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           {/* Action & Customizer Buttons Header */}
           <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full md:w-auto">
+            {/* Tombol Login khusus Mode Tamu */}
+            {isGuestMode && onOpenLogin && (
+              <button
+                onClick={onOpenLogin}
+                className="col-span-2 sm:col-span-1 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 via-indigo-600 to-blue-600 hover:from-indigo-400 hover:to-blue-500 text-white text-xs font-black shadow-lg shadow-indigo-500/30 border border-indigo-300/40 flex items-center justify-center gap-1.5 transition-all cursor-pointer w-full sm:w-auto active:scale-95 shrink-0"
+                title="Masuk ke Akun Jemaat / Admin"
+              >
+                <LogIn className="w-3.5 h-3.5 text-indigo-200 shrink-0" />
+                <span className="truncate">Masuk / Login Akun</span>
+              </button>
+            )}
+
             {/* Tombol Chat / Support SuperAdmin (WhatsApp & Email Direct) */}
             <button
               onClick={() => setIsSuperAdminChatModalOpen(true)}
@@ -882,6 +905,42 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         )}
       </div>
+
+      {/* BANNER DEDIKASI KHUSUS TAMU / PENGUNJUNG UNTUK PROPORSI PROMINEN & RESPONSIF */}
+      {isGuestMode && (
+        <div className="p-4 sm:p-6 rounded-3xl bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 border-2 border-indigo-500/50 text-white shadow-2xl relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-start sm:items-center gap-4 min-w-0">
+            <div className="p-3.5 rounded-2xl bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 shrink-0 shadow-inner">
+              <LogIn className="w-7 h-7 text-indigo-400 animate-pulse" />
+            </div>
+            <div className="space-y-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-base sm:text-lg font-extrabold text-white tracking-tight">
+                  Akses Portal Gereja Mode Tamu / Pengunjung
+                </h3>
+                <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-black uppercase">
+                  Belum Login
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-2xl">
+                Anda saat ini mengakses ringkasan publik dashboard. Silakan masuk / login dengan akun Jemaat atau Admin Anda untuk membuka seluruh fitur &amp; portal pelayanan secara penuh.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0 w-full md:w-auto">
+            {onOpenLogin && (
+              <button
+                onClick={onOpenLogin}
+                className="w-full md:w-auto py-3 px-6 rounded-2xl bg-gradient-to-r from-indigo-500 via-indigo-600 to-blue-600 hover:from-indigo-400 hover:to-blue-500 text-white font-extrabold text-xs shadow-xl shadow-indigo-500/30 border border-indigo-300/40 flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95"
+              >
+                <LogIn className="w-4 h-4 text-indigo-200" />
+                <span className="whitespace-nowrap">Masuk / Login Sekarang</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* MENU UTAMA & MODUL PELAYANAN (HANYA DITAMPILKAN UNTUK ADMIN DI DASHBOARD HOME, UNTUK JEMAAT DIALIKAN KE MENU LAINNYA) */}
       {isAdmin && (

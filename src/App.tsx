@@ -283,6 +283,7 @@ export default function App() {
               onNavigate={handleSelectTab}
               onUpdateSettings={handleUpdateSettings}
               onLogout={requestLogout}
+              onOpenLogin={() => setIsLoginPageOpen(true)}
             />
           )}
 
