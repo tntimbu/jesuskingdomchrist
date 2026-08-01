@@ -94,7 +94,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         const historyId = StorageManager.recordLogin(found.username);
         StorageManager.logActivity(found.username, 'Login ke sistem CMS Pro', 'Auth');
 
-        // Save logged in user state
+        // Save logged in user state & switch active tenant if tenant_id is set
+        if (found.tenant_id && found.tenant_id !== 'ALL') {
+          StorageManager.setActiveTenantId(found.tenant_id);
+        }
         StorageManager.saveCurrentUser(found);
         (window as any).__cms_history_id = historyId;
 

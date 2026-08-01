@@ -326,8 +326,10 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
       return;
     }
 
-    if (usersList.some((u) => u.username.toLowerCase() === trimmedUsername)) {
-      setUserError(`Username "${trimmedUsername}" sudah digunakan oleh akun lain.`);
+    const globalUsers = StorageManager.getUsers();
+
+    if (globalUsers.some((u) => u.username.toLowerCase() === trimmedUsername)) {
+      setUserError(`Username "${trimmedUsername}" sudah digunakan oleh akun lain dalam sistem.`);
       return;
     }
 
@@ -341,8 +343,13 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
       return;
     }
 
+    const activeAdminTenantId = currentUser.tenant_id || StorageManager.getActiveTenantId() || 'CHURCH-001';
+    const assignedTenantId = currentUser.role === 'SUPER_ADMIN'
+      ? (userForm.role === 'SUPER_ADMIN' ? 'ALL' : activeAdminTenantId)
+      : activeAdminTenantId;
+
     const newUser: User = {
-      user_id: `USR-${(usersList.length + 1).toString().padStart(3, '0')}`,
+      user_id: `USR-${(globalUsers.length + 1).toString().padStart(3, '0')}`,
       username: trimmedUsername,
       email: userForm.email.trim(),
       no_hp: userForm.no_hp.trim(),
@@ -350,15 +357,16 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
       role: userForm.role,
       status: userForm.status,
       password_hash: userForm.password_hash,
+      tenant_id: assignedTenantId,
       created_at: new Date().toLocaleString('id-ID')
     };
 
-    const updated = [newUser, ...usersList];
-    setUsersList(updated);
-    StorageManager.saveUsers(updated);
+    const updatedGlobal = [newUser, ...globalUsers];
+    StorageManager.saveUsers(updatedGlobal);
+    setUsersList(updatedGlobal);
     StorageManager.logActivity(
       currentUser.username,
-      `Menambahkan user baru: ${newUser.username} (${newUser.role}) dengan password baru`,
+      `Menambahkan user baru: ${newUser.username} (${newUser.role})`,
       'User Management'
     );
     setIsUserModal(false);
@@ -405,8 +413,10 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
       return;
     }
 
-    // Check duplicate username
-    const isDuplicate = usersList.some(
+    const globalUsers = StorageManager.getUsers();
+
+    // Check duplicate username in global users
+    const isDuplicate = globalUsers.some(
       (u) => u.user_id !== editingUser.user_id && u.username.toLowerCase() === trimmedUsername
     );
     if (isDuplicate) {
@@ -428,7 +438,9 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
       updatedPass = editUserForm.new_password;
     }
 
-    const updatedUsers = usersList.map((u) => {
+    const activeAdminTenantId = currentUser.tenant_id || StorageManager.getActiveTenantId() || 'CHURCH-001';
+
+    const updatedGlobal = globalUsers.map((u) => {
       if (u.user_id === editingUser.user_id) {
         return {
           ...u,
@@ -438,18 +450,19 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
           no_hp: editUserForm.no_hp.trim(),
           role: editUserForm.role,
           status: editUserForm.status,
-          password_hash: updatedPass
+          password_hash: updatedPass,
+          tenant_id: u.tenant_id || activeAdminTenantId
         };
       }
       return u;
     });
 
-    setUsersList(updatedUsers);
-    StorageManager.saveUsers(updatedUsers);
+    StorageManager.saveUsers(updatedGlobal);
+    setUsersList(updatedGlobal);
 
     // If edited account is current logged in user, update current user session
     if (editingUser.user_id === currentUser.user_id) {
-      const updatedSelf = updatedUsers.find((u) => u.user_id === currentUser.user_id);
+      const updatedSelf = updatedGlobal.find((u) => u.user_id === currentUser.user_id);
       if (updatedSelf) {
         StorageManager.saveCurrentUser(updatedSelf);
       }
@@ -477,15 +490,16 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
         `Reset password untuk user "${u.username}" (${u.nama})?\n\nPassword baru yang akan dibuat: ${newRandomPass}`
       )
     ) {
-      const updatedUsers = usersList.map((item) => {
+      const globalUsers = StorageManager.getUsers();
+      const updatedGlobal = globalUsers.map((item) => {
         if (item.user_id === u.user_id) {
           return { ...item, password_hash: newRandomPass };
         }
         return item;
       });
 
-      setUsersList(updatedUsers);
-      StorageManager.saveUsers(updatedUsers);
+      StorageManager.saveUsers(updatedGlobal);
+      setUsersList(updatedGlobal);
       StorageManager.logActivity(
         currentUser.username,
         `Mereset password user ${u.username} ke password acak baru`,
@@ -507,9 +521,10 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
     }
 
     if (window.confirm(`Hapus permanen akun "${u.username}" (${u.nama}) dari sistem?`)) {
-      const updatedUsers = usersList.filter((item) => item.user_id !== u.user_id);
-      setUsersList(updatedUsers);
-      StorageManager.saveUsers(updatedUsers);
+      const globalUsers = StorageManager.getUsers();
+      const updatedGlobal = globalUsers.filter((item) => item.user_id !== u.user_id);
+      StorageManager.saveUsers(updatedGlobal);
+      setUsersList(updatedGlobal);
       StorageManager.logActivity(
         currentUser.username,
         `Menghapus akun pengguna: ${u.username}`,
@@ -521,21 +536,24 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
   };
 
   const handleToggleUserStatus = (userId: string) => {
-    const targetUser = usersList.find((u) => u.user_id === userId);
+    const globalUsers = StorageManager.getUsers();
+    const targetUser = globalUsers.find((u) => u.user_id === userId);
+
     if (targetUser && targetUser.role === 'SUPER_ADMIN' && currentUser.role !== 'SUPER_ADMIN') {
       alert('Akses Terbatas: Hanya SuperAdmin yang berhak merubah status akun SuperAdmin.');
       return;
     }
 
-    const updated = usersList.map((u) => {
+    const updatedGlobal = globalUsers.map((u) => {
       if (u.user_id === userId) {
         const nextStatus = u.status === 'Aktif' ? 'Nonaktif' : 'Aktif';
         return { ...u, status: nextStatus as any };
       }
       return u;
     });
-    setUsersList(updated);
-    StorageManager.saveUsers(updated);
+
+    StorageManager.saveUsers(updatedGlobal);
+    setUsersList(updatedGlobal);
   };
 
   const toggleTablePasswordVisible = (userId: string) => {
@@ -553,8 +571,25 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
     }
   };
 
-  // Filtered Users List
-  const filteredUsers = usersList.filter((u) => {
+  // Filtered Users List per Tenant Access Rights
+  const activeAdminTenantId = currentUser.tenant_id || StorageManager.getActiveTenantId() || 'CHURCH-001';
+
+  const tenantScopedUsers = usersList.filter((u) => {
+    if (currentUser.role === 'SUPER_ADMIN') {
+      return true; // SuperAdmin can see all accounts across all tenants
+    }
+    // Admin MUST NOT see SuperAdmin accounts
+    if (u.role === 'SUPER_ADMIN' || u.username.toLowerCase() === 'superadmin') {
+      return false;
+    }
+    // Admin MUST ONLY see users belonging to their own church/tenant
+    if (u.tenant_id && u.tenant_id !== 'ALL' && u.tenant_id !== activeAdminTenantId) {
+      return false;
+    }
+    return true;
+  });
+
+  const filteredUsers = tenantScopedUsers.filter((u) => {
     const matchQuery =
       u.username.toLowerCase().includes(searchUser.toLowerCase()) ||
       u.nama.toLowerCase().includes(searchUser.toLowerCase()) ||
@@ -598,7 +633,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
             }`}
           >
             <Users className="w-3.5 h-3.5 text-indigo-300" />
-            <span>Manajemen User ({usersList.length})</span>
+            <span>Manajemen User ({tenantScopedUsers.length})</span>
           </button>
 
           <button
@@ -1664,7 +1699,9 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                 <span>Manajemen Username, Password & Hak Akses (01_USERS)</span>
               </h3>
               <p className="text-xs text-slate-400 mt-0.5">
-                Kelola kredensial login (Username & Password) untuk Super Admin, Admin Sekretariat, dan Jemaat.
+                {currentUser.role === 'SUPER_ADMIN'
+                  ? 'Kelola kredensial login (Username & Password) untuk Super Admin, Admin Sekretariat, dan Jemaat lintas gereja.'
+                  : 'Kelola kredensial login (Username & Password) untuk Admin Sekretariat dan Jemaat gereja Anda.'}
               </p>
             </div>
 
@@ -1683,7 +1720,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                 });
                 setIsUserModal(true);
               }}
-              className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md flex items-center gap-1.5 self-start md:self-auto"
+              className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md flex items-center gap-1.5 self-start md:self-auto cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>Tambah User Akun Baru</span>
@@ -1707,10 +1744,12 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
               <select
                 value={filterRole}
                 onChange={(e) => setFilterRole(e.target.value as any)}
-                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs"
+                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs font-semibold"
               >
                 <option value="ALL">Semua Role</option>
-                <option value="SUPER_ADMIN">Super Admin</option>
+                {currentUser.role === 'SUPER_ADMIN' && (
+                  <option value="SUPER_ADMIN">Super Admin</option>
+                )}
                 <option value="ADMIN">Admin</option>
                 <option value="JEMAAT">Jemaat</option>
               </select>
