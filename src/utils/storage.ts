@@ -129,7 +129,8 @@ function getTenantScopedKey(baseKey: string, specificTenantId?: string): string 
     baseKey === KEYS.TENANTS ||
     baseKey === KEYS.ACTIVE_TENANT ||
     baseKey === KEYS.SUPERADMIN_CONTACT ||
-    baseKey === KEYS.CURRENT_USER
+    baseKey === KEYS.CURRENT_USER ||
+    baseKey === KEYS.USERS
   ) {
     return baseKey;
   }
@@ -365,7 +366,37 @@ export const StorageManager = {
   saveSettings: (settings: AppSettings): void => setItem(KEYS.SETTINGS, settings),
 
   getUsers: (): User[] => {
-    const list = getItem<User[]>(KEYS.USERS, initialUsers);
+    let list = getItem<User[]>(KEYS.USERS, initialUsers);
+
+    // Consolidate any tenant-scoped user keys into the main global users directory
+    if (typeof localStorage !== 'undefined') {
+      let migrated = false;
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith('cms_pro_') && k.endsWith('_users') && k !== KEYS.USERS) {
+          try {
+            const raw = localStorage.getItem(k);
+            if (raw) {
+              const tenantUsers: User[] = JSON.parse(raw);
+              if (Array.isArray(tenantUsers)) {
+                tenantUsers.forEach((tu) => {
+                  if (tu && tu.username && !list.some((u) => u.username.toLowerCase() === tu.username.toLowerCase())) {
+                    list.push(tu);
+                    migrated = true;
+                  }
+                });
+              }
+            }
+          } catch (e) {
+            console.error('Error consolidating tenant users:', e);
+          }
+        }
+      }
+      if (migrated) {
+        setItem(KEYS.USERS, list);
+      }
+    }
+
     const hasSuperAdmin = list.some((u) => u.role === 'SUPER_ADMIN' || u.username.toLowerCase() === 'superadmin');
     if (!hasSuperAdmin) {
       const merged = [initialUsers[0], initialUsers[1], ...list];

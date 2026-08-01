@@ -35,12 +35,33 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
   const initialJemaat = React.useMemo(() => {
     const activeUser = StorageManager.getCurrentUser() || currentUser;
     const allJemaat = StorageManager.getJemaat();
-    return (
+    const match =
       allJemaat.find((j) => activeUser.jemaat_id && j.jemaat_id === activeUser.jemaat_id) ||
       allJemaat.find((j) => j.nama_lengkap.toLowerCase() === activeUser.nama.toLowerCase()) ||
-      allJemaat[0] ||
-      null
-    );
+      allJemaat.find((j) => activeUser.email && j.email && j.email.toLowerCase() === activeUser.email.toLowerCase());
+
+    if (match) return match;
+
+    return {
+      jemaat_id: activeUser.jemaat_id || `JMT-${activeUser.user_id.replace('USR-', '')}`,
+      nik: '-',
+      no_kk: '-',
+      nama_lengkap: activeUser.nama || activeUser.username,
+      jenis_kelamin: 'Laki-laki',
+      tempat_lahir: '-',
+      tanggal_lahir: '-',
+      alamat: 'Alamat Jemaat',
+      wilayah: 'Wilayah 01',
+      komisi: 'Komisi Umum',
+      status_baptis: 'Sudah',
+      status_sidi: 'Sudah',
+      status_pernikahan: 'Belum Menikah',
+      pekerjaan: 'Swasta',
+      nomor_hp: activeUser.no_hp || '-',
+      email: activeUser.email || '-',
+      foto: activeUser.foto || DEFAULT_CHURCH_LOGO,
+      status: 'Aktif'
+    };
   }, [currentUser]);
 
   const [appSettings, setAppSettings] = useState<AppSettings>(() => settings || StorageManager.getSettings());
@@ -82,7 +103,27 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
     const found =
       allJemaat.find((j) => activeUser.jemaat_id && j.jemaat_id === activeUser.jemaat_id) ||
       allJemaat.find((j) => j.nama_lengkap.toLowerCase() === activeUser.nama.toLowerCase()) ||
-      allJemaat[0];
+      allJemaat.find((j) => activeUser.email && j.email && j.email.toLowerCase() === activeUser.email.toLowerCase()) ||
+      {
+        jemaat_id: activeUser.jemaat_id || `JMT-${activeUser.user_id.replace('USR-', '')}`,
+        nik: '-',
+        no_kk: '-',
+        nama_lengkap: activeUser.nama || activeUser.username,
+        jenis_kelamin: 'Laki-laki',
+        tempat_lahir: '-',
+        tanggal_lahir: '-',
+        alamat: 'Alamat Jemaat',
+        wilayah: 'Wilayah 01',
+        komisi: 'Komisi Umum',
+        status_baptis: 'Sudah',
+        status_sidi: 'Sudah',
+        status_pernikahan: 'Belum Menikah',
+        pekerjaan: 'Swasta',
+        nomor_hp: activeUser.no_hp || '-',
+        email: activeUser.email || '-',
+        foto: activeUser.foto || DEFAULT_CHURCH_LOGO,
+        status: 'Aktif'
+      };
 
     if (found) {
       setJemaatData((prev) => (JSON.stringify(prev) !== JSON.stringify(found) ? found : prev));
