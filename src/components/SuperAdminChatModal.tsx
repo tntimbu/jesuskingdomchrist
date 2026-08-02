@@ -43,8 +43,11 @@ export const SuperAdminChatModal: React.FC<SuperAdminChatModalProps> = ({
   };
 
   const getWaUrl = () => {
-    const waNum = contact.wa ? contact.wa.replace(/\D/g, '') : '6281234567890';
-    const text = encodeURIComponent(`Halo SuperAdmin, saya dari ${currentChurch}.\n\nPesan/Bantuan: ${messageInput || 'Mohon bantuan mengenai aplikasi / lisensi gereja kami.'}`);
+    let waNum = contact.wa ? contact.wa.replace(/\D/g, '') : '62881036358650';
+    if (waNum.startsWith('0')) {
+      waNum = '62' + waNum.substring(1);
+    }
+    const text = encodeURIComponent(`Halo SuperAdmin (Pdt. Ferdinan Moses Timbu, S.Th), saya dari ${currentChurch}.\n\nPesan/Bantuan: ${messageInput || 'Mohon bantuan mengenai aplikasi / lisensi gereja kami.'}`);
     return `https://wa.me/${waNum}?text=${text}`;
   };
 
@@ -100,16 +103,16 @@ export const SuperAdminChatModal: React.FC<SuperAdminChatModalProps> = ({
 
           <div className="pt-1">
             <h4 className="text-sm font-black text-white leading-tight">
-              {contact.nama || 'Pdt. Dr. Herman Setyawan (SuperAdmin SaaS)'}
+              {contact.nama || 'Pdt. Ferdinan Moses Timbu, S.Th'}
             </h4>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-300 mt-1.5">
               <span className="flex items-center gap-1 font-mono text-emerald-300 font-bold">
                 <PhoneCall className="w-3.5 h-3.5 text-emerald-400" />
-                +{contact.wa || '6281234567890'}
+                {contact.wa || '0881036358650'}
               </span>
               <span className="flex items-center gap-1 text-slate-300 break-all">
                 <Mail className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-                {contact.email || 'superadmin@gkfc-cms.org'}
+                {contact.email || 'tn.timbu@gmail.com'}
               </span>
             </div>
           </div>
@@ -129,13 +132,13 @@ export const SuperAdminChatModal: React.FC<SuperAdminChatModalProps> = ({
             <div className="text-left min-w-0">
               <div className="text-xs font-black text-white leading-tight">Chat WhatsApp Direct</div>
               <div className="text-[11px] text-emerald-400 font-mono font-bold mt-0.5 truncate">
-                +{contact.wa || '6281234567890'}
+                {contact.wa || '0881036358650'}
               </div>
             </div>
           </a>
 
           <a
-            href={`mailto:${contact.email || 'superadmin@gkfc-cms.org'}?subject=Dukungan%20Aplikasi%20Gereja%20${encodeURIComponent(currentChurch)}`}
+            href={`mailto:${contact.email || 'tn.timbu@gmail.com'}?subject=Dukungan%20Aplikasi%20Gereja%20${encodeURIComponent(currentChurch)}`}
             className="p-3.5 rounded-2xl bg-gradient-to-r from-indigo-950/90 to-slate-900 hover:from-indigo-900 hover:to-slate-850 border border-indigo-500/40 text-indigo-300 flex items-center gap-3 transition-all cursor-pointer group active:scale-95 shadow-md"
           >
             <div className="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shrink-0">
@@ -144,7 +147,7 @@ export const SuperAdminChatModal: React.FC<SuperAdminChatModalProps> = ({
             <div className="text-left min-w-0">
               <div className="text-xs font-black text-white leading-tight">Kirim Email Direct</div>
               <div className="text-[11px] text-indigo-300 font-mono font-semibold mt-0.5 truncate">
-                {contact.email || 'superadmin@gkfc-cms.org'}
+                {contact.email || 'tn.timbu@gmail.com'}
               </div>
             </div>
           </a>

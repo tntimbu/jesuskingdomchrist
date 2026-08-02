@@ -480,18 +480,18 @@ export const SuperAdminSaaSPanel: React.FC<SuperAdminSaaSPanelProps> = ({
                 type="text"
                 value={superAdminContact.nama}
                 onChange={(e) => setSuperAdminContact({ ...superAdminContact, nama: e.target.value })}
-                placeholder="Pdt. Dr. Herman Setyawan"
+                placeholder="Pdt. Ferdinan Moses Timbu, S.Th"
                 className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white font-medium focus:ring-2 focus:ring-amber-500 outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-slate-400 mb-1 font-semibold">Nomor WhatsApp Support (Format: 628...):</label>
+              <label className="block text-slate-400 mb-1 font-semibold">Nomor WhatsApp Support:</label>
               <input
                 type="text"
                 value={superAdminContact.wa}
                 onChange={(e) => setSuperAdminContact({ ...superAdminContact, wa: e.target.value })}
-                placeholder="6281234567890"
+                placeholder="0881036358650"
                 className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white font-medium focus:ring-2 focus:ring-amber-500 outline-none"
               />
             </div>
@@ -502,7 +502,7 @@ export const SuperAdminSaaSPanel: React.FC<SuperAdminSaaSPanelProps> = ({
                 type="email"
                 value={superAdminContact.email}
                 onChange={(e) => setSuperAdminContact({ ...superAdminContact, email: e.target.value })}
-                placeholder="superadmin@gkfc-cms.org"
+                placeholder="tn.timbu@gmail.com"
                 className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white font-medium focus:ring-2 focus:ring-amber-500 outline-none"
               />
             </div>

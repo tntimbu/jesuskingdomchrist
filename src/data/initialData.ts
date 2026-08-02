@@ -76,10 +76,10 @@ export const initialTenants: ChurchTenant[] = [
 ];
 
 export const initialSuperAdminContact: SuperAdminContact = {
-  nama: 'Pdt. Dr. Herman Setyawan (SuperAdmin SaaS)',
-  wa: '6281234567890',
-  email: 'superadmin@gkfc-cms.org',
-  pesan_default: 'Halo SuperAdmin SaaS, saya ingin konfirmasi pembayaran lisensi aplikasi & pengaktifan kembali akun gereja kami.'
+  nama: 'Pdt. Ferdinan Moses Timbu, S.Th',
+  wa: '0881036358650',
+  email: 'tn.timbu@gmail.com',
+  pesan_default: 'Halo SuperAdmin SaaS (Pdt. Ferdinan Moses Timbu, S.Th), saya dari %NAMA_GEREJA% ingin konfirmasi pembayaran lisensi aplikasi & pengaktifan kembali akun gereja kami.'
 };
 
 export const DEFAULT_CHURCH_LOGO = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%234f46e5"/><stop offset="100%" stop-color="%237c3aed"/></linearGradient></defs><rect width="200" height="200" rx="48" fill="url(%23g)"/><path d="M100 35 v130 M55 80 h90" stroke="%23ffffff" stroke-width="22" stroke-linecap="round"/><circle cx="100" cy="80" r="10" fill="%23f59e0b"/></svg>`;
@@ -172,10 +172,10 @@ export const initialUsers: User[] = [
     user_id: 'USR-001',
     username: 'superadmin',
     password_hash: 'admin123',
-    nama: 'Pdt. Dr. Herman Setyawan, M.Th (Super Admin)',
+    nama: 'Pdt. Ferdinan Moses Timbu, S.Th (SuperAdmin SaaS)',
     role: 'SUPER_ADMIN',
-    email: 'superadmin@gkfc-cms.org',
-    no_hp: '+62 811-1234-5678',
+    email: 'tn.timbu@gmail.com',
+    no_hp: '0881036358650',
     status: 'Aktif',
     created_at: '2025-01-01 08:00',
     last_login: '2026-07-28 22:15',

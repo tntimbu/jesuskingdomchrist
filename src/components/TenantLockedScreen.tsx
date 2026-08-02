@@ -20,8 +20,11 @@ export const TenantLockedScreen: React.FC<TenantLockedScreenProps> = ({
   const churchName = tenant ? tenant.nama_gereja : 'Aplikasi Gereja';
 
   const formatWaUrl = () => {
-    const waNum = contact.wa ? contact.wa.replace(/\D/g, '') : '6281234567890';
-    const rawMsg = contact.pesan_default || 'Halo SuperAdmin, saya dari %NAMA_GEREJA% ingin konfirmasi pembayaran lisensi aplikasi & aktivasi akun.';
+    let waNum = contact.wa ? contact.wa.replace(/\D/g, '') : '62881036358650';
+    if (waNum.startsWith('0')) {
+      waNum = '62' + waNum.substring(1);
+    }
+    const rawMsg = contact.pesan_default || 'Halo SuperAdmin (Pdt. Ferdinan Moses Timbu, S.Th), saya dari %NAMA_GEREJA% ingin konfirmasi pembayaran lisensi aplikasi & aktivasi akun.';
     const formattedMsg = encodeURIComponent(rawMsg.replace('%NAMA_GEREJA%', churchName));
     return `https://wa.me/${waNum}?text=${formattedMsg}`;
   };
@@ -95,7 +98,7 @@ export const TenantLockedScreen: React.FC<TenantLockedScreenProps> = ({
             </a>
 
             <a
-              href={`mailto:${contact.email || 'superadmin@gkfc-cms.org'}?subject=Aktivasi%20Lisensi%20Aplikasi%20${encodeURIComponent(churchName)}`}
+              href={`mailto:${contact.email || 'tn.timbu@gmail.com'}?subject=Aktivasi%20Lisensi%20Aplikasi%20${encodeURIComponent(churchName)}`}
               className="py-3 px-4 rounded-2xl bg-slate-800 hover:bg-slate-700 text-indigo-200 font-extrabold text-xs border border-slate-700 flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95"
             >
               <Mail className="w-4 h-4 text-indigo-400" />
@@ -106,9 +109,9 @@ export const TenantLockedScreen: React.FC<TenantLockedScreenProps> = ({
           {/* SuperAdmin Contact Person Card */}
           <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-between text-xs">
             <div className="space-y-0.5">
-              <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">Penanggung Jawab SaaS:</span>
-              <p className="font-bold text-white">{contact.nama || 'SuperAdmin Application Support'}</p>
-              <p className="text-[11px] text-slate-300 font-mono">WA: +{contact.wa || '6281234567890'} &bull; {contact.email}</p>
+              <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">Penanggung Jawab SaaS Application:</span>
+              <p className="font-bold text-white">{contact.nama || 'Pdt. Ferdinan Moses Timbu, S.Th'}</p>
+              <p className="text-[11px] text-slate-300 font-mono">WA: {contact.wa || '0881036358650'} &bull; {contact.email || 'tn.timbu@gmail.com'}</p>
             </div>
             <PhoneCall className="w-5 h-5 text-amber-400 shrink-0 ml-2" />
           </div>

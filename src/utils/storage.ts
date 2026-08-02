@@ -450,7 +450,12 @@ export const StorageManager = {
     StorageManager.saveTenants(updated);
   },
   getSuperAdminContact: (): SuperAdminContact => {
-    return getItem<SuperAdminContact>(KEYS.SUPERADMIN_CONTACT, initialSuperAdminContact);
+    const contact = getItem<SuperAdminContact>(KEYS.SUPERADMIN_CONTACT, initialSuperAdminContact);
+    if (!contact || !contact.email || contact.email === 'superadmin@gkfc-cms.org' || (contact.nama && contact.nama.includes('Herman'))) {
+      setItem(KEYS.SUPERADMIN_CONTACT, initialSuperAdminContact);
+      return initialSuperAdminContact;
+    }
+    return contact;
   },
   saveSuperAdminContact: (contact: SuperAdminContact): void => {
     setItem(KEYS.SUPERADMIN_CONTACT, contact);
