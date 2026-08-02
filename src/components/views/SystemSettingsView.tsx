@@ -1362,7 +1362,37 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 mb-2 font-semibold">Style Background Banner Jemaat</label>
+                  <label className="block text-slate-400 mb-2 font-semibold">Style Warna Background Seluruh Kartu Dashboard & Jemaat</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {[
+                      { id: 'DEFAULT_GLASS', label: '✨ Transparan Glass' },
+                      { id: 'GRADIENT_INDIGO', label: '🌌 Royal Twilight' },
+                      { id: 'GRADIENT_PURPLE', label: '🔮 Amethyst Majesty' },
+                      { id: 'GRADIENT_GOLD', label: '👑 Golden Grace' },
+                      { id: 'GRADIENT_EMERALD', label: '🌿 Emerald Divine' },
+                      { id: 'OCEAN_BLUE', label: '🌊 Ocean Waves' },
+                      { id: 'OBSIDIAN_NIGHT', label: '🖤 Obsidian Night' },
+                      { id: 'SOLID_SLATE', label: '⬛ Solid Dark' },
+                      { id: 'NEON_CYAN', label: '💡 Neon Cyan' }
+                    ].map((cb) => (
+                      <button
+                        type="button"
+                        key={cb.id}
+                        onClick={() => setMetaForm({ ...metaForm, jemaat_cards_bg: cb.id as any })}
+                        className={`p-2.5 rounded-xl bg-slate-950 border text-left text-xs font-bold transition-all cursor-pointer ${
+                          (metaForm.jemaat_cards_bg || 'DEFAULT_GLASS') === cb.id
+                            ? 'border-indigo-500 ring-2 ring-indigo-500/50 text-white'
+                            : 'border-slate-800 text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        {cb.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-slate-400 mb-2 font-semibold">Style Background Banner Utama Jemaat (Paling Atas)</label>
                   <div className="grid grid-cols-2 gap-2">
                     {[
                       { id: 'GRADIENT_INDIGO', label: '🌌 Royal Twilight' },

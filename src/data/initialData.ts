@@ -136,6 +136,7 @@ export const initialSettings: AppSettings = {
   jemaat_banner_title: 'Shalom & Selamat Datang',
   jemaat_banner_subtitle: 'Portal Layanan Jemaat Resmi & Sistem Informasi Terpadu',
   jemaat_banner_bg: 'GRADIENT_INDIGO',
+  jemaat_cards_bg: 'DEFAULT_GLASS',
   jemaat_card_width: 'CONTAINED',
   jemaat_announcement_text: 'Ibadah Raya Minggu ini diadakan pukul 09:00 WIB. Mari hadir bertatap muka atau saksikan tayangan streaming online.',
   show_jemaat_announcement_banner: true,

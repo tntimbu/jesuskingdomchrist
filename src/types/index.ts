@@ -277,6 +277,7 @@ export interface AppSettings {
   jemaat_banner_title?: string;
   jemaat_banner_subtitle?: string;
   jemaat_banner_bg?: 'GRADIENT_INDIGO' | 'GRADIENT_PURPLE' | 'GRADIENT_GOLD' | 'GRADIENT_EMERALD' | 'OBSIDIAN_NIGHT' | 'OCEAN_BLUE';
+  jemaat_cards_bg?: 'DEFAULT_GLASS' | 'GRADIENT_INDIGO' | 'GRADIENT_PURPLE' | 'GRADIENT_GOLD' | 'GRADIENT_EMERALD' | 'OBSIDIAN_NIGHT' | 'OCEAN_BLUE' | 'SOLID_SLATE' | 'NEON_CYAN';
   jemaat_card_width?: 'FULL' | 'CONTAINED' | 'COMPACT' | 'MOBILE_COMPACT';
   jemaat_announcement_text?: string;
   show_jemaat_announcement_banner?: boolean;

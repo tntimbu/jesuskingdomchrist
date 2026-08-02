@@ -655,22 +655,57 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   // Dynamic Theme Preset Style Classes & Density
   const getCardStyleClass = () => {
+    const cardBg = settings.jemaat_cards_bg || 'DEFAULT_GLASS';
     const cardStyle = settings.card_style || 'GLASS';
+
     let base = 'bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl';
-    switch (cardStyle) {
-      case 'SOLID':
-        base = 'bg-slate-900 border border-slate-800 shadow-xl';
-        break;
-      case 'NEON':
-        base = 'bg-slate-900/90 border border-indigo-500/40 shadow-lg shadow-indigo-500/10 backdrop-blur-xl';
-        break;
-      case 'FLAT':
-        base = 'bg-slate-900/60 border border-slate-700/60 shadow-none';
-        break;
-      case 'GLASS':
-      default:
-        base = 'bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl';
-        break;
+
+    if (cardBg && cardBg !== 'DEFAULT_GLASS') {
+      switch (cardBg) {
+        case 'GRADIENT_INDIGO':
+          base = 'bg-gradient-to-br from-indigo-950/90 via-slate-900 to-indigo-950/90 border border-indigo-500/40 shadow-xl shadow-indigo-950/30 backdrop-blur-xl';
+          break;
+        case 'GRADIENT_PURPLE':
+          base = 'bg-gradient-to-br from-purple-950/90 via-slate-900 to-purple-950/90 border border-purple-500/40 shadow-xl shadow-purple-950/30 backdrop-blur-xl';
+          break;
+        case 'GRADIENT_GOLD':
+          base = 'bg-gradient-to-br from-amber-950/90 via-slate-900 to-amber-950/90 border border-amber-500/40 shadow-xl shadow-amber-950/30 backdrop-blur-xl';
+          break;
+        case 'GRADIENT_EMERALD':
+          base = 'bg-gradient-to-br from-emerald-950/90 via-slate-900 to-emerald-950/90 border border-emerald-500/40 shadow-xl shadow-emerald-950/30 backdrop-blur-xl';
+          break;
+        case 'OBSIDIAN_NIGHT':
+          base = 'bg-gradient-to-br from-slate-950 via-slate-900 to-zinc-950 border border-slate-700/80 shadow-2xl backdrop-blur-xl';
+          break;
+        case 'OCEAN_BLUE':
+          base = 'bg-gradient-to-br from-blue-950/90 via-slate-900 to-cyan-950/90 border border-cyan-500/40 shadow-xl shadow-cyan-950/30 backdrop-blur-xl';
+          break;
+        case 'SOLID_SLATE':
+          base = 'bg-slate-900 border border-slate-800 shadow-xl';
+          break;
+        case 'NEON_CYAN':
+          base = 'bg-cyan-950/50 border border-cyan-400/50 shadow-lg shadow-cyan-500/20 backdrop-blur-xl';
+          break;
+        default:
+          base = 'bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl';
+          break;
+      }
+    } else {
+      switch (cardStyle) {
+        case 'SOLID':
+          base = 'bg-slate-900 border border-slate-800 shadow-xl';
+          break;
+        case 'NEON':
+          base = 'bg-slate-900/90 border border-indigo-500/40 shadow-lg shadow-indigo-500/10 backdrop-blur-xl';
+          break;
+        case 'FLAT':
+          base = 'bg-slate-900/60 border border-slate-700/60 shadow-none';
+          break;
+        case 'GLASS':
+        default:
+          base = 'bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl';
+          break;
+      }
     }
 
     const density = settings.card_size || 'NORMAL';
@@ -2618,7 +2653,43 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </div>
 
                 <div className="pt-2 space-y-1.5">
-                  <label className="block text-indigo-300 font-bold text-xs sm:text-sm">Style Background Banner Jemaat</label>
+                  <label className="block text-indigo-300 font-bold text-xs sm:text-sm">Style Warna Background Seluruh Kartu Dashboard (Statistik, Widget, dsb)</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                    {[
+                      { id: 'DEFAULT_GLASS', label: '✨ Transparan Glass' },
+                      { id: 'GRADIENT_INDIGO', label: '🌌 Royal Twilight' },
+                      { id: 'GRADIENT_PURPLE', label: '🔮 Amethyst Majesty' },
+                      { id: 'GRADIENT_GOLD', label: '👑 Golden Grace' },
+                      { id: 'GRADIENT_EMERALD', label: '🌿 Emerald Divine' },
+                      { id: 'OCEAN_BLUE', label: '🌊 Ocean Waves' },
+                      { id: 'OBSIDIAN_NIGHT', label: '🖤 Obsidian Night' },
+                      { id: 'SOLID_SLATE', label: '⬛ Solid Dark' },
+                      { id: 'NEON_CYAN', label: '💡 Neon Cyan' }
+                    ].map((cb) => {
+                      const isSelected = (customForm.jemaat_cards_bg || 'DEFAULT_GLASS') === cb.id;
+                      return (
+                        <button
+                          type="button"
+                          key={cb.id}
+                          onClick={() => setCustomForm({ ...customForm, jemaat_cards_bg: cb.id as any })}
+                          className={`p-2 rounded-xl border text-left text-[11px] font-bold transition-all cursor-pointer flex items-center justify-between ${
+                            isSelected
+                              ? 'border-indigo-500 bg-indigo-950/80 ring-1 ring-indigo-500/50 text-white'
+                              : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-slate-200'
+                          }`}
+                        >
+                          <span className="truncate">{cb.label}</span>
+                          <div className={`w-3 h-3 rounded-full border flex items-center justify-center shrink-0 ml-1 ${isSelected ? 'border-indigo-400 bg-indigo-500' : 'border-slate-600'}`}>
+                            {isSelected && <div className="w-1 h-1 rounded-full bg-white" />}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="pt-2 space-y-1.5">
+                  <label className="block text-indigo-300 font-bold text-xs sm:text-sm">Style Background Banner Utama Jemaat (Paling Atas)</label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
                     {[
                       { id: 'GRADIENT_INDIGO', label: '🌌 Royal Twilight' },
