@@ -19,6 +19,7 @@ import { StorageManager } from '../utils/storage';
 import { parseSocialVideoUrl } from '../utils/videoHelper';
 import { DEFAULT_CHURCH_LOGO } from '../data/initialData';
 import { playNotificationChime, playWarningChime } from '../utils/soundHelper';
+import { triggerStatusBarNotification } from '../utils/firebaseMessaging';
 import { RenunganFullscreenModal } from './RenunganFullscreenModal';
 import { FloatingApkDownloadButton } from './FloatingApkDownloadButton';
 import { SuperAdminChatModal } from './SuperAdminChatModal';
@@ -444,6 +445,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       `Membuat notifikasi / peringatan: "${newNotif.judul}"`,
       'Notifikasi'
     );
+
+    // Trigger status bar notification immediately on HP/Desktop
+    triggerStatusBarNotification(`🔔 ${newNotif.judul}`, newNotif.pesan);
 
     window.dispatchEvent(new Event('cms_data_changed'));
 

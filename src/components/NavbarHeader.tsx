@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { User, AppSettings, NotificationItem } from '../types';
 import { StorageManager } from '../utils/storage';
 import { DEFAULT_CHURCH_LOGO } from '../data/initialData';
@@ -109,6 +109,22 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
     const timer = setInterval(updateTime, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  const prevNotifsRef = useRef<NotificationItem[]>([]);
+
+  useEffect(() => {
+    if (notifications.length > 0) {
+      if (prevNotifsRef.current.length > 0) {
+        const prevIds = new Set(prevNotifsRef.current.map((n) => n.notif_id));
+        const newlyAdded = notifications.filter((n) => !prevIds.has(n.notif_id));
+        if (newlyAdded.length > 0) {
+          const newest = newlyAdded[0];
+          triggerStatusBarNotification(`🔔 ${newest.judul}`, newest.pesan);
+        }
+      }
+      prevNotifsRef.current = notifications;
+    }
+  }, [notifications]);
 
   useEffect(() => {
     const syncNotifs = () => {

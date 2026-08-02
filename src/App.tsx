@@ -11,6 +11,7 @@ import { AlertTriangle, ArrowLeft, Grid, Home } from 'lucide-react';
 import { menuModules } from './data/navigationMenu';
 
 import { getThemeClasses } from './utils/themeHelper';
+import { registerMessagingServiceWorker, listenToForegroundMessages } from './utils/firebaseMessaging';
 
 import { DashboardView } from './components/DashboardView';
 import { JemaatView } from './components/views/JemaatView';
@@ -74,21 +75,22 @@ export default function App() {
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
 
-    // Register Service Worker for PWA
-    if ('serviceWorker' in navigator && import.meta.env.PROD) {
-      const base = import.meta.env.BASE_URL || './';
-      const swUrl = `${base.endsWith('/') ? base : base + '/'}sw.js`;
-      navigator.serviceWorker
-        .register(swUrl)
-        .then((reg) => {
-          console.log('CMS Pro PWA Service Worker Registered:', reg.scope);
-          reg.update();
-        })
-        .catch((err) => console.log('Service Worker registration failed:', err));
+    // Register Service Worker for PWA & Push Notifications
+    if ('serviceWorker' in navigator) {
+      registerMessagingServiceWorker().then((reg) => {
+        if (reg) {
+          console.log('CMS Pro Service Worker & Messaging Registered:', reg.scope);
+        }
+      });
     }
+
+    const unsubscribeFCM = listenToForegroundMessages((payload) => {
+      console.log('FCM Foreground message received:', payload);
+    });
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+      unsubscribeFCM();
     };
   }, []);
 
