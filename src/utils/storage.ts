@@ -233,6 +233,77 @@ if (typeof window !== 'undefined') {
   });
 }
 
+function syncKeluargaFromJemaatWithData(rawKeluarga: Keluarga[], jemaatList: Jemaat[]): Keluarga[] {
+  const keluargaMap = new Map<string, Keluarga>();
+
+  // Index existing keluarga by no_kk
+  (rawKeluarga || []).forEach((k) => {
+    if (k && k.no_kk && k.no_kk.trim() !== '' && k.no_kk.trim() !== '-') {
+      keluargaMap.set(k.no_kk.trim(), { ...k });
+    }
+  });
+
+  // Group jemaat by no_kk
+  const jemaatByKk = new Map<string, Jemaat[]>();
+  (jemaatList || []).forEach((j) => {
+    if (j && j.no_kk && j.no_kk.trim() !== '' && j.no_kk.trim() !== '-') {
+      const cleanKk = j.no_kk.trim();
+      const existing = jemaatByKk.get(cleanKk) || [];
+      existing.push(j);
+      jemaatByKk.set(cleanKk, existing);
+    }
+  });
+
+  let hasChanges = false;
+  let counter = (rawKeluarga || []).length + 1;
+
+  jemaatByKk.forEach((members, cleanKk) => {
+    const existing = keluargaMap.get(cleanKk);
+    const kepala = members.find((m) => m.jenis_kelamin === 'Laki-laki') || members[0];
+    const alamat = kepala?.alamat || members[0]?.alamat || 'Alamat Jemaat';
+    const wilayah = kepala?.wilayah || members[0]?.wilayah || 'Wilayah I';
+
+    if (existing) {
+      if (existing.jumlah_anggota !== members.length) {
+        existing.jumlah_anggota = members.length;
+        hasChanges = true;
+      }
+      if ((!existing.kepala_keluarga || existing.kepala_keluarga === 'Belum diisi' || existing.kepala_keluarga === '-') && kepala?.nama_lengkap) {
+        existing.kepala_keluarga = kepala.nama_lengkap;
+        hasChanges = true;
+      }
+    } else {
+      hasChanges = true;
+      const newKeluarga: Keluarga = {
+        keluarga_id: `KK-${counter.toString().padStart(3, '0')}`,
+        no_kk: cleanKk,
+        kepala_keluarga: kepala?.nama_lengkap || 'Kepala Keluarga',
+        alamat: alamat,
+        wilayah: wilayah,
+        jumlah_anggota: members.length
+      };
+      counter++;
+      keluargaMap.set(cleanKk, newKeluarga);
+    }
+  });
+
+  const result = Array.from(keluargaMap.values());
+  if (hasChanges) {
+    try {
+      const scopedKey = getTenantScopedKey(KEYS.KELUARGA);
+      localStorage.setItem(scopedKey, JSON.stringify(result));
+    } catch (e) {
+      // ignore
+    }
+  }
+  return result;
+}
+
+function syncKeluargaFromJemaat(jemaatList: Jemaat[]): Keluarga[] {
+  const rawKeluarga = getItem<Keluarga[]>(KEYS.KELUARGA, initialKeluarga);
+  return syncKeluargaFromJemaatWithData(rawKeluarga, jemaatList);
+}
+
 export const StorageManager = {
   subscribe: (listener: StorageListener): (() => void) => {
     internalListeners.add(listener);
@@ -631,10 +702,17 @@ export const StorageManager = {
       }
     }
 
+    // Auto-sync Keluarga list whenever Jemaat list is updated
+    syncKeluargaFromJemaat(list);
+
     window.dispatchEvent(new Event('cms_data_changed'));
   },
 
-  getKeluarga: (): Keluarga[] => getItem(KEYS.KELUARGA, initialKeluarga),
+  getKeluarga: (): Keluarga[] => {
+    const rawKeluarga = getItem<Keluarga[]>(KEYS.KELUARGA, initialKeluarga);
+    const jemaatList = getItem<Jemaat[]>(KEYS.JEMAAT, initialJemaat);
+    return syncKeluargaFromJemaatWithData(rawKeluarga, jemaatList);
+  },
   saveKeluarga: (list: Keluarga[]): void => setItem(KEYS.KELUARGA, list),
 
   getWilayah: (): Wilayah[] => getItem(KEYS.WILAYAH, initialWilayah),
