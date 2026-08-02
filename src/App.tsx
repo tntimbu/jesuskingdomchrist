@@ -4,6 +4,7 @@ import { StorageManager } from './utils/storage';
 import { LoginPage } from './components/LoginPage';
 import { NavbarHeader } from './components/NavbarHeader';
 import { Sidebar, NavTab } from './components/Sidebar';
+import { CardMenuModal } from './components/CardMenuModal';
 import { BottomNav } from './components/BottomNav';
 import { PWABanner } from './components/PWABanner';
 import { AlertTriangle } from 'lucide-react';
@@ -89,6 +90,16 @@ export default function App() {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
     };
   }, []);
+
+  useEffect(() => {
+    // Sync custom theme hex color to CSS variables globally
+    if (settings && settings.warna_tema) {
+      const customHex = settings.warna_tema.trim();
+      if (/^#[0-9A-F]{6}$/i.test(customHex) || /^#[0-9A-F]{3}$/i.test(customHex)) {
+        document.documentElement.style.setProperty('--theme-custom-primary', customHex);
+      }
+    }
+  }, [settings?.warna_tema]);
 
   useEffect(() => {
     // Listen for setting changes across components & tabs
@@ -263,19 +274,21 @@ export default function App() {
         onOpenSuperAdminSaaSPanel={() => setIsSaaSPanelOpen(true)}
       />
 
-      {/* Content Layout */}
-      <div className="flex flex-1 w-full mx-auto px-1 sm:px-3">
-        {/* Sidebar */}
-        <Sidebar
-          currentUser={effectiveUser}
-          activeTab={activeTab}
-          onSelectTab={handleSelectTab}
-          isMobileOpen={isMobileMenuOpen}
-          onCloseMobile={() => setIsMobileMenuOpen(false)}
-        />
+      {/* Card Menu Overlay Modal (Replaces Left Sidebar for All Devices) */}
+      <CardMenuModal
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+        currentUser={effectiveUser}
+        settings={settings}
+        activeTab={activeTab}
+        onSelectTab={handleSelectTab}
+        onOpenSuperAdminSaaSPanel={() => setIsSaaSPanelOpen(true)}
+      />
 
+      {/* Content Layout - Full Width Without Left Sidebar */}
+      <div className="flex flex-1 w-full max-w-7xl mx-auto px-2 sm:px-4">
         {/* Main Content Area */}
-        <main className="flex-1 p-2 sm:p-4 lg:p-5 min-w-0 pb-16 lg:pb-6">
+        <main className="flex-1 w-full min-w-0 p-1 sm:p-3 lg:p-4 pb-20 lg:pb-8">
           {activeTab === 'dashboard' && (
             <DashboardView
               currentUser={effectiveUser}

@@ -27,7 +27,8 @@ import {
   Volume2,
   LogIn,
   Building2,
-  ShieldCheck
+  ShieldCheck,
+  Grid
 } from 'lucide-react';
 
 interface NavbarHeaderProps {
@@ -227,13 +228,16 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
 
   return (
     <header className={`sticky top-0 z-30 h-20 w-full ${theme.isLight ? 'bg-white/90 border-slate-200 text-slate-900' : 'bg-slate-950/80 border-white/10 text-white'} backdrop-blur-xl border-b px-3 sm:px-6 flex items-center justify-between transition-colors duration-300`}>
-      {/* Left section: Mobile menu toggle & Church Branding */}
+      {/* Left section: Kartu Menu Utama toggle & Church Branding */}
       <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink">
         <button
           onClick={onOpenMobileMenu}
-          className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 border border-transparent hover:border-white/10 lg:hidden transition-all shrink-0"
+          className="px-3 py-2 rounded-2xl text-white font-extrabold text-xs shadow-lg flex items-center gap-2 border border-white/20 hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer"
+          style={{ backgroundColor: settings.warna_tema || '#CD5C5C' }}
+          title="Buka Pusat Kartu Menu Utama Mewah"
         >
-          <Menu className="w-5 h-5" />
+          <Grid className="w-4 h-4 text-white" />
+          <span className="hidden xs:inline">Kartu Menu</span>
         </button>
 
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -251,7 +255,7 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
             <h1 className="text-xs sm:text-base font-extrabold leading-tight text-white tracking-tight max-w-[100px] xs:max-w-[140px] sm:max-w-none truncate">
               {settings.nama_gereja || 'Gereja'}
             </h1>
-            <p className="text-[8px] sm:text-[10px] uppercase tracking-widest text-indigo-400 font-bold leading-none mt-0.5 truncate">
+            <p className="text-[8px] sm:text-[10px] uppercase tracking-widest text-amber-400 font-bold leading-none mt-0.5 truncate">
               Enterprise CMS Pro
             </p>
           </div>

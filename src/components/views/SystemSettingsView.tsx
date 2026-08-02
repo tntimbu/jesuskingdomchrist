@@ -1008,6 +1008,100 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                   </div>
                 </div>
 
+                {/* Custom Unlimited Hex Color Picker */}
+                <div className="sm:col-span-2 lg:col-span-3 p-4 sm:p-5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <label className="block text-amber-400 font-extrabold text-xs sm:text-sm">
+                        🎨 Kustom Kode Warna Hex (Contoh: #CD5C5C) - Bebas Tanpa Batas
+                      </label>
+                      <p className="text-[11px] text-slate-400 mt-0.5">
+                        Kustomisasi warna tema bebas dengan memasukkan kode hex apa saja (seperti #CD5C5C, #10B981, #FF5733). Berlaku untuk tampilan Admin &amp; Akun Jemaat.
+                      </p>
+                    </div>
+                    <div
+                      className="w-12 h-12 rounded-2xl border-2 border-white/20 shadow-xl shrink-0 flex items-center justify-center font-mono text-[10px] text-white font-black"
+                      style={{ backgroundColor: metaForm.warna_tema || '#CD5C5C' }}
+                    >
+                      {metaForm.warna_tema || '#CD5C5C'}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
+                    {/* Hex Code Text Input */}
+                    <div className="sm:col-span-2 flex items-center gap-2">
+                      <div className="relative flex-1">
+                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-mono font-bold text-xs">HEX:</span>
+                        <input
+                          type="text"
+                          value={metaForm.warna_tema || '#CD5C5C'}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setMetaForm({ ...metaForm, warna_tema: val });
+                          }}
+                          placeholder="#CD5C5C"
+                          className="w-full pl-14 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono font-extrabold text-sm focus:ring-2 focus:ring-amber-500 outline-none uppercase"
+                        />
+                      </div>
+                      {/* HTML Color Picker Button */}
+                      <label className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 cursor-pointer flex items-center gap-2 text-xs font-bold text-slate-200 shrink-0">
+                        <input
+                          type="color"
+                          value={metaForm.warna_tema && /^#[0-9A-F]{6}$/i.test(metaForm.warna_tema) ? metaForm.warna_tema : '#CD5C5C'}
+                          onChange={(e) => setMetaForm({ ...metaForm, warna_tema: e.target.value })}
+                          className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent"
+                        />
+                        <span>Pilih Visual</span>
+                      </label>
+                    </div>
+
+                    {/* Live Preview Button Tag */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] text-slate-400 font-medium">Pratinjau:</span>
+                      <button
+                        type="button"
+                        className="px-3.5 py-1.5 rounded-xl text-white font-extrabold text-xs shadow-lg transition-all"
+                        style={{ backgroundColor: metaForm.warna_tema || '#CD5C5C' }}
+                      >
+                        Warna Utama
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Quick Preset Color Hex Chips */}
+                  <div>
+                    <span className="text-[11px] font-bold text-slate-400 block mb-2">Rekomendasi Warna Hex Populer:</span>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { name: 'Terracotta', hex: '#CD5C5C' },
+                        { name: 'Royal Indigo', hex: '#4F46E5' },
+                        { name: 'Emerald', hex: '#059669' },
+                        { name: 'Warm Amber', hex: '#D97706' },
+                        { name: 'Crimson Rose', hex: '#E11D48' },
+                        { name: 'Ocean Sky', hex: '#0284C7' },
+                        { name: 'Amethyst', hex: '#7C3AED' },
+                        { name: 'Fuchsia', hex: '#D946EF' },
+                        { name: 'Deep Teal', hex: '#0F766E' },
+                        { name: 'Warm Gold', hex: '#B45309' }
+                      ].map((chip) => (
+                        <button
+                          key={chip.hex}
+                          type="button"
+                          onClick={() => setMetaForm({ ...metaForm, warna_tema: chip.hex })}
+                          className={`px-3 py-1.5 rounded-xl border text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                            (metaForm.warna_tema || '#CD5C5C').toUpperCase() === chip.hex.toUpperCase()
+                              ? 'border-white text-white ring-2 ring-amber-400 shadow-md scale-105'
+                              : 'border-slate-800 text-slate-300 hover:border-slate-600 bg-slate-900'
+                          }`}
+                        >
+                          <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: chip.hex }} />
+                          <span>{chip.name} ({chip.hex})</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
                 {/* Accent Color */}
                 <div className="space-y-2">
                   <label className="block text-slate-400 font-semibold">Warna Aksen Utama System</label>

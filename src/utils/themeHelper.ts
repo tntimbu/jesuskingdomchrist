@@ -1,3 +1,4 @@
+import React, { CSSProperties } from 'react';
 import { AppSettings } from '../types';
 
 export interface ThemeStyles {
@@ -12,6 +13,10 @@ export interface ThemeStyles {
   accentRing: string;
   fontClass: string;
   isLight: boolean;
+  customHexColor: string;
+  customBgStyle: CSSProperties;
+  customTextStyle: CSSProperties;
+  customBorderStyle: CSSProperties;
 }
 
 export const getThemeClasses = (settings?: AppSettings): ThemeStyles => {
@@ -20,6 +25,7 @@ export const getThemeClasses = (settings?: AppSettings): ThemeStyles => {
   const cardStyle = settings?.card_style || 'GLASS';
   const cardSize = settings?.card_size || 'NORMAL';
   const fontFam = settings?.font_family || 'SANS';
+  const customHexColor = settings?.warna_tema || '#CD5C5C';
 
   // 1. Root Container Background
   let rootBg = 'bg-slate-950 text-slate-100';
@@ -154,6 +160,10 @@ export const getThemeClasses = (settings?: AppSettings): ThemeStyles => {
     accentBg,
     accentRing,
     fontClass,
-    isLight: preset === 'LUXE_LIGHT'
+    isLight: preset === 'LUXE_LIGHT',
+    customHexColor,
+    customBgStyle: { backgroundColor: customHexColor },
+    customTextStyle: { color: customHexColor },
+    customBorderStyle: { borderColor: customHexColor }
   };
 };
