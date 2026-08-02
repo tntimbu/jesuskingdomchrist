@@ -188,6 +188,14 @@ let quotaExceededCooldownUntil = 0;
 
 function markQuotaExhausted(): void {
   quotaExceededCooldownUntil = Date.now() + 24 * 60 * 60 * 1000; // 24 hours cooldown for daily quota limit
+  if (typeof localStorage !== 'undefined') {
+    try {
+      localStorage.setItem('cms_firestore_quota_exhausted', 'true');
+      localStorage.setItem('cms_firestore_quota_time', String(Date.now()));
+    } catch (e) {
+      // ignore
+    }
+  }
   if (typeof sessionStorage !== 'undefined') {
     try {
       sessionStorage.setItem('cms_firestore_quota_exhausted', 'true');
@@ -202,6 +210,14 @@ function markQuotaExhausted(): void {
 
 export function clearQuotaExhausted(): void {
   quotaExceededCooldownUntil = 0;
+  if (typeof localStorage !== 'undefined') {
+    try {
+      localStorage.removeItem('cms_firestore_quota_exhausted');
+      localStorage.removeItem('cms_firestore_quota_time');
+    } catch (e) {
+      // ignore
+    }
+  }
   if (typeof sessionStorage !== 'undefined') {
     try {
       sessionStorage.removeItem('cms_firestore_quota_exhausted');
@@ -216,6 +232,26 @@ export function clearQuotaExhausted(): void {
 
 export function isQuotaExhausted(): boolean {
   if (Date.now() < quotaExceededCooldownUntil) return true;
+
+  if (typeof localStorage !== 'undefined') {
+    try {
+      if (localStorage.getItem('cms_firestore_quota_exhausted') === 'true') {
+        const timeStr = localStorage.getItem('cms_firestore_quota_time');
+        if (timeStr) {
+          const timestamp = parseInt(timeStr, 10);
+          // Auto-expire quota exhaustion flag after 24 hours
+          if (!isNaN(timestamp) && Date.now() - timestamp > 24 * 60 * 60 * 1000) {
+            clearQuotaExhausted();
+            return false;
+          }
+        }
+        return true;
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+
   if (typeof sessionStorage !== 'undefined') {
     try {
       if (sessionStorage.getItem('cms_firestore_quota_exhausted') === 'true') {
@@ -420,6 +456,7 @@ export function getCloudSyncStatus(): boolean {
  * Pulls all document payloads from Cloud Firestore to ensure 100% sync on startup / mobile resume
  */
 export async function pullAllFromCloud(onDataReceived?: () => void): Promise<boolean> {
+  if (isQuotaExhausted()) return false;
   let hasChanges = false;
   try {
     const firestoreDb = getFirestoreInstance();
@@ -493,6 +530,10 @@ export function initRealtimeCloudSync(onDataReceived?: () => void): () => void {
       }
     });
     activeUnsubscribers = [];
+  }
+
+  if (isQuotaExhausted()) {
+    return () => {};
   }
 
   const activeConfig = getActiveFirebaseConfig();
