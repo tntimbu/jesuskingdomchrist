@@ -1,30 +1,50 @@
 import React from 'react';
 import { NavTab } from './Sidebar';
-import { User } from '../types';
-import { LayoutDashboard, Users, DollarSign, CalendarDays, BookOpen, MoreHorizontal, UserCheck } from 'lucide-react';
+import { User, AppSettings } from '../types';
+import { LayoutDashboard, Users, CalendarDays, BookOpen, MoreHorizontal, UserCheck } from 'lucide-react';
 
 interface BottomNavProps {
   activeTab: NavTab;
   onSelectTab: (tab: NavTab) => void;
   currentUser?: User | null;
   onOpenMobileMenu: () => void;
+  settings?: AppSettings;
 }
 
 export const BottomNav: React.FC<BottomNavProps> = ({
   activeTab,
   onSelectTab,
   currentUser,
-  onOpenMobileMenu
+  onOpenMobileMenu,
+  settings
 }) => {
   const isJemaat = (currentUser?.role || 'JEMAAT') === 'JEMAAT';
 
+  let rawHex = (settings?.warna_tema || '#CD5C5C').trim();
+  if (!rawHex.startsWith('#')) {
+    rawHex = `#${rawHex}`;
+  }
+  const customHex = rawHex;
+
+  const getItemStyle = (isActive: boolean) => {
+    if (isActive) {
+      return {
+        color: customHex,
+        backgroundColor: `${customHex}20`,
+        borderColor: `${customHex}50`
+      };
+    }
+    return {};
+  };
+
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 bg-slate-950/90 backdrop-blur-2xl border-t border-white/10 lg:hidden px-2 py-2 flex items-center justify-around text-slate-400 shadow-2xl">
+    <div className="fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-2xl border-t border-white/10 lg:hidden px-3 py-2 flex items-center justify-around text-slate-400 shadow-2xl">
       {/* 1. HOME */}
       <button
         onClick={() => onSelectTab('dashboard')}
-        className={`flex flex-col items-center gap-1 p-1 rounded-xl text-[10px] font-medium transition-all cursor-pointer ${
-          activeTab === 'dashboard' ? 'text-indigo-400 font-bold scale-105' : 'hover:text-slate-200'
+        style={getItemStyle(activeTab === 'dashboard')}
+        className={`flex flex-col items-center gap-1 px-2.5 py-1.5 rounded-xl text-[10px] transition-all cursor-pointer border border-transparent ${
+          activeTab === 'dashboard' ? 'font-black scale-105 shadow-md' : 'hover:text-slate-200'
         }`}
       >
         <LayoutDashboard className="w-5 h-5" />
@@ -34,8 +54,9 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       {/* 2. RENUNGAN */}
       <button
         onClick={() => onSelectTab('renungan')}
-        className={`flex flex-col items-center gap-1 p-1 rounded-xl text-[10px] font-medium transition-all cursor-pointer ${
-          activeTab === 'renungan' ? 'text-indigo-400 font-bold scale-105' : 'hover:text-slate-200'
+        style={getItemStyle(activeTab === 'renungan')}
+        className={`flex flex-col items-center gap-1 px-2.5 py-1.5 rounded-xl text-[10px] transition-all cursor-pointer border border-transparent ${
+          activeTab === 'renungan' ? 'font-black scale-105 shadow-md' : 'hover:text-slate-200'
         }`}
       >
         <BookOpen className="w-5 h-5" />
@@ -45,20 +66,22 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       {/* 3. JADWAL */}
       <button
         onClick={() => onSelectTab('jadwal')}
-        className={`flex flex-col items-center gap-1 p-1 rounded-xl text-[10px] font-medium transition-all cursor-pointer ${
-          activeTab === 'jadwal' || activeTab === 'agenda' ? 'text-indigo-400 font-bold scale-105' : 'hover:text-slate-200'
+        style={getItemStyle(activeTab === 'jadwal' || activeTab === 'agenda')}
+        className={`flex flex-col items-center gap-1 px-2.5 py-1.5 rounded-xl text-[10px] transition-all cursor-pointer border border-transparent ${
+          activeTab === 'jadwal' || activeTab === 'agenda' ? 'font-black scale-105 shadow-md' : 'hover:text-slate-200'
         }`}
       >
         <CalendarDays className="w-5 h-5" />
         <span>Jadwal</span>
       </button>
 
-      {/* 4. PROFIL (for Jemaat) or JEMAAT/KAS (for Admin) */}
+      {/* 4. PROFIL (for Jemaat) or JEMAAT (for Admin/SuperAdmin) */}
       {isJemaat ? (
         <button
           onClick={() => onSelectTab('jemaat_portal')}
-          className={`flex flex-col items-center gap-1 p-1 rounded-xl text-[10px] font-medium transition-all cursor-pointer ${
-            activeTab === 'jemaat_portal' ? 'text-indigo-400 font-bold scale-105' : 'hover:text-slate-200'
+          style={getItemStyle(activeTab === 'jemaat_portal')}
+          className={`flex flex-col items-center gap-1 px-2.5 py-1.5 rounded-xl text-[10px] transition-all cursor-pointer border border-transparent ${
+            activeTab === 'jemaat_portal' ? 'font-black scale-105 shadow-md' : 'hover:text-slate-200'
           }`}
         >
           <UserCheck className="w-5 h-5" />
@@ -67,8 +90,9 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       ) : (
         <button
           onClick={() => onSelectTab('jemaat')}
-          className={`flex flex-col items-center gap-1 p-1 rounded-xl text-[10px] font-medium transition-all cursor-pointer ${
-            activeTab === 'jemaat' ? 'text-indigo-400 font-bold scale-105' : 'hover:text-slate-200'
+          style={getItemStyle(activeTab === 'jemaat')}
+          className={`flex flex-col items-center gap-1 px-2.5 py-1.5 rounded-xl text-[10px] transition-all cursor-pointer border border-transparent ${
+            activeTab === 'jemaat' ? 'font-black scale-105 shadow-md' : 'hover:text-slate-200'
           }`}
         >
           <Users className="w-5 h-5" />
@@ -79,8 +103,9 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       {/* 5. LAINNYA */}
       <button
         onClick={() => onSelectTab('lainnya')}
-        className={`flex flex-col items-center gap-1 p-1 rounded-xl text-[10px] font-medium transition-all cursor-pointer ${
-          activeTab === 'lainnya' ? 'text-indigo-400 font-bold scale-105' : 'hover:text-slate-200'
+        style={getItemStyle(activeTab === 'lainnya')}
+        className={`flex flex-col items-center gap-1 px-2.5 py-1.5 rounded-xl text-[10px] transition-all cursor-pointer border border-transparent ${
+          activeTab === 'lainnya' ? 'font-black scale-105 shadow-md' : 'hover:text-slate-200'
         }`}
       >
         <MoreHorizontal className="w-5 h-5" />

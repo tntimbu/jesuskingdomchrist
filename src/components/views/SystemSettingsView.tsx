@@ -1135,7 +1135,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
 
                 {/* Style Kartu */}
                 <div className="space-y-2">
-                  <label className="block text-slate-400 font-semibold">Style Kartu & Border</label>
+                  <label className="block text-slate-400 font-semibold">Style Kartu &amp; Border</label>
                   <div className="grid grid-cols-2 gap-2">
                     {[
                       { id: 'GLASS', label: '✨ Glassmorphism', desc: 'Blur Transparan' },
@@ -1155,6 +1155,33 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                       >
                         <div className="font-bold text-[11px]">{c.label}</div>
                         <div className="text-[9px] text-slate-500 mt-0.5">{c.desc}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Style Garis Pinggir Kartu (Border Line Accent) */}
+                <div className="space-y-2">
+                  <label className="block text-slate-400 font-semibold">Gaya Garis Pinggir Kartu (Border Color)</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { id: 'ACCENT_FULL', label: '🔲 Border Warna Tema', desc: 'Penuh Warna Custom' },
+                      { id: 'ACCENT_LEFT', label: '▌ Garis Kiri Tebal', desc: 'Aksen Garis Kiri' },
+                      { id: 'ACCENT_TOP', label: '▀ Garis Atas Tebal', desc: 'Aksen Garis Atas' },
+                      { id: 'ACCENT_GLOW', label: '✨ Glowing Border', desc: 'Efek Glow Transparan' }
+                    ].map((b) => (
+                      <button
+                        type="button"
+                        key={b.id}
+                        onClick={() => setMetaForm({ ...metaForm, card_border_accent: b.id as any })}
+                        className={`p-2.5 rounded-xl bg-slate-950 border text-left transition-all ${
+                          (metaForm.card_border_accent || 'ACCENT_FULL') === b.id
+                            ? 'border-indigo-500 ring-2 ring-indigo-500/50 text-white'
+                            : 'border-slate-800 text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        <div className="font-bold text-[11px]">{b.label}</div>
+                        <div className="text-[9px] text-slate-500 mt-0.5">{b.desc}</div>
                       </button>
                     ))}
                   </div>

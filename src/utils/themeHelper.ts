@@ -6,6 +6,7 @@ export interface ThemeStyles {
   cardBg: string;
   cardPadding: string;
   cardClass: string;
+  cardBorderAccentClass?: string;
   accentGradient: string;
   accentText: string;
   accentBorder: string;
@@ -25,7 +26,13 @@ export const getThemeClasses = (settings?: AppSettings): ThemeStyles => {
   const cardStyle = settings?.card_style || 'GLASS';
   const cardSize = settings?.card_size || 'NORMAL';
   const fontFam = settings?.font_family || 'SANS';
-  const customHexColor = settings?.warna_tema || '#CD5C5C';
+  const cardBorderAccent = settings?.card_border_accent || 'ACCENT_FULL';
+  
+  let rawHex = (settings?.warna_tema || '#CD5C5C').trim();
+  if (!rawHex.startsWith('#')) {
+    rawHex = `#${rawHex}`;
+  }
+  const customHexColor = rawHex;
 
   // 1. Root Container Background
   let rootBg = 'bg-slate-950 text-slate-100';
@@ -149,11 +156,29 @@ export const getThemeClasses = (settings?: AppSettings): ThemeStyles => {
   if (fontFam === 'SERIF') fontClass = 'font-serif';
   if (fontFam === 'MONO') fontClass = 'font-mono';
 
+  let cardBorderAccentClass = 'border';
+  switch (cardBorderAccent) {
+    case 'ACCENT_LEFT':
+      cardBorderAccentClass = 'border-l-4';
+      break;
+    case 'ACCENT_TOP':
+      cardBorderAccentClass = 'border-t-4';
+      break;
+    case 'ACCENT_GLOW':
+      cardBorderAccentClass = 'border shadow-lg';
+      break;
+    case 'ACCENT_FULL':
+    default:
+      cardBorderAccentClass = 'border';
+      break;
+  }
+
   return {
     rootBg,
     cardBg,
     cardPadding,
-    cardClass: `${cardBg} ${cardPadding}`,
+    cardClass: `${cardBg} ${cardPadding} ${cardBorderAccentClass}`,
+    cardBorderAccentClass,
     accentGradient,
     accentText,
     accentBorder,

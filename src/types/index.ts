@@ -271,6 +271,7 @@ export interface AppSettings {
   accent_color?: 'INDIGO' | 'EMERALD' | 'AMBER' | 'ROSE' | 'CYAN' | 'PURPLE' | 'ROYAL_GOLD';
   card_style?: 'GLASS' | 'SOLID' | 'NEON' | 'FLAT';
   card_size?: 'COMPACT' | 'NORMAL' | 'SPACIOUS';
+  card_border_accent?: 'NONE' | 'ACCENT_FULL' | 'ACCENT_LEFT' | 'ACCENT_TOP' | 'ACCENT_GLOW';
   font_family?: 'SANS' | 'SERIF' | 'MONO';
   // Jemaat Portal Visual Customization
   jemaat_banner_title?: string;

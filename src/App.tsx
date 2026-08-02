@@ -399,6 +399,7 @@ export default function App() {
         onSelectTab={handleSelectTab}
         currentUser={effectiveUser}
         onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
+        settings={settings}
       />
 
       {/* SuperAdmin SaaS Multi-Church Master Control Panel */}

@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+:root {
+  --theme-custom-primary: #CD5C5C;
+  --theme-custom-border: #CD5C5C;
+  --theme-custom-bg-alpha: rgba(205, 92, 92, 0.15);
+}
+
 @layer utilities {
   .bg-glass {
     background-color: rgba(255, 255, 255, 0.05);
@@ -23,6 +29,36 @@
     border-color: rgba(255, 255, 255, 0.18);
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   }
+
+  /* Custom Color Theme Utilities */
+  .custom-card-border {
+    border-color: var(--theme-custom-border) !important;
+  }
+
+  .custom-card-accent-top {
+    border-top: 3px solid var(--theme-custom-primary) !important;
+  }
+
+  .custom-card-accent-left {
+    border-left: 4px solid var(--theme-custom-primary) !important;
+  }
+
+  .custom-btn-primary {
+    background-color: var(--theme-custom-primary) !important;
+    color: #ffffff !important;
+  }
+
+  .custom-btn-primary:hover {
+    filter: brightness(1.1);
+  }
+
+  .custom-text-primary {
+    color: var(--theme-custom-primary) !important;
+  }
+
+  .custom-bg-alpha {
+    background-color: var(--theme-custom-bg-alpha) !important;
+  }
 }
 
 html, body {
@@ -37,3 +73,4 @@ body {
   background-attachment: fixed;
   color: #f8fafc;
 }
+
