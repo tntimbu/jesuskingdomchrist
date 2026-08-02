@@ -7,7 +7,8 @@ import { Sidebar, NavTab } from './components/Sidebar';
 import { CardMenuModal } from './components/CardMenuModal';
 import { BottomNav } from './components/BottomNav';
 import { PWABanner } from './components/PWABanner';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Grid, Home } from 'lucide-react';
+import { menuModules } from './data/navigationMenu';
 
 import { getThemeClasses } from './utils/themeHelper';
 
@@ -272,6 +273,8 @@ export default function App() {
         onInstallPWA={handleInstallPWA}
         canInstallPWA={!!deferredPrompt}
         onOpenSuperAdminSaaSPanel={() => setIsSaaSPanelOpen(true)}
+        activeTab={activeTab}
+        onNavigateToDashboard={() => handleSelectTab('dashboard')}
       />
 
       {/* Card Menu Overlay Modal (Replaces Left Sidebar for All Devices) */}
@@ -289,6 +292,38 @@ export default function App() {
       <div className="flex flex-1 w-full max-w-7xl mx-auto px-2 sm:px-4">
         {/* Main Content Area */}
         <main className="flex-1 w-full min-w-0 p-1 sm:p-3 lg:p-4 pb-20 lg:pb-8">
+          {/* Top Breadcrumb & Quick Back Bar when in Sub-Modules */}
+          {activeTab !== 'dashboard' && (
+            <div className="mb-4 p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-center justify-between gap-3 shadow-2xl backdrop-blur-md animate-fade-in">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <button
+                  onClick={() => handleSelectTab('dashboard')}
+                  className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black flex items-center gap-2 border border-indigo-400/30 shadow-lg transition-all cursor-pointer shrink-0 active:scale-95"
+                >
+                  <ArrowLeft className="w-4 h-4 text-white" />
+                  <span>Kembali ke Dashboard Utama</span>
+                </button>
+
+                <span className="text-slate-600 font-bold hidden sm:inline">/</span>
+
+                <div className="hidden sm:flex items-center gap-2 min-w-0">
+                  <span className="text-xs font-extrabold text-amber-400 uppercase tracking-wider truncate">
+                    Modul: {menuModules.find((m) => m.id === activeTab)?.title || activeTab}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="px-3.5 py-2 rounded-xl text-white text-xs font-extrabold flex items-center gap-2 shadow-lg transition-all shrink-0 cursor-pointer hover:scale-105 active:scale-95"
+                style={{ backgroundColor: settings.warna_tema || '#CD5C5C' }}
+              >
+                <Grid className="w-4 h-4 text-white" />
+                <span className="hidden xs:inline">Kartu Menu</span>
+              </button>
+            </div>
+          )}
+
           {activeTab === 'dashboard' && (
             <DashboardView
               currentUser={effectiveUser}

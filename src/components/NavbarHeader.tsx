@@ -28,7 +28,9 @@ import {
   LogIn,
   Building2,
   ShieldCheck,
-  Grid
+  Grid,
+  ArrowLeft,
+  Home
 } from 'lucide-react';
 
 interface NavbarHeaderProps {
@@ -42,6 +44,8 @@ interface NavbarHeaderProps {
   onInstallPWA?: () => void;
   canInstallPWA?: boolean;
   onOpenSuperAdminSaaSPanel?: () => void;
+  activeTab?: string;
+  onNavigateToDashboard?: () => void;
 }
 
 export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
@@ -54,7 +58,9 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
   onOpenMobileMenu,
   onInstallPWA,
   canInstallPWA,
-  onOpenSuperAdminSaaSPanel
+  onOpenSuperAdminSaaSPanel,
+  activeTab,
+  onNavigateToDashboard
 }) => {
   const [timeStr, setTimeStr] = useState('');
   const [dateStr, setDateStr] = useState('');
@@ -230,6 +236,7 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
     <header className={`sticky top-0 z-30 h-20 w-full ${theme.isLight ? 'bg-white/90 border-slate-200 text-slate-900' : 'bg-slate-950/80 border-white/10 text-white'} backdrop-blur-xl border-b px-3 sm:px-6 flex items-center justify-between transition-colors duration-300`}>
       {/* Left section: Kartu Menu Utama toggle & Church Branding */}
       <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink">
+        {/* Button 1: Kartu Menu */}
         <button
           onClick={onOpenMobileMenu}
           className="px-3 py-2 rounded-2xl text-white font-extrabold text-xs shadow-lg flex items-center gap-2 border border-white/20 hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer"
@@ -239,6 +246,19 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
           <Grid className="w-4 h-4 text-white" />
           <span className="hidden xs:inline">Kartu Menu</span>
         </button>
+
+        {/* Button 2: Kembali ke Dashboard Utama (when in any submodule) */}
+        {activeTab && activeTab !== 'dashboard' && onNavigateToDashboard && (
+          <button
+            onClick={onNavigateToDashboard}
+            className="px-3 py-2 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-lg flex items-center gap-1.5 border border-indigo-400/30 hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer animate-fade-in"
+            title="Kembali Ke Dashboard Utama"
+          >
+            <ArrowLeft className="w-4 h-4 text-white" />
+            <span className="hidden md:inline">Kembali Ke Dashboard</span>
+            <span className="md:hidden">Dashboard</span>
+          </button>
+        )}
 
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <div className="relative group shrink-0">
