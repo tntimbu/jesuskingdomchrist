@@ -3,6 +3,7 @@ import { User, Jemaat, AppSettings } from '../../types';
 import { StorageManager } from '../../utils/storage';
 import { DEFAULT_CHURCH_LOGO } from '../../data/initialData';
 import { getThemeClasses } from '../../utils/themeHelper';
+import { pullAllFromCloud, reconnectRealtimeCloudSync, isQuotaExhausted } from '../../utils/firebaseSync';
 import {
   UserCheck,
   Edit3,
@@ -23,7 +24,8 @@ import {
   Lock,
   Key,
   CreditCard,
-  Building
+  Building,
+  RefreshCw
 } from 'lucide-react';
 
 interface JemaatPortalViewProps {
@@ -93,6 +95,34 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordMsg, setPasswordMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [isSyncingCloud, setIsSyncingCloud] = useState(false);
+  const [, setSyncStatusTick] = useState(0);
+
+  useEffect(() => {
+    const handleStatusChange = () => setSyncStatusTick((prev) => prev + 1);
+    window.addEventListener('cms_sync_status_changed', handleStatusChange);
+    return () => window.removeEventListener('cms_sync_status_changed', handleStatusChange);
+  }, []);
+
+  const handleManualSync = async () => {
+    setIsSyncingCloud(true);
+    try {
+      if (isQuotaExhausted()) {
+        setSaveSuccess('Mode Manual Aktif: Data Anda tersimpan aman di penyimpanan lokal. (Kuota penulisan harian Firebase telah tercapai)');
+        setTimeout(() => setSaveSuccess(''), 5000);
+        return;
+      }
+      await pullAllFromCloud();
+      reconnectRealtimeCloudSync();
+      loadData();
+      setSaveSuccess('Koneksi & Data Firebase Berhasil Disinkronkan!');
+      setTimeout(() => setSaveSuccess(''), 4000);
+    } catch (e) {
+      console.warn('Manual sync error:', e);
+    } finally {
+      setIsSyncingCloud(false);
+    }
+  };
 
   const loadData = React.useCallback(() => {
     const freshSettings = StorageManager.getSettings();
@@ -336,6 +366,19 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
           </div>
 
           <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+            <button
+              onClick={handleManualSync}
+              disabled={isSyncingCloud}
+              className={`px-3.5 py-2.5 rounded-2xl text-xs font-bold flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50 ${
+                isQuotaExhausted()
+                  ? 'bg-amber-600/30 hover:bg-amber-600/50 text-amber-200 border border-amber-500/40'
+                  : 'bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-200 border border-emerald-500/40'
+              }`}
+              title={isQuotaExhausted() ? 'Mode Manual & Penyimpanan Lokal (Kuota Cloud Penuh)' : 'Sinkronkan data dengan Cloud Firebase'}
+            >
+              <RefreshCw className={`w-4 h-4 ${isSyncingCloud ? 'animate-spin' : isQuotaExhausted() ? 'text-amber-400' : 'text-emerald-400'}`} />
+              <span>{isSyncingCloud ? 'Menyinkronkan...' : isQuotaExhausted() ? 'Mode Manual (Lokal)' : 'Sinkronkan'}</span>
+            </button>
             <button
               onClick={() => setIsEditing(!isEditing)}
               className="px-4 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition-all cursor-pointer"

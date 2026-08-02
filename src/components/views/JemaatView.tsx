@@ -177,6 +177,7 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
 
       const newJemaatUser: User = {
         user_id: `USR-${(allUsers.length + 1).toString().padStart(3, '0')}`,
+        jemaat_id: newJemaat.jemaat_id,
         username: finalUsername,
         nama: newJemaat.nama_lengkap,
         email: newJemaat.email || '',

@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { User, AppSettings, ActivityLog, LoginHistory } from '../../types';
+import { User, AppSettings, ActivityLog, LoginHistory, Jemaat } from '../../types';
 import { StorageManager } from '../../utils/storage';
 import { generateGASScriptCode } from '../../utils/googleSheetsGAS';
-import { testFirestoreConnection, getActiveFirebaseConfig, reconnectRealtimeCloudSync } from '../../utils/firebaseSync';
+import {
+  testFirestoreConnection,
+  getActiveFirebaseConfig,
+  reconnectRealtimeCloudSync,
+  isQuotaExhausted,
+  forceManualSyncPush,
+  clearQuotaExhausted
+} from '../../utils/firebaseSync';
 import {
   triggerStatusBarNotification,
   requestAndSaveFCMToken,
@@ -33,6 +40,7 @@ import {
   KeyRound,
   Wand2,
   AlertCircle,
+  AlertTriangle,
   Image as ImageIcon,
   Sparkles,
   CreditCard,
@@ -73,6 +81,13 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
   // Firebase Firestore Connection Testing State
   const [testingFirebase, setTestingFirebase] = useState(false);
   const [firebaseStatusMsg, setFirebaseStatusMsg] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+  const [, setSyncStatusTick] = useState(0);
+
+  useEffect(() => {
+    const handleStatusChange = () => setSyncStatusTick((prev) => prev + 1);
+    window.addEventListener('cms_sync_status_changed', handleStatusChange);
+    return () => window.removeEventListener('cms_sync_status_changed', handleStatusChange);
+  }, []);
 
   // FCM Payload Code Generator Modal State
   const [showFcmModal, setShowFcmModal] = useState(false);
@@ -348,8 +363,45 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
       ? (userForm.role === 'SUPER_ADMIN' ? 'ALL' : activeAdminTenantId)
       : activeAdminTenantId;
 
+    let assignedJemaatId: string | undefined = undefined;
+    if (userForm.role === 'JEMAAT') {
+      const allJemaat = StorageManager.getJemaat();
+      const match = allJemaat.find(
+        (j) =>
+          (j.nama_lengkap && userForm.nama && j.nama_lengkap.toLowerCase().trim() === userForm.nama.toLowerCase().trim()) ||
+          (j.email && userForm.email && j.email.toLowerCase().trim() === userForm.email.trim().toLowerCase())
+      );
+      if (match) {
+        assignedJemaatId = match.jemaat_id;
+      } else {
+        assignedJemaatId = `JMT-${(allJemaat.length + 1).toString().padStart(3, '0')}`;
+        const newJemaatItem: Jemaat = {
+          jemaat_id: assignedJemaatId,
+          nik: '-',
+          no_kk: '-',
+          nama_lengkap: userForm.nama.trim(),
+          jenis_kelamin: 'Laki-laki',
+          tempat_lahir: '-',
+          tanggal_lahir: '-',
+          alamat: 'Alamat Jemaat',
+          wilayah: 'Wilayah 01',
+          komisi: 'Komisi Umum',
+          status_baptis: 'Sudah',
+          status_sidi: 'Sudah',
+          status_pernikahan: 'Belum Menikah',
+          pekerjaan: 'Swasta',
+          nomor_hp: userForm.no_hp.trim() || '-',
+          email: userForm.email.trim() || '-',
+          foto: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200',
+          status: 'Aktif'
+        };
+        StorageManager.saveJemaat([newJemaatItem, ...allJemaat]);
+      }
+    }
+
     const newUser: User = {
       user_id: `USR-${(globalUsers.length + 1).toString().padStart(3, '0')}`,
+      jemaat_id: assignedJemaatId,
       username: trimmedUsername,
       email: userForm.email.trim(),
       no_hp: userForm.no_hp.trim(),
@@ -1571,12 +1623,53 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
               </div>
 
               <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
-                <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[11px] font-bold flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                  <span>Cloud Sync Active: {getActiveFirebaseConfig().projectId}</span>
-                </span>
+                {isQuotaExhausted() ? (
+                  <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-bold flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-amber-400" />
+                    <span>Mode Manual / Penyimpanan Lokal Aktif</span>
+                  </span>
+                ) : (
+                  <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[11px] font-bold flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                    <span>Cloud Sync Aktif: {getActiveFirebaseConfig().projectId}</span>
+                  </span>
+                )}
               </div>
             </div>
+
+            {/* Quota Exhausted / Manual Mode Alert Banner */}
+            {isQuotaExhausted() && (
+              <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs space-y-2.5 shadow-inner">
+                <div className="font-bold flex items-center gap-2 text-amber-300 text-sm">
+                  <AlertTriangle className="w-4.5 h-4.5 shrink-0 text-amber-400" />
+                  <span>Pengalihan Otomatis: Mode Manual & Penyimpanan Lokal Aktif</span>
+                </div>
+                <p className="text-[11px] leading-relaxed text-amber-100/90">
+                  Kuota penulisan harian gratis (Firestore Daily Write Quota) pada project Firebase bawaan telah tercapai.
+                  Sistem telah secara otomatis mengalihkan penyimpanan ke <strong>Mode Penyimpanan Lokal (LocalStorage)</strong>.
+                  Seluruh data Anda <strong>100% aman tersimpan di browser perangkat ini</strong> tanpa ada data yang hilang.
+                </p>
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-amber-500/20">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setTestingFirebase(true);
+                      const res = await forceManualSyncPush();
+                      setFirebaseStatusMsg({ type: res.success ? 'success' : 'error', text: res.message });
+                      setTestingFirebase(false);
+                    }}
+                    className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-[11px] flex items-center gap-1.5 transition-all cursor-pointer shadow-md"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    <span>Coba Sinkronkan Manual Ke Cloud</span>
+                  </button>
+
+                  <span className="text-[11px] text-amber-300/80">
+                    💡 <strong>Saran:</strong> Anda dapat memasukkan API Key Firebase Console milik Anda sendiri pada form di bawah untuk menggunakan kuota cloud fresh.
+                  </span>
+                </div>
+              </div>
+            )}
 
             {/* Status Message */}
             {firebaseStatusMsg && (

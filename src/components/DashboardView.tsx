@@ -356,17 +356,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     window.addEventListener('storage', handleSync);
     window.addEventListener('focus', handleSync);
 
-    // Fast polling interval for zero-delay realtime UI synchronization across tabs
-    const intervalId = setInterval(() => {
-      loadDashboardData();
-    }, 500);
-
     return () => {
       unsubscribe();
       window.removeEventListener('cms_data_changed', handleSync);
       window.removeEventListener('storage', handleSync);
       window.removeEventListener('focus', handleSync);
-      clearInterval(intervalId);
     };
   }, []);
 

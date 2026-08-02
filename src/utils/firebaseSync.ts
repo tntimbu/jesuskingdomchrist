@@ -183,16 +183,70 @@ let isRemoteUpdating = false;
 let activeUnsubscribers: Array<() => void> = [];
 let syncConnectedStatus = true;
 let lastActiveProjectId = '';
+const lastPushedPayloads = new Map<string, string>();
+let quotaExceededCooldownUntil = 0;
+
+function markQuotaExhausted(): void {
+  quotaExceededCooldownUntil = Date.now() + 24 * 60 * 60 * 1000; // 24 hours cooldown for daily quota limit
+  if (typeof sessionStorage !== 'undefined') {
+    try {
+      sessionStorage.setItem('cms_firestore_quota_exhausted', 'true');
+    } catch (e) {
+      // ignore
+    }
+  }
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('cms_sync_status_changed'));
+  }
+}
+
+export function clearQuotaExhausted(): void {
+  quotaExceededCooldownUntil = 0;
+  if (typeof sessionStorage !== 'undefined') {
+    try {
+      sessionStorage.removeItem('cms_firestore_quota_exhausted');
+    } catch (e) {
+      // ignore
+    }
+  }
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('cms_sync_status_changed'));
+  }
+}
+
+export function isQuotaExhausted(): boolean {
+  if (Date.now() < quotaExceededCooldownUntil) return true;
+  if (typeof sessionStorage !== 'undefined') {
+    try {
+      if (sessionStorage.getItem('cms_firestore_quota_exhausted') === 'true') {
+        return true;
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+  return false;
+}
 
 /**
  * Pushes updated local data to Cloud Firestore (with Dual-Write Bridge & Fallback)
  */
 export async function pushToCloud(storageKey: string, data: any): Promise<void> {
-  if (isRemoteUpdating || isLocalDeviceSessionKey(storageKey)) return;
+  if (isRemoteUpdating || isLocalDeviceSessionKey(storageKey) || isQuotaExhausted()) return;
   const docId = DOC_MAPPING[storageKey] || storageKey;
   if (isLocalDeviceSessionKey(docId)) return;
 
-  const payloadString = JSON.stringify(data);
+  const payloadString = typeof data === 'string' ? data : JSON.stringify(data);
+
+  // Skip if payload is identical to last successfully pushed payload
+  if (lastPushedPayloads.get(docId) === payloadString) {
+    return;
+  }
+
+  // If in quota cooldown period, suppress repeated background cloud writes
+  if (isQuotaExhausted()) {
+    return;
+  }
 
   const activeConfig = getActiveFirebaseConfig();
   let primarySuccess = false;
@@ -211,12 +265,22 @@ export async function pushToCloud(storageKey: string, data: any): Promise<void> 
     );
     syncConnectedStatus = true;
     primarySuccess = true;
-  } catch (error) {
-    console.warn(`[FirebaseSync] Primary sync failed for ${storageKey}:`, error);
+    lastPushedPayloads.set(docId, payloadString);
+  } catch (error: any) {
+    if (
+      error?.code === 'resource-exhausted' ||
+      (error?.message && (error.message.includes('Quota limit exceeded') || error.message.includes('Quota exceeded')))
+    ) {
+      markQuotaExhausted();
+      console.warn(`[FirebaseSync] Firestore daily write quota limit reached. Pausing background sync writes.`);
+      return;
+    } else {
+      console.warn(`[FirebaseSync] Primary sync failed for ${storageKey}:`, error);
+    }
   }
 
-  // 2. Dual-write bridge to default automatic project if primary is custom OR if primary failed
-  if (activeConfig.isCustom || !primarySuccess) {
+  // 2. Dual-write bridge to default automatic project ONLY if primary is custom and primary sync was unsuccessful
+  if (activeConfig.isCustom && !primarySuccess && !isQuotaExhausted()) {
     try {
       const defaultDb = getDefaultFirestoreInstance();
       const defaultDocRef = doc(defaultDb, COLLECTION_NAME, docId);
@@ -228,8 +292,17 @@ export async function pushToCloud(storageKey: string, data: any): Promise<void> 
         },
         { merge: true }
       );
-    } catch (e) {
-      console.warn(`[FirebaseSync] Default bridge write error for ${storageKey}:`, e);
+      lastPushedPayloads.set(docId, payloadString);
+    } catch (e: any) {
+      if (
+        e?.code === 'resource-exhausted' ||
+        (e?.message && (e.message.includes('Quota limit exceeded') || e.message.includes('Quota exceeded')))
+      ) {
+        markQuotaExhausted();
+        console.warn(`[FirebaseSync] Firestore daily write quota limit reached on bridge. Pausing background sync writes.`);
+      } else {
+        console.warn(`[FirebaseSync] Default bridge write error for ${storageKey}:`, e);
+      }
     }
   }
 }
@@ -238,8 +311,9 @@ export async function pushToCloud(storageKey: string, data: any): Promise<void> 
  * Pushes ALL local storage keys starting with cms_pro_ to Cloud Firestore
  */
 export async function syncAllLocalKeysToCloud(): Promise<void> {
-  if (typeof localStorage === 'undefined') return;
+  if (typeof localStorage === 'undefined' || isQuotaExhausted()) return;
   for (let i = 0; i < localStorage.length; i++) {
+    if (isQuotaExhausted()) break;
     const key = localStorage.key(i);
     if (key && key.startsWith('cms_pro_') && !isLocalDeviceSessionKey(key)) {
       const val = localStorage.getItem(key);
@@ -258,6 +332,14 @@ export async function syncAllLocalKeysToCloud(): Promise<void> {
  * Tests connection to active Firebase Firestore or custom config
  */
 export async function testFirestoreConnection(overrideConfig?: any): Promise<{ success: boolean; message: string }> {
+  if (overrideConfig && overrideConfig.apiKey && overrideConfig.projectId) {
+    clearQuotaExhausted();
+  } else if (isQuotaExhausted()) {
+    return {
+      success: false,
+      message: 'Sistem sedang berjalan dalam Mode Manual & Penyimpanan Lokal. Kuota penulisan harian otomatis Firestore bawaan telah penuh (Quota Limit Exceeded). Anda dapat menggunakan API Key Firebase milik Anda sendiri pada form di bawah untuk mengaktifkan kembali Cloud Sync otomatis dengan kuota baru.'
+    };
+  }
   try {
     const config = overrideConfig && overrideConfig.apiKey && overrideConfig.projectId
       ? {
@@ -286,15 +368,43 @@ export async function testFirestoreConnection(overrideConfig?: any): Promise<{ s
     }, { merge: true });
 
     syncConnectedStatus = true;
+    clearQuotaExhausted();
     return {
       success: true,
       message: `TERHUBUNG REAL-TIME! Berhasil menulis dan membaca data di Firestore Cloud project ID: "${config.projectId}".`
     };
   } catch (err: any) {
     syncConnectedStatus = false;
+    if (err?.code === 'resource-exhausted' || (err?.message && err.message.includes('Quota limit exceeded'))) {
+      markQuotaExhausted();
+      return {
+        success: false,
+        message: 'Project Firebase ini telah mencapai batas kuota penulisan harian (Quota Exceeded). Sistem otomatis dialihkan ke Mode Manual & Penyimpanan Lokal.'
+      };
+    }
     return {
       success: false,
       message: `Gagal terhubung ke Firestore: ${err?.message || 'Pastikan API Key & Project ID valid dan aturan Firestore Security Rules di Firebase Console Anda sudah diatur allow read, write: if true;'}`
+    };
+  }
+}
+
+/**
+ * Attempts a manual sync push to Cloud
+ */
+export async function forceManualSyncPush(): Promise<{ success: boolean; message: string }> {
+  try {
+    clearQuotaExhausted();
+    await syncAllLocalKeysToCloud();
+    return {
+      success: true,
+      message: 'Sinkronisasi manual berhasil dijalankan ke Cloud Firebase.'
+    };
+  } catch (e: any) {
+    markQuotaExhausted();
+    return {
+      success: false,
+      message: 'Sinkronisasi cloud tidak dapat dilakukan karena kuota harian terlampaui. Data Anda aman tersimpan secara lokal.'
     };
   }
 }
@@ -305,6 +415,69 @@ export async function testFirestoreConnection(overrideConfig?: any): Promise<{ s
 export function getCloudSyncStatus(): boolean {
   return syncConnectedStatus;
 }
+
+/**
+ * Pulls all document payloads from Cloud Firestore to ensure 100% sync on startup / mobile resume
+ */
+export async function pullAllFromCloud(onDataReceived?: () => void): Promise<boolean> {
+  let hasChanges = false;
+  try {
+    const firestoreDb = getFirestoreInstance();
+    const colRef = collection(firestoreDb, COLLECTION_NAME);
+    const snapshot = await getDocs(colRef);
+
+    isRemoteUpdating = true;
+    try {
+          snapshot.docs.forEach((docSnap) => {
+            const docId = docSnap.id;
+            if (docId === 'connection_test' || isLocalDeviceSessionKey(docId)) return;
+
+            const storageKey = REVERSE_DOC_MAPPING[docId] || docId;
+            if (isLocalDeviceSessionKey(storageKey)) return;
+
+            const cloudData = docSnap.data();
+            if (cloudData && cloudData.payload !== undefined) {
+              const cloudPayloadStr =
+                typeof cloudData.payload === 'string'
+                  ? cloudData.payload
+                  : JSON.stringify(cloudData.payload);
+
+              // Record that the cloud already holds this payload so pushToCloud won't re-upload identical data
+              lastPushedPayloads.set(docId, cloudPayloadStr);
+
+              const currentLocalStr = localStorage.getItem(storageKey);
+
+              if (currentLocalStr !== cloudPayloadStr) {
+                localStorage.setItem(storageKey, cloudPayloadStr);
+                hasChanges = true;
+              }
+            }
+          });
+
+      if (hasChanges) {
+        window.dispatchEvent(new Event('cms_data_changed'));
+        window.dispatchEvent(new Event('storage'));
+        if (onDataReceived) onDataReceived();
+      }
+      syncConnectedStatus = true;
+      return true;
+    } finally {
+      isRemoteUpdating = false;
+    }
+  } catch (err: any) {
+    if (
+      err?.code === 'resource-exhausted' ||
+      (err?.message && (err.message.includes('Quota limit exceeded') || err.message.includes('Quota exceeded')))
+    ) {
+      markQuotaExhausted();
+    }
+    console.warn('[FirebaseSync] Pull all from cloud error:', err);
+    syncConnectedStatus = false;
+    return false;
+  }
+}
+
+let isLifecycleListenersAttached = false;
 
 /**
  * Initializes or re-initializes real-time listener for ALL collections and tenant documents across devices
@@ -352,6 +525,8 @@ export function initRealtimeCloudSync(onDataReceived?: () => void): () => void {
                     ? cloudData.payload
                     : JSON.stringify(cloudData.payload);
 
+                lastPushedPayloads.set(docId, cloudPayloadStr);
+
                 const currentLocalStr = localStorage.getItem(storageKey);
 
                 if (currentLocalStr !== cloudPayloadStr) {
@@ -382,8 +557,16 @@ export function initRealtimeCloudSync(onDataReceived?: () => void): () => void {
           isRemoteUpdating = false;
         }
       },
-      (error) => {
-        console.warn(`[FirebaseSync] Collection snapshot error for ${COLLECTION_NAME}:`, error);
+      (error: any) => {
+        if (
+          error?.code === 'resource-exhausted' ||
+          (error?.message && (error.message.includes('Quota limit exceeded') || error.message.includes('Quota exceeded')))
+        ) {
+          markQuotaExhausted();
+          console.warn(`[FirebaseSync] Collection snapshot quota exceeded:`, error);
+        } else {
+          console.warn(`[FirebaseSync] Collection snapshot error for ${COLLECTION_NAME}:`, error);
+        }
       }
     );
 
@@ -404,10 +587,33 @@ export function initRealtimeCloudSync(onDataReceived?: () => void): () => void {
     }
   }
 
-  // Push all existing local keys to cloud on startup
-  setTimeout(() => {
-    syncAllLocalKeysToCloud().catch((e) => console.warn('[FirebaseSync] Startup push error:', e));
-  }, 1000);
+  // Pull latest documents immediately on init to guarantee instant catch-up
+  pullAllFromCloud(onDataReceived).catch((e) => console.warn('[FirebaseSync] Initial pull error:', e));
+
+  // Push existing local keys to cloud on startup if quota is healthy
+  if (!isQuotaExhausted()) {
+    setTimeout(() => {
+      if (!isQuotaExhausted()) {
+        syncAllLocalKeysToCloud().catch((e) => console.warn('[FirebaseSync] Startup push error:', e));
+      }
+    }, 2000);
+  }
+
+  // Attach lifecycle event listeners for mobile devices (screen wake up, back online)
+  if (typeof window !== 'undefined' && !isLifecycleListenersAttached) {
+    isLifecycleListenersAttached = true;
+
+    const handleMobileResume = () => {
+      if (document.visibilityState === 'visible' || navigator.onLine) {
+        pullAllFromCloud(onDataReceived);
+        initRealtimeCloudSync(onDataReceived);
+      }
+    };
+
+    window.addEventListener('visibilitychange', handleMobileResume);
+    window.addEventListener('online', handleMobileResume);
+    window.addEventListener('pageshow', handleMobileResume);
+  }
 
   return () => {
     activeUnsubscribers.forEach((unsub) => {

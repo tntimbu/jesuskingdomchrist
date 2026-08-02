@@ -265,7 +265,10 @@ export const StorageManager = {
         return t;
       });
       if (needsSync) {
-        setItem(KEYS.TENANTS, syncedTenants);
+        try {
+          const scopedKey = getTenantScopedKey(KEYS.TENANTS);
+          localStorage.setItem(scopedKey, JSON.stringify(syncedTenants));
+        } catch (e) { /* ignore */ }
         return syncedTenants;
       }
     }
@@ -491,16 +494,56 @@ export const StorageManager = {
         }
       }
       if (migrated) {
-        setItem(KEYS.USERS, list);
+        try {
+          const scopedKey = getTenantScopedKey(KEYS.USERS);
+          localStorage.setItem(scopedKey, JSON.stringify(list));
+        } catch (e) { /* ignore silent cache */ }
       }
     }
 
     const hasSuperAdmin = list.some((u) => u.role === 'SUPER_ADMIN' || u.username.toLowerCase() === 'superadmin');
     if (!hasSuperAdmin) {
-      const merged = [initialUsers[0], initialUsers[1], ...list];
-      setItem(KEYS.USERS, merged);
-      return merged;
+      list = [initialUsers[0], initialUsers[1], ...list];
     }
+
+    // Auto-link users with role JEMAAT to their matching Jemaat profiles in memory
+    const jemaatList = getItem<Jemaat[]>(KEYS.JEMAAT, initialJemaat);
+    list = list.map((u) => {
+      if (!u) return u;
+      if (u.role === 'JEMAAT' || u.jemaat_id) {
+        if (!u.jemaat_id) {
+          const match = jemaatList.find(
+            (j) =>
+              (j.jemaat_id && u.username && j.jemaat_id.toLowerCase() === u.username.toLowerCase()) ||
+              (j.nama_lengkap && u.nama && j.nama_lengkap.toLowerCase().trim() === u.nama.toLowerCase().trim()) ||
+              (j.email && u.email && j.email.toLowerCase().trim() === u.email.toLowerCase().trim())
+          );
+          if (match) {
+            return {
+              ...u,
+              jemaat_id: match.jemaat_id,
+              nama: u.nama || match.nama_lengkap,
+              email: u.email || match.email,
+              no_hp: u.no_hp || match.nomor_hp,
+              foto: u.foto || match.foto
+            };
+          }
+        } else {
+          const match = jemaatList.find((j) => j.jemaat_id === u.jemaat_id);
+          if (match && (u.nama !== match.nama_lengkap || u.email !== match.email || u.foto !== match.foto)) {
+            return {
+              ...u,
+              nama: match.nama_lengkap || u.nama,
+              email: match.email || u.email,
+              no_hp: match.nomor_hp || u.no_hp,
+              foto: match.foto || u.foto
+            };
+          }
+        }
+      }
+      return u;
+    });
+
     return list;
   },
   saveUsers: (users: User[]): void => {
@@ -523,8 +566,73 @@ export const StorageManager = {
     setItem(KEYS.USERS, resetList);
   },
 
-  getJemaat: (): Jemaat[] => getItem(KEYS.JEMAAT, initialJemaat),
-  saveJemaat: (list: Jemaat[]): void => setItem(KEYS.JEMAAT, list),
+  getJemaat: (): Jemaat[] => {
+    let list = getItem<Jemaat[]>(KEYS.JEMAAT, initialJemaat);
+    
+    // Auto heal missing accounts for Jemaat records in memory
+    const users = getItem<User[]>(KEYS.USERS, initialUsers);
+
+    // Ensure every Jemaat record is synchronized with users
+    list = list.map((j) => {
+      const matchingUser = users.find(
+        (u) =>
+          (u.jemaat_id && u.jemaat_id === j.jemaat_id) ||
+          (u.nama && j.nama_lengkap && u.nama.toLowerCase().trim() === j.nama_lengkap.toLowerCase().trim()) ||
+          (u.email && j.email && u.email.toLowerCase().trim() === j.email.toLowerCase().trim())
+      );
+
+      if (matchingUser) {
+        if (!matchingUser.jemaat_id) {
+          matchingUser.jemaat_id = j.jemaat_id;
+        }
+        if (matchingUser.foto && j.foto !== matchingUser.foto) {
+          return { ...j, foto: matchingUser.foto, email: matchingUser.email || j.email, nomor_hp: matchingUser.no_hp || j.nomor_hp };
+        }
+      }
+      return j;
+    });
+
+    return list;
+  },
+  saveJemaat: (list: Jemaat[]): void => {
+    setItem(KEYS.JEMAAT, list);
+    // Also sync photo, name, email to corresponding user account
+    const users = StorageManager.getUsers();
+    let usersNeedSave = false;
+
+    const updatedUsers = users.map((u) => {
+      if (u.jemaat_id || u.role === 'JEMAAT') {
+        const match = list.find((j) => j.jemaat_id === u.jemaat_id || (j.nama_lengkap && u.nama && j.nama_lengkap.toLowerCase().trim() === u.nama.toLowerCase().trim()));
+        if (match) {
+          if (u.nama !== match.nama_lengkap || u.email !== match.email || u.no_hp !== match.nomor_hp || u.foto !== match.foto || u.jemaat_id !== match.jemaat_id) {
+            usersNeedSave = true;
+            return {
+              ...u,
+              jemaat_id: match.jemaat_id,
+              nama: match.nama_lengkap,
+              email: match.email || u.email,
+              no_hp: match.nomor_hp || u.no_hp,
+              foto: match.foto || u.foto
+            };
+          }
+        }
+      }
+      return u;
+    });
+
+    if (usersNeedSave) {
+      setItem(KEYS.USERS, updatedUsers);
+      const current = getItem<User | null>(KEYS.CURRENT_USER, null);
+      if (current) {
+        const fresh = updatedUsers.find((u) => u.user_id === current.user_id || u.username === current.username);
+        if (fresh) {
+          setItem(KEYS.CURRENT_USER, { ...current, ...fresh });
+        }
+      }
+    }
+
+    window.dispatchEvent(new Event('cms_data_changed'));
+  },
 
   getKeluarga: (): Keluarga[] => getItem(KEYS.KELUARGA, initialKeluarga),
   saveKeluarga: (list: Keluarga[]): void => setItem(KEYS.KELUARGA, list),

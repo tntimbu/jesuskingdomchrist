@@ -100,6 +100,19 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         const historyId = StorageManager.recordLogin(found.username);
         StorageManager.logActivity(found.username, 'Login ke sistem CMS Pro', 'Auth');
 
+        // Ensure user has jemaat_id linked
+        if (found.role === 'JEMAAT' && !found.jemaat_id) {
+          const allJemaat = StorageManager.getJemaat();
+          const match = allJemaat.find(
+            (j) =>
+              (j.nama_lengkap && found.nama && j.nama_lengkap.toLowerCase().trim() === found.nama.toLowerCase().trim()) ||
+              (j.email && found.email && j.email.toLowerCase().trim() === found.email.toLowerCase().trim())
+          );
+          if (match) {
+            found.jemaat_id = match.jemaat_id;
+          }
+        }
+
         // Save logged in user state & switch active tenant if tenant_id is set
         if (found.tenant_id && found.tenant_id !== 'ALL') {
           StorageManager.setActiveTenantId(found.tenant_id);
