@@ -184,6 +184,14 @@ let activeUnsubscribers: Array<() => void> = [];
 let syncConnectedStatus = true;
 let lastActiveProjectId = '';
 const lastPushedPayloads = new Map<string, string>();
+const localSaveTimestamps = new Map<string, number>();
+
+export function recordLocalSave(storageKey: string) {
+  const docId = DOC_MAPPING[storageKey] || storageKey;
+  const now = Date.now();
+  localSaveTimestamps.set(docId, now);
+  localSaveTimestamps.set(storageKey, now);
+}
 let quotaExceededCooldownUntil = 0;
 
 function markQuotaExhausted(): void {
@@ -273,6 +281,9 @@ export async function pushToCloud(storageKey: string, data: any): Promise<void> 
   if (isLocalDeviceSessionKey(docId)) return;
 
   const payloadString = typeof data === 'string' ? data : JSON.stringify(data);
+  const now = Date.now();
+  localSaveTimestamps.set(docId, now);
+  localSaveTimestamps.set(storageKey, now);
 
   // Skip if payload is identical to last successfully pushed payload
   if (lastPushedPayloads.get(docId) === payloadString) {
@@ -479,12 +490,20 @@ export async function pullAllFromCloud(onDataReceived?: () => void): Promise<boo
                   ? cloudData.payload
                   : JSON.stringify(cloudData.payload);
 
+              const lastLocalSave = Math.max(
+                localSaveTimestamps.get(docId) || 0,
+                localSaveTimestamps.get(storageKey) || 0
+              );
+              const timeSinceLocalSave = Date.now() - lastLocalSave;
+              const remoteTimestamp = typeof cloudData.updatedAt === 'number' ? cloudData.updatedAt : 0;
+              const isLocalNewer = lastLocalSave > 0 && (remoteTimestamp < lastLocalSave || timeSinceLocalSave < 10000);
+
               // Record that the cloud already holds this payload so pushToCloud won't re-upload identical data
               lastPushedPayloads.set(docId, cloudPayloadStr);
 
               const currentLocalStr = localStorage.getItem(storageKey);
 
-              if (currentLocalStr !== cloudPayloadStr) {
+              if (!isLocalNewer && currentLocalStr !== cloudPayloadStr) {
                 localStorage.setItem(storageKey, cloudPayloadStr);
                 hasChanges = true;
               }
@@ -566,11 +585,19 @@ export function initRealtimeCloudSync(onDataReceived?: () => void): () => void {
                     ? cloudData.payload
                     : JSON.stringify(cloudData.payload);
 
+                const lastLocalSave = Math.max(
+                  localSaveTimestamps.get(docId) || 0,
+                  localSaveTimestamps.get(storageKey) || 0
+                );
+                const timeSinceLocalSave = Date.now() - lastLocalSave;
+                const remoteTimestamp = typeof cloudData.updatedAt === 'number' ? cloudData.updatedAt : 0;
+                const isLocalNewer = lastLocalSave > 0 && (remoteTimestamp < lastLocalSave || timeSinceLocalSave < 10000);
+
                 lastPushedPayloads.set(docId, cloudPayloadStr);
 
                 const currentLocalStr = localStorage.getItem(storageKey);
 
-                if (currentLocalStr !== cloudPayloadStr) {
+                if (!isLocalNewer && currentLocalStr !== cloudPayloadStr) {
                   localStorage.setItem(storageKey, cloudPayloadStr);
                   hasChanges = true;
 

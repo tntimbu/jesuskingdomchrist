@@ -234,69 +234,58 @@ if (typeof window !== 'undefined') {
 }
 
 function syncKeluargaFromJemaatWithData(rawKeluarga: Keluarga[], jemaatList: Jemaat[]): Keluarga[] {
-  const keluargaMap = new Map<string, Keluarga>();
-
-  // Index existing keluarga by no_kk
+  // Index existing metadata by no_kk
+  const existingKeluargaMap = new Map<string, Keluarga>();
   (rawKeluarga || []).forEach((k) => {
     if (k && k.no_kk && k.no_kk.trim() !== '' && k.no_kk.trim() !== '-') {
-      keluargaMap.set(k.no_kk.trim(), { ...k });
+      existingKeluargaMap.set(k.no_kk.trim(), { ...k });
     }
   });
 
-  // Group jemaat by no_kk
+  // Group active jemaat by no_kk
   const jemaatByKk = new Map<string, Jemaat[]>();
   (jemaatList || []).forEach((j) => {
-    if (j && j.no_kk && j.no_kk.trim() !== '' && j.no_kk.trim() !== '-') {
-      const cleanKk = j.no_kk.trim();
+    if (j) {
+      const rawKk = (j.no_kk || '').trim();
+      const cleanKk = (rawKk && rawKk !== '-') ? rawKk : `KK-IND-${j.jemaat_id}`;
       const existing = jemaatByKk.get(cleanKk) || [];
       existing.push(j);
       jemaatByKk.set(cleanKk, existing);
     }
   });
 
-  let hasChanges = false;
-  let counter = (rawKeluarga || []).length + 1;
+  const syncedKeluarga: Keluarga[] = [];
+  let counter = 1;
 
   jemaatByKk.forEach((members, cleanKk) => {
-    const existing = keluargaMap.get(cleanKk);
+    const existing = existingKeluargaMap.get(cleanKk);
     const kepala = members.find((m) => m.jenis_kelamin === 'Laki-laki') || members[0];
     const alamat = kepala?.alamat || members[0]?.alamat || 'Alamat Jemaat';
     const wilayah = kepala?.wilayah || members[0]?.wilayah || 'Wilayah I';
 
-    if (existing) {
-      if (existing.jumlah_anggota !== members.length) {
-        existing.jumlah_anggota = members.length;
-        hasChanges = true;
-      }
-      if ((!existing.kepala_keluarga || existing.kepala_keluarga === 'Belum diisi' || existing.kepala_keluarga === '-') && kepala?.nama_lengkap) {
-        existing.kepala_keluarga = kepala.nama_lengkap;
-        hasChanges = true;
-      }
-    } else {
-      hasChanges = true;
-      const newKeluarga: Keluarga = {
-        keluarga_id: `KK-${counter.toString().padStart(3, '0')}`,
-        no_kk: cleanKk,
-        kepala_keluarga: kepala?.nama_lengkap || 'Kepala Keluarga',
-        alamat: alamat,
-        wilayah: wilayah,
-        jumlah_anggota: members.length
-      };
-      counter++;
-      keluargaMap.set(cleanKk, newKeluarga);
-    }
+    const keluargaId = existing?.keluarga_id || `KK-${counter.toString().padStart(3, '0')}`;
+    counter++;
+
+    syncedKeluarga.push({
+      keluarga_id: keluargaId,
+      no_kk: cleanKk.startsWith('KK-IND-') ? (existing?.no_kk || '-') : cleanKk,
+      kepala_keluarga: (existing && existing.kepala_keluarga && existing.kepala_keluarga !== 'Belum diisi' && existing.kepala_keluarga !== '-') 
+        ? existing.kepala_keluarga 
+        : (kepala?.nama_lengkap || 'Kepala Keluarga'),
+      alamat: existing?.alamat || alamat,
+      wilayah: existing?.wilayah || wilayah,
+      jumlah_anggota: members.length
+    });
   });
 
-  const result = Array.from(keluargaMap.values());
-  if (hasChanges) {
-    try {
-      const scopedKey = getTenantScopedKey(KEYS.KELUARGA);
-      localStorage.setItem(scopedKey, JSON.stringify(result));
-    } catch (e) {
-      // ignore
-    }
+  try {
+    const scopedKey = getTenantScopedKey(KEYS.KELUARGA);
+    localStorage.setItem(scopedKey, JSON.stringify(syncedKeluarga));
+  } catch (e) {
+    // ignore
   }
-  return result;
+
+  return syncedKeluarga;
 }
 
 function syncKeluargaFromJemaat(jemaatList: Jemaat[]): Keluarga[] {
