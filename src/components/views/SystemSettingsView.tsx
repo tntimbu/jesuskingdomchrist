@@ -46,6 +46,7 @@ import {
   CreditCard,
   QrCode
 } from 'lucide-react';
+import { DashboardVisibilityManager } from '../dashboard/DashboardVisibilityManager';
 
 interface SystemSettingsViewProps {
   currentUser: User;
@@ -1457,41 +1458,12 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
               </div>
             </div>
 
-            {/* Section 4: Sakelar Komponen Dashboard Admin (Tambahkan / Kurangi Tampilan) */}
+            {/* Section 4: Pengaturan Lengkap Visibilitas Komponen Dashboard Home (Admin & Jemaat) */}
             <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-xl">
-              <h3 className="text-base font-bold pb-3 border-b border-slate-800 flex items-center justify-between">
-                <span>4. Sakelar Komponen Dashboard Admin</span>
-                <span className="text-[10px] font-semibold text-slate-400">Layout Widget Toggle</span>
-              </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {[
-                  { key: 'show_video_widget', label: 'Widget Video Media Sosial', desc: 'Tayangan video/khotbah di dashboard admin' },
-                  { key: 'show_stat_cards', label: 'Kartu Ringkasan Statistik', desc: 'Total Jemaat, KK, Kas, Event' },
-                  { key: 'show_renungan_widget', label: 'Widget Renungan Utama', desc: 'Tampilkan 1 Renungan Terbaru' },
-                  { key: 'show_pengumuman_widget', label: 'Widget Pengumuman Terbaru', desc: 'Tampilkan 1 Pengumuman Terbaru' },
-                  { key: 'show_event_widget', label: 'Widget Agenda & Ibadah', desc: 'Tampilkan 1 Event Mendatang' },
-                  { key: 'show_prayer_widget', label: 'Widget Permohonan Doa', desc: 'Form doa untuk jemaat' },
-                  { key: 'show_finance_chart', label: 'Widget Grafik Keuangan', desc: 'Grafik tren kas persembahan' },
-                  { key: 'show_quick_actions', label: 'Akses Cepat (Quick Actions)', desc: 'Tombol aksi cepat di header' }
-                ].map((item) => (
-                  <label
-                    key={item.key}
-                    className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-slate-700 flex items-center justify-between cursor-pointer transition-all"
-                  >
-                    <div>
-                      <div className="font-bold text-xs text-slate-200">{item.label}</div>
-                      <div className="text-[10px] text-slate-500 mt-0.5">{item.desc}</div>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={(metaForm as any)[item.key] !== false}
-                      onChange={(e) => setMetaForm({ ...metaForm, [item.key]: e.target.checked })}
-                      className="rounded border-slate-700 text-indigo-600 focus:ring-indigo-500 w-4 h-4 shrink-0"
-                    />
-                  </label>
-                ))}
-              </div>
+              <DashboardVisibilityManager
+                settings={metaForm}
+                onChange={(newSettings) => setMetaForm(newSettings)}
+              />
             </div>
 
             {/* Section 5: Kontrol Tombol Floating Download Aplikasi Mobile (.APK Android) */}

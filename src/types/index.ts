@@ -287,15 +287,25 @@ export interface AppSettings {
   show_jemaat_daily_renungan?: boolean;
   show_jemaat_quick_doa?: boolean;
   show_jemaat_event_jadwal?: boolean;
-  // Dashboard Widget Visibility Toggles
-  show_video_widget?: boolean;
+  // Dashboard Elements Visibility Toggles (Full Admin Control)
+  show_header_banner?: boolean;
+  show_quick_actions?: boolean;
+  show_admin_quick_access?: boolean;
+  show_floating_notifications?: boolean;
+  show_pinned_notif_banner?: boolean;
+  show_stat_cards?: boolean;
+  show_apk_banner?: boolean;
+  show_jemaat_quick_menu?: boolean;
   show_renungan_widget?: boolean;
   show_pengumuman_widget?: boolean;
   show_event_widget?: boolean;
-  show_stat_cards?: boolean;
-  show_quick_actions?: boolean;
   show_prayer_widget?: boolean;
+  show_digital_offering_widget?: boolean;
+  show_video_widget?: boolean;
   show_finance_chart?: boolean;
+  show_wilayah_chart?: boolean;
+  show_upcoming_events_table?: boolean;
+  show_system_logs_widget?: boolean;
   firebaseConfig?: {
     apiKey?: string;
     projectId?: string;
