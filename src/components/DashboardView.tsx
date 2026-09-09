@@ -40,6 +40,8 @@ import {
   Tv,
   Palette,
   Settings2,
+  Smartphone,
+  ShieldCheck,
   X,
   Check,
   ExternalLink,
@@ -1341,6 +1343,42 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
           </div>
 
+          {/* Banner Download Aplikasi Mobile Android (.APK) Khusus HP Android */}
+          {settings.show_apk_download_button !== false && (
+            <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-emerald-950/90 via-slate-900/95 to-teal-950/90 border-2 border-emerald-500/50 shadow-xl backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-white animate-fade-in">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-inner shrink-0">
+                  <Smartphone className="w-6 h-6 text-emerald-400" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      Khusus HP Android
+                    </span>
+                    <span className="text-[10px] text-amber-300 font-bold flex items-center gap-1">
+                      <ShieldCheck className="w-3 h-3" /> File Aman &amp; Resmi
+                    </span>
+                  </div>
+                  <h4 className="font-extrabold text-sm sm:text-base text-white mt-0.5">
+                    Download Aplikasi Mobile Android Gereja (.APK)
+                  </h4>
+                  <p className="text-xs text-slate-300">
+                    Instal di ponsel Android Anda untuk akses langsung renungan, pengumuman &amp; notifikasi ibadah otomatis.
+                  </p>
+                </div>
+              </div>
+              <a
+                href={settings.apk_download_url || 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-600/30 border border-emerald-400/40 flex items-center justify-center gap-2 transition-all active:scale-95 shrink-0"
+              >
+                <Download className="w-4 h-4 animate-pulse" />
+                <span>Unduh File .APK (Google Drive)</span>
+              </a>
+            </div>
+          )}
+
           <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-slate-900/80 backdrop-blur-xl border border-indigo-500/30 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shadow-inner shrink-0">
@@ -2265,6 +2303,44 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
           )}
 
+          {/* Banner Download Aplikasi Mobile Android (.APK) Khusus Pengurus & Admin */}
+          {settings.show_apk_download_button !== false && (
+            <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-emerald-950/90 via-slate-900/95 to-teal-950/90 border-2 border-emerald-500/50 shadow-xl backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-white animate-fade-in">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-inner shrink-0">
+                  <Smartphone className="w-6 h-6 text-emerald-400" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      App Android (.APK)
+                    </span>
+                    <span className="text-[10px] text-amber-300 font-bold flex items-center gap-1">
+                      <ShieldCheck className="w-3 h-3" /> File Aman &amp; Resmi
+                    </span>
+                  </div>
+                  <h4 className="font-extrabold text-sm sm:text-base text-white mt-0.5">
+                    Download Aplikasi Mobile Android Gereja (.APK)
+                  </h4>
+                  <p className="text-xs text-slate-300">
+                    Unduh file APK resmi untuk instalasi di smartphone Android pengurus &amp; jemaat untuk akses praktis &amp; cepat.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <a
+                  href={settings.apk_download_url || 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-600/30 border border-emerald-400/40 flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer"
+                >
+                  <Download className="w-4 h-4 animate-pulse" />
+                  <span>Download File .APK</span>
+                </a>
+              </div>
+            </div>
+          )}
+
           {/* Bottom Section: Today's Schedule & System Logs */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Today's Schedule */}
@@ -2766,6 +2842,60 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </div>
               </div>
 
+              {/* Section 6: Kontrol Tombol Melayang Download APK Mobile Android */}
+              <div className="space-y-3 bg-slate-950 p-4 rounded-2xl border border-emerald-500/40 shadow-inner">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                  <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs sm:text-sm">
+                    <Sparkles className="w-4 h-4 text-emerald-400" />
+                    <span>Kontrol Tombol Melayang Download APK Mobile Android</span>
+                  </div>
+                  <span className="text-[10px] text-emerald-400/80 font-mono bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                    Mobile APK Control
+                  </span>
+                </div>
+
+                <label className="p-3 rounded-xl bg-slate-900 border border-slate-800 hover:border-emerald-500/50 flex items-center justify-between cursor-pointer transition-all">
+                  <div>
+                    <div className="font-bold text-xs text-emerald-300">
+                      Tampilkan Tombol Melayang Download APK Mobile Android
+                    </div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">
+                      Tombol melayang akan selalu tampil di sudut kanan bawah dashboard HP Android &amp; Desktop.
+                    </div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={customForm.show_apk_download_button !== false}
+                    onChange={(e) => setCustomForm({ ...customForm, show_apk_download_button: e.target.checked })}
+                    className="rounded border-slate-700 text-emerald-600 focus:ring-emerald-500 w-4 h-4 shrink-0"
+                  />
+                </label>
+
+                <div className="space-y-1">
+                  <label className="block text-slate-300 font-semibold text-xs">
+                    Link Tautan Download File .APK Android (Google Drive / Direct URL):
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="url"
+                      value={customForm.apk_download_url || 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing'}
+                      onChange={(e) => setCustomForm({ ...customForm, apk_download_url: e.target.value })}
+                      placeholder="https://drive.google.com/file/d/..."
+                      className="flex-1 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-xs focus:ring-1 focus:ring-emerald-500"
+                    />
+                    <a
+                      href={customForm.apk_download_url || 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-2 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-1 shrink-0 transition-all cursor-pointer"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>Tes Link</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+
               <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
                 <button
                   type="button"
@@ -3116,7 +3246,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       />
 
       {/* Floating APK Download Button for Android */}
-      <FloatingApkDownloadButton />
+      <FloatingApkDownloadButton settings={settings} />
 
       {/* Fullscreen Renungan Modal */}
       <RenunganFullscreenModal
