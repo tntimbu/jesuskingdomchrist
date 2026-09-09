@@ -192,6 +192,15 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
     e.preventDefault();
     onUpdateSettings(metaForm);
     StorageManager.saveSettings(metaForm);
+    if (metaForm.show_apk_download_button !== false) {
+      try {
+        localStorage.removeItem('cms_apk_button_hidden');
+        localStorage.removeItem('cms_apk_banner_hidden');
+        window.dispatchEvent(new CustomEvent('cms_apk_hidden_changed', { detail: { hidden: false } }));
+      } catch (err) {
+        // ignore
+      }
+    }
     window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { action: 'settings_updated' } }));
     StorageManager.logActivity(currentUser.username, 'Memperbarui kustomisasi tampilan portal jemaat & dashboard', 'System Settings');
     setSavedSuccess(true);
@@ -1508,6 +1517,30 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                     className="rounded border-slate-700 text-emerald-600 focus:ring-emerald-500 w-5 h-5 shrink-0"
                   />
                 </label>
+
+                {/* Notifikasi jika disembunyikan oleh tombol (X) */}
+                <div className="sm:col-span-2 p-3 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                  <div>
+                    <div className="font-bold text-slate-300 text-xs">Status Tombol Melayang di Perangkat Ini:</div>
+                    <div className="text-[11px] text-slate-400">
+                      Pengguna dapat menyembunyikan tombol melayang langsung dari dashboard dengan menekan tombol silang <strong>(x)</strong>.
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      try {
+                        localStorage.removeItem('cms_apk_button_hidden');
+                        localStorage.removeItem('cms_apk_banner_hidden');
+                        window.dispatchEvent(new CustomEvent('cms_apk_hidden_changed', { detail: { hidden: false } }));
+                        alert('Tombol melayang download APK & banner berhasil dipulihkan dan akan tampil kembali di dashboard!');
+                      } catch (e) {}
+                    }}
+                    className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs cursor-pointer shrink-0 transition-all shadow-md active:scale-95 text-center"
+                  >
+                    Reset &amp; Tampilkan di Dashboard
+                  </button>
+                </div>
 
                 <div className="sm:col-span-2 space-y-1">
                   <label className="block text-slate-300 font-semibold text-xs">Link Tautan Download File .APK (Google Drive / Direct URL):</label>

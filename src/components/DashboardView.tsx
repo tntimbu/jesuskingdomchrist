@@ -328,6 +328,38 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [customForm, setCustomForm] = useState<AppSettings>(settings);
   const [saveSuccessMsg, setSaveSuccessMsg] = useState(false);
 
+  // Status sembunyikan Banner & Tombol Melayang APK dari Dashboard
+  const [isApkBannerDismissed, setIsApkBannerDismissed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('cms_apk_banner_hidden') === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const [isApkHiddenByX, setIsApkHiddenByX] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('cms_apk_button_hidden') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    const handleHiddenChange = (e: any) => {
+      if (e?.detail?.hidden !== undefined) {
+        setIsApkHiddenByX(Boolean(e.detail.hidden));
+      } else {
+        try {
+          setIsApkHiddenByX(localStorage.getItem('cms_apk_button_hidden') === 'true');
+        } catch {
+          setIsApkHiddenByX(false);
+        }
+      }
+    };
+    window.addEventListener('cms_apk_hidden_changed', handleHiddenChange);
+    return () => window.removeEventListener('cms_apk_hidden_changed', handleHiddenChange);
+  }, []);
+
   // Fullscreen Renungan Modal State
   const [selectedRenunganForModal, setSelectedRenunganForModal] = useState<Renungan | null>(null);
 
@@ -647,6 +679,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     StorageManager.saveSettings(customForm);
     if (onUpdateSettings) {
       onUpdateSettings(customForm);
+    }
+    if (customForm.show_apk_download_button !== false) {
+      try {
+        localStorage.removeItem('cms_apk_button_hidden');
+        localStorage.removeItem('cms_apk_banner_hidden');
+        setIsApkHiddenByX(false);
+        setIsApkBannerDismissed(false);
+        window.dispatchEvent(new CustomEvent('cms_apk_hidden_changed', { detail: { hidden: false } }));
+      } catch (err) {
+        // ignore
+      }
     }
     window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { action: 'settings_updated' } }));
     StorageManager.logActivity(currentUser.username, 'Mengubah kustomisasi portal & dashboard jemaat', 'System Settings');
@@ -1344,9 +1387,23 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
 
           {/* Banner Download Aplikasi Mobile Android (.APK) Khusus HP Android */}
-          {settings.show_apk_download_button !== false && (
-            <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-emerald-950/90 via-slate-900/95 to-teal-950/90 border-2 border-emerald-500/50 shadow-xl backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-white animate-fade-in">
-              <div className="flex items-center gap-3">
+          {settings.show_apk_download_button !== false && !isApkBannerDismissed && (
+            <div className="relative p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-emerald-950/90 via-slate-900/95 to-teal-950/90 border-2 border-emerald-500/50 shadow-xl backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-white animate-fade-in">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsApkBannerDismissed(true);
+                  try {
+                    localStorage.setItem('cms_apk_banner_hidden', 'true');
+                  } catch (e) {}
+                }}
+                className="absolute top-2.5 right-2.5 sm:top-3.5 sm:right-3.5 p-1.5 rounded-xl bg-slate-900/80 hover:bg-rose-600 text-slate-400 hover:text-white border border-slate-700/80 transition-all cursor-pointer shadow-lg"
+                title="Sembunyikan Banner APK dari Dashboard (x)"
+                aria-label="Tutup banner"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+              <div className="flex items-center gap-3 pr-8 sm:pr-0">
                 <div className="p-3 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-inner shrink-0">
                   <Smartphone className="w-6 h-6 text-emerald-400" />
                 </div>
@@ -1371,7 +1428,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 href={settings.apk_download_url || 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing'}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-600/30 border border-emerald-400/40 flex items-center justify-center gap-2 transition-all active:scale-95 shrink-0"
+                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-600/30 border border-emerald-400/40 flex items-center justify-center gap-2 transition-all active:scale-95 shrink-0 sm:mr-8"
               >
                 <Download className="w-4 h-4 animate-pulse" />
                 <span>Unduh File .APK (Google Drive)</span>
@@ -2304,9 +2361,23 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           )}
 
           {/* Banner Download Aplikasi Mobile Android (.APK) Khusus Pengurus & Admin */}
-          {settings.show_apk_download_button !== false && (
-            <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-emerald-950/90 via-slate-900/95 to-teal-950/90 border-2 border-emerald-500/50 shadow-xl backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-white animate-fade-in">
-              <div className="flex items-center gap-3">
+          {settings.show_apk_download_button !== false && !isApkBannerDismissed && (
+            <div className="relative p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-emerald-950/90 via-slate-900/95 to-teal-950/90 border-2 border-emerald-500/50 shadow-xl backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-white animate-fade-in">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsApkBannerDismissed(true);
+                  try {
+                    localStorage.setItem('cms_apk_banner_hidden', 'true');
+                  } catch (e) {}
+                }}
+                className="absolute top-2.5 right-2.5 sm:top-3.5 sm:right-3.5 p-1.5 rounded-xl bg-slate-900/80 hover:bg-rose-600 text-slate-400 hover:text-white border border-slate-700/80 transition-all cursor-pointer shadow-lg"
+                title="Sembunyikan Banner APK dari Dashboard (x)"
+                aria-label="Tutup banner"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+              <div className="flex items-center gap-3 pr-8 sm:pr-0">
                 <div className="p-3 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-inner shrink-0">
                   <Smartphone className="w-6 h-6 text-emerald-400" />
                 </div>
@@ -2327,7 +2398,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-2 shrink-0 sm:mr-8">
                 <a
                   href={settings.apk_download_url || 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing'}
                   target="_blank"
@@ -2870,6 +2941,30 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     className="rounded border-slate-700 text-emerald-600 focus:ring-emerald-500 w-4 h-4 shrink-0"
                   />
                 </label>
+
+                {/* Notifikasi jika saat ini disembunyikan oleh tombol (X) */}
+                {(isApkHiddenByX || isApkBannerDismissed) && (
+                  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-3 text-xs text-amber-300 animate-fade-in">
+                    <div className="text-[11px] leading-tight">
+                      <span className="font-bold text-amber-200">Status Tombol / Banner:</span> Saat ini disembunyikan via tombol silang (x) di dashboard.
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        try {
+                          localStorage.removeItem('cms_apk_button_hidden');
+                          localStorage.removeItem('cms_apk_banner_hidden');
+                          setIsApkHiddenByX(false);
+                          setIsApkBannerDismissed(false);
+                          window.dispatchEvent(new CustomEvent('cms_apk_hidden_changed', { detail: { hidden: false } }));
+                        } catch (err) {}
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] cursor-pointer shrink-0 transition-all shadow-md active:scale-95"
+                    >
+                      Tampilkan Kembali
+                    </button>
+                  </div>
+                )}
 
                 <div className="space-y-1">
                   <label className="block text-slate-300 font-semibold text-xs">
