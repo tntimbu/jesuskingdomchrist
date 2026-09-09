@@ -209,7 +209,7 @@ export const DashboardVisibilityManager: React.FC<DashboardVisibilityManagerProp
           Tidak ditemukan komponen dengan kata kunci "{searchQuery}".
         </div>
       ) : (
-        <div className={`grid gap-2.5 ${compact ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}`}>
+        <div className={`grid gap-3 ${compact ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
           {filteredComponents.map((comp) => {
             const isVisible = settings[comp.key] !== false;
 
@@ -217,17 +217,17 @@ export const DashboardVisibilityManager: React.FC<DashboardVisibilityManagerProp
               <div
                 key={comp.key}
                 onClick={() => handleToggle(comp.key)}
-                className={`p-3.5 rounded-2xl border transition-all cursor-pointer select-none flex flex-col justify-between space-y-3 ${
+                className={`p-4 rounded-2xl border transition-all cursor-pointer select-none flex flex-col justify-between space-y-3 min-w-0 overflow-hidden ${
                   isVisible
                     ? 'bg-slate-950/90 border-indigo-500/40 hover:border-indigo-400 shadow-md ring-1 ring-indigo-500/20'
                     : 'bg-slate-950/40 border-slate-800/80 hover:border-slate-700 opacity-60'
                 }`}
               >
                 {/* Card Top Row */}
-                <div className="flex items-start justify-between gap-2.5">
-                  <div className="flex items-start gap-2.5 min-w-0">
+                <div className="flex items-start justify-between gap-3 min-w-0">
+                  <div className="flex items-start gap-3 min-w-0 flex-1">
                     <div
-                      className={`p-2 rounded-xl shrink-0 ${
+                      className={`p-2.5 rounded-xl shrink-0 ${
                         isVisible
                           ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30'
                           : 'bg-slate-800/50 text-slate-500 border border-slate-700/50'
@@ -235,10 +235,10 @@ export const DashboardVisibilityManager: React.FC<DashboardVisibilityManagerProp
                     >
                       {renderIcon(comp.iconName)}
                     </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-1.5 flex-wrap">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 flex-wrap mb-1">
                         <span
-                          className={`text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded-md ${
+                          className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-md ${
                             comp.targetRole === 'ALL'
                               ? 'bg-blue-500/10 text-blue-300 border border-blue-500/20'
                               : comp.targetRole === 'ADMIN'
@@ -253,7 +253,7 @@ export const DashboardVisibilityManager: React.FC<DashboardVisibilityManagerProp
                             : 'Khusus Jemaat'}
                         </span>
                       </div>
-                      <h4 className="text-xs font-bold text-white mt-1 leading-snug">
+                      <h4 className="text-xs sm:text-sm font-bold text-white leading-snug break-words">
                         {comp.label}
                       </h4>
                     </div>
@@ -276,26 +276,26 @@ export const DashboardVisibilityManager: React.FC<DashboardVisibilityManagerProp
                 </div>
 
                 {/* Description */}
-                <p className="text-[11px] text-slate-400 leading-relaxed">
+                <p className="text-[11px] text-slate-300/80 leading-relaxed break-words">
                   {comp.description}
                 </p>
 
                 {/* Status Indicator */}
-                <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px]">
-                  <span className="text-slate-500 font-mono">{comp.key}</span>
+                <div className="pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-[11px] gap-2 min-w-0">
+                  <span className="text-slate-500 font-mono text-[10px] truncate max-w-[130px] sm:max-w-[160px]">{comp.key}</span>
                   <span
-                    className={`font-bold flex items-center gap-1 ${
+                    className={`font-bold flex items-center gap-1.5 shrink-0 text-xs ${
                       isVisible ? 'text-emerald-400' : 'text-slate-500'
                     }`}
                   >
                     {isVisible ? (
                       <>
-                        <Eye className="w-3 h-3 text-emerald-400" />
+                        <Eye className="w-3.5 h-3.5 text-emerald-400" />
                         <span>Tampil di Dashboard</span>
                       </>
                     ) : (
                       <>
-                        <EyeOff className="w-3 h-3 text-slate-500" />
+                        <EyeOff className="w-3.5 h-3.5 text-slate-500" />
                         <span>Disembunyikan</span>
                       </>
                     )}

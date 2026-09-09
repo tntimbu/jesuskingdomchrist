@@ -70,8 +70,8 @@ export const DASHBOARD_COMPONENT_DEFS: DashboardComponentDef[] = [
   },
   {
     key: 'show_pinned_notif_banner',
-    label: 'Banner Warta / Pengumuman Ticker Berjalan',
-    description: 'Banner peringatan atau warta pengumuman gereja tersemat di bagian atas dashboard.',
+    label: 'Banner Warta & Pengumuman Gereja (Icon Toa / Megaphone)',
+    description: 'Banner pengumuman penting gereja dengan icon toa berkedip di bagian paling atas dashboard. Teks dapat langsung diedit oleh Admin.',
     category: 'notifications',
     targetRole: 'ALL',
     defaultValue: true,

@@ -40,6 +40,7 @@ import {
   HeartHandshake,
   Tv,
   Palette,
+  Edit3,
   Settings2,
   Smartphone,
   ShieldCheck,
@@ -326,8 +327,44 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   // Quick Customizer Modal State
   const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
+  const [customizerTab, setCustomizerTab] = useState<'warta' | 'theme' | 'layout' | 'identity' | 'widgets' | 'media'>('warta');
   const [customForm, setCustomForm] = useState<AppSettings>(settings);
   const [saveSuccessMsg, setSaveSuccessMsg] = useState(false);
+
+  // Quick Warta (Icon Toa) Edit Modal State
+  const [isEditWartaModalOpen, setIsEditWartaModalOpen] = useState(false);
+  const [wartaText, setWartaText] = useState(settings.jemaat_announcement_text || '');
+  const [wartaBannerActive, setWartaBannerActive] = useState(settings.show_pinned_notif_banner !== false);
+  const [wartaSuccessMsg, setWartaSuccessMsg] = useState(false);
+
+  // Sinkronisasi form saat settings berubah
+  useEffect(() => {
+    setCustomForm(settings);
+    setWartaText(settings.jemaat_announcement_text || '');
+    setWartaBannerActive(settings.show_pinned_notif_banner !== false);
+  }, [settings]);
+
+  const handleSaveQuickWarta = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const updated = {
+      ...settings,
+      jemaat_announcement_text: wartaText,
+      show_pinned_notif_banner: wartaBannerActive
+    };
+    StorageManager.saveSettings(updated);
+    if (onUpdateSettings) {
+      onUpdateSettings(updated);
+    }
+    window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { action: 'settings_updated' } }));
+    StorageManager.logActivity(currentUser.username, 'Mengubah teks warta pengumuman gereja (Icon Toa)', 'System Settings');
+    setWartaSuccessMsg(true);
+    setRefreshToast('✅ Warta & Pengumuman Gereja Berhasil Disimpan!');
+    setTimeout(() => {
+      setWartaSuccessMsg(false);
+      setIsEditWartaModalOpen(false);
+      setTimeout(() => setRefreshToast(''), 3000);
+    }, 1200);
+  };
 
   // Status sembunyikan Banner & Tombol Melayang APK dari Dashboard
   const [isApkBannerDismissed, setIsApkBannerDismissed] = useState<boolean>(() => {
@@ -1026,20 +1063,44 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       )}
 
-      {/* Banner Warta / Pengumuman Ticker Berjalan Tersemat */}
-      {settings.show_pinned_notif_banner !== false && settings.jemaat_announcement_text && (
-        <div className="p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-amber-500/20 via-orange-500/15 to-amber-500/20 border border-amber-500/40 text-amber-200 flex items-center justify-between gap-3 shadow-lg animate-fade-in backdrop-blur-md">
-          <div className="flex items-center gap-3 min-w-0">
-            <span className="p-2 rounded-xl bg-amber-500/30 text-amber-300 border border-amber-400/40 shrink-0">
+      {/* Banner Warta / Pengumuman Ticker Berjalan Tersemat (Icon Toa) */}
+      {settings.show_pinned_notif_banner !== false && (settings.jemaat_announcement_text || isAdmin) && (
+        <div className="p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-amber-500/20 via-orange-500/15 to-amber-500/20 border border-amber-500/40 text-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg animate-fade-in backdrop-blur-md">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <span className="p-2 sm:p-2.5 rounded-xl bg-amber-500/30 text-amber-300 border border-amber-400/40 shrink-0 shadow-inner">
               <Megaphone className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse text-amber-400" />
             </span>
-            <div className="min-w-0">
-              <span className="text-[10px] uppercase font-black tracking-wider text-amber-400 block sm:inline mr-2">
-                Warta &amp; Pengumuman Gereja:
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                <span className="text-[10px] uppercase font-black tracking-wider text-amber-400">
+                  Warta &amp; Pengumuman Gereja:
+                </span>
+                {isAdmin && (
+                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30">
+                    Banner Toa
+                  </span>
+                )}
+              </div>
+              <span className="text-xs sm:text-sm font-semibold text-slate-100 break-words leading-snug block">
+                {settings.jemaat_announcement_text || (isAdmin ? '(Teks warta belum diisi. Klik tombol "Edit Warta" untuk menulis pengumuman)' : '')}
               </span>
-              <span className="text-xs sm:text-sm font-semibold text-slate-100">{settings.jemaat_announcement_text}</span>
             </div>
           </div>
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={() => {
+                setWartaText(settings.jemaat_announcement_text || '');
+                setWartaBannerActive(settings.show_pinned_notif_banner !== false);
+                setIsEditWartaModalOpen(true);
+              }}
+              className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 shrink-0 shadow-md transition-all active:scale-95 cursor-pointer w-full sm:w-auto"
+              title="Edit teks pengumuman toa ini langsung"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              <span>Edit Warta (Toa)</span>
+            </button>
+          )}
         </div>
       )}
 
@@ -2567,491 +2628,771 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       )}
 
-      {/* QUICK CUSTOMIZER MODAL FOR SUPERADMIN & ADMIN */}
-      {isCustomizerOpen && isAdmin && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-6 text-white space-y-5 max-h-[90vh] overflow-y-auto">
+      {/* QUICK MODAL EDIT WARTA & PENGUMUMAN DENGAN ICON TOA */}
+      {isEditWartaModalOpen && isAdmin && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-5 sm:p-6 text-white space-y-4 animate-scale-up">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <div className="flex items-center gap-2">
-                <Palette className="w-5 h-5 text-indigo-400" />
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                  <Megaphone className="w-5 h-5 animate-pulse" />
+                </div>
                 <div>
-                  <h3 className="font-bold text-base text-white">Custom Tampilan & Video Social Media</h3>
-                  <p className="text-xs text-slate-400">Atur link video, header, warna theme, dan komponen dashboard.</p>
+                  <h3 className="font-bold text-sm sm:text-base text-white">Edit Warta &amp; Pengumuman Gereja</h3>
+                  <p className="text-xs text-slate-400">Pengaturan pesan ticker berjalan dengan icon Toa di Dashboard.</p>
                 </div>
               </div>
               <button
-                onClick={() => setIsCustomizerOpen(false)}
-                className="p-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white"
+                type="button"
+                onClick={() => setIsEditWartaModalOpen(false)}
+                className="p-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white transition-all cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {saveSuccessMsg && (
+            {wartaSuccessMsg && (
               <div className="p-3 bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 rounded-2xl text-xs font-bold flex items-center gap-2">
                 <Check className="w-4 h-4" />
-                <span>Kustomisasi tampilan berhasil disimpan!</span>
+                <span>Warta &amp; Pengumuman berhasil disimpan dan langsung tampil di Dashboard!</span>
               </div>
             )}
 
-            <form onSubmit={handleSaveCustomizer} className="space-y-5 text-xs">
-              {/* Section 1: Video Media Sosial Link */}
-              <div className="space-y-3 bg-slate-950 p-4 rounded-2xl border border-slate-800">
-                <div className="flex items-center justify-between">
-                  <label className="font-bold text-indigo-300 flex items-center gap-1.5">
-                    <Video className="w-4 h-4 text-indigo-400" />
-                    <span>Link Video Media Sosial (YouTube / Shorts / Reels / TikTok)</span>
-                  </label>
-                  <label className="flex items-center gap-1.5 cursor-pointer text-[11px]">
-                    <input
-                      type="checkbox"
-                      checked={customForm.video_enabled !== false}
-                      onChange={(e) => setCustomForm({ ...customForm, video_enabled: e.target.checked })}
-                      className="rounded border-slate-700 text-indigo-600 focus:ring-indigo-500 w-3.5 h-3.5"
-                    />
-                    <span className="text-emerald-400 font-semibold">Aktifkan Video</span>
-                  </label>
-                </div>
-
-                <p className="text-[11px] text-indigo-300/90 bg-indigo-500/10 p-2.5 rounded-xl border border-indigo-500/20">
-                  💡 <strong>Info:</strong> Tampilan video stream ini tidak dimuat di dashboard Admin/SuperAdmin. Video akan tampil secara otomatis di <strong>dashboard Jemaat pada bagian paling bawah</strong>.
-                </p>
-
-                <input
-                  type="text"
-                  placeholder="https://www.youtube.com/watch?v=5qap5aO4i9A atau Shorts / Reels"
-                  value={customForm.video_url || ''}
-                  onChange={(e) => setCustomForm({ ...customForm, video_url: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-indigo-500/40 text-white font-mono text-[11px]"
-                />
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-slate-400 mb-1 font-semibold">Judul Video</label>
-                    <input
-                      type="text"
-                      placeholder="Tayangan Ibadah Raya Minggu Ini"
-                      value={customForm.video_title || ''}
-                      onChange={(e) => setCustomForm({ ...customForm, video_title: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-slate-400 mb-1 font-semibold">Deskripsi Video</label>
-                    <input
-                      type="text"
-                      placeholder="Saksikan firman Tuhan dan puji-pujian..."
-                      value={customForm.video_description || ''}
-                      onChange={(e) => setCustomForm({ ...customForm, video_description: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Section 2: Custom Header Title & Logo Input */}
-              <div className="space-y-4 bg-slate-950 p-4 rounded-2xl border border-slate-800">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                  <label className="font-bold text-indigo-300 flex items-center gap-1.5">
-                    <ImageIcon className="w-4 h-4 text-indigo-400" />
-                    <span>Logo & Identitas Gereja (Tampil di Semua User & Device)</span>
-                  </label>
-                </div>
-
-                <div className="flex flex-col sm:flex-row items-center gap-4 bg-slate-900/60 p-3 rounded-xl border border-slate-800">
-                  <div className="shrink-0 relative group">
-                    <img
-                      src={customForm.logo || DEFAULT_CHURCH_LOGO}
-                      alt="Logo Preview"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = DEFAULT_CHURCH_LOGO;
-                      }}
-                      className="w-14 h-14 rounded-2xl object-cover border-2 border-indigo-500/50 shadow-md bg-slate-950"
-                    />
-                    <span className="absolute -bottom-1 -right-1 px-1.5 py-0.5 bg-indigo-600 text-[9px] font-bold text-white rounded-full">
-                      Preview
+            <form onSubmit={handleSaveQuickWarta} className="space-y-4 text-xs">
+              {/* Live Preview Box */}
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-amber-400 uppercase tracking-wider block">
+                  Pratinjau Langsung di Dashboard:
+                </label>
+                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/20 via-orange-500/15 to-amber-500/20 border border-amber-500/40 text-amber-200 flex items-center gap-3 shadow-inner">
+                  <span className="p-2 rounded-xl bg-amber-500/30 text-amber-300 border border-amber-400/40 shrink-0">
+                    <Megaphone className="w-4 h-4 animate-pulse text-amber-400" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[10px] uppercase font-black tracking-wider text-amber-400 block sm:inline mr-2">
+                      Warta &amp; Pengumuman Gereja:
+                    </span>
+                    <span className="text-xs font-semibold text-slate-100 break-words">
+                      {wartaText.trim() || 'Teks warta pengumuman akan tampil di sini...'}
                     </span>
                   </div>
-
-                  <div className="flex-1 space-y-2 w-full">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        value={customForm.logo || ''}
-                        placeholder="Paste URL Gambar Logo atau Upload File..."
-                        onChange={(e) => setCustomForm({ ...customForm, logo: e.target.value })}
-                        className="flex-1 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-[11px]"
-                      />
-                      <label className="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shrink-0 transition-all">
-                        <Upload className="w-3.5 h-3.5" />
-                        <span>Upload File</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              const reader = new FileReader();
-                              reader.onload = (evt) => {
-                                if (evt.target?.result) {
-                                  setCustomForm({ ...customForm, logo: evt.target.result as string });
-                                }
-                              };
-                              reader.readAsDataURL(file);
-                            }
-                          }}
-                        />
-                      </label>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-slate-400 font-semibold">Preset Logo Quick Pick:</span>
-                      <button
-                        type="button"
-                        onClick={() => setCustomForm({ ...customForm, logo: DEFAULT_CHURCH_LOGO })}
-                        className="px-2 py-1 rounded bg-indigo-950 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold hover:bg-indigo-900"
-                      >
-                        Default Gold Cross Emblem
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setCustomForm({
-                            ...customForm,
-                            logo: 'https://images.unsplash.com/photo-1548625361-185966347898?w=300&auto=format&fit=crop&q=80'
-                          })
-                        }
-                        className="px-2 py-1 rounded bg-slate-800 text-slate-300 border border-slate-700 text-[10px] hover:bg-slate-700"
-                      >
-                        Cathedral Photo
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-slate-400 mb-1 font-semibold">Judul Header Dashboard</label>
-                    <input
-                      type="text"
-                      value={customForm.header_title || ''}
-                      placeholder="Gereja Kemenangan Faith Center Pro"
-                      onChange={(e) => setCustomForm({ ...customForm, header_title: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-semibold"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-slate-400 mb-1 font-semibold">Subtitle Header</label>
-                    <input
-                      type="text"
-                      value={customForm.header_subtitle || ''}
-                      placeholder="Sistem Informasi & Portal Layanan Jemaat"
-                      onChange={(e) => setCustomForm({ ...customForm, header_subtitle: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white"
-                    />
-                  </div>
                 </div>
               </div>
 
-              {/* Section 3: Preset Background & Card Style */}
-              <div className="space-y-3 bg-slate-950 p-4 rounded-2xl border border-slate-800">
-                <label className="font-bold text-slate-300 block">Preset Warna Tema Background</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { id: 'DARK_SLATE', label: '🌌 Dark Slate' },
-                    { id: 'MIDNIGHT_BLUE', label: '💙 Sapphire Blue' },
-                    { id: 'DEEP_PURPLE', label: '💜 Amethyst' },
-                    { id: 'FOREST_GREEN', label: '🌲 Emerald Green' },
-                    { id: 'WARM_GOLD', label: '⚜️ Warm Gold' },
-                    { id: 'LUXE_LIGHT', label: '☀️ Soft Light' }
-                  ].map((t) => (
-                    <button
-                      type="button"
-                      key={t.id}
-                      onClick={() => setCustomForm({ ...customForm, theme_preset: t.id as any })}
-                      className={`p-2 rounded-xl text-xs font-semibold border text-center transition-all ${
-                        (customForm.theme_preset || 'DARK_SLATE') === t.id
-                          ? 'border-indigo-500 bg-indigo-600/20 text-indigo-300 font-bold'
-                          : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      {t.label}
-                    </button>
-                  ))}
+              {/* Sakelar Tampilkan / Sembunyikan */}
+              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+                <div>
+                  <div className="font-bold text-slate-200 text-xs">Status Banner Warta Toa</div>
+                  <div className="text-[10px] text-slate-400">Aktifkan untuk menampilkan banner pengumuman ini di dashboard</div>
                 </div>
-
-                <label className="font-bold text-slate-300 block pt-2">Style Kartu & Border</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { id: 'GLASS', label: '✨ Glassmorphism (Blur Transparan)' },
-                    { id: 'SOLID', label: '⬛ Solid Dark Glass' },
-                    { id: 'NEON', label: '💡 Neon Glow Accent' },
-                    { id: 'FLAT', label: '📄 Flat Border Minimal' }
-                  ].map((c) => (
-                    <button
-                      type="button"
-                      key={c.id}
-                      onClick={() => setCustomForm({ ...customForm, card_style: c.id as any })}
-                      className={`p-2 rounded-xl text-xs font-semibold border text-left transition-all ${
-                        (customForm.card_style || 'GLASS') === c.id
-                          ? 'border-indigo-500 bg-indigo-600/20 text-indigo-300 font-bold'
-                          : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      {c.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Section 4: Pengaturan Lebar Kartu & Layout Dashboard Jemaat */}
-              <div className="space-y-3 bg-slate-950 p-4 rounded-2xl border border-slate-800">
-                <div className="flex items-center justify-between">
-                  <label className="font-bold text-indigo-300 block text-xs sm:text-sm">Pengaturan Lebar Kartu Dashboard Jemaat & Mobile View</label>
-                  <span className="text-[10px] text-indigo-400 font-mono font-semibold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">Pilih 1 Opsional</span>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                  {[
-                    { id: 'CONTAINED', label: '🛡️ Standard (Max 5XL)', desc: 'Rekomendasi Desktop' },
-                    { id: 'FULL', label: '🖥️ Full Width (100%)', desc: 'Layar Penuh' },
-                    { id: 'MOBILE_COMPACT', label: '📱 Compact Mobile', desc: 'Fokus Hape' }
-                  ].map((cw) => {
-                    const isSelected =
-                      (customForm.jemaat_card_width || 'CONTAINED') === cw.id ||
-                      (cw.id === 'MOBILE_COMPACT' && customForm.jemaat_card_width === 'COMPACT');
-                    return (
-                      <button
-                        type="button"
-                        key={cw.id}
-                        onClick={() => setCustomForm({ ...customForm, jemaat_card_width: cw.id as any })}
-                        className={`p-2.5 rounded-xl text-left border transition-all cursor-pointer flex flex-col justify-between ${
-                          isSelected
-                            ? 'border-indigo-500 bg-indigo-600/20 text-white font-bold ring-1 ring-indigo-500/50'
-                            : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between w-full mb-1">
-                          <span className="font-bold text-[11px]">{cw.label}</span>
-                          <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 ${isSelected ? 'border-indigo-400 bg-indigo-500' : 'border-slate-600'}`}>
-                            {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                          </div>
-                        </div>
-                        <div className="text-[9px] text-slate-500">{cw.desc}</div>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <div className="flex items-center justify-between pt-2">
-                  <label className="font-bold text-indigo-300 block text-xs sm:text-sm">Ukuran Density / Padding Kartu</label>
-                  <span className="text-[10px] text-indigo-400 font-mono font-semibold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">Pilih 1 Padding</span>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { id: 'COMPACT', label: '⚡ Ringkas (Hape)' },
-                    { id: 'NORMAL', label: '⚖️ Normal Standar' },
-                    { id: 'SPACIOUS', label: '✨ Lega & Mewah' }
-                  ].map((cs) => {
-                    const isSelected = (customForm.card_size || 'NORMAL') === cs.id;
-                    return (
-                      <button
-                        type="button"
-                        key={cs.id}
-                        onClick={() => setCustomForm({ ...customForm, card_size: cs.id as any })}
-                        className={`p-2 rounded-xl text-center border text-xs transition-all cursor-pointer flex items-center justify-between px-2.5 ${
-                          isSelected
-                            ? 'border-indigo-500 bg-indigo-600/20 text-white font-bold ring-1 ring-indigo-500/50'
-                            : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
-                        }`}
-                      >
-                        <span className="truncate">{cs.label}</span>
-                        <div className={`w-3 h-3 rounded-full border flex items-center justify-center shrink-0 ml-1 ${isSelected ? 'border-indigo-400 bg-indigo-500' : 'border-slate-600'}`}>
-                          {isSelected && <div className="w-1 h-1 rounded-full bg-white" />}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <div className="pt-2 space-y-1.5">
-                  <label className="block text-indigo-300 font-bold text-xs sm:text-sm">Style Warna Background Seluruh Kartu Dashboard (Statistik, Widget, dsb)</label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
-                    {[
-                      { id: 'DEFAULT_GLASS', label: '✨ Transparan Glass' },
-                      { id: 'GRADIENT_INDIGO', label: '🌌 Royal Twilight' },
-                      { id: 'GRADIENT_PURPLE', label: '🔮 Amethyst Majesty' },
-                      { id: 'GRADIENT_GOLD', label: '👑 Golden Grace' },
-                      { id: 'GRADIENT_EMERALD', label: '🌿 Emerald Divine' },
-                      { id: 'OCEAN_BLUE', label: '🌊 Ocean Waves' },
-                      { id: 'OBSIDIAN_NIGHT', label: '🖤 Obsidian Night' },
-                      { id: 'SOLID_SLATE', label: '⬛ Solid Dark' },
-                      { id: 'NEON_CYAN', label: '💡 Neon Cyan' }
-                    ].map((cb) => {
-                      const isSelected = (customForm.jemaat_cards_bg || 'DEFAULT_GLASS') === cb.id;
-                      return (
-                        <button
-                          type="button"
-                          key={cb.id}
-                          onClick={() => setCustomForm({ ...customForm, jemaat_cards_bg: cb.id as any })}
-                          className={`p-2 rounded-xl border text-left text-[11px] font-bold transition-all cursor-pointer flex items-center justify-between ${
-                            isSelected
-                              ? 'border-indigo-500 bg-indigo-950/80 ring-1 ring-indigo-500/50 text-white'
-                              : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-slate-200'
-                          }`}
-                        >
-                          <span className="truncate">{cb.label}</span>
-                          <div className={`w-3 h-3 rounded-full border flex items-center justify-center shrink-0 ml-1 ${isSelected ? 'border-indigo-400 bg-indigo-500' : 'border-slate-600'}`}>
-                            {isSelected && <div className="w-1 h-1 rounded-full bg-white" />}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="pt-2 space-y-1.5">
-                  <label className="block text-indigo-300 font-bold text-xs sm:text-sm">Style Background Banner Utama Jemaat (Paling Atas)</label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
-                    {[
-                      { id: 'GRADIENT_INDIGO', label: '🌌 Royal Twilight' },
-                      { id: 'GRADIENT_GOLD', label: '👑 Golden Grace' },
-                      { id: 'GRADIENT_EMERALD', label: '🌿 Emerald Divine' },
-                      { id: 'GRADIENT_PURPLE', label: '🔮 Amethyst Majesty' },
-                      { id: 'OBSIDIAN_NIGHT', label: '🖤 Obsidian Night' },
-                      { id: 'OCEAN_BLUE', label: '🌊 Ocean Waves' }
-                    ].map((gb) => {
-                      const isSelected = (customForm.jemaat_banner_bg || 'GRADIENT_INDIGO') === gb.id;
-                      return (
-                        <button
-                          type="button"
-                          key={gb.id}
-                          onClick={() => setCustomForm({ ...customForm, jemaat_banner_bg: gb.id as any })}
-                          className={`p-2 rounded-xl border text-left text-[11px] font-bold transition-all cursor-pointer flex items-center justify-between ${
-                            isSelected
-                              ? 'border-indigo-500 bg-indigo-950/80 ring-1 ring-indigo-500/50 text-white'
-                              : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-slate-200'
-                          }`}
-                        >
-                          <span className="truncate">{gb.label}</span>
-                          <div className={`w-3 h-3 rounded-full border flex items-center justify-center shrink-0 ml-1 ${isSelected ? 'border-indigo-400 bg-indigo-500' : 'border-slate-600'}`}>
-                            {isSelected && <div className="w-1 h-1 rounded-full bg-white" />}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="pt-2 space-y-2">
-                  <label className="block text-slate-400 font-semibold">Teks Ticker Pengumuman Jemaat</label>
+                <label className="relative inline-flex items-center cursor-pointer">
                   <input
-                    type="text"
-                    value={customForm.jemaat_announcement_text || ''}
-                    onChange={(e) => setCustomForm({ ...customForm, jemaat_announcement_text: e.target.value })}
-                    placeholder="Contoh: Ibadah Raya Minggu ini pukul 09:00 WIB..."
-                    className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs"
+                    type="checkbox"
+                    checked={wartaBannerActive}
+                    onChange={(e) => setWartaBannerActive(e.target.checked)}
+                    className="sr-only peer"
                   />
-                </div>
+                  <div className="w-10 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                </label>
               </div>
 
-              {/* Section 5: Pengaturan Visibilitas Komponen & Widget Dashboard */}
-              <div className="space-y-2 bg-slate-950 p-4 rounded-2xl border border-slate-800">
-                <DashboardVisibilityManager
-                  settings={customForm}
-                  onChange={(newSettings) => setCustomForm(newSettings)}
+              {/* Input Teks Warta */}
+              <div className="space-y-1.5">
+                <label className="block text-slate-300 font-semibold text-xs">
+                  Isi Teks Pengumuman / Warta Jemaat:
+                </label>
+                <textarea
+                  rows={3}
+                  value={wartaText}
+                  onChange={(e) => setWartaText(e.target.value)}
+                  placeholder="Contoh: Ibadah Raya Minggu ini diadakan pukul 09.00 WIB di Gedung Utama. Dilanjutkan perjamuan kudus..."
+                  className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-950 border border-slate-700 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-amber-500 leading-relaxed"
                 />
               </div>
 
-              {/* Section 6: Kontrol Tombol Melayang Download APK Mobile Android */}
-              <div className="space-y-3 bg-slate-950 p-4 rounded-2xl border border-emerald-500/40 shadow-inner">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-                  <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs sm:text-sm">
-                    <Sparkles className="w-4 h-4 text-emerald-400" />
-                    <span>Kontrol Tombol Melayang Download APK Mobile Android</span>
-                  </div>
-                  <span className="text-[10px] text-emerald-400/80 font-mono bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                    Mobile APK Control
-                  </span>
-                </div>
-
-                <label className="p-3 rounded-xl bg-slate-900 border border-slate-800 hover:border-emerald-500/50 flex items-center justify-between cursor-pointer transition-all">
-                  <div>
-                    <div className="font-bold text-xs text-emerald-300">
-                      Tampilkan Tombol Melayang Download APK Mobile Android
-                    </div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">
-                      Tombol melayang akan selalu tampil di sudut kanan bawah dashboard HP Android &amp; Desktop.
-                    </div>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={customForm.show_apk_download_button !== false}
-                    onChange={(e) => setCustomForm({ ...customForm, show_apk_download_button: e.target.checked })}
-                    className="rounded border-slate-700 text-emerald-600 focus:ring-emerald-500 w-4 h-4 shrink-0"
-                  />
-                </label>
-
-                {/* Notifikasi jika saat ini disembunyikan oleh tombol (X) */}
-                {(isApkHiddenByX || isApkBannerDismissed) && (
-                  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-3 text-xs text-amber-300 animate-fade-in">
-                    <div className="text-[11px] leading-tight">
-                      <span className="font-bold text-amber-200">Status Tombol / Banner:</span> Saat ini disembunyikan via tombol silang (x) di dashboard.
-                    </div>
+              {/* Template Cepat */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] text-slate-400 font-semibold">Pilih Template Pengumuman Cepat:</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    'Ibadah Raya Minggu ini dimulai pukul 09:00 WIB. Mohon hadir 15 menit sebelum ibadah.',
+                    'Pekan Doa & Puasa bersama seluruh jemaat akan diadakan Rabu - Jumat pk. 19:00 WIB.',
+                    'Aksi Sosial & Donor Darah Gereja hari Sabtu depan pk 08:30 WIB. Mari berpartisipasi!',
+                    'Pendaftaran Baptisan Kudus & Kelas Katekisasi telah dibuka. Hubungi Sekretariat.'
+                  ].map((tpl, idx) => (
                     <button
+                      key={idx}
                       type="button"
-                      onClick={() => {
-                        try {
-                          localStorage.removeItem('cms_apk_button_hidden');
-                          localStorage.removeItem('cms_apk_banner_hidden');
-                          setIsApkHiddenByX(false);
-                          setIsApkBannerDismissed(false);
-                          window.dispatchEvent(new CustomEvent('cms_apk_hidden_changed', { detail: { hidden: false } }));
-                        } catch (err) {}
-                      }}
-                      className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] cursor-pointer shrink-0 transition-all shadow-md active:scale-95"
+                      onClick={() => setWartaText(tpl)}
+                      className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-[10px] text-left transition-all cursor-pointer"
                     >
-                      Tampilkan Kembali
+                      {tpl.substring(0, 36)}...
                     </button>
-                  </div>
-                )}
-
-                <div className="space-y-1">
-                  <label className="block text-slate-300 font-semibold text-xs">
-                    Link Tautan Download File .APK Android (Google Drive / Direct URL):
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="url"
-                      value={customForm.apk_download_url || 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing'}
-                      onChange={(e) => setCustomForm({ ...customForm, apk_download_url: e.target.value })}
-                      placeholder="https://drive.google.com/file/d/..."
-                      className="flex-1 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-xs focus:ring-1 focus:ring-emerald-500"
-                    />
-                    <a
-                      href={customForm.apk_download_url || 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-3 py-2 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-1 shrink-0 transition-all cursor-pointer"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      <span>Tes Link</span>
-                    </a>
-                  </div>
+                  ))}
                 </div>
               </div>
 
               <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
                 <button
                   type="button"
-                  onClick={() => setIsCustomizerOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-semibold hover:bg-slate-700"
+                  onClick={() => setIsEditWartaModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-semibold hover:bg-slate-700 text-xs cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold flex items-center gap-1.5 shadow-lg shadow-indigo-600/30"
+                  className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold flex items-center gap-1.5 shadow-lg shadow-amber-500/20 text-xs cursor-pointer"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Simpan Warta</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* QUICK CUSTOMIZER MODAL FOR SUPERADMIN & ADMIN */}
+      {isCustomizerOpen && isAdmin && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-4xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl text-white max-h-[90vh] flex flex-col overflow-hidden animate-scale-up">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-5 sm:p-6 border-b border-slate-800 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-2xl bg-indigo-600/20 text-indigo-400 border border-indigo-500/30">
+                  <Palette className="w-5 h-5 text-indigo-400" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base sm:text-lg text-white">Custom Tampilan &amp; Layout Portal</h3>
+                  <p className="text-xs text-slate-400">Atur warta toa, tema warna, layout kartu, logo gereja, dan visibilitas komponen dashboard.</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsCustomizerOpen(false)}
+                className="p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white transition-all cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Navigation Tabs */}
+            <div className="flex items-center gap-1.5 px-4 sm:px-6 pt-3 pb-2.5 border-b border-slate-800 overflow-x-auto scrollbar-none shrink-0 bg-slate-950/70">
+              {[
+                { id: 'warta', label: '📢 Warta Toa' },
+                { id: 'theme', label: '🎨 Tema & Warna' },
+                { id: 'layout', label: '📐 Lebar & Layout Kartu' },
+                { id: 'identity', label: '🏛️ Logo & Header' },
+                { id: 'widgets', label: '🎛️ Komponen (19 Widget)' },
+                { id: 'media', label: '🎬 Video & APK' },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setCustomizerTab(tab.id as any)}
+                  className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                    customizerTab === tab.id
+                      ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 ring-1 ring-indigo-400/50'
+                      : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'
+                  }`}
+                >
+                  <span>{tab.label}</span>
+                </button>
+              ))}
+            </div>
+
+            {saveSuccessMsg && (
+              <div className="mx-5 sm:mx-6 mt-4 p-3 bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 rounded-2xl text-xs font-bold flex items-center gap-2 shrink-0">
+                <Check className="w-4 h-4" />
+                <span>Kustomisasi tampilan berhasil disimpan!</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSaveCustomizer} className="flex-1 flex flex-col min-h-0">
+              {/* Tab Contents Area */}
+              <div className="flex-1 overflow-y-auto p-5 sm:p-6 text-xs space-y-5">
+                {/* TAB 1: WARTA & PENGUMUMAN DENGAN ICON TOA */}
+                {customizerTab === 'warta' && (
+                  <div className="space-y-4">
+                    <div className="p-4 sm:p-5 rounded-2xl bg-amber-500/10 border-2 border-amber-500/30 text-amber-200 space-y-3.5">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-amber-500/20">
+                        <div className="flex items-center gap-2 text-amber-300 font-bold text-xs sm:text-sm">
+                          <Megaphone className="w-4 h-4 text-amber-400 animate-pulse" />
+                          <span>Warta &amp; Pengumuman Gereja di Dashboard (Icon Toa)</span>
+                        </div>
+                        <label className="flex items-center gap-2 cursor-pointer text-xs text-amber-200 font-semibold bg-amber-500/20 px-3 py-1.5 rounded-xl border border-amber-500/30 w-fit">
+                          <input
+                            type="checkbox"
+                            checked={customForm.show_pinned_notif_banner !== false}
+                            onChange={(e) => setCustomForm({ ...customForm, show_pinned_notif_banner: e.target.checked })}
+                            className="rounded border-amber-500 text-amber-600 focus:ring-amber-500 w-4 h-4"
+                          />
+                          <span>Tampilkan Banner Toa</span>
+                        </label>
+                      </div>
+
+                      <p className="text-[11px] text-slate-300 leading-relaxed">
+                        Teks pengumuman ini akan muncul di bagian paling atas halaman Dashboard dengan icon <strong>Toa (Megaphone)</strong> berkedip untuk seluruh jemaat dan pengunjung.
+                      </p>
+
+                      {/* Pratinjau Tampilan Dashboard */}
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">
+                          Pratinjau Langsung di Dashboard:
+                        </span>
+                        <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/20 via-orange-500/15 to-amber-500/20 border border-amber-500/40 text-amber-200 flex items-center gap-3">
+                          <span className="p-2 rounded-xl bg-amber-500/30 text-amber-300 border border-amber-400/40 shrink-0">
+                            <Megaphone className="w-4 h-4 animate-pulse text-amber-400" />
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <span className="text-[10px] uppercase font-black tracking-wider text-amber-400 block sm:inline mr-2">
+                              Warta &amp; Pengumuman Gereja:
+                            </span>
+                            <span className="text-xs font-semibold text-slate-100 break-words">
+                              {customForm.jemaat_announcement_text?.trim() || 'Teks pengumuman yang Anda ketik di bawah akan tampil di sini...'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="block text-slate-200 font-semibold text-xs">
+                          Isi Teks Pengumuman / Warta:
+                        </label>
+                        <textarea
+                          rows={3}
+                          value={customForm.jemaat_announcement_text || ''}
+                          onChange={(e) => setCustomForm({ ...customForm, jemaat_announcement_text: e.target.value })}
+                          placeholder="Contoh: Ibadah Raya Minggu ini diadakan pukul 09:00 WIB di Gedung Utama. Dilanjutkan perjamuan kudus..."
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs leading-relaxed placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                        />
+                      </div>
+
+                      {/* Template Cepat */}
+                      <div className="space-y-1.5 pt-1">
+                        <span className="text-[10px] text-slate-400 font-semibold block">Template Pengumuman Rekomendasi:</span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {[
+                            'Ibadah Raya Minggu ini dimulai pukul 09:00 WIB. Mohon hadir 15 menit sebelum ibadah.',
+                            'Pekan Doa & Puasa bersama seluruh jemaat akan diadakan Rabu - Jumat pk. 19:00 WIB.',
+                            'Aksi Sosial & Donor Darah Gereja hari Sabtu depan pk 08:30 WIB. Mari berpartisipasi!',
+                            'Pendaftaran Baptisan Kudus & Kelas Katekisasi telah dibuka. Hubungi Sekretariat.'
+                          ].map((tpl, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => setCustomForm({ ...customForm, jemaat_announcement_text: tpl })}
+                              className="px-2.5 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-slate-700 text-[10px] text-left transition-all cursor-pointer"
+                            >
+                              {tpl.substring(0, 36)}...
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB 2: TEMA & WARNA */}
+                {customizerTab === 'theme' && (
+                  <div className="space-y-5">
+                    {/* Preset Tema */}
+                    <div className="space-y-2.5 bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                      <label className="font-bold text-slate-300 block text-xs sm:text-sm">Preset Warna Tema Background</label>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        {[
+                          { id: 'DARK_SLATE', label: '🌌 Dark Slate' },
+                          { id: 'MIDNIGHT_BLUE', label: '💙 Sapphire Blue' },
+                          { id: 'DEEP_PURPLE', label: '💜 Amethyst' },
+                          { id: 'FOREST_GREEN', label: '🌲 Emerald Green' },
+                          { id: 'WARM_GOLD', label: '⚜️ Warm Gold' },
+                          { id: 'LUXE_LIGHT', label: '☀️ Soft Light' }
+                        ].map((t) => {
+                          const isSelected = (customForm.theme_preset || 'DARK_SLATE') === t.id;
+                          return (
+                            <button
+                              type="button"
+                              key={t.id}
+                              onClick={() => setCustomForm({ ...customForm, theme_preset: t.id as any })}
+                              className={`p-2.5 rounded-xl text-xs font-semibold border text-center transition-all cursor-pointer flex items-center justify-between px-3 ${
+                                isSelected
+                                  ? 'border-indigo-500 bg-indigo-600/20 text-indigo-300 font-bold ring-1 ring-indigo-500/50'
+                                  : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
+                              }`}
+                            >
+                              <span className="truncate">{t.label}</span>
+                              <div className={`w-3 h-3 rounded-full border flex items-center justify-center shrink-0 ml-1 ${isSelected ? 'border-indigo-400 bg-indigo-500' : 'border-slate-600'}`}>
+                                {isSelected && <div className="w-1 h-1 rounded-full bg-white" />}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Style Kartu */}
+                    <div className="space-y-2.5 bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                      <label className="font-bold text-slate-300 block text-xs sm:text-sm">Style Kartu &amp; Border</label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {[
+                          { id: 'GLASS', label: '✨ Glassmorphism (Blur Transparan)' },
+                          { id: 'SOLID', label: '⬛ Solid Dark Glass' },
+                          { id: 'NEON', label: '💡 Neon Glow Accent' },
+                          { id: 'FLAT', label: '📄 Flat Border Minimal' }
+                        ].map((c) => {
+                          const isSelected = (customForm.card_style || 'GLASS') === c.id;
+                          return (
+                            <button
+                              type="button"
+                              key={c.id}
+                              onClick={() => setCustomForm({ ...customForm, card_style: c.id as any })}
+                              className={`p-2.5 rounded-xl text-xs font-semibold border text-left transition-all cursor-pointer flex items-center justify-between px-3 ${
+                                isSelected
+                                  ? 'border-indigo-500 bg-indigo-600/20 text-indigo-300 font-bold ring-1 ring-indigo-500/50'
+                                  : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
+                              }`}
+                            >
+                              <span className="truncate">{c.label}</span>
+                              <div className={`w-3 h-3 rounded-full border flex items-center justify-center shrink-0 ml-1 ${isSelected ? 'border-indigo-400 bg-indigo-500' : 'border-slate-600'}`}>
+                                {isSelected && <div className="w-1 h-1 rounded-full bg-white" />}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Background Kartu */}
+                    <div className="space-y-2.5 bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                      <label className="block text-indigo-300 font-bold text-xs sm:text-sm">
+                        Style Warna Background Seluruh Kartu Dashboard (Statistik, Widget, dsb)
+                      </label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                        {[
+                          { id: 'DEFAULT_GLASS', label: '✨ Transparan Glass' },
+                          { id: 'GRADIENT_INDIGO', label: '🌌 Royal Twilight' },
+                          { id: 'GRADIENT_PURPLE', label: '🔮 Amethyst Majesty' },
+                          { id: 'GRADIENT_GOLD', label: '👑 Golden Grace' },
+                          { id: 'GRADIENT_EMERALD', label: '🌿 Emerald Divine' },
+                          { id: 'OCEAN_BLUE', label: '🌊 Ocean Waves' },
+                          { id: 'OBSIDIAN_NIGHT', label: '🖤 Obsidian Night' },
+                          { id: 'SOLID_SLATE', label: '⬛ Solid Dark' },
+                          { id: 'NEON_CYAN', label: '💡 Neon Cyan' }
+                        ].map((cb) => {
+                          const isSelected = (customForm.jemaat_cards_bg || 'DEFAULT_GLASS') === cb.id;
+                          return (
+                            <button
+                              type="button"
+                              key={cb.id}
+                              onClick={() => setCustomForm({ ...customForm, jemaat_cards_bg: cb.id as any })}
+                              className={`p-2.5 rounded-xl border text-left text-xs font-bold transition-all cursor-pointer flex items-center justify-between px-3 ${
+                                isSelected
+                                  ? 'border-indigo-500 bg-indigo-950/80 ring-1 ring-indigo-500/50 text-white'
+                                  : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-slate-200'
+                              }`}
+                            >
+                              <span className="truncate">{cb.label}</span>
+                              <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 ml-1 ${isSelected ? 'border-indigo-400 bg-indigo-500' : 'border-slate-600'}`}>
+                                {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Background Banner Jemaat */}
+                    <div className="space-y-2.5 bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                      <label className="block text-indigo-300 font-bold text-xs sm:text-sm">
+                        Style Background Banner Utama Jemaat (Paling Atas)
+                      </label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                        {[
+                          { id: 'GRADIENT_INDIGO', label: '🌌 Royal Twilight' },
+                          { id: 'GRADIENT_GOLD', label: '👑 Golden Grace' },
+                          { id: 'GRADIENT_EMERALD', label: '🌿 Emerald Divine' },
+                          { id: 'GRADIENT_PURPLE', label: '🔮 Amethyst Majesty' },
+                          { id: 'OBSIDIAN_NIGHT', label: '🖤 Obsidian Night' },
+                          { id: 'OCEAN_BLUE', label: '🌊 Ocean Waves' }
+                        ].map((gb) => {
+                          const isSelected = (customForm.jemaat_banner_bg || 'GRADIENT_INDIGO') === gb.id;
+                          return (
+                            <button
+                              type="button"
+                              key={gb.id}
+                              onClick={() => setCustomForm({ ...customForm, jemaat_banner_bg: gb.id as any })}
+                              className={`p-2.5 rounded-xl border text-left text-xs font-bold transition-all cursor-pointer flex items-center justify-between px-3 ${
+                                isSelected
+                                  ? 'border-indigo-500 bg-indigo-950/80 ring-1 ring-indigo-500/50 text-white'
+                                  : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-slate-200'
+                              }`}
+                            >
+                              <span className="truncate">{gb.label}</span>
+                              <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 ml-1 ${isSelected ? 'border-indigo-400 bg-indigo-500' : 'border-slate-600'}`}>
+                                {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB 3: LEBAR & LAYOUT KARTU */}
+                {customizerTab === 'layout' && (
+                  <div className="space-y-5">
+                    <div className="space-y-3 bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                      <div className="flex items-center justify-between">
+                        <label className="font-bold text-indigo-300 block text-xs sm:text-sm">
+                          Pengaturan Lebar Kartu Dashboard Jemaat &amp; Mobile View
+                        </label>
+                        <span className="text-[10px] text-indigo-400 font-mono font-semibold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
+                          Pilih 1 Ukuran
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                        {[
+                          { id: 'CONTAINED', label: '🛡️ Standard (Max 5XL)', desc: 'Rekomendasi Desktop & Tablet' },
+                          { id: 'FULL', label: '🖥️ Full Width (100%)', desc: 'Memenuhi Seluruh Layar Penuh' },
+                          { id: 'MOBILE_COMPACT', label: '📱 Compact Mobile', desc: 'Rapat Rapi Fokus Hape' }
+                        ].map((cw) => {
+                          const isSelected =
+                            (customForm.jemaat_card_width || 'CONTAINED') === cw.id ||
+                            (cw.id === 'MOBILE_COMPACT' && customForm.jemaat_card_width === 'COMPACT');
+                          return (
+                            <button
+                              type="button"
+                              key={cw.id}
+                              onClick={() => setCustomForm({ ...customForm, jemaat_card_width: cw.id as any })}
+                              className={`p-3 rounded-xl text-left border transition-all cursor-pointer flex flex-col justify-between ${
+                                isSelected
+                                  ? 'border-indigo-500 bg-indigo-600/20 text-white font-bold ring-1 ring-indigo-500/50 shadow-md'
+                                  : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between w-full mb-1">
+                                <span className="font-bold text-xs">{cw.label}</span>
+                                <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 ${isSelected ? 'border-indigo-400 bg-indigo-500' : 'border-slate-600'}`}>
+                                  {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                                </div>
+                              </div>
+                              <div className="text-[10px] text-slate-400">{cw.desc}</div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="space-y-3 bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                      <div className="flex items-center justify-between">
+                        <label className="font-bold text-indigo-300 block text-xs sm:text-sm">
+                          Ukuran Density / Padding Kartu
+                        </label>
+                        <span className="text-[10px] text-indigo-400 font-mono font-semibold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
+                          Pilih 1 Density
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                        {[
+                          { id: 'COMPACT', label: '⚡ Ringkas (Hape)' },
+                          { id: 'NORMAL', label: '⚖️ Normal Standar' },
+                          { id: 'SPACIOUS', label: '✨ Lega & Mewah' }
+                        ].map((cs) => {
+                          const isSelected = (customForm.card_size || 'NORMAL') === cs.id;
+                          return (
+                            <button
+                              type="button"
+                              key={cs.id}
+                              onClick={() => setCustomForm({ ...customForm, card_size: cs.id as any })}
+                              className={`p-3 rounded-xl text-left border text-xs transition-all cursor-pointer flex items-center justify-between px-3 ${
+                                isSelected
+                                  ? 'border-indigo-500 bg-indigo-600/20 text-white font-bold ring-1 ring-indigo-500/50 shadow-md'
+                                  : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
+                              }`}
+                            >
+                              <span className="font-semibold">{cs.label}</span>
+                              <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 ml-1 ${isSelected ? 'border-indigo-400 bg-indigo-500' : 'border-slate-600'}`}>
+                                {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB 4: IDENTITAS & LOGO GEREJA */}
+                {customizerTab === 'identity' && (
+                  <div className="space-y-4">
+                    <div className="space-y-4 bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                      <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                        <label className="font-bold text-indigo-300 flex items-center gap-1.5">
+                          <ImageIcon className="w-4 h-4 text-indigo-400" />
+                          <span>Logo &amp; Identitas Gereja (Tampil di Semua User &amp; Device)</span>
+                        </label>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row items-center gap-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                        <div className="shrink-0 relative group">
+                          <img
+                            src={customForm.logo || DEFAULT_CHURCH_LOGO}
+                            alt="Logo Preview"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = DEFAULT_CHURCH_LOGO;
+                            }}
+                            className="w-16 h-16 rounded-2xl object-cover border-2 border-indigo-500/50 shadow-md bg-slate-950"
+                          />
+                          <span className="absolute -bottom-1 -right-1 px-1.5 py-0.5 bg-indigo-600 text-[9px] font-bold text-white rounded-full">
+                            Preview
+                          </span>
+                        </div>
+
+                        <div className="flex-1 space-y-2.5 w-full min-w-0">
+                          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                            <input
+                              type="text"
+                              value={customForm.logo || ''}
+                              placeholder="Paste URL Gambar Logo atau Upload File..."
+                              onChange={(e) => setCustomForm({ ...customForm, logo: e.target.value })}
+                              className="flex-1 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-[11px] min-w-0"
+                            />
+                            <label className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer shrink-0 transition-all">
+                              <Upload className="w-3.5 h-3.5" />
+                              <span>Upload File</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    const reader = new FileReader();
+                                    reader.onload = (evt) => {
+                                      if (evt.target?.result) {
+                                        setCustomForm({ ...customForm, logo: evt.target.result as string });
+                                      }
+                                    };
+                                    reader.readAsDataURL(file);
+                                  }
+                                }}
+                              />
+                            </label>
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-2 pt-1">
+                            <span className="text-[10px] text-slate-400 font-semibold">Preset Logo:</span>
+                            <button
+                              type="button"
+                              onClick={() => setCustomForm({ ...customForm, logo: DEFAULT_CHURCH_LOGO })}
+                              className="px-2.5 py-1 rounded-lg bg-indigo-950 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold hover:bg-indigo-900 transition-all cursor-pointer"
+                            >
+                              Default Gold Cross
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setCustomForm({
+                                  ...customForm,
+                                  logo: 'https://images.unsplash.com/photo-1548625361-185966347898?w=300&auto=format&fit=crop&q=80'
+                                })
+                              }
+                              className="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 border border-slate-700 text-[10px] hover:bg-slate-700 transition-all cursor-pointer"
+                            >
+                              Cathedral Photo
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                        <div>
+                          <label className="block text-slate-400 mb-1 font-semibold text-xs">Judul Header Dashboard</label>
+                          <input
+                            type="text"
+                            value={customForm.header_title || ''}
+                            placeholder="Gereja Kemenangan Faith Center Pro"
+                            onChange={(e) => setCustomForm({ ...customForm, header_title: e.target.value })}
+                            className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-semibold text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-slate-400 mb-1 font-semibold text-xs">Subtitle Header</label>
+                          <input
+                            type="text"
+                            value={customForm.header_subtitle || ''}
+                            placeholder="Sistem Informasi & Portal Layanan Jemaat"
+                            onChange={(e) => setCustomForm({ ...customForm, header_subtitle: e.target.value })}
+                            className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* TAB 5: VISIBILITAS 19 WIDGET */}
+                {customizerTab === 'widgets' && (
+                  <div className="space-y-3 bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                    <DashboardVisibilityManager
+                      settings={customForm}
+                      onChange={(newSettings) => setCustomForm(newSettings)}
+                    />
+                  </div>
+                )}
+
+                {/* TAB 6: VIDEO & MOBILE APK */}
+                {customizerTab === 'media' && (
+                  <div className="space-y-4">
+                    {/* Video Social Media */}
+                    <div className="space-y-3 bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                      <div className="flex items-center justify-between">
+                        <label className="font-bold text-indigo-300 flex items-center gap-1.5">
+                          <Video className="w-4 h-4 text-indigo-400" />
+                          <span>Link Video Media Sosial (YouTube / Shorts / Reels / TikTok)</span>
+                        </label>
+                        <label className="flex items-center gap-1.5 cursor-pointer text-[11px]">
+                          <input
+                            type="checkbox"
+                            checked={customForm.video_enabled !== false}
+                            onChange={(e) => setCustomForm({ ...customForm, video_enabled: e.target.checked })}
+                            className="rounded border-slate-700 text-indigo-600 focus:ring-indigo-500 w-3.5 h-3.5"
+                          />
+                          <span className="text-emerald-400 font-semibold">Aktifkan Video</span>
+                        </label>
+                      </div>
+
+                      <p className="text-[11px] text-indigo-300/90 bg-indigo-500/10 p-2.5 rounded-xl border border-indigo-500/20">
+                        💡 <strong>Info:</strong> Tayangan video ini tampil secara otomatis di <strong>dashboard Jemaat pada bagian paling bawah</strong>.
+                      </p>
+
+                      <input
+                        type="text"
+                        placeholder="https://www.youtube.com/watch?v=5qap5aO4i9A atau Shorts / Reels"
+                        value={customForm.video_url || ''}
+                        onChange={(e) => setCustomForm({ ...customForm, video_url: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-indigo-500/40 text-white font-mono text-[11px]"
+                      />
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-slate-400 mb-1 font-semibold">Judul Video</label>
+                          <input
+                            type="text"
+                            placeholder="Tayangan Ibadah Raya Minggu Ini"
+                            value={customForm.video_title || ''}
+                            onChange={(e) => setCustomForm({ ...customForm, video_title: e.target.value })}
+                            className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-slate-400 mb-1 font-semibold">Deskripsi Video</label>
+                          <input
+                            type="text"
+                            placeholder="Saksikan firman Tuhan dan puji-pujian..."
+                            value={customForm.video_description || ''}
+                            onChange={(e) => setCustomForm({ ...customForm, video_description: e.target.value })}
+                            className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Kontrol Mobile APK Android */}
+                    <div className="space-y-3 bg-slate-950 p-4 rounded-2xl border border-emerald-500/40 shadow-inner">
+                      <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                        <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs sm:text-sm">
+                          <Sparkles className="w-4 h-4 text-emerald-400" />
+                          <span>Kontrol Tombol Melayang Download APK Mobile Android</span>
+                        </div>
+                        <span className="text-[10px] text-emerald-400/80 font-mono bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                          Mobile APK Control
+                        </span>
+                      </div>
+
+                      <label className="p-3 rounded-xl bg-slate-900 border border-slate-800 hover:border-emerald-500/50 flex items-center justify-between cursor-pointer transition-all">
+                        <div>
+                          <div className="font-bold text-xs text-emerald-300">
+                            Tampilkan Tombol Melayang Download APK Mobile Android
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-0.5">
+                            Tombol melayang akan selalu tampil di sudut kanan bawah dashboard HP Android &amp; Desktop.
+                          </div>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={customForm.show_apk_download_button !== false}
+                          onChange={(e) => setCustomForm({ ...customForm, show_apk_download_button: e.target.checked })}
+                          className="rounded border-slate-700 text-emerald-600 focus:ring-emerald-500 w-4 h-4 shrink-0"
+                        />
+                      </label>
+
+                      {/* Notifikasi jika saat ini disembunyikan oleh tombol (X) */}
+                      {(isApkHiddenByX || isApkBannerDismissed) && (
+                        <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-3 text-xs text-amber-300 animate-fade-in">
+                          <div className="text-[11px] leading-tight">
+                            <span className="font-bold text-amber-200">Status Tombol / Banner:</span> Saat ini disembunyikan via tombol silang (x) di dashboard.
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              try {
+                                localStorage.removeItem('cms_apk_button_hidden');
+                                localStorage.removeItem('cms_apk_banner_hidden');
+                                setIsApkHiddenByX(false);
+                                setIsApkBannerDismissed(false);
+                                window.dispatchEvent(new CustomEvent('cms_apk_hidden_changed', { detail: { hidden: false } }));
+                              } catch (err) {}
+                            }}
+                            className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] cursor-pointer shrink-0 transition-all shadow-md active:scale-95"
+                          >
+                            Tampilkan Kembali
+                          </button>
+                        </div>
+                      )}
+
+                      <div className="space-y-1">
+                        <label className="block text-slate-300 font-semibold text-xs">
+                          Link Tautan Download File .APK Android (Google Drive / Direct URL):
+                        </label>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <input
+                            type="url"
+                            value={customForm.apk_download_url || 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing'}
+                            onChange={(e) => setCustomForm({ ...customForm, apk_download_url: e.target.value })}
+                            placeholder="https://drive.google.com/file/d/..."
+                            className="flex-1 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-xs focus:ring-1 focus:ring-emerald-500 min-w-0"
+                          />
+                          <a
+                            href={customForm.apk_download_url || 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing'}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3.5 py-2 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center justify-center gap-1 shrink-0 transition-all cursor-pointer"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                            <span>Tes Link</span>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex items-center justify-end gap-2.5 p-4 sm:p-5 border-t border-slate-800 bg-slate-950/80 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setIsCustomizerOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-semibold hover:bg-slate-700 text-xs transition-all cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold flex items-center gap-1.5 shadow-lg shadow-indigo-600/30 text-xs transition-all cursor-pointer active:scale-95"
                 >
                   <Check className="w-4 h-4" />
                   <span>Simpan Perubahan</span>
