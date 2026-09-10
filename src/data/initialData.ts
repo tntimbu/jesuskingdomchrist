@@ -173,6 +173,12 @@ export const initialSettings: AppSettings = {
   firebase_app_id: defaultFirebaseConfig.appId,
   google_sheet_id: '1A2b3C4d5E6f7G8h9I0j_ChurchMasterDatabase2026',
   google_apps_script_url: 'https://script.google.com/macros/s/AKfycbxDemoCMSProScript/exec',
+  // Push Notification Defaults (Website 2 APK Builder + OneSignal)
+  onesignal_enabled: true,
+  onesignal_app_id: '',
+  onesignal_rest_api_key: '',
+  onesignal_google_project_number: '250034601366',
+  onesignal_auto_push_announcement: true,
   timezone: 'Asia/Jakarta (WIB)',
   bahasa: 'Bahasa Indonesia'
 };

@@ -12,6 +12,7 @@ import { menuModules } from './data/navigationMenu';
 
 import { getThemeClasses } from './utils/themeHelper';
 import { registerMessagingServiceWorker, listenToForegroundMessages } from './utils/firebaseMessaging';
+import { initOneSignalWebSDK } from './utils/pushNotificationService';
 
 import { DashboardView } from './components/DashboardView';
 import { JemaatView } from './components/views/JemaatView';
@@ -103,6 +104,17 @@ export default function App() {
       }
     }
   }, [settings?.warna_tema]);
+
+  useEffect(() => {
+    // Inisialisasi OneSignal Push Notification jika disetel & aktif
+    if (settings && settings.onesignal_enabled !== false && settings.onesignal_app_id) {
+      try {
+        initOneSignalWebSDK(settings.onesignal_app_id);
+      } catch (err) {
+        console.warn('OneSignal init error:', err);
+      }
+    }
+  }, [settings?.onesignal_app_id, settings?.onesignal_enabled]);
 
   useEffect(() => {
     // Listen for setting changes across components & tabs

@@ -323,6 +323,14 @@ export interface AppSettings {
   google_sheet_id?: string;
   gas_api_url?: string;
   google_apps_script_url?: string;
+  // Push Notification Settings (Website 2 APK Builder + Firebase FCM / OneSignal)
+  firebase_package_name?: string;
+  firebase_fcm_server_key?: string;
+  onesignal_enabled?: boolean;
+  onesignal_app_id?: string;
+  onesignal_rest_api_key?: string;
+  onesignal_google_project_number?: string;
+  onesignal_auto_push_announcement?: boolean;
   timezone?: string;
   bahasa?: string;
 }

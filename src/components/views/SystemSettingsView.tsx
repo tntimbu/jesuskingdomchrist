@@ -45,9 +45,19 @@ import {
   Sparkles,
   CreditCard,
   QrCode,
-  Megaphone
+  Megaphone,
+  Bell,
+  Smartphone,
+  Send,
+  ExternalLink,
+  HelpCircle,
+  Info,
+  FileJson
 } from 'lucide-react';
 import { DashboardVisibilityManager } from '../dashboard/DashboardVisibilityManager';
+import { sendOneSignalPushNotification } from '../../utils/pushNotificationService';
+import { Website2ApkNotificationGuideModal } from '../Website2ApkNotificationGuideModal';
+import { downloadGoogleServicesJsonFile } from '../../utils/googleServicesHelper';
 
 interface SystemSettingsViewProps {
   currentUser: User;
@@ -60,7 +70,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
   settings,
   onUpdateSettings
 }) => {
-  const [activeTab, setActiveTab] = useState<'METADATA' | 'GAS_FIREBASE' | 'USERS' | 'AUDIT'>('METADATA');
+  const [activeTab, setActiveTab] = useState<'METADATA' | 'PUSH_NOTIF' | 'GAS_FIREBASE' | 'USERS' | 'AUDIT'>('METADATA');
   const [usersList, setUsersList] = useState<User[]>([]);
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
   const [loginHistory, setLoginHistory] = useState<LoginHistory[]>([]);
@@ -68,6 +78,16 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
   // Metadata Form State
   const [metaForm, setMetaForm] = useState<AppSettings>(settings);
   const [savedSuccess, setSavedSuccess] = useState(false);
+
+  // Push Notification Testing State (OneSignal & Website 2 APK Builder)
+  const [testPushTitle, setTestPushTitle] = useState('📢 Warta GKFC Pro (Status Bar)');
+  const [testPushMessage, setTestPushMessage] = useState('Shalom! Tes notifikasi bar atas Android berhasil masuk meski aplikasi tertutup.');
+  const [isTestingPush, setIsTestingPush] = useState(false);
+  const [pushTestResult, setPushTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
+  const [copiedKeyLabel, setCopiedKeyLabel] = useState<string | null>(null);
+  const [apkPackageName, setApkPackageName] = useState(metaForm.firebase_package_name || 'com.gkfc');
+  const [downloadSuccess, setDownloadSuccess] = useState(false);
 
   useEffect(() => {
     if (settings) {
@@ -208,6 +228,63 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
     setSavedSuccess(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setTimeout(() => setSavedSuccess(false), 4000);
+  };
+
+  const handleTestPushNotification = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setIsTestingPush(true);
+    setPushTestResult(null);
+
+    // Play pleasant chime bell locally
+    playNotificationChimeSound();
+
+    // Trigger local status bar / web notification fallback
+    try {
+      await triggerStatusBarNotification(testPushTitle, testPushMessage);
+    } catch (err) {
+      console.warn('Local notif error:', err);
+    }
+
+    if (!metaForm.onesignal_app_id || !metaForm.onesignal_app_id.trim()) {
+      setIsTestingPush(false);
+      setPushTestResult({
+        success: false,
+        message: '⚠️ OneSignal App ID masih kosong! Silakan isi kolom OneSignal App ID di bawah terlebih dahulu. Klik tombol "Panduan Website 2 APK Builder" untuk langkah detailnya.'
+      });
+      return;
+    }
+
+    try {
+      const res = await sendOneSignalPushNotification(
+        metaForm.onesignal_app_id,
+        metaForm.onesignal_rest_api_key || '',
+        {
+          title: testPushTitle,
+          message: testPushMessage,
+          url: window.location.origin
+        }
+      );
+
+      setIsTestingPush(false);
+      if (res.success) {
+        setPushTestResult({
+          success: true,
+          message: `✅ Sinyal Push Berhasil Dikirim ke Server OneSignal! ID Pengiriman: ${res.id || 'terkirim'}. Periksa status bar bagian atas HP Android Anda sekarang!`
+        });
+        StorageManager.logActivity(currentUser.username, 'Mengirim tes push notification ke OneSignal Android', 'System Settings');
+      } else {
+        setPushTestResult({
+          success: false,
+          message: `⚠️ Respons OneSignal: ${res.error || 'Gagal mengirim push. Periksa kembali App ID & REST API Key Anda.'}`
+        });
+      }
+    } catch (err: any) {
+      setIsTestingPush(false);
+      setPushTestResult({
+        success: false,
+        message: `Kendala jaringan: ${err.message || 'Gagal menghubungi server OneSignal.'}`
+      });
+    }
   };
 
   const handleCopyGASCode = () => {
@@ -688,6 +765,16 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
             }`}
           >
             Profil & Custom Tampilan
+          </button>
+
+          <button
+            onClick={() => setActiveTab('PUSH_NOTIF')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
+              activeTab === 'PUSH_NOTIF' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Bell className="w-3.5 h-3.5 text-amber-400" />
+            <span>🔔 Notifikasi HP (Website 2 APK)</span>
           </button>
 
           <button
@@ -1586,6 +1673,365 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* Tab: Push Notifikasi HP Android (Website 2 APK Builder & OneSignal) */}
+      {activeTab === 'PUSH_NOTIF' && (
+        <div className="space-y-6">
+          {/* Header Banner */}
+          <div className="rounded-3xl bg-gradient-to-r from-indigo-950 via-slate-900 to-indigo-950 border border-indigo-500/30 p-6 text-white space-y-3 shadow-xl">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shrink-0">
+                  <Bell className="w-6 h-6 animate-pulse" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base sm:text-lg font-extrabold text-white">
+                      Notifikasi Status Bar HP Android (Website 2 APK Builder)
+                    </h3>
+                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold border border-emerald-500/30">
+                      Aktif Saat App Ditutup
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                    Munculkan notifikasi pengumuman/warta di status bar atas HP Android jemaat dengan suara dering (chime) dan getaran, layaknya WhatsApp meski aplikasi sedang tertutup.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsGuideModalOpen(true)}
+                className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 flex items-center gap-1.5 shrink-0 transition-all cursor-pointer"
+              >
+                <HelpCircle className="w-4 h-4" />
+                <span>Panduan Website 2 APK Builder</span>
+              </button>
+            </div>
+          </div>
+
+          {/* SECTION UTAMA: WEBSITE 2 APK BUILDER PRO V5.0 (GOOGLE-SERVICES.JSON) */}
+          <div className="rounded-3xl bg-slate-900 border-2 border-indigo-500/40 p-6 text-white space-y-4 shadow-xl">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                  <FileJson className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-sm sm:text-base text-white flex items-center gap-2">
+                    <span>1. Website 2 APK Builder Pro v5.0 (Firebase FCM)</span>
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold border border-emerald-500/30">
+                      Sesuai Gambar Anda
+                    </span>
+                  </h4>
+                  <p className="text-[11px] text-slate-400">
+                    Website 2 APK Builder Pro v5.0 membutuhkan file <strong>google-services.json</strong> resmi dari Google Firebase.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  downloadGoogleServicesJsonFile(apkPackageName, metaForm);
+                  setDownloadSuccess(true);
+                  setTimeout(() => setDownloadSuccess(false), 3500);
+                }}
+                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/30 transition cursor-pointer shrink-0"
+              >
+                {downloadSuccess ? <Check className="w-4 h-4 text-white" /> : <Download className="w-4 h-4" />}
+                <span>{downloadSuccess ? 'File Berhasil Didownload!' : 'Download google-services.json'}</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5 sm:col-span-1">
+                <label className="block text-slate-300 font-semibold text-xs">
+                  Package Name Android (Sesuai di Software):
+                </label>
+                <input
+                  type="text"
+                  value={apkPackageName}
+                  onChange={(e) => {
+                    setApkPackageName(e.target.value);
+                    setMetaForm({ ...metaForm, firebase_package_name: e.target.value });
+                  }}
+                  placeholder="com.gkfc"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-emerald-400 font-mono text-xs focus:outline-none focus:border-indigo-400 font-bold"
+                />
+                <p className="text-[10px] text-slate-400">
+                  Di software Anda tertulis: <code>com.</code> dan <code>gkfc</code> (&rarr; <code>com.gkfc</code>)
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-1 sm:col-span-2 text-xs">
+                <div className="font-bold text-amber-300 flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  <span>4 Langkah Pengisian di Jendela "Configure Push Notifications":</span>
+                </div>
+                <ul className="text-slate-300 space-y-1 text-[11px] list-disc list-inside">
+                  <li>
+                    <strong>google-services.json</strong>: Klik <strong>[Choose File]</strong>, pilih file yang baru saja Anda download di atas.
+                  </li>
+                  <li>
+                    Centang ☑ <strong>Ask User to Allow or Disallow Receiving Notifications</strong> (Sangat Wajib untuk Android 13+).
+                  </li>
+                  <li>
+                    Centang ☑ <strong>Show each notification individually (Prevent Overlap)</strong>, lalu klik <strong>[Import &amp; Apply]</strong>.
+                  </li>
+                  <li>
+                    <span className="text-amber-300 font-semibold">PENTING:</span> Pada jendela utama, ganti pilihan <strong>Push Notifications</strong> dari <strong>Disable</strong> ke <strong>Enable</strong>!
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Form Pengaturan Kunci OneSignal */}
+          <form onSubmit={handleSaveMeta} className="space-y-6">
+            <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-xl">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                <div className="flex items-center gap-2">
+                  <Smartphone className="w-5 h-5 text-indigo-400" />
+                  <h4 className="font-bold text-sm text-white">2. Kunci Integrasi OneSignal (Opsi Lanjutan / Plugin Web)</h4>
+                </div>
+                <span className="text-[10px] text-slate-400">Gratis Selamanya untuk Push Mobile</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                {/* Sakelar Aktifkan */}
+                <label className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-slate-700 flex items-center justify-between cursor-pointer transition sm:col-span-2">
+                  <div>
+                    <div className="font-bold text-xs text-emerald-300">Aktifkan Layanan Push Notifikasi HP</div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">
+                      Izinkan aplikasi mengirimkan broadcast push ke seluruh HP jemaat yang menginstal file APK.
+                    </div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={metaForm.onesignal_enabled !== false}
+                    onChange={(e) => setMetaForm({ ...metaForm, onesignal_enabled: e.target.checked })}
+                    className="rounded border-slate-700 text-emerald-600 focus:ring-emerald-500 w-5 h-5 shrink-0"
+                  />
+                </label>
+
+                {/* Sakelar Otomatis saat Warta diubah */}
+                <label className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-slate-700 flex items-center justify-between cursor-pointer transition sm:col-span-2">
+                  <div>
+                    <div className="font-bold text-xs text-indigo-300">Otomatis Kirim Notifikasi saat Warta/Pengumuman Diubah</div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">
+                      Setiap kali Admin mengubah atau menyimpan teks warta (Toa) di Dashboard, sistem akan otomatis mengirim notifikasi ke bar HP.
+                    </div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={metaForm.onesignal_auto_push_announcement !== false}
+                    onChange={(e) => setMetaForm({ ...metaForm, onesignal_auto_push_announcement: e.target.checked })}
+                    className="rounded border-slate-700 text-indigo-600 focus:ring-indigo-500 w-5 h-5 shrink-0"
+                  />
+                </label>
+
+                {/* OneSignal App ID */}
+                <div className="space-y-1 sm:col-span-1">
+                  <label className="block text-slate-300 font-semibold">
+                    OneSignal App ID <span className="text-amber-400">* (Wajib)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={metaForm.onesignal_app_id || ''}
+                    onChange={(e) => setMetaForm({ ...metaForm, onesignal_app_id: e.target.value })}
+                    placeholder="Contoh: 12345678-abcd-1234-ef01-123456789abc"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-xs focus:outline-none focus:border-indigo-400"
+                  />
+                  <p className="text-[10px] text-slate-400">
+                    Didapat dari OneSignal &gt; Settings &gt; Keys &amp; IDs. Masukkan juga ID ini di Website 2 APK Builder!
+                  </p>
+                </div>
+
+                {/* OneSignal REST API Key */}
+                <div className="space-y-1 sm:col-span-1">
+                  <label className="block text-slate-300 font-semibold">
+                    OneSignal REST API Key <span className="text-indigo-400">* (Untuk Kirim Otomatis dari CMS)</span>
+                  </label>
+                  <input
+                    type="password"
+                    value={metaForm.onesignal_rest_api_key || ''}
+                    onChange={(e) => setMetaForm({ ...metaForm, onesignal_rest_api_key: e.target.value })}
+                    placeholder="Kunci REST API OneSignal (os_v2_app_... atau string rahasia)"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-xs focus:outline-none focus:border-indigo-400"
+                  />
+                  <p className="text-[10px] text-slate-400">
+                    Kunci otorisasi pengiriman notifikasi dari CMS ini ke server OneSignal.
+                  </p>
+                </div>
+
+                {/* Google Project Number */}
+                <div className="space-y-1 sm:col-span-2">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-slate-300 font-semibold">
+                      Google Project Number / Firebase Sender ID:
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const val = metaForm.onesignal_google_project_number || '250034601366';
+                        navigator.clipboard.writeText(val);
+                        setCopiedKeyLabel('sender_id');
+                        setTimeout(() => setCopiedKeyLabel(null), 2000);
+                      }}
+                      className="text-[10px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-semibold"
+                    >
+                      <Copy className="w-3 h-3" />
+                      <span>{copiedKeyLabel === 'sender_id' ? 'Tersalin!' : 'Salin Nilai'}</span>
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    value={metaForm.onesignal_google_project_number || '250034601366'}
+                    onChange={(e) => setMetaForm({ ...metaForm, onesignal_google_project_number: e.target.value })}
+                    placeholder="250034601366"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-xs focus:outline-none focus:border-indigo-400"
+                  />
+                  <p className="text-[10px] text-slate-400">
+                    Nilai ini dimasukkan ke kolom <strong>"Google Project Number"</strong> di panel Push Notifications pada software Website 2 APK Builder.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-3 border-t border-slate-800">
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Simpan Konfigurasi Notifikasi</span>
+                </button>
+              </div>
+            </div>
+          </form>
+
+          {/* Section Uji Coba Pengiriman Notifikasi */}
+          <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-xl">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <Send className="w-5 h-5 text-amber-400" />
+                <h4 className="font-bold text-sm text-white">2. Uji Coba Kirim Notifikasi ke Bar Atas Android (Live Test)</h4>
+              </div>
+              <span className="text-[10px] text-emerald-400 font-semibold">Coba Sekarang di HP Anda</span>
+            </div>
+
+            {pushTestResult && (
+              <div
+                className={`p-3.5 rounded-2xl border text-xs font-bold leading-relaxed ${
+                  pushTestResult.success
+                    ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
+                    : 'bg-rose-500/20 border-rose-500/40 text-rose-300'
+                }`}
+              >
+                {pushTestResult.message}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div className="space-y-1">
+                <label className="block text-slate-300 font-semibold">Judul Notifikasi Tes:</label>
+                <input
+                  type="text"
+                  value={testPushTitle}
+                  onChange={(e) => setTestPushTitle(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-slate-300 font-semibold">Isi Pesan Notifikasi Tes:</label>
+                <input
+                  type="text"
+                  value={testPushMessage}
+                  onChange={(e) => setTestPushMessage(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs"
+                />
+              </div>
+            </div>
+
+            {/* Pratinjau Tampilan Notifikasi di Bar HP */}
+            <div className="space-y-1.5 pt-1">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                Simulasi Tampilan di Status Bar Android:
+              </span>
+              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white shrink-0 shadow">
+                  <Bell className="w-4 h-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-xs text-white truncate">{testPushTitle || 'GKFC Church'}</span>
+                    <span className="text-[10px] text-slate-500 shrink-0">Sekarang</span>
+                  </div>
+                  <p className="text-[11px] text-slate-300 mt-0.5 break-words">
+                    {testPushMessage || 'Pesan notifikasi warta gereja...'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+              <p className="text-[11px] text-slate-400">
+                <strong>Tips:</strong> Tutup aplikasi APK di HP Anda, lalu klik tombol di bawah untuk melihat notifikasi muncul di bar atas!
+              </p>
+              <button
+                type="button"
+                onClick={handleTestPushNotification}
+                disabled={isTestingPush}
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 cursor-pointer transition active:scale-95 disabled:opacity-50 shrink-0"
+              >
+                <Send className="w-4 h-4" />
+                <span>{isTestingPush ? 'Sedang Mengirim ke OneSignal...' : '🚀 Kirim Pesan Uji Coba Sekarang'}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Card Panduan Cepat Website 2 APK Builder */}
+          <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-xl">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <h4 className="font-bold text-sm text-white flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-indigo-400" />
+                <span>3. Langkah Penting Saat Membuat APK di "Website 2 APK Builder"</span>
+              </h4>
+              <button
+                type="button"
+                onClick={() => setIsGuideModalOpen(true)}
+                className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold underline"
+              >
+                Buka Tutorial Lengkap
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
+                <span className="font-bold text-amber-400 block">Langkah A: Di Website 2 APK</span>
+                <p className="text-slate-400 text-[11px]">
+                  Cari opsi <strong>Push Notifications</strong> &gt; Centang <strong>[OneSignal]</strong>. Masukkan App ID &amp; Google Project Number (<code className="text-emerald-400">250034601366</code>).
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
+                <span className="font-bold text-indigo-400 block">Langkah B: Generate &amp; Pasang APK</span>
+                <p className="text-slate-400 text-[11px]">
+                  Build file APK dan instal ke HP. Buka aplikasi 1x dan klik <strong>"Izinkan" (Allow)</strong> saat HP meminta izin notifikasi.
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
+                <span className="font-bold text-emerald-400 block">Langkah C: Selesai!</span>
+                <p className="text-slate-400 text-[11px]">
+                  Kapanpun Admin mengubah Warta atau mengirim pesan, HP Android akan otomatis berdering di bar atas meski aplikasi sedang ditutup!
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -2897,6 +3343,15 @@ fun createHighImportanceChannel(context: Context) {
           </div>
         </div>
       )}
+
+      {/* Modal Panduan Website 2 APK Builder */}
+      <Website2ApkNotificationGuideModal
+        isOpen={isGuideModalOpen}
+        onClose={() => setIsGuideModalOpen(false)}
+        senderId={metaForm.onesignal_google_project_number || '250034601366'}
+        appUrl={window.location.origin}
+        packageName={apkPackageName}
+      />
     </div>
   );
 };

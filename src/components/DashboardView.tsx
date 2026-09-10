@@ -82,8 +82,14 @@ import {
   UserCheck,
   Settings,
   LogIn,
-  QrCode
+  QrCode,
+  HelpCircle,
+  Info,
+  FileJson
 } from 'lucide-react';
+import { broadcastChurchAnnouncement } from '../utils/pushNotificationService';
+import { Website2ApkNotificationGuideModal } from './Website2ApkNotificationGuideModal';
+import { downloadGoogleServicesJsonFile } from '../utils/googleServicesHelper';
 
 import {
   Chart as ChartJS,
@@ -336,6 +342,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [wartaText, setWartaText] = useState(settings.jemaat_announcement_text || '');
   const [wartaBannerActive, setWartaBannerActive] = useState(settings.show_pinned_notif_banner !== false);
   const [wartaSuccessMsg, setWartaSuccessMsg] = useState(false);
+  const [sendPushOnSaveWarta, setSendPushOnSaveWarta] = useState(true);
+  const [isWebsite2ApkGuideOpen, setIsWebsite2ApkGuideOpen] = useState(false);
 
   // Sinkronisasi form saat settings berubah
   useEffect(() => {
@@ -357,6 +365,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
     window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { action: 'settings_updated' } }));
     StorageManager.logActivity(currentUser.username, 'Mengubah teks warta pengumuman gereja (Icon Toa)', 'System Settings');
+    
+    // Broadcast push notification ke bar Android Website 2 APK jika diaktifkan
+    if (sendPushOnSaveWarta && wartaText.trim()) {
+      broadcastChurchAnnouncement(
+        updated,
+        '📢 ' + (updated.nama_gereja || 'Warta Jemaat GKFC'),
+        wartaText.trim(),
+        '/'
+      ).then((res) => {
+        if (res.success && res.method === 'onesignal') {
+          setRefreshToast('📢 Warta disimpan & Push Notifikasi berhasil terkirim ke bar HP Android!');
+        }
+      }).catch((err) => console.warn('Push error:', err));
+    }
+
     setWartaSuccessMsg(true);
     setRefreshToast('✅ Warta & Pengumuman Gereja Berhasil Disimpan!');
     setTimeout(() => {
@@ -731,6 +754,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
     window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { action: 'settings_updated' } }));
     StorageManager.logActivity(currentUser.username, 'Mengubah kustomisasi portal & dashboard jemaat', 'System Settings');
+
+    // Auto broadcast push notification jika warta pengumuman diubah
+    if (customForm.onesignal_auto_push_announcement !== false && customForm.jemaat_announcement_text?.trim() && customForm.jemaat_announcement_text !== settings.jemaat_announcement_text) {
+      broadcastChurchAnnouncement(
+        customForm,
+        '📢 ' + (customForm.nama_gereja || 'Warta Jemaat GKFC'),
+        customForm.jemaat_announcement_text.trim(),
+        '/'
+      ).catch((err) => console.warn('Push broadcast error:', err));
+    }
+
     setSaveSuccessMsg(true);
     setRefreshToast('✅ Perubahan Kustomisasi Dashboard & Portal Jemaat Berhasil Disimpan!');
     setTimeout(() => {
@@ -1542,15 +1576,33 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </p>
                 </div>
               </div>
-              <a
-                href={settings.apk_download_url || 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing'}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-600/30 border border-emerald-400/40 flex items-center justify-center gap-2 transition-all active:scale-95 shrink-0 sm:mr-8"
-              >
-                <Download className="w-4 h-4 animate-pulse" />
-                <span>Unduh File .APK (Google Drive)</span>
-              </a>
+              <div className="flex flex-wrap items-center gap-2 shrink-0 sm:mr-8">
+                <a
+                  href={settings.apk_download_url || 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-600/30 border border-emerald-400/40 flex items-center justify-center gap-2 transition-all active:scale-95 shrink-0"
+                >
+                  <Download className="w-4 h-4 animate-pulse" />
+                  <span>Unduh File .APK</span>
+                </a>
+
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      downloadGoogleServicesJsonFile('com.gkfc', settings);
+                      setRefreshToast('📥 File google-services.json berhasil didownload!');
+                      setTimeout(() => setRefreshToast(''), 3500);
+                    }}
+                    className="px-3.5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shadow-lg border border-indigo-400/40 flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0"
+                    title="Download google-services.json untuk Website 2 APK Builder Pro v5.0"
+                  >
+                    <FileJson className="w-4 h-4 text-amber-300" />
+                    <span>Download google-services.json</span>
+                  </button>
+                )}
+              </div>
             </div>
           )}
 
@@ -2524,7 +2576,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0 sm:mr-8">
+              <div className="flex flex-wrap items-center gap-2 shrink-0 sm:mr-8">
                 <a
                   href={settings.apk_download_url || 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing'}
                   target="_blank"
@@ -2534,6 +2586,22 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <Download className="w-4 h-4 animate-pulse" />
                   <span>Download File .APK</span>
                 </a>
+
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      downloadGoogleServicesJsonFile('com.gkfc', settings);
+                      setRefreshToast('📥 File google-services.json berhasil didownload!');
+                      setTimeout(() => setRefreshToast(''), 3500);
+                    }}
+                    className="px-3.5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shadow-lg border border-indigo-400/40 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                    title="Download google-services.json untuk Website 2 APK Builder Pro v5.0"
+                  >
+                    <FileJson className="w-4 h-4 text-amber-300" />
+                    <span>Download google-services.json</span>
+                  </button>
+                )}
               </div>
             </div>
           )}
@@ -2730,6 +2798,57 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* Kirim Push Notifikasi ke Status Bar HP Android (Website 2 APK Builder) */}
+              <div className="p-3.5 rounded-2xl bg-indigo-950/40 border border-indigo-500/30 flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <div className="font-bold text-indigo-300 text-xs flex items-center gap-1.5">
+                    <Bell className="w-3.5 h-3.5 text-amber-400 animate-bounce" />
+                    <span>Kirim Push Notifikasi ke Status Bar HP Android</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">
+                      Website 2 APK
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-slate-400">
+                    Notifikasi berdering dan muncul di bar atas HP jemaat meski aplikasi sedang ditutup.
+                  </div>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={sendPushOnSaveWarta}
+                    onChange={(e) => setSendPushOnSaveWarta(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-10 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                </label>
+              </div>
+
+              {/* Bantuan Website 2 APK Builder & Status OneSignal */}
+              <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-[10px]">
+                <button
+                  type="button"
+                  onClick={() => setIsWebsite2ApkGuideOpen(true)}
+                  className="text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1 cursor-pointer underline"
+                >
+                  <HelpCircle className="w-3.5 h-3.5" />
+                  <span>Panduan Website 2 APK Builder (Notifikasi HP)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    downloadGoogleServicesJsonFile('com.gkfc', settings);
+                    setRefreshToast('📥 File google-services.json berhasil didownload!');
+                    setTimeout(() => setRefreshToast(''), 3500);
+                  }}
+                  className="px-2.5 py-1 rounded-lg bg-emerald-600/80 hover:bg-emerald-500 text-white font-bold flex items-center gap-1 transition cursor-pointer"
+                  title="Download file konfigurasi google-services.json untuk Website 2 APK"
+                >
+                  <FileJson className="w-3.5 h-3.5" />
+                  <span>Download google-services.json</span>
+                </button>
               </div>
 
               <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
@@ -3806,6 +3925,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* Modal Panduan Notifikasi Website 2 APK Builder */}
+      <Website2ApkNotificationGuideModal
+        isOpen={isWebsite2ApkGuideOpen}
+        onClose={() => setIsWebsite2ApkGuideOpen(false)}
+        senderId={settings.onesignal_google_project_number || '250034601366'}
+        appUrl={window.location.origin}
+      />
     </div>
   );
 };
