@@ -363,3 +363,22 @@ export interface PrayerRequest {
   status: 'Diterima' | 'Dalam Doa' | 'Terjawab';
   is_private: boolean;
 }
+
+export type ChatTag = 'UMUM' | 'DOA' | 'AYAT' | 'SALAM' | 'INFO';
+
+export interface ChatMessage {
+  id: string;
+  sender_name: string;
+  sender_id?: string;
+  sender_role?: 'SUPER_ADMIN' | 'ADMIN' | 'JEMAAT' | 'TAMU';
+  sender_avatar?: string;
+  message: string;
+  created_at: string;
+  tag?: ChatTag;
+  reply_to?: {
+    id: string;
+    sender_name: string;
+    message: string;
+  };
+  is_pinned?: boolean;
+}

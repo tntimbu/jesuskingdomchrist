@@ -96,6 +96,21 @@
       "properties": {
         "wilayah_id": { "type": "string" }
       }
+    },
+    "chat_messages": {
+      "title": "Ruang Chat Jemaat & Pengguna",
+      "description": "Pesan percakapan ruang chat komunitas gereja untuk semua pengguna",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "sender_name": { "type": "string" },
+        "sender_role": { "type": "string" },
+        "message": { "type": "string", "maxLength": 2000 },
+        "created_at": { "type": "string" },
+        "tag": { "type": "string" },
+        "is_pinned": { "type": "boolean" }
+      },
+      "required": ["id", "sender_name", "message", "created_at"]
     }
   }
 }

@@ -24,6 +24,7 @@ import { MediaView } from './components/views/MediaView';
 import { GaleriView } from './components/views/GaleriView';
 import { LaporanView } from './components/views/LaporanView';
 import { JemaatPortalView } from './components/views/JemaatPortalView';
+import { ChatView } from './components/views/ChatView';
 import { SystemSettingsView } from './components/views/SystemSettingsView';
 import { LainnyaView } from './components/views/LainnyaView';
 import { SplashScreen } from './components/SplashScreen';
@@ -388,6 +389,8 @@ export default function App() {
           {activeTab === 'laporan' && <LaporanView currentUser={effectiveUser} />}
 
           {activeTab === 'jemaat_portal' && <JemaatPortalView currentUser={effectiveUser} settings={settings} />}
+
+          {activeTab === 'chat' && <ChatView currentUser={effectiveUser} settings={settings} />}
 
           {activeTab === 'settings' && (
             <SystemSettingsView

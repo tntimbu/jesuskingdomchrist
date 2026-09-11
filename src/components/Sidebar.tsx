@@ -17,7 +17,8 @@ import {
   Settings,
   UserCheck,
   Grid,
-  ChevronRight
+  ChevronRight,
+  MessageCircle
 } from 'lucide-react';
 
 export type NavTab =
@@ -36,6 +37,7 @@ export type NavTab =
   | 'settings'
   | 'agenda'
   | 'media'
+  | 'chat'
   | 'lainnya';
 
 interface SidebarProps {
@@ -139,6 +141,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       id: 'jemaat_portal',
       label: 'Portal Jemaat Saya',
       icon: UserCheck,
+      roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
+    },
+    {
+      id: 'chat',
+      label: 'Ruang Chat Jemaat',
+      icon: MessageCircle,
       roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
     },
     {

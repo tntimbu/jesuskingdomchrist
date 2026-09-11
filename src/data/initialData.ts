@@ -21,7 +21,8 @@ import {
   PrayerRequest,
   FeaturedVideo,
   ChurchTenant,
-  SuperAdminContact
+  SuperAdminContact,
+  ChatMessage
 } from '../types';
 
 export const initialTenants: ChurchTenant[] = [
@@ -803,3 +804,35 @@ export const initialPrayerRequests: PrayerRequest[] = [
     is_private: false
   }
 ];
+
+export const initialChatMessages: ChatMessage[] = [
+  {
+    id: 'CHAT-001',
+    sender_name: 'Dkn. Maria Melani (Sekretariat)',
+    sender_id: 'adminsekretariat',
+    sender_role: 'ADMIN',
+    message: 'Syalom Bapak/Ibu dan Saudara sekalian! Selamat datang di Ruang Chat Komunitas Jemaat GKFC. Di sini kita dapat saling bertukar sapa, berbagi pokok doa, dan saling menguatkan di dalam kasih Kristus. 🙏🕊️',
+    created_at: new Date(Date.now() - 3600000 * 5).toISOString(),
+    tag: 'INFO',
+    is_pinned: true
+  },
+  {
+    id: 'CHAT-002',
+    sender_name: 'Pdt. Timotius Susanto',
+    sender_id: 'pdt_timotius',
+    sender_role: 'ADMIN',
+    message: 'Syalom jemaat yang terkasih. "Sebab di mana dua atau tiga orang berkumpul dalam Nama-Ku, di situ Aku ada di tengah-tengah mereka." (Matius 18:20). Kiranya damai sejahtera Kristus senantiasa menaungi kita semua.',
+    created_at: new Date(Date.now() - 3600000 * 3).toISOString(),
+    tag: 'AYAT'
+  },
+  {
+    id: 'CHAT-003',
+    sender_name: 'Bpk. Yohanes Pratama',
+    sender_id: 'yohanes_p',
+    sender_role: 'JEMAAT',
+    message: 'Syalom semuanya! Puji Tuhan terima kasih atas dukungan doa jemaat untuk keluarga kami. Tuhan Yesus memberkati pelayanan kita bersama.',
+    created_at: new Date(Date.now() - 3600000).toISOString(),
+    tag: 'SALAM'
+  }
+];
+

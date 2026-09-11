@@ -24,7 +24,8 @@ import {
   EventReservation,
   ChurchTenant,
   ChurchStatus,
-  SuperAdminContact
+  SuperAdminContact,
+  ChatMessage
 } from '../types';
 
 import {
@@ -49,7 +50,8 @@ import {
   initialPrayerRequests,
   initialFeaturedVideos,
   initialTenants,
-  initialSuperAdminContact
+  initialSuperAdminContact,
+  initialChatMessages
 } from '../data/initialData';
 
 import { pushToCloud, initRealtimeCloudSync } from './firebaseSync';
@@ -81,7 +83,8 @@ const KEYS = {
   LOGIN_HISTORY: 'cms_pro_login_history',
   PRAYER_REQUESTS: 'cms_pro_prayer_requests',
   EVENT_RESERVATIONS: 'cms_pro_event_reservations',
-  CURRENT_USER: 'cms_pro_current_user'
+  CURRENT_USER: 'cms_pro_current_user',
+  CHAT_MESSAGES: 'cms_pro_chat_messages'
 };
 
 const defaultKas: KasPengeluaran[] = [
@@ -897,6 +900,43 @@ export const StorageManager = {
   },
   saveEventReservations: (list: EventReservation[]): void => setItem(KEYS.EVENT_RESERVATIONS, list),
 
+  getChatMessages: (): ChatMessage[] => {
+    return getItem<ChatMessage[]>(KEYS.CHAT_MESSAGES, initialChatMessages);
+  },
+  saveChatMessages: (messages: ChatMessage[]): void => {
+    setItem(KEYS.CHAT_MESSAGES, messages);
+  },
+  addChatMessage: (msg: Omit<ChatMessage, 'id' | 'created_at'>): ChatMessage => {
+    const list = StorageManager.getChatMessages();
+    const newMsg: ChatMessage = {
+      ...msg,
+      id: `CHAT-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      created_at: new Date().toISOString()
+    };
+    // Keep max 500 latest messages to prevent localStorage overflow
+    const updated = [...list, newMsg].slice(-500);
+    StorageManager.saveChatMessages(updated);
+    return newMsg;
+  },
+  deleteChatMessage: (id: string): void => {
+    const list = StorageManager.getChatMessages();
+    const updated = list.filter((m) => m.id !== id);
+    StorageManager.saveChatMessages(updated);
+  },
+  togglePinChatMessage: (id: string): void => {
+    const list = StorageManager.getChatMessages();
+    const updated = list.map((m) => {
+      if (m.id === id) {
+        return { ...m, is_pinned: !m.is_pinned };
+      }
+      return m;
+    });
+    StorageManager.saveChatMessages(updated);
+  },
+  clearChatMessages: (): void => {
+    StorageManager.saveChatMessages([]);
+  },
+
   getCurrentUser: (): User | null => {
     const saved = getItem<User | null>(KEYS.CURRENT_USER, null);
     if (!saved) return null;
@@ -941,6 +981,7 @@ export const StorageManager = {
     setItem(KEYS.ACTIVITY_LOGS, initialActivityLogs);
     setItem(KEYS.LOGIN_HISTORY, initialLoginHistory);
     setItem(KEYS.PRAYER_REQUESTS, initialPrayerRequests);
+    setItem(KEYS.CHAT_MESSAGES, initialChatMessages);
     localStorage.removeItem(KEYS.CURRENT_USER);
   },
   resetAllDataToDefaults: (): void => {

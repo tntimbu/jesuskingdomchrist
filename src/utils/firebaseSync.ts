@@ -57,7 +57,8 @@ const DOC_MAPPING: Record<string, string> = {
   cms_pro_login_history: 'login_history',
   cms_pro_prayer_requests: 'prayer_requests',
   cms_pro_saas_tenants: 'saas_tenants',
-  cms_pro_superadmin_contact: 'superadmin_contact'
+  cms_pro_superadmin_contact: 'superadmin_contact',
+  cms_pro_chat_messages: 'chat_messages'
 };
 
 const REVERSE_DOC_MAPPING: Record<string, string> = {
@@ -85,7 +86,8 @@ const REVERSE_DOC_MAPPING: Record<string, string> = {
   login_history: 'cms_pro_login_history',
   prayer_requests: 'cms_pro_prayer_requests',
   saas_tenants: 'cms_pro_saas_tenants',
-  superadmin_contact: 'cms_pro_superadmin_contact'
+  superadmin_contact: 'cms_pro_superadmin_contact',
+  chat_messages: 'cms_pro_chat_messages'
 };
 
 /**

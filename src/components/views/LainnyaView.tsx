@@ -18,7 +18,8 @@ import {
   Grid,
   Sparkles,
   MapPin,
-  ArrowRight
+  ArrowRight,
+  MessageCircle
 } from 'lucide-react';
 
 interface LainnyaViewProps {
@@ -44,6 +45,16 @@ export const LainnyaView: React.FC<LainnyaViewProps> = ({
       icon: UserCheck,
       gradient: 'from-teal-600 via-emerald-600 to-teal-800',
       badge: 'Jemaat Mandatory',
+      roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
+    },
+    {
+      id: 'chat' as NavTab,
+      title: 'Ruang Chat Komunitas Jemaat',
+      subtitle: 'Obrolan Komunitas, Berbagi Sapaan, Doa & Persekutuan Bersama',
+      category: 'KOMUNITAS & CHAT',
+      icon: MessageCircle,
+      gradient: 'from-blue-600 via-indigo-600 to-violet-800',
+      badge: 'Live Chat',
       roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
     },
     {

@@ -1194,7 +1194,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-6 gap-3">
             {/* 1. Jemaat & KK */}
             <button
               onClick={() => onNavigate('jemaat')}
@@ -1279,7 +1279,28 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
             </button>
 
-            {/* 5. Menu Lainnya */}
+            {/* 5. Ruang Chat Jemaat */}
+            <button
+              onClick={() => onNavigate('chat')}
+              className="p-4 rounded-2xl bg-gradient-to-br from-indigo-950/90 via-slate-900 to-slate-950 hover:from-indigo-900/90 hover:to-indigo-950 border border-indigo-500/30 hover:border-indigo-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
+            >
+              <div className="flex items-center justify-between">
+                <div className="p-2.5 rounded-xl bg-indigo-600 text-white shadow-lg group-hover:scale-110 transition-transform">
+                  <MessageCircle className="w-5 h-5" />
+                </div>
+                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                  Live Chat
+                </span>
+              </div>
+              <div>
+                <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-indigo-300 transition-colors block">
+                  Ruang Chat
+                </span>
+                <span className="text-[10px] text-slate-400 block mt-0.5">Komunitas Jemaat</span>
+              </div>
+            </button>
+
+            {/* 6. Menu Lainnya */}
             <button
               onClick={() => onNavigate('lainnya')}
               className="p-4 rounded-2xl bg-gradient-to-br from-cyan-950/90 via-slate-900 to-slate-950 hover:from-cyan-900/90 hover:to-cyan-950 border border-cyan-500/30 hover:border-cyan-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
