@@ -165,7 +165,159 @@ export const OFFLINE_VERSES: Record<string, BibleVerse[]> = {
     { book_id: 'GEN', book_name: 'Kejadian', chapter: 1, verse: 2, text: 'Bumi belum berbentuk dan kosong; gelap gulita menutupi samudera raya, dan Roh Allah melayang-layang di atas permukaan air.' },
     { book_id: 'GEN', book_name: 'Kejadian', chapter: 1, verse: 3, text: 'Berfirmanlah Allah: "Jadilah terang." Lalu terang itu jadi.' },
     { book_id: 'GEN', book_name: 'Kejadian', chapter: 1, verse: 4, text: 'Allah melihat bahwa terang itu baik, lalu dipisahkan-Nyalah terang itu dari gelap.' },
-    { book_id: 'GEN', book_name: 'Kejadian', chapter: 1, verse: 5, text: 'Dan Allah menamai terang itu siang, dan gelap itu malam. Jadilah petang dan jadilah pagi, itulah hari pertama.' }
+    { book_id: 'GEN', book_name: 'Kejadian', chapter: 1, verse: 5, text: 'Dan Allah menamai terang itu siang, dan gelap itu malam. Jadilah petang dan jadilah pagi, itulah hari pertama.' },
+    { book_id: 'GEN', book_name: 'Kejadian', chapter: 1, verse: 26, text: 'Berfirmanlah Allah: "Baiklah Kita menjadikan manusia menurut gambar dan rupa Kita, supaya mereka berkuasa atas ikan-ikan di laut dan burung-burung di udara dan atas ternak dan atas seluruh bumi dan atas segala binatang melata yang merayap di bumi."' },
+    { book_id: 'GEN', book_name: 'Kejadian', chapter: 1, verse: 27, text: 'Maka Allah menciptakan manusia itu menurut gambar-Nya, menurut gambar Allah diciptakan-Nya dia; laki-laki dan perempuan diciptakan-Nya mereka.' },
+    { book_id: 'GEN', book_name: 'Kejadian', chapter: 1, verse: 31, text: 'Maka Allah melihat segala yang dijadikan-Nya itu, sungguh amat baik. Jadilah petang dan jadilah pagi, itulah hari keenam.' }
+  ],
+  // Mazmur 1 (Jalan Orang Benar dan Jalan Orang Fasik)
+  'PSA-1': [
+    { book_id: 'PSA', book_name: 'Mazmur', chapter: 1, verse: 1, text: 'Berbahagialah orang yang tidak berjalan menurut nasihat orang fasik, yang tidak berdiri di jalan orang berdosa, dan yang tidak duduk dalam kumpulan pencemooh,' },
+    { book_id: 'PSA', book_name: 'Mazmur', chapter: 1, verse: 2, text: 'tetapi yang kesukaannya ialah Taurat TUHAN, dan yang merenungkan Taurat itu siang dan malam.' },
+    { book_id: 'PSA', book_name: 'Mazmur', chapter: 1, verse: 3, text: 'Ia seperti pohon, yang ditanam di tepi aliran air, yang menghasilkan buahnya pada musimnya, dan yang tidak layu daunnya; apa saja yang diperbuatnya berhasil.' },
+    { book_id: 'PSA', book_name: 'Mazmur', chapter: 1, verse: 4, text: 'Bukan demikian orang fasik: mereka seperti sekam yang ditiupkan angin.' },
+    { book_id: 'PSA', book_name: 'Mazmur', chapter: 1, verse: 5, text: 'Sebab itu orang fasik tidak akan tahan dalam penghakiman, begitu pula orang berdosa dalam perkumpulan orang benar;' },
+    { book_id: 'PSA', book_name: 'Mazmur', chapter: 1, verse: 6, text: 'sebab TUHAN mengenal jalan orang benar, tetapi jalan orang fasik menuju kebinasaan.' }
+  ],
+  // Mazmur 100 (Nyanyian Syukur)
+  'PSA-100': [
+    { book_id: 'PSA', book_name: 'Mazmur', chapter: 100, verse: 1, text: 'Bersorak-soraklah bagi TUHAN, hai seluruh bumi!' },
+    { book_id: 'PSA', book_name: 'Mazmur', chapter: 100, verse: 2, text: 'Beribadahlah kepada TUHAN dengan sukacita, datanglah ke hadapan-Nya dengan sorak-sorai!' },
+    { book_id: 'PSA', book_name: 'Mazmur', chapter: 100, verse: 3, text: 'Ketahuilah, bahwa TUHANlah Allah; Dialah yang menjadikan kita dan punya Dialah kita, umat-Nya dan kawanan domba gembalaan-Nya.' },
+    { book_id: 'PSA', book_name: 'Mazmur', chapter: 100, verse: 4, text: 'Masuklah melalui pintu gerbang-Nya dengan nyanyian syukur, ke dalam pelataran-Nya dengan puji-pujian, bersyukurlah kepada-Nya dan pujilah nama-Nya!' },
+    { book_id: 'PSA', book_name: 'Mazmur', chapter: 100, verse: 5, text: 'Sebab TUHAN itu baik, kasih setia-Nya untuk selama-lamanya, dan kesetiaan-Nya tetap turun-temurun.' }
+  ],
+  // Mazmur 103 (Pujilah TUHAN, Hai Jiwaku)
+  'PSA-103': [
+    { book_id: 'PSA', book_name: 'Mazmur', chapter: 103, verse: 1, text: 'Pujilah TUHAN, hai jiwaku! Pujilah nama-Nya yang kudus, hai segenap batinku!' },
+    { book_id: 'PSA', book_name: 'Mazmur', chapter: 103, verse: 2, text: 'Pujilah TUHAN, hai jiwaku, dan janganlah lupakan segala kebaikan-Nya!' },
+    { book_id: 'PSA', book_name: 'Mazmur', chapter: 103, verse: 3, text: 'Dia yang mengampuni segala kesalahanmu, yang menyembuhkan segala penyakitmu,' },
+    { book_id: 'PSA', book_name: 'Mazmur', chapter: 103, verse: 4, text: 'Dia yang menebus hidupmu dari lobang kubur, yang memahkotai engkau dengan kasih setia dan rahmat,' },
+    { book_id: 'PSA', book_name: 'Mazmur', chapter: 103, verse: 5, text: 'Dia yang memuaskan hasratmu dengan kebaikan, sehingga masa mudamu menjadi baru seperti pada burung rajawali.' },
+    { book_id: 'PSA', book_name: 'Mazmur', chapter: 103, verse: 8, text: 'TUHAN adalah penyayang dan pengasih, panjang sabar dan berlimpah kasih setia.' },
+    { book_id: 'PSA', book_name: 'Mazmur', chapter: 103, verse: 11, text: 'tetapi setinggi langit di atas bumi, demikian besarnya kasih setia-Nya atas orang-orang yang takut akan Dia;' },
+    { book_id: 'PSA', book_name: 'Mazmur', chapter: 103, verse: 12, text: 'sejauh timur dari barat, demikian dijauhkan-Nya dari pada kita pelanggaran kita.' }
+  ],
+  // Mazmur 139 (Doa di hadapan Allah yang Mahatahu)
+  'PSA-139': [
+    { book_id: 'PSA', book_name: 'Mazmur', chapter: 139, verse: 1, text: 'TUHAN, Engkau menyelidiki dan mengenal aku;' },
+    { book_id: 'PSA', book_name: 'Mazmur', chapter: 139, verse: 2, text: 'Engkau mengetahui, kalau aku duduk atau berdiri, Engkau mengerti pikiranku dari jauh.' },
+    { book_id: 'PSA', book_name: 'Mazmur', chapter: 139, verse: 3, text: 'Engkau memeriksa aku, kalau aku berjalan dan berbaring, segala jalanku Kaumaklumi.' },
+    { book_id: 'PSA', book_name: 'Mazmur', chapter: 139, verse: 5, text: 'Dari belakang dan dari depan Engkau mengurung aku, dan Engkau menaruh tangan-Mu ke atasku.' },
+    { book_id: 'PSA', book_name: 'Mazmur', chapter: 139, verse: 14, text: 'Aku bersyukur kepada-Mu oleh karena kejadianku dahsyat dan ajaib; ajaib apa yang Kaubuat, dan jiwaku benar-benar menyadarinya.' },
+    { book_id: 'PSA', book_name: 'Mazmur', chapter: 139, verse: 23, text: 'Selidikilah aku, ya Allah, dan kenallah hatiku, ujilah aku dan kenallah pikiran-pikiranku;' },
+    { book_id: 'PSA', book_name: 'Mazmur', chapter: 139, verse: 24, text: 'lihatlah, apakah jalanku serong, dan tuntunlah aku di jalan yang kekal!' }
+  ],
+  // Yosua 1
+  'JOS-1': [
+    { book_id: 'JOS', book_name: 'Yosua', chapter: 1, verse: 7, text: 'Hanya, kuatkan dan teguhkanlah hatimu dengan sungguh-sungguh, bertindaklah hati-hati sesuai dengan seluruh hukum yang telah diperintahkan kepadamu oleh hamba-Ku Musa; janganlah menyimpang ke kanan atau ke kiri, supaya engkau beruntung, ke manapun engkau pergi.' },
+    { book_id: 'JOS', book_name: 'Yosua', chapter: 1, verse: 8, text: 'Janganlah engkau lupa memperkatakan kitab Taurat ini, tetapi renungkanlah itu siang dan malam, supaya engkau bertindak hati-hati sesuai dengan segala yang tertulis di dalamnya, sebab dengan demikian perjalananmu akan berhasil dan engkau akan beruntung.' },
+    { book_id: 'JOS', book_name: 'Yosua', chapter: 1, verse: 9, text: 'Bukankah telah Kuperintahkan kepadamu: kuatkan dan teguhkanlah hatimu? Janganlah kecut dan tawar hati, sebab TUHAN, Allahmu, menyertai engkau, ke manapun engkau pergi.' }
+  ],
+  // Yesaya 40
+  'ISA-40': [
+    { book_id: 'ISA', book_name: 'Yesaya', chapter: 40, verse: 28, text: 'Tidakkah kautahu, dan tidakkah kaudengar? TUHAN ialah Allah kekal yang menciptakan bumi dari ujung ke ujung; Ia tidak menjadi lelah dan tidak menjadi lesu, tidak terduga pengertian-Nya.' },
+    { book_id: 'ISA', book_name: 'Yesaya', chapter: 40, verse: 29, text: 'Dia memberi kekuatan kepada yang lelah dan menambah semangat kepada yang tiada berdaya.' },
+    { book_id: 'ISA', book_name: 'Yesaya', chapter: 40, verse: 30, text: 'Orang-orang muda menjadi lelah dan lesu dan teruna-teruna jatuh tersandung,' },
+    { book_id: 'ISA', book_name: 'Yesaya', chapter: 40, verse: 31, text: 'tetapi orang-orang yang menanti-nantikan TUHAN mendapat kekuatan baru: mereka seumpama rajawali yang naik terbang dengan kekuatan sayapnya; mereka berlari dan tidak menjadi lesu, mereka berjalan dan tidak menjadi lelah.' }
+  ],
+  // Yeremia 29
+  'JER-29': [
+    { book_id: 'JER', book_name: 'Yeremia', chapter: 29, verse: 11, text: 'Sebab Aku ini mengetahui rancangan-rancangan apa yang ada pada-Ku mengenai kamu, demikianlah firman TUHAN, yaitu rancangan damai sejahtera dan bukan rancangan kecelakaan, untuk memberikan kepadamu hari depan yang penuh harapan.' },
+    { book_id: 'JER', book_name: 'Yeremia', chapter: 29, verse: 12, text: 'Dan apabila kamu berseru dan datang untuk berdoa kepada-Ku, maka Aku akan mendengarkan kamu;' },
+    { book_id: 'JER', book_name: 'Yeremia', chapter: 29, verse: 13, text: 'apabila kamu mencari Aku, kamu akan menemukan Aku; apabila kamu menanyakan Aku dengan segenap hati,' },
+    { book_id: 'JER', book_name: 'Yeremia', chapter: 29, verse: 14, text: 'Aku akan memberi kamu menemukan Aku, demikianlah firman TUHAN.' }
+  ],
+  // Matius 5 (Khotbah di Bukit / Ucapan Bahagia)
+  'MAT-5': [
+    { book_id: 'MAT', book_name: 'Matius', chapter: 5, verse: 1, text: 'Ketika Yesus melihat orang banyak itu, naiklah Ia ke atas bukit dan setelah Ia duduk, datanglah murid-murid-Nya kepada-Nya.' },
+    { book_id: 'MAT', book_name: 'Matius', chapter: 5, verse: 2, text: 'Maka Yesus pun mulai berbicara dan mengajar mereka, kata-Nya:' },
+    { book_id: 'MAT', book_name: 'Matius', chapter: 5, verse: 3, text: '"Berbahagialah orang yang miskin di hadapan Allah, karena merekalah yang empunya Kerajaan Sorga.' },
+    { book_id: 'MAT', book_name: 'Matius', chapter: 5, verse: 4, text: 'Berbahagialah orang yang berdukacita, karena mereka akan dihibur.' },
+    { book_id: 'MAT', book_name: 'Matius', chapter: 5, verse: 5, text: 'Berbahagialah orang yang lemah lembut, karena mereka akan memiliki bumi.' },
+    { book_id: 'MAT', book_name: 'Matius', chapter: 5, verse: 6, text: 'Berbahagialah orang yang lapar dan haus akan kebenaran, karena mereka akan dipuaskan.' },
+    { book_id: 'MAT', book_name: 'Matius', chapter: 5, verse: 7, text: 'Berbahagialah orang yang murah hatinya, karena mereka akan beroleh kemurahan.' },
+    { book_id: 'MAT', book_name: 'Matius', chapter: 5, verse: 8, text: 'Berbahagialah orang yang suci hatinya, karena mereka akan melihat Allah.' },
+    { book_id: 'MAT', book_name: 'Matius', chapter: 5, verse: 9, text: 'Berbahagialah orang yang membawa damai, karena mereka akan disebut anak-anak Allah.' },
+    { book_id: 'MAT', book_name: 'Matius', chapter: 5, verse: 14, text: 'Kamu adalah terang dunia. Kota yang terletak di atas gunung tidak mungkin tersembunyi.' },
+    { book_id: 'MAT', book_name: 'Matius', chapter: 5, verse: 16, text: 'Demikianlah hendaknya terangmu bercahaya di depan orang, supaya mereka melihat perbuatanmu yang baik dan memuliakan Bapamu yang di sorga."' }
+  ],
+  // Matius 28 (Amanat Agung)
+  'MAT-28': [
+    { book_id: 'MAT', book_name: 'Matius', chapter: 28, verse: 18, text: 'Yesus mendekati mereka dan berkata: "Kepada-Ku telah diberikan segala kuasa di sorga dan di bumi.' },
+    { book_id: 'MAT', book_name: 'Matius', chapter: 28, verse: 19, text: 'Karena itu pergilah, jadikanlah semua bangsa murid-Ku dan baptislah mereka dalam nama Bapa dan Anak dan Roh Kudus,' },
+    { book_id: 'MAT', book_name: 'Matius', chapter: 28, verse: 20, text: 'dan ajarlah mereka melakukan segala sesuatu yang telah Kuperintahkan kepadamu. Dan ketahuilah, Aku menyertai kamu senantiasa sampai kepada akhir zaman."' }
+  ],
+  // Yohanes 1
+  'JHN-1': [
+    { book_id: 'JHN', book_name: 'Yohanes', chapter: 1, verse: 1, text: 'Pada mulanya adalah Firman; Firman itu bersama-sama dengan Allah dan Firman itu adalah Allah.' },
+    { book_id: 'JHN', book_name: 'Yohanes', chapter: 1, verse: 2, text: 'Ia pada mulanya bersama-sama dengan Allah.' },
+    { book_id: 'JHN', book_name: 'Yohanes', chapter: 1, verse: 3, text: 'Segala sesuatu dijadikan oleh Dia dan tanpa Dia tidak ada suatupun yang telah jadi dari segala yang telah dijadikan.' },
+    { book_id: 'JHN', book_name: 'Yohanes', chapter: 1, verse: 4, text: 'Dalam Dia ada hidup dan hidup itu adalah terang manusia.' },
+    { book_id: 'JHN', book_name: 'Yohanes', chapter: 1, verse: 5, text: 'Terang itu bercahaya di dalam kegelapan dan kegelapan itu tidak menguasainya.' },
+    { book_id: 'JHN', book_name: 'Yohanes', chapter: 1, verse: 12, text: 'Tetapi semua orang yang menerima-Nya diberi-Nya kuasa supaya menjadi anak-anak Allah, yaitu mereka yang percaya dalam nama-Nya;' },
+    { book_id: 'JHN', book_name: 'Yohanes', chapter: 1, verse: 14, text: 'Firman itu telah menjadi manusia, dan diam di antara kita, dan kita telah melihat kemuliaan-Nya, yaitu kemuliaan yang diberikan kepada-Nya sebagai Anak Tunggal Bapa, penuh kasih karunia dan kebenaran.' }
+  ],
+  // Yohanes 14
+  'JHN-14': [
+    { book_id: 'JHN', book_name: 'Yohanes', chapter: 14, verse: 1, text: '"Janganlah gelisah hatimu; percayalah kepada Allah, percayalah juga kepada-Ku.' },
+    { book_id: 'JHN', book_name: 'Yohanes', chapter: 14, verse: 2, text: 'Di rumah Bapa-Ku banyak tempat tinggal. Jika tidak demikian, tentu Aku mengatakannya kepadamu. Sebab Aku pergi ke situ untuk menyediakan tempat bagimu.' },
+    { book_id: 'JHN', book_name: 'Yohanes', chapter: 14, verse: 3, text: 'Dan apabila Aku telah pergi ke situ dan telah menyediakan tempat bagimu, Aku akan datang kembali dan membawa kamu ke tempat-Ku, supaya di tempat di mana Aku berada, kamupun berada.' },
+    { book_id: 'JHN', book_name: 'Yohanes', chapter: 14, verse: 6, text: 'Kata Yesus kepadanya: "Akulah jalan dan kebenaran dan hidup. Tidak ada seorangpun yang datang kepada Bapa, kalau tidak melalui Aku."' },
+    { book_id: 'JHN', book_name: 'Yohanes', chapter: 14, verse: 27, text: 'Damai sejahtera Kutinggalkan bagimu. Damai sejahtera-Ku Kuberikan kepadamu, dan apa yang Kuberikan tidak seperti yang diberikan oleh dunia kepadamu. Janganlah gelisah dan gentar hatimu.' }
+  ],
+  // Yohanes 15 (Pokok Anggur yang Benar)
+  'JHN-15': [
+    { book_id: 'JHN', book_name: 'Yohanes', chapter: 15, verse: 1, text: '"Akulah pokok anggur yang benar dan Bapa-Kulah pengusahanya.' },
+    { book_id: 'JHN', book_name: 'Yohanes', chapter: 15, verse: 4, text: 'Tinggallah di dalam Aku dan Aku di dalam kamu. Sama seperti ranting tidak dapat berbuah dari dirinya sendiri, kalau ia tidak tinggal pada pokok anggur, demikian juga kamu tidak berbuah, jikalau kamu tidak tinggal di dalam Aku.' },
+    { book_id: 'JHN', book_name: 'Yohanes', chapter: 15, verse: 5, text: 'Akulah pokok anggur dan kamulah ranting-rantingnya. Barangsiapa tinggal di dalam Aku dan Aku di dalam dia, ia berbuah banyak, sebab di luar Aku kamu tidak dapat berbuat apa-apa.' },
+    { book_id: 'JHN', book_name: 'Yohanes', chapter: 15, verse: 7, text: 'Jikalau kamu tinggal di dalam Aku dan firman-Ku tinggal di dalam kamu, mintalah apa saja yang kamu kehendaki, dan kamu akan menerimanya.' },
+    { book_id: 'JHN', book_name: 'Yohanes', chapter: 15, verse: 12, text: 'Inilah perintah-Ku, yaitu supaya kamu saling mengasihi, seperti Aku telah mengasihi kamu.' }
+  ],
+  // Roma 12
+  'ROM-12': [
+    { book_id: 'ROM', book_name: 'Roma', chapter: 12, verse: 1, text: 'Karena itu, saudara-saudara, demi kemurahan Allah aku menasihatkan kamu, supaya kamu mempersembahkan tubuhmu sebagai persembahan yang hidup, yang kudus dan yang berkenan kepada Allah: itu adalah ibadahmu yang sejati.' },
+    { book_id: 'ROM', book_name: 'Roma', chapter: 12, verse: 2, text: 'Janganlah kamu menjadi serupa dengan dunia ini, tetapi berubahlah oleh pembaharuan budimu, sehingga kamu dapat membedakan manakah kehendak Allah: apa yang baik, yang berkenan kepada Allah dan yang sempurna.' },
+    { book_id: 'ROM', book_name: 'Roma', chapter: 12, verse: 9, text: 'Hendaklah kasih itu jangan berpura-pura! Jauhilah yang jahat dan lakukanlah yang baik.' },
+    { book_id: 'ROM', book_name: 'Roma', chapter: 12, verse: 10, text: 'Hendaklah kamu saling mengasihi sebagai saudara dan saling mendahului dalam memberi hormat.' },
+    { book_id: 'ROM', book_name: 'Roma', chapter: 12, verse: 12, text: 'Bersukacitalah dalam pengharapan, sabarlah dalam kesesakan, dan bertekunlah dalam doa!' }
+  ],
+  // Galatia 5 (Buah Roh)
+  'GAL-5': [
+    { book_id: 'GAL', book_name: 'Galatia', chapter: 5, verse: 22, text: 'Tetapi buah Roh ialah: kasih, sukacita, damai sejahtera, kesabaran, kemurahan, kebaikan, kesetiaan,' },
+    { book_id: 'GAL', book_name: 'Galatia', chapter: 5, verse: 23, text: 'kelemahlembutan, penguasaan diri. Tidak ada hukum yang menentang hal-hal itu.' },
+    { book_id: 'GAL', book_name: 'Galatia', chapter: 5, verse: 25, text: 'Jikalau kita hidup oleh Roh, baiklah hidup kita juga dipimpin oleh Roh,' },
+    { book_id: 'GAL', book_name: 'Galatia', chapter: 5, verse: 26, text: 'dan janganlah kita gila hormat, janganlah kita saling menantang dan saling mendengki.' }
+  ],
+  // Efesus 6 (Perlengkapan Senjata Allah)
+  'EPH-6': [
+    { book_id: 'EPH', book_name: 'Efesus', chapter: 6, verse: 10, text: 'Akhirnya, hendaklah kamu kuat di dalam Tuhan, di dalam kekuatan kuasa-Nya.' },
+    { book_id: 'EPH', book_name: 'Efesus', chapter: 6, verse: 11, text: 'Kenakanlah seluruh perlengkapan senjata Allah, supaya kamu dapat bertahan melawan tipu muslihat Iblis;' },
+    { book_id: 'EPH', book_name: 'Efesus', chapter: 6, verse: 14, text: 'Jadi berdirilah tegap, berikatpinggangkan kebenaran dan berbajuzirahkan keadilan,' },
+    { book_id: 'EPH', book_name: 'Efesus', chapter: 6, verse: 16, text: 'dalam segala keadaan pergunakanlah perisai iman, sebab dengan perisai itu kamu akan dapat memadamkan semua panah api dari si jahat,' },
+    { book_id: 'EPH', book_name: 'Efesus', chapter: 6, verse: 17, text: 'dan terimalah ketopong keselamatan dan pedang Roh, yaitu firman Allah,' },
+    { book_id: 'EPH', book_name: 'Efesus', chapter: 6, verse: 18, text: 'dalam segala doa dan permohonan. Berdoalah setiap waktu di dalam Roh dan berjaga-jagalah di dalam doamu itu dengan permohonan yang tak putus-putusnya untuk segala orang kudus.' }
+  ],
+  // Kolose 3
+  'COL-3': [
+    { book_id: 'COL', book_name: 'Kolose', chapter: 3, verse: 12, text: 'Karena itu, sebagai orang-orang pilihan Allah yang dikuduskan dan dikasihi-Nya, kenakanlah belas kasihan, kemurahan, kerendahan hati, kelemahlembutan dan kesabaran.' },
+    { book_id: 'COL', book_name: 'Kolose', chapter: 3, verse: 13, text: 'Sabarlah kamu seorang terhadap yang lain, dan ampunilah seorang akan yang lain apabila yang seorang menaruh dendam terhadap yang lain, sama seperti Tuhan telah mengampuni kamu, kamu perbuat jugalah demikian.' },
+    { book_id: 'COL', book_name: 'Kolose', chapter: 3, verse: 14, text: 'Dan di atas semuanya itu: kenakanlah kasih, sebagai pengikat yang mempersatukan dan menyempurnakan.' },
+    { book_id: 'COL', book_name: 'Kolose', chapter: 3, verse: 15, text: 'Hendaklah damai sejahtera Kristus memerintah dalam hatimu, karena untuk itulah kamu telah dipanggil menjadi satu tubuh. Dan bersyukurlah.' },
+    { book_id: 'COL', book_name: 'Kolose', chapter: 3, verse: 17, text: 'Dan segala sesuatu yang kamu lakukan dengan perkataan atau perbuatan, lakukanlah semuanya itu dalam nama Tuhan Yesus, sambil mengucap syukur oleh Dia kepada Allah, Bapa kita.' }
+  ],
+  // Ibrani 11 (Saksi-Saksi Iman)
+  'HEB-11': [
+    { book_id: 'HEB', book_name: 'Ibrani', chapter: 11, verse: 1, text: 'Iman adalah dasar dari segala sesuatu yang kita harapkan dan bukti dari segala sesuatu yang tidak kita lihat.' },
+    { book_id: 'HEB', book_name: 'Ibrani', chapter: 11, verse: 3, text: 'Karena iman kita mengerti, bahwa alam semesta telah dijadikan oleh firman Allah, sehingga apa yang kita lihat telah terjadi dari apa yang tidak dapat kita lihat.' },
+    { book_id: 'HEB', book_name: 'Ibrani', chapter: 11, verse: 6, text: 'Tetapi tanpa iman tidak mungkin orang berkenan kepada Allah. Sebab barangsiapa berpaling kepada Allah, ia harus percaya bahwa Allah ada, dan bahwa Allah memberi upah kepada orang yang sungguh-sungguh mencari Dia.' }
+  ],
+  // Wahyu 21 (Langit dan Bumi Baru)
+  'REV-21': [
+    { book_id: 'REV', book_name: 'Wahyu', chapter: 21, verse: 1, text: 'Lalu aku melihat langit yang baru dan bumi yang baru, sebab langit yang pertama dan bumi yang pertama telah berlalu, dan laut pun tidak ada lagi.' },
+    { book_id: 'REV', book_name: 'Wahyu', chapter: 21, verse: 3, text: 'Lalu aku mendengar suara yang nyaring dari takhta itu berkata: "Lihatlah, kemah Allah ada di tengah-tengah manusia dan Ia akan diam bersama-sama dengan mereka. Mereka akan menjadi umat-Nya dan Ia akan menjadi Allah mereka.' },
+    { book_id: 'REV', book_name: 'Wahyu', chapter: 21, verse: 4, text: 'Dan Ia akan menghapus segala air mata dari mata mereka, dan maut tidak akan ada lagi; tidak akan ada lagi perkabungan, atau ratap tangis, atau dukacita, sebab segala sesuatu yang lama itu telah berlalu."' },
+    { book_id: 'REV', book_name: 'Wahyu', chapter: 21, verse: 5, text: 'Ia yang duduk di atas takhta itu berkata: "Lihatlah, Aku menjadikan segala sesuatu baru!" Dan firman-Nya: "Tuliskanlah, karena segala perkataan ini adalah tepat dan benar."' }
   ]
 };
 

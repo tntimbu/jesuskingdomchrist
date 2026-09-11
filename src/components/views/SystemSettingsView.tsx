@@ -199,7 +199,8 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
     window.addEventListener('storage', handleSync);
     window.addEventListener('focus', handleSync);
 
-    const intervalId = setInterval(loadData, 500);
+    // Optimized polling to 3s to keep UI fast and responsive
+    const intervalId = setInterval(loadData, 3000);
 
     return () => {
       unsubscribe();
@@ -216,8 +217,8 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
     setLoginHistory(StorageManager.getLoginHistory());
   };
 
-  const handleSaveMeta = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveMeta = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     onUpdateSettings(metaForm);
     StorageManager.saveSettings(metaForm);
     if (metaForm.show_apk_download_button !== false) {
@@ -1451,6 +1452,16 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                       placeholder="Contoh: Ibadah Raya Minggu ini diadakan pukul 09:00 WIB di Gedung Utama. Dilanjutkan perjamuan kudus..."
                       className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs leading-relaxed placeholder-slate-500 focus:outline-none focus:border-amber-500"
                     />
+                    <div className="pt-2 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => handleSaveMeta()}
+                        className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-amber-500/20 cursor-pointer transition-all active:scale-95"
+                      >
+                        <Check className="w-4 h-4 text-slate-950 stroke-[3]" />
+                        <span>Simpan Pengumuman Toa Sekarang</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
 

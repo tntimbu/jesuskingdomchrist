@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Pengumuman, Renungan, User } from '../../types';
 import { StorageManager } from '../../utils/storage';
-import { Megaphone, BookOpen, Plus, Heart, Share2, Sparkles, X, Trash2, Volume2, Maximize2, Edit3 } from 'lucide-react';
+import { Megaphone, BookOpen, Plus, Heart, Share2, Sparkles, X, Trash2, Volume2, Maximize2, Edit3, Check } from 'lucide-react';
 import { RenunganFullscreenModal } from '../RenunganFullscreenModal';
 import { RenunganAudioPlayer } from '../RenunganAudioPlayer';
 
@@ -22,9 +22,16 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
 
   // Modals
   const [isPengumumanModal, setIsPengumumanModal] = useState(false);
+  const [editingPengumumanId, setEditingPengumumanId] = useState<string | null>(null);
   const [isRenunganModal, setIsRenunganModal] = useState(false);
   const [editingRenunganId, setEditingRenunganId] = useState<string | null>(null);
   const [selectedRenunganForModal, setSelectedRenunganForModal] = useState<Renungan | null>(null);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(null), 3500);
+  };
 
   // Forms
   const [pengumumanForm, setPengumumanForm] = useState({
@@ -52,7 +59,8 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
     window.addEventListener('storage', handleSync);
     window.addEventListener('focus', handleSync);
 
-    const intervalId = setInterval(loadData, 500);
+    // Optimized polling (3s instead of aggressive 500ms) to prevent UI lag/sluggishness
+    const intervalId = setInterval(loadData, 3000);
 
     return () => {
       unsubscribe();
@@ -66,6 +74,30 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
   const loadData = () => {
     setPengumumanList(StorageManager.getPengumuman());
     setRenunganList(StorageManager.getRenungan());
+  };
+
+  const handleOpenAddPengumuman = () => {
+    setEditingPengumumanId(null);
+    setPengumumanForm({
+      judul: '',
+      isi: '',
+      tanggal: new Date().toISOString().slice(0, 10),
+      kategori: 'Pengumuman Penting',
+      penulis: currentUser.nama || 'Sekretariat'
+    });
+    setIsPengumumanModal(true);
+  };
+
+  const handleOpenEditPengumuman = (p: Pengumuman) => {
+    setEditingPengumumanId(p.pengumuman_id);
+    setPengumumanForm({
+      judul: p.judul,
+      isi: p.isi,
+      tanggal: p.tanggal || new Date().toISOString().slice(0, 10),
+      kategori: p.kategori || 'Pengumuman Penting',
+      penulis: p.penulis || currentUser.nama || 'Sekretariat'
+    });
+    setIsPengumumanModal(true);
   };
 
   const handleOpenAddRenungan = () => {
@@ -96,19 +128,40 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
     e.preventDefault();
     if (!pengumumanForm.judul || !pengumumanForm.isi) return;
 
-    const newP: Pengumuman = {
-      pengumuman_id: `PGM-2026-${(pengumumanList.length + 1).toString().padStart(3, '0')}`,
-      judul: pengumumanForm.judul,
-      isi: pengumumanForm.isi,
-      tanggal: pengumumanForm.tanggal,
-      kategori: pengumumanForm.kategori,
-      penulis: pengumumanForm.penulis
-    };
+    let updated: Pengumuman[];
 
-    const updated = [newP, ...pengumumanList];
+    if (editingPengumumanId) {
+      updated = pengumumanList.map((item) =>
+        item.pengumuman_id === editingPengumumanId
+          ? {
+              ...item,
+              judul: pengumumanForm.judul,
+              isi: pengumumanForm.isi,
+              tanggal: pengumumanForm.tanggal,
+              kategori: pengumumanForm.kategori,
+              penulis: pengumumanForm.penulis
+            }
+          : item
+      );
+      StorageManager.logActivity(currentUser.username, `Mengedit pengumuman warta: ${pengumumanForm.judul}`, 'Media & Renungan');
+      showToast('✅ Pengumuman gereja berhasil diperbarui dan disimpan!');
+    } else {
+      const newP: Pengumuman = {
+        pengumuman_id: `PGM-2026-${(pengumumanList.length + 1).toString().padStart(3, '0')}`,
+        judul: pengumumanForm.judul,
+        isi: pengumumanForm.isi,
+        tanggal: pengumumanForm.tanggal,
+        kategori: pengumumanForm.kategori,
+        penulis: pengumumanForm.penulis
+      };
+      updated = [newP, ...pengumumanList];
+      StorageManager.logActivity(currentUser.username, `Menerbitkan pengumuman: ${newP.judul}`, 'Media & Renungan');
+      showToast('📢 Pengumuman baru berhasil diterbitkan!');
+    }
+
     setPengumumanList(updated);
     StorageManager.savePengumuman(updated);
-    StorageManager.logActivity(currentUser.username, `Menerbitkan pengumuman: ${newP.judul}`, 'Media & Renungan');
+    window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { action: 'pengumuman_updated' } }));
     setIsPengumumanModal(false);
   };
 
@@ -174,7 +227,15 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      {/* Floating Toast Notification */}
+      {toastMsg && (
+        <div className="fixed top-20 right-4 sm:right-8 z-50 px-4 py-3 rounded-2xl bg-slate-900 border-2 border-emerald-500/60 text-white shadow-2xl flex items-center space-x-2.5 animate-bounce">
+          <Check className="w-5 h-5 text-emerald-400" />
+          <span className="text-xs sm:text-sm font-bold text-slate-100">{toastMsg}</span>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -234,8 +295,8 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
             <h3 className="text-sm font-bold text-white uppercase tracking-wider">Warta Jemaat & Informasi Gereja</h3>
             {currentUser.role !== 'JEMAAT' && (
               <button
-                onClick={() => setIsPengumumanModal(true)}
-                className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md flex items-center gap-1.5"
+                onClick={handleOpenAddPengumuman}
+                className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md flex items-center gap-1.5 cursor-pointer transition-all"
               >
                 <Plus className="w-4 h-4" />
                 <span>Buat Pengumuman Baru</span>
@@ -247,48 +308,60 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
             {pengumumanList.map((p) => (
               <div
                 key={p.pengumuman_id}
-                className="rounded-3xl bg-slate-900 border border-slate-800 p-6 shadow-sm text-white space-y-3 hover:border-indigo-500/40 transition-all"
+                className="rounded-3xl bg-slate-900 border border-slate-800 p-6 shadow-sm text-white space-y-3 hover:border-indigo-500/40 transition-all flex flex-col justify-between"
               >
-                <div className="flex items-center justify-between">
-                  <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold">
-                    {p.kategori}
-                  </span>
-                  <span className="text-xs text-slate-400">{p.tanggal}</span>
-                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold">
+                      {p.kategori}
+                    </span>
+                    <span className="text-xs text-slate-400">{p.tanggal}</span>
+                  </div>
 
-                <h4 className="text-lg font-bold text-white leading-snug tracking-tight text-left">{p.judul}</h4>
-                <p
-                  lang="id"
-                  className="text-xs text-slate-300 leading-relaxed text-justify hyphens-auto [text-align-last:left] [text-justify:inter-word] break-words whitespace-pre-line"
-                  style={{
-                    textAlign: 'justify',
-                    textJustify: 'inter-word',
-                    hyphens: 'auto',
-                    WebkitHyphens: 'auto',
-                    textAlignLast: 'left',
-                    wordBreak: 'break-word',
-                    overflowWrap: 'break-word',
-                  }}
-                >
-                  {p.isi}
-                </p>
+                  <h4 className="text-lg font-bold text-white leading-snug tracking-tight text-left">{p.judul}</h4>
+                  <p
+                    lang="id"
+                    className="text-xs text-slate-300 leading-relaxed text-justify hyphens-auto [text-align-last:left] [text-justify:inter-word] break-words whitespace-pre-line"
+                    style={{
+                      textAlign: 'justify',
+                      textJustify: 'inter-word',
+                      hyphens: 'auto',
+                      WebkitHyphens: 'auto',
+                      textAlignLast: 'left',
+                      wordBreak: 'break-word',
+                      overflowWrap: 'break-word',
+                    }}
+                  >
+                    {p.isi}
+                  </p>
+                </div>
 
                 <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-500 font-medium">
                   <span>Diterbitkan oleh: {p.penulis}</span>
                   <div className="flex items-center gap-2">
-                    <button className="text-indigo-400 hover:text-indigo-300 flex items-center gap-1">
+                    <button className="text-indigo-400 hover:text-indigo-300 flex items-center gap-1 cursor-pointer">
                       <Share2 className="w-3.5 h-3.5" />
                       <span>Bagikan</span>
                     </button>
                     {currentUser.role !== 'JEMAAT' && (
-                      <button
-                        onClick={(e) => handleDeletePengumuman(p.pengumuman_id, e)}
-                        className="p-1.5 rounded-lg bg-rose-900/40 text-rose-300 hover:bg-rose-900/80 transition-all flex items-center gap-1 text-[11px]"
-                        title="Hapus Pengumuman"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        <span>Hapus</span>
-                      </button>
+                      <>
+                        <button
+                          onClick={() => handleOpenEditPengumuman(p)}
+                          className="px-2.5 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 hover:bg-indigo-600 hover:text-white transition-all flex items-center gap-1 text-[11px] font-semibold cursor-pointer border border-indigo-500/30"
+                          title="Edit Pengumuman ini"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                          <span>Edit</span>
+                        </button>
+                        <button
+                          onClick={(e) => handleDeletePengumuman(p.pengumuman_id, e)}
+                          className="p-1.5 rounded-lg bg-rose-900/40 text-rose-300 hover:bg-rose-900/80 transition-all flex items-center gap-1 text-[11px] cursor-pointer"
+                          title="Hapus Pengumuman"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Hapus</span>
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>
@@ -406,51 +479,64 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
 
       {/* Modal Pengumuman */}
       {isPengumumanModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
           <div className="w-full max-w-md rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <h3 className="text-base font-bold">Terbitkan Pengumuman Baru</h3>
+              <div className="flex items-center space-x-2">
+                <Megaphone className="w-5 h-5 text-indigo-400" />
+                <h3 className="text-base font-bold text-white">
+                  {editingPengumumanId ? 'Edit Warta & Pengumuman' : 'Terbitkan Pengumuman Baru'}
+                </h3>
+              </div>
               <button onClick={() => setIsPengumumanModal(false)} className="text-slate-400 hover:text-white cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <form onSubmit={handleSavePengumuman} className="space-y-3 text-xs">
+            <form onSubmit={handleSavePengumuman} className="space-y-3.5 text-xs">
               <div>
-                <label className="block text-slate-400 mb-1">Judul Pengumuman *</label>
+                <label className="block text-slate-300 mb-1 font-semibold">Judul Pengumuman *</label>
                 <input
                   type="text"
                   required
                   placeholder="Contoh: Jadwal Gotong Royong Persiapan Paskah"
                   value={pengumumanForm.judul}
                   onChange={(e) => setPengumumanForm({ ...pengumumanForm, judul: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-indigo-500"
                 />
               </div>
               <div>
-                <label className="block text-slate-400 mb-1">Kategori</label>
+                <label className="block text-slate-300 mb-1 font-semibold">Kategori Warta</label>
                 <input
                   type="text"
                   value={pengumumanForm.kategori}
                   onChange={(e) => setPengumumanForm({ ...pengumumanForm, kategori: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-indigo-500"
                 />
               </div>
               <div>
-                <label className="block text-slate-400 mb-1">Isi Pengumuman *</label>
+                <label className="block text-slate-300 mb-1 font-semibold">Isi Teks Pengumuman *</label>
                 <textarea
                   required
                   rows={4}
                   value={pengumumanForm.isi}
                   onChange={(e) => setPengumumanForm({ ...pengumumanForm, isi: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white leading-relaxed focus:outline-none focus:border-indigo-500"
                 />
               </div>
-              <div className="flex justify-end gap-2 pt-2">
-                <button type="button" onClick={() => setIsPengumumanModal(false)} className="px-4 py-2 text-slate-300">
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsPengumumanModal(false)}
+                  className="px-4 py-2 text-slate-300 hover:text-white rounded-xl bg-slate-800 hover:bg-slate-700 transition cursor-pointer font-medium"
+                >
                   Batal
                 </button>
-                <button type="submit" className="px-4 py-2 bg-indigo-600 rounded-xl font-bold">
-                  Terbitkan
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-emerald-600/30 cursor-pointer transition-all active:scale-95"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>{editingPengumumanId ? 'Simpan Perubahan' : 'Terbitkan Pengumuman'}</span>
                 </button>
               </div>
             </form>

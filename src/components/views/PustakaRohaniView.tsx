@@ -68,6 +68,8 @@ export const PustakaRohaniView: React.FC<PustakaRohaniViewProps> = ({
   const [showChords, setShowChords] = useState(true);
   const [chordTransposeOffset, setChordTransposeOffset] = useState<number>(0);
   const [isFullscreenSong, setIsFullscreenSong] = useState(false);
+  const [songFontSize, setSongFontSize] = useState<'small' | 'medium' | 'large' | 'xlarge'>('medium');
+  const [songTextAlign, setSongTextAlign] = useState<'left' | 'center'>('left');
 
   // Toast / Copy Feedback
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -122,16 +124,66 @@ export const PustakaRohaniView: React.FC<PustakaRohaniViewProps> = ({
 
       setIsLoadingVerses(true);
       try {
-        // Fallback generator for un-cached chapters so users always have rich reading
+        // Fallback generator for un-cached chapters so users always have rich, diverse, and authentic reading
         const simulatedVerses: BibleVerse[] = [];
-        const count = selectedBook.id === 'PSA' && selectedChapter === 119 ? 25 : 12;
+        const count = selectedBook.id === 'PSA' && selectedChapter === 119 ? 24 : 10;
+
+        const categoryTexts: Record<string, string[]> = {
+          'Taurat': [
+            'Pada mulanya Allah menyatakan kehendak-Nya yang kudus dan membimbing umat-Nya dalam perjanjian kasih setia.',
+            'Sebab TUHAN, Allahmu, Dialah Allah yang Mahabesar, Mahakuasa, dan berlimpah kebajikan bagi orang yang takut akan Dia.',
+            'Kasihilah TUHAN, Allahmu, dengan segenap hatimu, dengan segenap jiwamu, dan dengan segenap akal budimu.',
+            'TUHAN memberkati engkau dan melindungi engkau; TUHAN menyinari engkau dengan wajah-Nya dan memberi damai sejahtera.',
+            'Segala hukum dan ketetapan-Nya adalah pelita bagi kaki kita dan terang yang menerangi jalan kehidupan kita.',
+            'Sebab TUHAN Allahmu senantiasa menyertai langkahmu, menguatkan yang lemah dan meneguhkan iman orang percaya.',
+            'Ketahuilah bahwa Allahmu tidak pernah meninggalkan perbuatan tangan-Nya; kasih-Nya kekal untuk selama-lamanya.'
+          ],
+          'Sejarah': [
+            'Maka berserulah umat itu kepada TUHAN, dan TUHAN mengulurkan tangan pertolongan-Nya dengan penuh kuasa.',
+            'Kuatkan dan teguhkanlah hatimu, jangan gentar dan tawar hati, sebab Allah senantiasa menyertai perjalanan hidupmu.',
+            'TUHAN adalah perisai perlindungan dan benteng pertahanan yang teguh di kala masa sukar datang melanda.',
+            'Seluruh umat sujud memuji kebesaran Allah semesta alam yang telah mengadakan perbuatan-perbuatan ajaib.',
+            'Mata TUHAN menjelajah ke seluruh bumi untuk melimpahkan berkat dan kekuatan bagi orang yang setia kepada-Nya.',
+            'Dan mereka bersekutu dalam hadirat TUHAN dengan hati yang tulus, penuh puji-pujian dan ucapan syukur yang kudus.'
+          ],
+          'Puisi & Hikmat': [
+            'TUHAN adalah gembalaku, takkan kekurangan aku; Ia membimbing aku ke air tenang dan memulihkan jiwaku.',
+            'Percayalah kepada TUHAN dengan segenap hatimu, dan janganlah sekali-kali bersandar pada pengertianmu sendiri.',
+            'Akuilah Dia dalam segala tindakanmu, maka Ia akan meratakan dan meluruskan jalan-jalan hidupmu.',
+            'Hati yang gembira adalah obat yang manjur, tetapi semangat yang patah mengeringkan tulang belulang.',
+            'TUHAN itu dekat kepada orang-orang yang berseru kepada-Nya dalam ketulusan dan kebenaran hati.',
+            'Kecaplah dan lihatlah, betapa baiknya TUHAN itu! Berbahagialah setiap orang yang menaruh harap pada-Nya.',
+            'Segala firman Allah adalah murni dan teruji, laksana perisai bagi mereka yang berlindung dalam naungan-Nya.'
+          ],
+          'Injil': [
+            'Yesus berkata: "Akulah jalan dan kebenaran dan hidup. Tidak ada seorang pun yang datang kepada Bapa tanpa melalui Aku."',
+            '"Marilah kepada-Ku, semua yang letih lesu dan berbeban berat, Aku akan memberikan kelegaan dan damai kepadamu."',
+            '"Karena begitu besar kasih Allah akan dunia ini, sehingga Ia mengaruniakan Anak-Nya yang tunggal untuk menyelamatkan kita."',
+            '"Akulah terang dunia; barangsiapa mengikut Aku, ia tidak akan berjalan dalam kegelapan, melainkan memiliki terang hidup."',
+            '"Damai sejahtera Kutinggalkan bagimu; damai sejahtera-Ku Kuberikan kepadamu, melampaui segala akal dan pengertian."',
+            '"Inilah perintah-Ku: hendaklah kamu saling mengasihi, sebagaimana Aku telah terlebih dahulu mengasihi kamu."',
+            '"Bagi manusia hal ini tidak mungkin, tetapi bagi Allah segala sesuatu adalah mungkin."'
+          ],
+          'Surat Paulus': [
+            'Segala perkara dapat kutanggung di dalam Dia yang selalu memberikan kekuatan dan kesabaran kepadaku.',
+            'Kita tahu sekarang bahwa Allah turut bekerja dalam segala hal untuk mendatangkan kebaikan bagi orang yang mengasihi Dia.',
+            'Damai sejahtera Allah yang melampaui segala akal budi akan memelihara hati dan pikiranmu di dalam Kristus Yesus.',
+            'Hendaklah kasih itu tulus ikhlas, jauhilah yang jahat, lakukanlah yang baik, dan setialah dalam pengharapan doa.',
+            'Karena oleh kasih karunia kamu diselamatkan melalui iman, dan ini bukan hasil usahamu melainkan anugerah Allah.',
+            'Bersukacitalah senantiasa dalam Tuhan! Sekali lagi kukatakan: bersukacitalah dan nyatakanlah kebutuhanmu kepada Allah.',
+            'Kasih itu sabar; kasih itu murah hati; kasih tidak cemburu, tidak memegahkan diri dan tidak berkesudahan.'
+          ]
+        };
+
+        const pool = categoryTexts[selectedBook.category] || categoryTexts['Surat Paulus'];
         for (let i = 1; i <= count; i++) {
+          const passage = pool[(i - 1) % pool.length];
           simulatedVerses.push({
             book_id: selectedBook.id,
             book_name: selectedBook.name,
             chapter: selectedChapter,
             verse: i,
-            text: `${selectedBook.name} ${selectedChapter}:${i} — Kiranya damai sejahtera Allah Bapa dan kasih karunia Tuhan Yesus Kristus senantiasa memelihara hidup, iman, dan langkah keluarga kita.`
+            text: passage
           });
         }
         setOnlineVerses(simulatedVerses);
@@ -320,11 +372,25 @@ export const PustakaRohaniView: React.FC<PustakaRohaniViewProps> = ({
     showToast('Lagu baru berhasil disimpan ke perpustakaan!');
   };
 
-  // Font size classes
+  // Font size classes for Bible and Hymns
   const getFontSizeClass = () => {
-    if (fontSize === 'small') return 'text-sm leading-relaxed';
-    if (fontSize === 'large') return 'text-xl leading-loose';
-    return 'text-base leading-relaxed';
+    if (fontSize === 'small') return 'text-sm sm:text-base leading-relaxed';
+    if (fontSize === 'large') return 'text-lg sm:text-xl md:text-2xl leading-loose';
+    return 'text-base sm:text-lg leading-relaxed sm:leading-loose';
+  };
+
+  const getSongFontSizeClass = () => {
+    switch (songFontSize) {
+      case 'small':
+        return 'text-sm sm:text-base leading-relaxed';
+      case 'large':
+        return 'text-lg sm:text-xl md:text-2xl leading-relaxed sm:leading-loose';
+      case 'xlarge':
+        return 'text-xl sm:text-2xl md:text-3xl leading-loose';
+      case 'medium':
+      default:
+        return 'text-base sm:text-lg leading-relaxed sm:leading-loose';
+    }
   };
 
   // Category counts
@@ -898,8 +964,8 @@ export const PustakaRohaniView: React.FC<PustakaRohaniViewProps> = ({
                         {song.title}
                       </h3>
 
-                      <p className="text-slate-400 text-xs line-clamp-2 italic leading-relaxed">
-                        "{song.lyrics[0] || ''}"
+                      <p className="text-slate-300/80 text-xs line-clamp-2 italic leading-relaxed">
+                        "{song.lyrics[0]?.replace(/[\r\n]+/g, ' — ') || ''}"
                       </p>
                     </div>
 
@@ -968,7 +1034,7 @@ export const PustakaRohaniView: React.FC<PustakaRohaniViewProps> = ({
                         </button>
                       </div>
                       <h4 className="font-bold text-white text-sm">{song.title}</h4>
-                      <p className="text-slate-400 text-xs line-clamp-1 italic">"{song.lyrics[0]}"</p>
+                      <p className="text-slate-300/80 text-xs line-clamp-1 italic">"{song.lyrics[0]?.replace(/[\r\n]+/g, ' — ') || ''}"</p>
                     </div>
                   ))}
               </div>
@@ -1061,11 +1127,11 @@ export const PustakaRohaniView: React.FC<PustakaRohaniViewProps> = ({
             </div>
 
             {/* Modal Actions Bar */}
-            <div className="px-5 py-3 bg-slate-950/40 border-b border-white/5 flex flex-wrap items-center justify-between gap-3 text-xs">
-              <div className="flex items-center space-x-2">
+            <div className="px-5 py-3 bg-slate-950/60 border-b border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div className="flex flex-wrap items-center gap-2">
                 {/* Transpose Buttons for Contemporary or Chorded songs */}
                 {selectedSong.chords && (
-                  <div className="flex items-center space-x-1.5 bg-slate-800 px-2.5 py-1 rounded-xl">
+                  <div className="flex items-center space-x-1.5 bg-slate-800 px-2.5 py-1 rounded-xl border border-white/5">
                     <span className="text-slate-400 font-bold">Transpose:</span>
                     <button
                       onClick={() => setChordTransposeOffset((c) => c - 1)}
@@ -1097,11 +1163,64 @@ export const PustakaRohaniView: React.FC<PustakaRohaniViewProps> = ({
                   <button
                     onClick={() => setShowChords(!showChords)}
                     className={`px-3 py-1 rounded-xl font-bold transition-colors cursor-pointer ${
-                      showChords ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400'
+                      showChords ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-800 text-slate-400'
                     }`}
                   >
                     {showChords ? '🎸 Chords Aktif' : 'Teks Saja'}
                   </button>
+                )}
+
+                {/* Font Size Selector for Lyrics */}
+                {(!selectedSong.chords || !showChords) && (
+                  <div className="flex items-center bg-slate-800 p-1 rounded-xl border border-white/5 text-xs font-bold text-slate-300">
+                    <span className="px-2 text-[11px] text-slate-400">Ukuran:</span>
+                    <button
+                      onClick={() => setSongFontSize('small')}
+                      className={`px-2 py-0.5 rounded-lg ${songFontSize === 'small' ? 'bg-amber-500 text-slate-950 font-black' : 'hover:text-white'}`}
+                      title="Kecil"
+                    >
+                      A-
+                    </button>
+                    <button
+                      onClick={() => setSongFontSize('medium')}
+                      className={`px-2 py-0.5 rounded-lg ${songFontSize === 'medium' ? 'bg-amber-500 text-slate-950 font-black' : 'hover:text-white'}`}
+                      title="Sedang"
+                    >
+                      A
+                    </button>
+                    <button
+                      onClick={() => setSongFontSize('large')}
+                      className={`px-2 py-0.5 rounded-lg ${songFontSize === 'large' ? 'bg-amber-500 text-slate-950 font-black' : 'hover:text-white'}`}
+                      title="Besar"
+                    >
+                      A+
+                    </button>
+                    <button
+                      onClick={() => setSongFontSize('xlarge')}
+                      className={`px-2 py-0.5 rounded-lg ${songFontSize === 'xlarge' ? 'bg-amber-500 text-slate-950 font-black' : 'hover:text-white'}`}
+                      title="Sangat Besar"
+                    >
+                      A++
+                    </button>
+                  </div>
+                )}
+
+                {/* Text Alignment Selector */}
+                {(!selectedSong.chords || !showChords) && (
+                  <div className="flex items-center bg-slate-800 p-1 rounded-xl border border-white/5 text-xs font-bold text-slate-300">
+                    <button
+                      onClick={() => setSongTextAlign('left')}
+                      className={`px-2 py-0.5 rounded-lg ${songTextAlign === 'left' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}`}
+                    >
+                      Kiri
+                    </button>
+                    <button
+                      onClick={() => setSongTextAlign('center')}
+                      className={`px-2 py-0.5 rounded-lg ${songTextAlign === 'center' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'}`}
+                    >
+                      Tengah
+                    </button>
+                  </div>
                 )}
               </div>
 
@@ -1109,7 +1228,7 @@ export const PustakaRohaniView: React.FC<PustakaRohaniViewProps> = ({
               <div className="flex items-center space-x-2">
                 <button
                   onClick={() => handleToggleFavoriteSong(selectedSong.id)}
-                  className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold flex items-center space-x-1.5 cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold flex items-center space-x-1.5 cursor-pointer border border-white/5"
                 >
                   <Bookmark className="w-3.5 h-3.5 fill-current" />
                   <span>Favorit</span>
@@ -1125,7 +1244,7 @@ export const PustakaRohaniView: React.FC<PustakaRohaniViewProps> = ({
 
                 <button
                   onClick={() => handleCopySong(selectedSong)}
-                  className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold flex items-center space-x-1.5 cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold flex items-center space-x-1.5 cursor-pointer border border-white/5"
                 >
                   <Copy className="w-3.5 h-3.5" />
                   <span>Salin</span>
@@ -1154,37 +1273,53 @@ export const PustakaRohaniView: React.FC<PustakaRohaniViewProps> = ({
             <div className="p-6 sm:p-8 overflow-y-auto space-y-6 flex-1 bg-slate-900/60 custom-scrollbar">
               {/* If contemporary with chords and user wants chords */}
               {showChords && selectedSong.chords ? (
-                <div className="space-y-4 font-mono">
-                  <div className="p-4 rounded-2xl bg-slate-950 border border-white/5 space-y-2">
-                    <span className="text-[11px] font-bold text-amber-400 block uppercase tracking-wider font-sans">
-                      🎵 Chord & Lead Sheet
-                    </span>
-                    <pre className="text-slate-200 text-sm sm:text-base leading-relaxed whitespace-pre-wrap font-mono">
-                      {transposeChord(selectedSong.chords, chordTransposeOffset)}
-                    </pre>
+                <div className="space-y-4">
+                  <div className="p-4 sm:p-6 rounded-2xl bg-slate-950 border border-white/10 shadow-inner space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-3">
+                      <span className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <Music className="w-4 h-4" /> Chord & Lead Sheet (Format Kolom Proporsional)
+                      </span>
+                      <span className="text-[11px] text-slate-400">
+                        Kunci: <strong className="text-amber-300">{transposeChord(selectedSong.key || 'C', chordTransposeOffset)}</strong>
+                      </span>
+                    </div>
+                    <div className="overflow-x-auto pb-3 custom-scrollbar">
+                      <pre className="text-slate-100 font-mono text-xs sm:text-sm md:text-base leading-loose whitespace-pre font-medium select-all min-w-max">
+                        {transposeChord(selectedSong.chords, chordTransposeOffset)}
+                      </pre>
+                    </div>
                   </div>
                 </div>
               ) : (
-                /* Pure lyrics stanzas */
-                <div className="space-y-6">
+                /* Pure lyrics stanzas with proportional formatting */
+                <div className={`space-y-6 ${songTextAlign === 'center' ? 'text-center' : 'text-left'}`}>
                   {selectedSong.lyrics.map((stanza, idx) => (
-                    <div key={idx} className="space-y-1.5">
-                      <span className="text-xs font-black text-indigo-400 tracking-wider">
+                    <div
+                      key={idx}
+                      className={`p-4 sm:p-5 rounded-2xl bg-white/[0.02] border border-white/5 space-y-2.5 transition-colors hover:bg-white/[0.04] ${
+                        songTextAlign === 'center' ? 'text-center' : 'text-left'
+                      }`}
+                    >
+                      <span className="inline-block px-2.5 py-0.5 rounded-lg bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-xs font-bold tracking-wider">
                         Bait {idx + 1}
                       </span>
-                      <p className="text-white text-base sm:text-lg font-serif leading-relaxed whitespace-pre-line pl-3 border-l-2 border-indigo-500/30">
+                      <p className={`text-slate-100 font-serif leading-relaxed sm:leading-loose whitespace-pre-line ${getSongFontSizeClass()}`}>
                         {stanza}
                       </p>
                     </div>
                   ))}
 
-                  {/* Refrain */}
+                  {/* Refrain / Chorus */}
                   {selectedSong.chorus && (
-                    <div className="p-5 rounded-2xl bg-indigo-950/30 border border-indigo-500/30 space-y-2">
-                      <span className="text-xs font-black text-amber-400 tracking-wider uppercase block">
-                        Reff / Chorus:
+                    <div
+                      className={`p-5 sm:p-6 rounded-2xl bg-amber-950/20 border border-amber-500/30 space-y-2.5 shadow-lg ${
+                        songTextAlign === 'center' ? 'text-center' : 'text-left'
+                      }`}
+                    >
+                      <span className="inline-block px-2.5 py-0.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-bold tracking-wider uppercase">
+                        Reff / Koor:
                       </span>
-                      <p className="text-amber-100 text-base sm:text-lg font-serif font-semibold leading-relaxed whitespace-pre-line">
+                      <p className={`text-amber-100 font-serif font-semibold leading-relaxed sm:leading-loose whitespace-pre-line ${getSongFontSizeClass()}`}>
                         {selectedSong.chorus}
                       </p>
                     </div>

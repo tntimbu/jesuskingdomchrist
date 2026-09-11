@@ -383,11 +383,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
     setWartaSuccessMsg(true);
     setRefreshToast('✅ Warta & Pengumuman Gereja Berhasil Disimpan!');
+    setIsEditWartaModalOpen(false);
     setTimeout(() => {
       setWartaSuccessMsg(false);
-      setIsEditWartaModalOpen(false);
-      setTimeout(() => setRefreshToast(''), 3000);
-    }, 1200);
+      setRefreshToast('');
+    }, 2500);
   };
 
   // Status sembunyikan Banner & Tombol Melayang APK dari Dashboard
@@ -2904,10 +2904,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold flex items-center gap-1.5 shadow-lg shadow-amber-500/20 text-xs cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black flex items-center gap-2 shadow-lg shadow-amber-500/20 text-xs cursor-pointer transition-all active:scale-95"
                 >
-                  <Check className="w-4 h-4" />
-                  <span>Simpan Warta</span>
+                  <Check className="w-4 h-4 text-slate-950 stroke-[3]" />
+                  <span>Simpan Perubahan Warta Toa</span>
                 </button>
               </div>
             </form>
@@ -3051,6 +3051,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             </button>
                           ))}
                         </div>
+                      </div>
+
+                      {/* Tombol Simpan Langsung Tab Warta */}
+                      <div className="pt-3 border-t border-slate-800 flex justify-end">
+                        <button
+                          type="button"
+                          onClick={handleSaveCustomizer}
+                          className="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-amber-500/20 cursor-pointer transition-all active:scale-95"
+                        >
+                          <Check className="w-4 h-4 text-slate-950 stroke-[3]" />
+                          <span>Simpan Pengumuman Toa Sekarang</span>
+                        </button>
                       </div>
                     </div>
                   </div>
