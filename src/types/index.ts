@@ -382,3 +382,39 @@ export interface ChatMessage {
   };
   is_pinned?: boolean;
 }
+
+export type HymnSongCategory = 'KJ' | 'NKB' | 'PKJ' | 'KONTEMPORER';
+
+export interface HymnSong {
+  id: string;
+  category: HymnSongCategory;
+  number?: string | number;
+  title: string;
+  key?: string;
+  time_signature?: string;
+  author?: string;
+  lyrics: string[];
+  chorus?: string;
+  chords?: string;
+  tags?: string[];
+  is_favorite?: boolean;
+  notes?: string;
+}
+
+export interface BibleBook {
+  id: string;
+  name: string;
+  testament: 'PL' | 'PB';
+  category: string;
+  chapters_count: number;
+  abbreviation: string;
+}
+
+export interface BibleVerse {
+  book_id: string;
+  book_name: string;
+  chapter: number;
+  verse: number;
+  text: string;
+}
+

@@ -25,6 +25,7 @@ import { GaleriView } from './components/views/GaleriView';
 import { LaporanView } from './components/views/LaporanView';
 import { JemaatPortalView } from './components/views/JemaatPortalView';
 import { ChatView } from './components/views/ChatView';
+import { PustakaRohaniView } from './components/views/PustakaRohaniView';
 import { SystemSettingsView } from './components/views/SystemSettingsView';
 import { LainnyaView } from './components/views/LainnyaView';
 import { SplashScreen } from './components/SplashScreen';
@@ -391,6 +392,14 @@ export default function App() {
           {activeTab === 'jemaat_portal' && <JemaatPortalView currentUser={effectiveUser} settings={settings} />}
 
           {activeTab === 'chat' && <ChatView currentUser={effectiveUser} settings={settings} />}
+
+          {activeTab === 'pustaka' && (
+            <PustakaRohaniView
+              currentUser={effectiveUser}
+              settings={settings}
+              onNavigateToChat={() => handleSelectTab('chat')}
+            />
+          )}
 
           {activeTab === 'settings' && (
             <SystemSettingsView

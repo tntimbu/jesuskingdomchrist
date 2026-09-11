@@ -17,7 +17,8 @@ import {
   MapPin,
   Building2,
   LayoutDashboard,
-  MessageCircle
+  MessageCircle,
+  BookMarked
 } from 'lucide-react';
 
 export interface MenuItem {
@@ -60,6 +61,16 @@ export const menuModules: MenuItem[] = [
     icon: MessageCircle,
     gradient: 'from-blue-600 via-indigo-600 to-violet-800',
     badge: 'Live Chat',
+    roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
+  },
+  {
+    id: 'pustaka',
+    title: 'Alkitab & Buku Pujian (KJ, NKB, PKJ, Lagu)',
+    subtitle: '66 Kitab Suci Alkitab, Kidung Jemaat, NKB, PKJ & Lagu Rohani Berchord',
+    category: 'PUSTAKA ROHANI',
+    icon: BookMarked,
+    gradient: 'from-amber-600 via-yellow-600 to-amber-800',
+    badge: 'Alkitab & Lagu',
     roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
   },
   {

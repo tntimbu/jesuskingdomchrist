@@ -19,7 +19,8 @@ import {
   Sparkles,
   MapPin,
   ArrowRight,
-  MessageCircle
+  MessageCircle,
+  BookMarked
 } from 'lucide-react';
 
 interface LainnyaViewProps {
@@ -55,6 +56,16 @@ export const LainnyaView: React.FC<LainnyaViewProps> = ({
       icon: MessageCircle,
       gradient: 'from-blue-600 via-indigo-600 to-violet-800',
       badge: 'Live Chat',
+      roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
+    },
+    {
+      id: 'pustaka' as NavTab,
+      title: 'Alkitab & Buku Pujian (KJ, NKB, PKJ, Lagu)',
+      subtitle: '66 Kitab Suci Alkitab, Kidung Jemaat, NKB, PKJ & Lagu Kontemporer Berchord',
+      category: 'PUSTAKA ROHANI',
+      icon: BookMarked,
+      gradient: 'from-amber-600 via-yellow-600 to-amber-800',
+      badge: 'Alkitab & Lagu',
       roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
     },
     {

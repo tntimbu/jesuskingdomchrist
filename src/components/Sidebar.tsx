@@ -18,7 +18,8 @@ import {
   UserCheck,
   Grid,
   ChevronRight,
-  MessageCircle
+  MessageCircle,
+  BookMarked
 } from 'lucide-react';
 
 export type NavTab =
@@ -38,6 +39,7 @@ export type NavTab =
   | 'agenda'
   | 'media'
   | 'chat'
+  | 'pustaka'
   | 'lainnya';
 
 interface SidebarProps {
@@ -147,6 +149,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       id: 'chat',
       label: 'Ruang Chat Jemaat',
       icon: MessageCircle,
+      roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
+    },
+    {
+      id: 'pustaka',
+      label: 'Alkitab & Buku Pujian',
+      icon: BookMarked,
       roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
     },
     {

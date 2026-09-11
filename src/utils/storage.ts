@@ -25,7 +25,8 @@ import {
   ChurchTenant,
   ChurchStatus,
   SuperAdminContact,
-  ChatMessage
+  ChatMessage,
+  HymnSong
 } from '../types';
 
 import {
@@ -53,6 +54,8 @@ import {
   initialSuperAdminContact,
   initialChatMessages
 } from '../data/initialData';
+
+import { INITIAL_HYMN_SONGS } from '../data/hymnsData';
 
 import { pushToCloud, initRealtimeCloudSync } from './firebaseSync';
 
@@ -84,7 +87,10 @@ const KEYS = {
   PRAYER_REQUESTS: 'cms_pro_prayer_requests',
   EVENT_RESERVATIONS: 'cms_pro_event_reservations',
   CURRENT_USER: 'cms_pro_current_user',
-  CHAT_MESSAGES: 'cms_pro_chat_messages'
+  CHAT_MESSAGES: 'cms_pro_chat_messages',
+  HYMN_SONGS: 'cms_pro_hymn_songs',
+  FAVORITE_SONGS: 'cms_pro_favorite_songs',
+  FAVORITE_VERSES: 'cms_pro_favorite_verses'
 };
 
 const defaultKas: KasPengeluaran[] = [
@@ -935,6 +941,49 @@ export const StorageManager = {
   },
   clearChatMessages: (): void => {
     StorageManager.saveChatMessages([]);
+  },
+
+  // ==================== PUSTAKA ALKITAB & LAGU PUJIAN ====================
+  getHymnSongs: (): HymnSong[] => {
+    return getItem<HymnSong[]>(KEYS.HYMN_SONGS, INITIAL_HYMN_SONGS);
+  },
+  saveHymnSongs: (songs: HymnSong[]): void => {
+    setItem(KEYS.HYMN_SONGS, songs);
+  },
+  addHymnSong: (songData: Omit<HymnSong, 'id'>): HymnSong => {
+    const songs = StorageManager.getHymnSongs();
+    const newSong: HymnSong = {
+      ...songData,
+      id: `${songData.category}-${Date.now()}`
+    };
+    const updated = [newSong, ...songs];
+    StorageManager.saveHymnSongs(updated);
+    return newSong;
+  },
+  deleteHymnSong: (id: string): void => {
+    const songs = StorageManager.getHymnSongs();
+    const updated = songs.filter((s) => s.id !== id);
+    StorageManager.saveHymnSongs(updated);
+  },
+  getFavoriteSongIds: (): string[] => {
+    return getItem<string[]>(KEYS.FAVORITE_SONGS, []);
+  },
+  toggleFavoriteSong: (id: string): boolean => {
+    const favs = StorageManager.getFavoriteSongIds();
+    const exists = favs.includes(id);
+    const updated = exists ? favs.filter((f) => f !== id) : [...favs, id];
+    setItem(KEYS.FAVORITE_SONGS, updated);
+    return !exists;
+  },
+  getFavoriteVerses: (): string[] => {
+    return getItem<string[]>(KEYS.FAVORITE_VERSES, []);
+  },
+  toggleFavoriteVerse: (verseKey: string): boolean => {
+    const favs = StorageManager.getFavoriteVerses();
+    const exists = favs.includes(verseKey);
+    const updated = exists ? favs.filter((v) => v !== verseKey) : [...favs, verseKey];
+    setItem(KEYS.FAVORITE_VERSES, updated);
+    return !exists;
   },
 
   getCurrentUser: (): User | null => {

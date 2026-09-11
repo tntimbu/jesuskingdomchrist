@@ -1,6 +1,6 @@
 {
   "name": "CMS Pro - Enterprise Church Management System",
-  "description": "Sistem Manajemen Gereja berbasis Web & PWA Enterprise dengan integrasi Google Sheets DB, Google Apps Script REST API, Firebase Realtime Sync, RBAC, dan Manajemen Lengkap Jemaat, Persembahan, Jadwal, Dokumen, dan Laporan.",
+  "description": "Sistem Informasi & Manajemen Gereja Enterprise dengan integrasi Pustaka Alkitab (66 Kitab), Kidung Jemaat (KJ), NKB, PKJ, Lagu Kontemporer berchord, Ruang Chat Komunitas, Manajemen Jemaat, Persembahan, dan Jadwal Ibadah.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -85,7 +85,8 @@ import {
   QrCode,
   HelpCircle,
   Info,
-  FileJson
+  FileJson,
+  BookMarked
 } from 'lucide-react';
 import { broadcastChurchAnnouncement } from '../utils/pushNotificationService';
 import { Website2ApkNotificationGuideModal } from './Website2ApkNotificationGuideModal';
@@ -1194,7 +1195,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
             {/* 1. Jemaat & KK */}
             <button
               onClick={() => onNavigate('jemaat')}
@@ -1300,7 +1301,28 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
             </button>
 
-            {/* 6. Menu Lainnya */}
+            {/* 6. Alkitab & Pujian */}
+            <button
+              onClick={() => onNavigate('pustaka')}
+              className="p-4 rounded-2xl bg-gradient-to-br from-amber-950/90 via-slate-900 to-slate-950 hover:from-amber-900/90 hover:to-amber-950 border border-amber-500/30 hover:border-amber-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
+            >
+              <div className="flex items-center justify-between">
+                <div className="p-2.5 rounded-xl bg-amber-500 text-slate-950 shadow-lg group-hover:scale-110 transition-transform">
+                  <BookMarked className="w-5 h-5" />
+                </div>
+                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  Alkitab &amp; Lagu
+                </span>
+              </div>
+              <div>
+                <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-amber-300 transition-colors block">
+                  Alkitab &amp; Pujian
+                </span>
+                <span className="text-[10px] text-slate-400 block mt-0.5">KJ, NKB, PKJ, Lagu</span>
+              </div>
+            </button>
+
+            {/* 7. Menu Lainnya */}
             <button
               onClick={() => onNavigate('lainnya')}
               className="p-4 rounded-2xl bg-gradient-to-br from-cyan-950/90 via-slate-900 to-slate-950 hover:from-cyan-900/90 hover:to-cyan-950 border border-cyan-500/30 hover:border-cyan-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
