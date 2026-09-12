@@ -57,6 +57,7 @@ export const PustakaRohaniView: React.FC<PustakaRohaniViewProps> = ({
   );
   const [selectedChapter, setSelectedChapter] = useState<number>(23);
   const [fontSize, setFontSize] = useState<'small' | 'medium' | 'large'>('medium');
+  const [bibleReadingMode, setBibleReadingMode] = useState<'card' | 'flow'>('card');
   const [onlineVerses, setOnlineVerses] = useState<BibleVerse[] | null>(null);
   const [isLoadingVerses, setIsLoadingVerses] = useState(false);
 
@@ -733,7 +734,7 @@ export const PustakaRohaniView: React.FC<PustakaRohaniViewProps> = ({
 
           {/* Sisi Kanan: Pembaca Ayat Alkitab (8 Kolom) */}
           <div className="lg:col-span-8 space-y-4">
-            <div className="bg-slate-900/90 rounded-3xl border border-white/10 shadow-2xl p-6 sm:p-8 space-y-6">
+            <div className="bg-slate-900/90 rounded-2xl sm:rounded-3xl border border-white/10 shadow-2xl p-4 sm:p-7 space-y-5">
               {/* Header Pembacaan Pasal */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
                 <div>
@@ -747,49 +748,73 @@ export const PustakaRohaniView: React.FC<PustakaRohaniViewProps> = ({
                   </h2>
                 </div>
 
-                {/* Kontrol Navigasi & Ukuran Font */}
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => {
-                      if (selectedChapter > 1) setSelectedChapter(selectedChapter - 1);
-                    }}
-                    disabled={selectedChapter <= 1}
-                    className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-white transition-all cursor-pointer"
-                    title="Pasal Sebelumnya"
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
+                {/* Kontrol Navigasi, Mode & Ukuran Font */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex items-center space-x-1">
+                    <button
+                      onClick={() => {
+                        if (selectedChapter > 1) setSelectedChapter(selectedChapter - 1);
+                      }}
+                      disabled={selectedChapter <= 1}
+                      className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-white transition-all cursor-pointer"
+                      title="Pasal Sebelumnya"
+                    >
+                      <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+                    </button>
 
-                  <button
-                    onClick={() => {
-                      if (selectedChapter < selectedBook.chapters_count) setSelectedChapter(selectedChapter + 1);
-                    }}
-                    disabled={selectedChapter >= selectedBook.chapters_count}
-                    className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-white transition-all cursor-pointer"
-                    title="Pasal Berikutnya"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
+                    <button
+                      onClick={() => {
+                        if (selectedChapter < selectedBook.chapters_count) setSelectedChapter(selectedChapter + 1);
+                      }}
+                      disabled={selectedChapter >= selectedBook.chapters_count}
+                      className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-30 text-white transition-all cursor-pointer"
+                      title="Pasal Berikutnya"
+                    >
+                      <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                    </button>
+                  </div>
+
+                  {/* Mode Tampilan: Kartu / Mengalir */}
+                  <div className="flex items-center bg-slate-950 p-1 rounded-xl border border-white/10 text-xs font-bold">
+                    <button
+                      onClick={() => setBibleReadingMode('card')}
+                      className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
+                        bibleReadingMode === 'card' ? 'bg-amber-500 text-slate-950 font-black' : 'text-slate-400 hover:text-white'
+                      }`}
+                      title="Mode Kartu per Ayat"
+                    >
+                      Per Ayat
+                    </button>
+                    <button
+                      onClick={() => setBibleReadingMode('flow')}
+                      className={`px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
+                        bibleReadingMode === 'flow' ? 'bg-amber-500 text-slate-950 font-black' : 'text-slate-400 hover:text-white'
+                      }`}
+                      title="Mode Teks Paragraf Mengalir"
+                    >
+                      Paragraf
+                    </button>
+                  </div>
 
                   {/* Pengatur Ukuran Font */}
                   <div className="flex items-center bg-slate-950 p-1 rounded-xl border border-white/10 text-xs font-bold text-slate-300">
                     <button
                       onClick={() => setFontSize('small')}
-                      className={`px-2 py-1 rounded-lg ${fontSize === 'small' ? 'bg-amber-500 text-slate-950' : 'hover:text-white'}`}
+                      className={`px-2 py-1 rounded-lg ${fontSize === 'small' ? 'bg-amber-500 text-slate-950 font-black' : 'hover:text-white'}`}
                       title="Teks Kecil"
                     >
                       A-
                     </button>
                     <button
                       onClick={() => setFontSize('medium')}
-                      className={`px-2 py-1 rounded-lg ${fontSize === 'medium' ? 'bg-amber-500 text-slate-950' : 'hover:text-white'}`}
+                      className={`px-2 py-1 rounded-lg ${fontSize === 'medium' ? 'bg-amber-500 text-slate-950 font-black' : 'hover:text-white'}`}
                       title="Teks Normal"
                     >
                       A
                     </button>
                     <button
                       onClick={() => setFontSize('large')}
-                      className={`px-2 py-1 rounded-lg ${fontSize === 'large' ? 'bg-amber-500 text-slate-950' : 'hover:text-white'}`}
+                      className={`px-2 py-1 rounded-lg ${fontSize === 'large' ? 'bg-amber-500 text-slate-950 font-black' : 'hover:text-white'}`}
                       title="Teks Besar"
                     >
                       A+
@@ -805,65 +830,88 @@ export const PustakaRohaniView: React.FC<PustakaRohaniViewProps> = ({
                   <p className="text-slate-400 text-sm">Memuat firman Tuhan...</p>
                 </div>
               ) : onlineVerses && onlineVerses.length > 0 ? (
-                <div className="space-y-4">
-                  {onlineVerses.map((verse) => {
-                    const verseKey = `${verse.book_id}-${verse.chapter}:${verse.verse}`;
-                    const isFav = favoriteVerses.includes(verseKey);
+                bibleReadingMode === 'flow' ? (
+                  /* Mode Baca Paragraf Alkitab Mengalir Penuh */
+                  <div className="p-4 sm:p-6 rounded-2xl bg-slate-950/50 border border-white/5 text-slate-100 font-serif leading-loose select-text text-left">
+                    {onlineVerses.map((verse) => (
+                      <span key={verse.verse} className="inline mr-2 group">
+                        <span className="inline-flex items-center justify-center font-sans font-black text-amber-400 text-xs px-1.5 py-0.5 rounded-md bg-amber-500/15 border border-amber-500/30 mr-1.5 select-none align-baseline">
+                          {verse.verse}
+                        </span>
+                        <span className={`${getFontSizeClass()} text-slate-100`}>
+                          {verse.text}{' '}
+                        </span>
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  /* Mode Kartu Ayat: Teks Penuh ke Samping (Full Width Across the Card) */
+                  <div className="space-y-3.5">
+                    {onlineVerses.map((verse) => {
+                      const verseKey = `${verse.book_id}-${verse.chapter}:${verse.verse}`;
+                      const isFav = favoriteVerses.includes(verseKey);
 
-                    return (
-                      <div
-                        key={verse.verse}
-                        className={`group p-4 rounded-2xl transition-all duration-200 border ${
-                          isFav
-                            ? 'bg-amber-950/20 border-amber-500/40'
-                            : 'bg-white/[0.02] hover:bg-white/[0.05] border-transparent hover:border-white/5'
-                        }`}
-                      >
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex items-start space-x-3.5 flex-1">
-                            <span className="shrink-0 w-7 h-7 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 flex items-center justify-center text-xs font-black">
-                              {verse.verse}
-                            </span>
-                            <p className={`text-slate-200 font-serif ${getFontSizeClass()} pt-0.5`}>
-                              {verse.text}
-                            </p>
+                      return (
+                        <div
+                          key={verse.verse}
+                          className={`p-3.5 sm:p-5 rounded-2xl transition-all duration-200 border ${
+                            isFav
+                              ? 'bg-amber-950/25 border-amber-500/40 shadow-lg'
+                              : 'bg-white/[0.02] hover:bg-white/[0.04] border-white/5'
+                          }`}
+                        >
+                          {/* Baris Atas: Nomor Ayat & Tombol Aksi */}
+                          <div className="flex items-center justify-between gap-2 pb-2 mb-2.5 border-b border-white/5">
+                            <div className="flex items-center space-x-2">
+                              <span className="px-2.5 py-0.5 rounded-lg bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-black">
+                                Ayat {verse.verse}
+                              </span>
+                              <span className="text-[11px] text-slate-400 font-medium">
+                                {verse.book_name} {verse.chapter}:{verse.verse}
+                              </span>
+                            </div>
+
+                            {/* Quick Action Buttons */}
+                            <div className="flex items-center space-x-1 shrink-0">
+                              <button
+                                onClick={() => handleToggleFavoriteVerse(verseKey)}
+                                className={`p-1.5 sm:p-2 rounded-xl transition-all cursor-pointer ${
+                                  isFav
+                                    ? 'text-amber-400 bg-amber-500/20'
+                                    : 'text-slate-400 hover:text-amber-400 hover:bg-white/5'
+                                }`}
+                                title={isFav ? 'Hapus Bookmark' : 'Tandai Ayat Emas'}
+                              >
+                                <Bookmark className="w-4 h-4 fill-current" />
+                              </button>
+
+                              <button
+                                onClick={() => handleCopyVerse(verse)}
+                                className="p-1.5 sm:p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all cursor-pointer"
+                                title="Salin Ayat"
+                              >
+                                <Copy className="w-4 h-4" />
+                              </button>
+
+                              <button
+                                onClick={() => handleShareVerseToChat(verse)}
+                                className="p-1.5 sm:p-2 rounded-xl text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 transition-all cursor-pointer"
+                                title="Bagikan ke Ruang Chat Jemaat"
+                              >
+                                <MessageCircle className="w-4 h-4" />
+                              </button>
+                            </div>
                           </div>
 
-                          {/* Quick Action Buttons */}
-                          <div className="flex items-center space-x-1 shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
-                            <button
-                              onClick={() => handleToggleFavoriteVerse(verseKey)}
-                              className={`p-2 rounded-xl transition-all cursor-pointer ${
-                                isFav
-                                  ? 'text-amber-400 bg-amber-500/20'
-                                  : 'text-slate-400 hover:text-amber-400 hover:bg-white/5'
-                              }`}
-                              title={isFav ? 'Hapus Bookmark' : 'Tandai Ayat Emas'}
-                            >
-                              <Bookmark className="w-4 h-4 fill-current" />
-                            </button>
-
-                            <button
-                              onClick={() => handleCopyVerse(verse)}
-                              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all cursor-pointer"
-                              title="Salin Ayat"
-                            >
-                              <Copy className="w-4 h-4" />
-                            </button>
-
-                            <button
-                              onClick={() => handleShareVerseToChat(verse)}
-                              className="p-2 rounded-xl text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 transition-all cursor-pointer"
-                              title="Bagikan ke Ruang Chat Jemaat"
-                            >
-                              <MessageCircle className="w-4 h-4" />
-                            </button>
-                          </div>
+                          {/* Baris Bawah: Teks Ayat Penuh ke Samping (Lebar 100%, Penuh Samping Baru ke Bawah) */}
+                          <p className={`w-full text-left text-slate-100 font-serif ${getFontSizeClass()} leading-relaxed sm:leading-loose select-text break-words`}>
+                            {verse.text}
+                          </p>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                )
               ) : (
                 <div className="text-center py-16 text-slate-400">
                   <p>Tidak ada ayat yang ditemukan untuk pasal ini.</p>
