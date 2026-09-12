@@ -23,7 +23,14 @@ import {
   AlertCircle,
   RotateCcw,
   Edit2,
-  Info
+  Info,
+  Maximize2,
+  Minimize2,
+  Eye,
+  EyeOff,
+  ChevronDown,
+  ChevronUp,
+  Tag
 } from 'lucide-react';
 
 interface ChatViewProps {
@@ -91,6 +98,14 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUser, settings }) => 
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [showScrollBottom, setShowScrollBottom] = useState(false);
+
+  // User preference toggles for expandable / clean view
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [showFilterBar, setShowFilterBar] = useState(false);
+  const [showQuickBlessings, setShowQuickBlessings] = useState(false);
+  const [showTagSelector, setShowTagSelector] = useState(false);
+  const [isFocusMode, setIsFocusMode] = useState(false);
+  const [isPinnedBannerDismissed, setIsPinnedBannerDismissed] = useState(false);
 
   // Guest Nickname State for visitors who are not logged in
   const isGuest = currentUser.user_id === 'guest' || !currentUser.user_id;
@@ -318,98 +333,49 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUser, settings }) => 
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-140px)] sm:h-[calc(100vh-160px)] max-w-5xl mx-auto rounded-3xl bg-slate-950 border border-slate-800 shadow-2xl overflow-hidden animate-fade-in relative">
+    <div
+      className={
+        isFullScreen
+          ? "fixed inset-0 sm:inset-3 z-50 rounded-none sm:rounded-3xl bg-slate-950 border border-slate-700/80 shadow-2xl shadow-black/90 flex flex-col overflow-hidden animate-fade-in"
+          : "flex flex-col h-[calc(100vh-200px)] sm:h-[calc(100vh-220px)] min-h-[500px] w-full max-w-6xl xl:max-w-7xl mx-auto rounded-3xl bg-slate-950 border border-slate-800 shadow-2xl overflow-hidden animate-fade-in relative"
+      }
+    >
       {/* Top Header */}
-      <div className="p-3.5 sm:p-4 bg-slate-900/95 border-b border-slate-800/80 backdrop-blur-xl flex flex-col gap-3 shrink-0 z-10">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
+      <div className="p-2.5 sm:p-3.5 bg-slate-900/95 border-b border-slate-800/80 backdrop-blur-xl flex flex-col gap-2 shrink-0 z-10">
+        <div className="flex items-center justify-between gap-2 sm:gap-3">
+          {/* Church/Chat Identity & Inline Current User */}
+          <div className="flex items-center gap-2.5 min-w-0">
             <div
-              className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-lg shrink-0"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl flex items-center justify-center text-white shadow-lg shrink-0"
               style={{ backgroundColor: themeHex }}
             >
               <MessageCircle className="w-5 h-5 text-white" />
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <h2 className="text-base sm:text-lg font-black text-white tracking-tight truncate">
-                  Ruang Chat Komunitas
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <h2 className="text-sm sm:text-base font-black text-white tracking-tight truncate">
+                  Ruang Chat
                 </h2>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1 shrink-0">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                  Live Cloud
+                  <span className="hidden xs:inline">Live</span>
+                </span>
+                <span className="text-slate-400 text-[11px] font-medium hidden md:inline">
+                  • {messages.length} Pesan
                 </span>
               </div>
-              <p className="text-xs text-slate-400 truncate">
-                Terbuka untuk seluruh jemaat, pelayan & pengurus gereja
-              </p>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            <button
-              onClick={() => setSoundEnabled(!soundEnabled)}
-              title={soundEnabled ? 'Matikan Suara Notifikasi' : 'Aktifkan Suara Notifikasi'}
-              className={`p-2 rounded-xl border transition-all cursor-pointer ${
-                soundEnabled
-                  ? 'bg-indigo-950/60 border-indigo-800 text-indigo-300 hover:bg-indigo-900/80'
-                  : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
-              }`}
-            >
-              {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-            </button>
-
-            {isAdmin && (
-              <button
-                onClick={() => setShowClearConfirm(true)}
-                title="Bersihkan Semua Percakapan (Admin)"
-                className="p-2 rounded-xl bg-rose-950/40 border border-rose-800/60 text-rose-400 hover:bg-rose-900/60 hover:text-rose-200 transition-all cursor-pointer"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* User Identity Bar (Specially helpful for guests/visitors) */}
-        <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 rounded-2xl bg-slate-900/80 border border-slate-800 text-xs">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 font-bold shrink-0">
-              <UserIcon className="w-3.5 h-3.5 text-indigo-400" />
-            </div>
-            <span className="text-slate-400 font-medium">Kirim pesan sebagai:</span>
-            {isEditingGuestName ? (
-              <div className="flex items-center gap-1.5">
-                <input
-                  type="text"
-                  value={tempGuestName}
-                  onChange={(e) => setTempGuestName(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSaveGuestName()}
-                  placeholder="Ketik nama Anda..."
-                  className="px-2 py-1 rounded-lg bg-slate-950 border border-indigo-500 text-white text-xs focus:outline-none"
-                  autoFocus
-                />
-                <button
-                  onClick={handleSaveGuestName}
-                  className="px-2 py-1 rounded-lg bg-indigo-600 text-white font-bold hover:bg-indigo-500 cursor-pointer"
-                >
-                  Simpan
-                </button>
-                <button
-                  onClick={() => setIsEditingGuestName(false)}
-                  className="p-1 text-slate-400 hover:text-white cursor-pointer"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1.5 truncate">
-                <span className="font-black text-white truncate">{effectiveDisplayName}</span>
-                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">
+              
+              {/* Space-Saving Compact User Identity in Header */}
+              <div className="flex items-center gap-1.5 mt-0.5 text-[11px]">
+                <span className="text-slate-400 hidden sm:inline">Sebagai:</span>
+                <span className="font-bold text-slate-200 truncate max-w-[110px] sm:max-w-[170px]">
+                  {effectiveDisplayName}
+                </span>
+                <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-slate-800 text-slate-300 border border-slate-700 shrink-0">
                   {currentUser.role === 'SUPER_ADMIN'
-                    ? 'Super Admin'
+                    ? 'SuperAdmin'
                     : currentUser.role === 'ADMIN'
-                    ? 'Admin Gereja'
+                    ? 'Admin'
                     : isGuest
                     ? 'Tamu'
                     : 'Jemaat'}
@@ -420,92 +386,193 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUser, settings }) => 
                       setTempGuestName(guestName);
                       setIsEditingGuestName(true);
                     }}
-                    title="Ubah Nama Tampilan"
-                    className="p-1 rounded text-slate-400 hover:text-indigo-400 hover:bg-slate-800 cursor-pointer"
+                    title="Ubah Nama Tamu"
+                    className="p-0.5 rounded text-indigo-400 hover:text-indigo-300 hover:bg-slate-800 cursor-pointer"
                   >
-                    <Edit2 className="w-3 h-3" />
+                    <Edit2 className="w-2.5 h-2.5" />
                   </button>
                 )}
               </div>
-            )}
+            </div>
           </div>
 
-          <div className="flex items-center gap-2 text-slate-400 text-[11px]">
-            <span>{messages.length} Total Pesan</span>
+          {/* Action & Toggle Toolbar Buttons */}
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+            {/* Toggle Filter & Search Bar */}
+            <button
+              onClick={() => setShowFilterBar(!showFilterBar)}
+              title={showFilterBar ? "Sembunyikan Filter & Cari" : "Tampilkan Filter & Pencarian"}
+              className={`p-2 rounded-xl border text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                showFilterBar || filterTag !== 'ALL' || searchQuery
+                  ? 'bg-indigo-600 text-white border-indigo-400 shadow-md'
+                  : 'bg-slate-800/90 border-slate-700 text-slate-300 hover:text-white hover:bg-slate-700'
+              }`}
+            >
+              <Search className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">
+                {showFilterBar ? "Tutup Filter" : "Filter/Cari"}
+              </span>
+              {(filterTag !== 'ALL' || searchQuery) && (
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+              )}
+            </button>
+
+            {/* Toggle Focus Mode (Hides all non-essential banners) */}
+            <button
+              onClick={() => setIsFocusMode(!isFocusMode)}
+              title={isFocusMode ? "Nonaktifkan Mode Fokus (Tampilkan Panel Tambahan)" : "Mode Fokus (Sembunyikan Semua Panel Tambahan agar Chat Sangat Luas)"}
+              className={`p-2 rounded-xl border text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                isFocusMode
+                  ? 'bg-emerald-600 text-white border-emerald-400 shadow-md'
+                  : 'bg-slate-800/90 border-slate-700 text-slate-300 hover:text-white hover:bg-slate-700'
+              }`}
+            >
+              {isFocusMode ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+              <span className="hidden md:inline">
+                {isFocusMode ? "Lengkap" : "Fokus"}
+              </span>
+            </button>
+
+            {/* Toggle Full Screen / Expand View */}
+            <button
+              onClick={() => setIsFullScreen(!isFullScreen)}
+              title={isFullScreen ? "Kecilkan Tampilan Chat" : "Perluas Layar Penuh (Maksimal)"}
+              className={`p-2 rounded-xl border transition-all cursor-pointer ${
+                isFullScreen
+                  ? 'bg-amber-500 text-slate-950 font-black border-amber-300 shadow-lg'
+                  : 'bg-slate-800/90 border-slate-700 text-slate-300 hover:text-white hover:bg-slate-700'
+              }`}
+            >
+              {isFullScreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+            </button>
+
+            {/* Audio Toggle */}
+            <button
+              onClick={() => setSoundEnabled(!soundEnabled)}
+              title={soundEnabled ? 'Matikan Suara Notifikasi' : 'Aktifkan Suara Notifikasi'}
+              className={`p-2 rounded-xl border transition-all cursor-pointer ${
+                soundEnabled
+                  ? 'bg-indigo-950/60 border-indigo-800 text-indigo-300 hover:bg-indigo-900/80'
+                  : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
+              }`}
+            >
+              {soundEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+            </button>
+
+            {/* Admin Clear Chat */}
+            {isAdmin && (
+              <button
+                onClick={() => setShowClearConfirm(true)}
+                title="Bersihkan Semua Percakapan (Admin)"
+                className="p-2 rounded-xl bg-rose-950/40 border border-rose-800/60 text-rose-400 hover:bg-rose-900/60 hover:text-rose-200 transition-all cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Filter & Search Bar */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
-          {/* Tag Filter Tabs */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none text-xs">
+        {/* Guest Nickname Editor Drawer */}
+        {isEditingGuestName && (
+          <div className="flex items-center gap-2 p-2 rounded-xl bg-indigo-950/40 border border-indigo-500/30 text-xs animate-fade-in">
+            <span className="text-indigo-300 font-bold">Nama Tamu:</span>
+            <input
+              type="text"
+              value={tempGuestName}
+              onChange={(e) => setTempGuestName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSaveGuestName()}
+              placeholder="Ketik nama Anda..."
+              className="flex-1 px-2.5 py-1 rounded-lg bg-slate-950 border border-indigo-500 text-white text-xs focus:outline-none"
+              autoFocus
+            />
             <button
-              onClick={() => setFilterTag('ALL')}
-              className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer ${
-                filterTag === 'ALL'
-                  ? 'bg-white text-slate-900 shadow-md'
-                  : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
-              }`}
+              onClick={handleSaveGuestName}
+              className="px-2.5 py-1 rounded-lg bg-indigo-600 text-white font-bold hover:bg-indigo-500 cursor-pointer"
             >
-              Semua
+              Simpan
             </button>
-            {pinnedMessages.length > 0 && (
+            <button
+              onClick={() => setIsEditingGuestName(false)}
+              className="p-1 text-slate-400 hover:text-white cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
+        {/* Collapsible Filter & Search Bar */}
+        {showFilterBar && !isFocusMode && (
+          <div className="pt-2 border-t border-slate-800/80 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 animate-fade-in">
+            {/* Tag Filter Tabs */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none text-xs">
               <button
-                onClick={() => setFilterTag('PINNED')}
-                className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all flex items-center gap-1 cursor-pointer ${
-                  filterTag === 'PINNED'
-                    ? 'bg-amber-400 text-slate-950 font-black shadow-md'
-                    : 'bg-slate-900 text-amber-400 hover:bg-amber-950/40 border border-amber-800/40'
-                }`}
-              >
-                <Pin className="w-3 h-3 fill-current" />
-                <span>Disematkan ({pinnedMessages.length})</span>
-              </button>
-            )}
-            {(['DOA', 'AYAT', 'SALAM', 'INFO'] as ChatTag[]).map((tag) => (
-              <button
-                key={tag}
-                onClick={() => setFilterTag(tag)}
-                className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all flex items-center gap-1 cursor-pointer ${
-                  filterTag === tag
-                    ? `${TAG_CONFIG[tag].bg} ${TAG_CONFIG[tag].text} border ${TAG_CONFIG[tag].border} shadow-md`
+                onClick={() => setFilterTag('ALL')}
+                className={`px-2.5 py-1 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer ${
+                  filterTag === 'ALL'
+                    ? 'bg-white text-slate-900 shadow-md'
                     : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
                 }`}
               >
-                <span>{TAG_CONFIG[tag].icon}</span>
-                <span>{TAG_CONFIG[tag].label}</span>
+                Semua
               </button>
-            ))}
-          </div>
+              {pinnedMessages.length > 0 && (
+                <button
+                  onClick={() => setFilterTag('PINNED')}
+                  className={`px-2.5 py-1 rounded-xl font-bold whitespace-nowrap transition-all flex items-center gap-1 cursor-pointer ${
+                    filterTag === 'PINNED'
+                      ? 'bg-amber-400 text-slate-950 font-black shadow-md'
+                      : 'bg-slate-900 text-amber-400 hover:bg-amber-950/40 border border-amber-800/40'
+                  }`}
+                >
+                  <Pin className="w-3 h-3 fill-current" />
+                  <span>Disematkan ({pinnedMessages.length})</span>
+                </button>
+              )}
+              {(['DOA', 'AYAT', 'SALAM', 'INFO'] as ChatTag[]).map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() => setFilterTag(tag)}
+                  className={`px-2.5 py-1 rounded-xl font-bold whitespace-nowrap transition-all flex items-center gap-1 cursor-pointer ${
+                    filterTag === tag
+                      ? `${TAG_CONFIG[tag].bg} ${TAG_CONFIG[tag].text} border ${TAG_CONFIG[tag].border} shadow-md`
+                      : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                  }`}
+                >
+                  <span>{TAG_CONFIG[tag].icon}</span>
+                  <span>{TAG_CONFIG[tag].label}</span>
+                </button>
+              ))}
+            </div>
 
-          {/* Search Box */}
-          <div className="relative shrink-0 sm:w-56">
-            <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari pesan / jemaat..."
-              className="w-full pl-8 pr-7 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-white text-xs focus:outline-none focus:border-indigo-500 placeholder-slate-500"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
+            {/* Search Box */}
+            <div className="relative shrink-0 sm:w-56">
+              <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Cari pesan / jemaat..."
+                className="w-full pl-8 pr-7 py-1 rounded-xl bg-slate-900/90 border border-slate-800 text-white text-xs focus:outline-none focus:border-indigo-500 placeholder-slate-500"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Pinned Messages Banner (if any) */}
-      {pinnedMessages.length > 0 && filterTag !== 'PINNED' && (
-        <div className="bg-amber-950/30 border-b border-amber-800/30 px-4 py-2 flex items-center justify-between gap-3 text-xs shrink-0">
+      {pinnedMessages.length > 0 && filterTag !== 'PINNED' && !isFocusMode && !isPinnedBannerDismissed && (
+        <div className="bg-amber-950/30 border-b border-amber-800/30 px-3 sm:px-4 py-1.5 flex items-center justify-between gap-2 text-xs shrink-0 animate-fade-in">
           <div className="flex items-center gap-2 min-w-0">
             <Pin className="w-3.5 h-3.5 text-amber-400 fill-current shrink-0" />
-            <span className="font-bold text-amber-300 shrink-0">Pesan Penting:</span>
+            <span className="font-bold text-amber-300 shrink-0">Disematkan:</span>
             <span className="text-slate-300 truncate">
               {pinnedMessages[pinnedMessages.length - 1].sender_name}: {pinnedMessages[pinnedMessages.length - 1].message}
             </span>
@@ -515,17 +582,27 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUser, settings }) => 
               <button
                 onClick={() => handleDeleteMessage(pinnedMessages[pinnedMessages.length - 1].id)}
                 className="text-[11px] font-bold text-rose-400 hover:text-rose-300 flex items-center gap-1 bg-rose-500/15 hover:bg-rose-500/25 px-2 py-0.5 rounded-lg border border-rose-500/30 cursor-pointer transition-all"
-                title="Admin: Hapus Pesan yang Sedang Disematkan Ini"
+                title="Hapus Pesan yang Sedang Disematkan Ini"
               >
                 <Trash2 className="w-3 h-3" />
                 <span>Hapus</span>
               </button>
             )}
             <button
-              onClick={() => setFilterTag('PINNED')}
+              onClick={() => {
+                setFilterTag('PINNED');
+                setShowFilterBar(true);
+              }}
               className="text-[11px] font-bold text-amber-400 hover:underline cursor-pointer"
             >
-              Lihat ({pinnedMessages.length})
+              Lihat Semua ({pinnedMessages.length})
+            </button>
+            <button
+              onClick={() => setIsPinnedBannerDismissed(true)}
+              title="Tutup banner sematan"
+              className="p-1 text-slate-400 hover:text-slate-200 rounded cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
@@ -687,7 +764,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUser, settings }) => 
       {showScrollBottom && (
         <button
           onClick={() => scrollToBottom(true)}
-          className="absolute bottom-36 right-6 p-2.5 rounded-full bg-indigo-600 text-white shadow-2xl hover:bg-indigo-500 transition-all z-20 active:scale-95 cursor-pointer flex items-center gap-1.5 text-xs font-bold"
+          className="absolute bottom-20 sm:bottom-24 right-4 sm:right-6 p-2 sm:p-2.5 rounded-full bg-indigo-600 text-white shadow-2xl hover:bg-indigo-500 transition-all z-20 active:scale-95 cursor-pointer flex items-center gap-1.5 text-xs font-bold"
         >
           <ArrowDown className="w-4 h-4" />
           <span>Ke Pesan Baru</span>
@@ -695,10 +772,10 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUser, settings }) => 
       )}
 
       {/* Bottom Input Area */}
-      <div className="p-3 sm:p-4 bg-slate-900 border-t border-slate-800 shrink-0 z-10 flex flex-col gap-2">
+      <div className="p-2 sm:p-3 bg-slate-900/95 border-t border-slate-800 shrink-0 z-10 flex flex-col gap-1.5">
         {/* Active Reply Banner */}
         {replyTarget && (
-          <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-slate-800 border border-slate-700 text-xs">
+          <div className="flex items-center justify-between gap-2 p-1.5 sm:p-2 rounded-xl bg-slate-800/90 border border-slate-700 text-xs">
             <div className="flex items-center gap-2 min-w-0">
               <Reply className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
               <div className="min-w-0">
@@ -713,60 +790,124 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUser, settings }) => 
             <button
               onClick={() => setReplyTarget(null)}
               className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 cursor-pointer shrink-0"
+              title="Batalkan Balasan"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
         )}
 
-        {/* Quick Blessings / Praise Emojis */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
-          <span className="text-[11px] font-bold text-slate-500 shrink-0 hidden sm:inline">
-            Cepat:
-          </span>
-          {QUICK_BLESSINGS.map((blessing) => (
+        {/* Collapsible Quick Blessings Drawer */}
+        {showQuickBlessings && (
+          <div className="flex items-center gap-1.5 overflow-x-auto p-1.5 rounded-xl bg-slate-950/80 border border-slate-800 scrollbar-none text-xs animate-fade-in">
+            <span className="text-[11px] font-bold text-slate-400 shrink-0 flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-amber-400" />
+              <span>Pintasan Doa:</span>
+            </span>
+            {QUICK_BLESSINGS.map((blessing) => (
+              <button
+                key={blessing}
+                type="button"
+                onClick={() => {
+                  setInputMessage((prev) => (prev ? `${prev} ${blessing}` : blessing));
+                  inputRef.current?.focus();
+                }}
+                className="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs whitespace-nowrap transition-all border border-slate-700 cursor-pointer hover:scale-105 active:scale-95"
+              >
+                {blessing}
+              </button>
+            ))}
             <button
-              key={blessing}
               type="button"
-              onClick={() => setInputMessage((prev) => (prev ? `${prev} ${blessing}` : blessing))}
-              className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs whitespace-nowrap transition-all border border-slate-700 cursor-pointer hover:scale-105 active:scale-95"
+              onClick={() => setShowQuickBlessings(false)}
+              className="p-1 rounded-lg text-slate-400 hover:text-slate-200 ml-auto shrink-0 cursor-pointer"
+              title="Tutup Pintasan Doa"
             >
-              {blessing}
+              <X className="w-3.5 h-3.5" />
             </button>
-          ))}
-        </div>
+          </div>
+        )}
 
-        {/* Tag Selector for Message */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
-          <span className="text-[11px] font-bold text-slate-500 shrink-0">Kategori:</span>
-          {(['UMUM', 'DOA', 'AYAT', 'SALAM', 'INFO'] as ChatTag[]).map((tag) => (
+        {/* Collapsible Tag Selector Drawer */}
+        {showTagSelector && (
+          <div className="flex items-center gap-1.5 overflow-x-auto p-1.5 rounded-xl bg-slate-950/80 border border-slate-800 scrollbar-none text-xs animate-fade-in">
+            <span className="text-[11px] font-bold text-slate-400 shrink-0 flex items-center gap-1">
+              <Tag className="w-3 h-3 text-indigo-400" />
+              <span>Kategori Pesan:</span>
+            </span>
+            {(['UMUM', 'DOA', 'AYAT', 'SALAM', 'INFO'] as ChatTag[]).map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => {
+                  setSelectedTag(tag);
+                  setShowTagSelector(false);
+                  inputRef.current?.focus();
+                }}
+                className={`px-2.5 py-1 rounded-lg font-bold text-xs whitespace-nowrap transition-all cursor-pointer ${
+                  selectedTag === tag
+                    ? `${TAG_CONFIG[tag].bg} ${TAG_CONFIG[tag].text} border ${TAG_CONFIG[tag].border}`
+                    : 'bg-slate-800/60 text-slate-400 hover:text-white border border-transparent'
+                }`}
+              >
+                <span className="mr-1">{TAG_CONFIG[tag].icon}</span>
+                <span>{TAG_CONFIG[tag].label}</span>
+              </button>
+            ))}
             <button
-              key={tag}
               type="button"
-              onClick={() => setSelectedTag(tag)}
-              className={`px-2.5 py-1 rounded-lg font-bold text-xs whitespace-nowrap transition-all cursor-pointer ${
-                selectedTag === tag
-                  ? `${TAG_CONFIG[tag].bg} ${TAG_CONFIG[tag].text} border ${TAG_CONFIG[tag].border}`
-                  : 'bg-slate-800/50 text-slate-400 hover:text-white border border-transparent'
+              onClick={() => setShowTagSelector(false)}
+              className="p-1 rounded-lg text-slate-400 hover:text-slate-200 ml-auto shrink-0 cursor-pointer"
+              title="Tutup Pilihan Kategori"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
+        {/* Input Text Form with Inline Accessory Icon Buttons */}
+        <form onSubmit={handleSendMessage} className="flex items-center gap-1.5 sm:gap-2">
+          {/* Quick Drawer Toggles */}
+          <div className="flex items-center gap-1 shrink-0">
+            {/* Quick Blessings Toggle Icon */}
+            <button
+              type="button"
+              onClick={() => setShowQuickBlessings(!showQuickBlessings)}
+              title={showQuickBlessings ? "Sembunyikan Pintasan Doa" : "Pintasan Doa & Berkat Cepat"}
+              className={`p-2 rounded-xl border transition-all cursor-pointer ${
+                showQuickBlessings
+                  ? 'bg-amber-500/20 border-amber-500/40 text-amber-300'
+                  : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
               }`}
             >
-              <span className="mr-1">{TAG_CONFIG[tag].icon}</span>
-              <span>{TAG_CONFIG[tag].label}</span>
+              <Sparkles className="w-4 h-4" />
             </button>
-          ))}
-        </div>
 
-        {/* Input Text Form */}
-        <form onSubmit={handleSendMessage} className="flex items-end gap-2">
+            {/* Tag Selector Toggle Icon */}
+            <button
+              type="button"
+              onClick={() => setShowTagSelector(!showTagSelector)}
+              title={`Kategori: ${TAG_CONFIG[selectedTag].label}. Klik untuk ganti.`}
+              className={`px-2 py-1.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                selectedTag !== 'UMUM' || showTagSelector
+                  ? `${TAG_CONFIG[selectedTag].bg} ${TAG_CONFIG[selectedTag].text} border ${TAG_CONFIG[selectedTag].border}`
+                  : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+            >
+              <span>{TAG_CONFIG[selectedTag].icon}</span>
+              <span className="hidden md:inline text-[11px]">{TAG_CONFIG[selectedTag].label}</span>
+              {showTagSelector ? <ChevronUp className="w-3 h-3 ml-0.5" /> : <ChevronDown className="w-3 h-3 ml-0.5" />}
+            </button>
+          </div>
+
           <div className="flex-1 relative">
-            <textarea
+            <input
               ref={inputRef}
+              type="text"
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              onKeyDown={handleKeyDown}
-              rows={2}
-              placeholder={`Tulis pesan atau pokok doa di sini (Tekan Enter untuk kirim)...`}
-              className="w-full p-3 rounded-2xl bg-slate-950 border border-slate-800 text-white text-xs sm:text-sm focus:outline-none focus:border-indigo-500 placeholder-slate-500 resize-none"
+              placeholder="Tulis pesan atau pokok doa di sini... (Enter untuk kirim)"
+              className="w-full py-2 sm:py-2.5 px-3 sm:px-4 rounded-xl sm:rounded-2xl bg-slate-950 border border-slate-800 text-white text-xs sm:text-sm focus:outline-none focus:border-indigo-500 placeholder-slate-500"
             />
           </div>
 
@@ -776,13 +917,13 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUser, settings }) => 
             style={{
               backgroundColor: inputMessage.trim() ? themeHex : undefined
             }}
-            className={`p-3.5 rounded-2xl flex items-center justify-center font-bold text-white transition-all shrink-0 cursor-pointer shadow-lg active:scale-95 ${
+            className={`p-2 sm:p-2.5 rounded-xl sm:rounded-2xl flex items-center justify-center font-bold text-white transition-all shrink-0 cursor-pointer shadow-lg active:scale-95 ${
               inputMessage.trim()
                 ? 'hover:brightness-110'
                 : 'bg-slate-800 text-slate-500 cursor-not-allowed'
             }`}
           >
-            <Send className="w-5 h-5" />
+            <Send className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </form>
       </div>
