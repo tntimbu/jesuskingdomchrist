@@ -552,35 +552,19 @@ export const StorageManager = {
   getUsers: (): User[] => {
     let list = getItem<User[]>(KEYS.USERS, initialUsers);
 
-    // Consolidate any tenant-scoped user keys into the main global users directory
+    // Actively remove any legacy tenant-scoped user keys from localStorage so deleted accounts cannot resurrect
     if (typeof localStorage !== 'undefined') {
-      let migrated = false;
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (k && k.startsWith('cms_pro_') && k.endsWith('_users') && k !== KEYS.USERS) {
-          try {
-            const raw = localStorage.getItem(k);
-            if (raw) {
-              const tenantUsers: User[] = JSON.parse(raw);
-              if (Array.isArray(tenantUsers)) {
-                tenantUsers.forEach((tu) => {
-                  if (tu && tu.username && !list.some((u) => u.username.toLowerCase() === tu.username.toLowerCase())) {
-                    list.push(tu);
-                    migrated = true;
-                  }
-                });
-              }
-            }
-          } catch (e) {
-            console.error('Error consolidating tenant users:', e);
+      try {
+        const keysToRemove: string[] = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && k.startsWith('cms_pro_') && k.endsWith('_users') && k !== KEYS.USERS) {
+            keysToRemove.push(k);
           }
         }
-      }
-      if (migrated) {
-        try {
-          const scopedKey = getTenantScopedKey(KEYS.USERS);
-          localStorage.setItem(scopedKey, JSON.stringify(list));
-        } catch (e) { /* ignore silent cache */ }
+        keysToRemove.forEach((k) => localStorage.removeItem(k));
+      } catch (e) {
+        // ignore
       }
     }
 
@@ -642,6 +626,67 @@ export const StorageManager = {
         setItem(KEYS.CURRENT_USER, { ...current, ...fresh });
       }
     }
+    window.dispatchEvent(new Event('cms_data_changed'));
+  },
+  deleteUser: (userId: string, username?: string, jemaatId?: string, nama?: string): void => {
+    const currentUsers = StorageManager.getUsers();
+    const updatedUsers = currentUsers.filter((u) => {
+      if (u.user_id === userId) return false;
+      if (username && u.username && u.username.toLowerCase().trim() === username.toLowerCase().trim()) return false;
+      return true;
+    });
+
+    StorageManager.saveUsers(updatedUsers);
+
+    // Actively purge any legacy keys in localStorage so the user cannot be restored
+    if (typeof localStorage !== 'undefined') {
+      try {
+        const toRemove: string[] = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && k.startsWith('cms_pro_') && k.endsWith('_users') && k !== KEYS.USERS) {
+            toRemove.push(k);
+          }
+        }
+        toRemove.forEach((k) => localStorage.removeItem(k));
+        localStorage.setItem(KEYS.USERS, JSON.stringify(updatedUsers));
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    // Also remove associated Jemaat profile if any
+    const allJemaat = getItem<Jemaat[]>(KEYS.JEMAAT, initialJemaat);
+    const updatedJemaat = allJemaat.filter((j) => {
+      if (jemaatId && j.jemaat_id === jemaatId) return false;
+      if (nama && j.nama_lengkap && j.nama_lengkap.toLowerCase().trim() === nama.toLowerCase().trim()) return false;
+      if (username && j.nama_lengkap && j.nama_lengkap.toLowerCase().trim() === username.toLowerCase().trim()) return false;
+      return true;
+    });
+
+    if (updatedJemaat.length !== allJemaat.length) {
+      StorageManager.saveJemaat(updatedJemaat);
+    }
+
+    window.dispatchEvent(new Event('cms_data_changed'));
+  },
+  deleteJemaat: (jemaatId: string, nama?: string): void => {
+    const allJemaat = getItem<Jemaat[]>(KEYS.JEMAAT, initialJemaat);
+    const updatedJemaat = allJemaat.filter((j) => j.jemaat_id !== jemaatId);
+    StorageManager.saveJemaat(updatedJemaat);
+
+    // Also remove associated user account
+    const allUsers = StorageManager.getUsers();
+    const updatedUsers = allUsers.filter((u) => {
+      if (u.jemaat_id && u.jemaat_id === jemaatId) return false;
+      if (nama && u.nama && u.nama.toLowerCase().trim() === nama.toLowerCase().trim()) return false;
+      return true;
+    });
+
+    if (updatedUsers.length !== allUsers.length) {
+      StorageManager.saveUsers(updatedUsers);
+    }
+
     window.dispatchEvent(new Event('cms_data_changed'));
   },
   getNextUserId: (): string => {

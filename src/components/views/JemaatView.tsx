@@ -137,11 +137,11 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
   };
 
   const handleDelete = (id: string, nama: string) => {
-    if (window.confirm(`Hapus data jemaat ${nama}?`)) {
-      const updated = jemaatList.filter((j) => j.jemaat_id !== id);
+    if (window.confirm(`Hapus data jemaat ${nama} beserta akun login terkait?`)) {
+      StorageManager.deleteJemaat(id, nama);
+      const updated = StorageManager.getJemaat();
       setJemaatList(updated);
-      StorageManager.saveJemaat(updated);
-      StorageManager.logActivity(currentUser.username, `Menghapus data jemaat: ${nama}`, 'Master Jemaat');
+      StorageManager.logActivity(currentUser.username, `Menghapus data jemaat & akun login: ${nama}`, 'Master Jemaat');
     }
   };
 

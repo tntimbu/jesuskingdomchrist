@@ -685,16 +685,15 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
     }
 
     if (window.confirm(`Hapus permanen akun "${u.username}" (${u.nama}) dari sistem?`)) {
-      const globalUsers = StorageManager.getUsers();
-      const updatedGlobal = globalUsers.filter((item) => item.user_id !== u.user_id);
-      StorageManager.saveUsers(updatedGlobal);
+      StorageManager.deleteUser(u.user_id, u.username, u.jemaat_id, u.nama);
+      const updatedGlobal = StorageManager.getUsers();
       setUsersList(updatedGlobal);
       StorageManager.logActivity(
         currentUser.username,
         `Menghapus akun pengguna: ${u.username}`,
         'User Management'
       );
-      setUserSuccess(`Akun "${u.username}" telah berhasil dihapus.`);
+      setUserSuccess(`Akun "${u.username}" telah berhasil dihapus secara permanen.`);
       setTimeout(() => setUserSuccess(''), 3000);
     }
   };

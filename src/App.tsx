@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { User, AppSettings } from './types';
+import React, { useState, useEffect, useRef } from 'react';
+import { User, AppSettings, ChatMessage } from './types';
 import { StorageManager } from './utils/storage';
 import { LoginPage } from './components/LoginPage';
 import { NavbarHeader } from './components/NavbarHeader';
@@ -7,8 +7,9 @@ import { Sidebar, NavTab } from './components/Sidebar';
 import { CardMenuModal } from './components/CardMenuModal';
 import { BottomNav } from './components/BottomNav';
 import { PWABanner } from './components/PWABanner';
-import { AlertTriangle, ArrowLeft, Grid, Home } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Grid, Home, MessageCircle, X } from 'lucide-react';
 import { menuModules } from './data/navigationMenu';
+import { playNotificationChime } from './utils/soundHelper';
 
 import { getThemeClasses } from './utils/themeHelper';
 import { registerMessagingServiceWorker, listenToForegroundMessages } from './utils/firebaseMessaging';
@@ -151,6 +152,96 @@ export default function App() {
       window.removeEventListener('storage', handleSettingsSync);
     };
   }, []);
+
+  // Floating Live Chat Notification State (Ditampilkan saat pengguna sedang TIDAK di ruang chat)
+  const [incomingChatNotif, setIncomingChatNotif] = useState<ChatMessage | null>(null);
+  const [lastDismissedChatId, setLastDismissedChatId] = useState<string>(() => {
+    try {
+      return sessionStorage.getItem('cms_last_seen_chat_id') || '';
+    } catch (e) {
+      return '';
+    }
+  });
+  const prevChatCountRef = useRef<number>(-1);
+
+  // Jika pengguna sedang berada di ruang chat, sembunyikan notifikasi mengambang & tandai semua pesan saat ini sebagai sudah dibaca
+  useEffect(() => {
+    if (activeTab === 'chat') {
+      const allMsgs = StorageManager.getChatMessages();
+      if (allMsgs.length > 0) {
+        const latest = allMsgs[allMsgs.length - 1];
+        if (latest && latest.id) {
+          try {
+            sessionStorage.setItem('cms_last_seen_chat_id', latest.id);
+          } catch (e) {
+            // ignore
+          }
+          setLastDismissedChatId(latest.id);
+        }
+      }
+      setIncomingChatNotif(null);
+    }
+  }, [activeTab]);
+
+  // Pantau pesan chat masuk secara berkala dan realtime ketika pengguna TIDAK berada di ruang chat
+  useEffect(() => {
+    if (activeTab === 'chat') {
+      setIncomingChatNotif(null);
+      return;
+    }
+
+    const checkIncomingChat = () => {
+      if (activeTab === 'chat') {
+        setIncomingChatNotif(null);
+        return;
+      }
+
+      const allMsgs = StorageManager.getChatMessages();
+      if (allMsgs.length === 0) return;
+
+      const latest = allMsgs[allMsgs.length - 1];
+      if (!latest || !latest.id) return;
+
+      const myName = (effectiveUser.nama || effectiveUser.username || '').toLowerCase().trim();
+      const senderName = (latest.sender_name || '').toLowerCase().trim();
+      const isFromMe =
+        (effectiveUser.user_id && latest.sender_id === effectiveUser.user_id) ||
+        (senderName && myName && senderName === myName);
+
+      let seenId = '';
+      try {
+        seenId = sessionStorage.getItem('cms_last_seen_chat_id') || lastDismissedChatId;
+      } catch (e) {
+        seenId = lastDismissedChatId;
+      }
+
+      if (!isFromMe && latest.id !== seenId) {
+        setIncomingChatNotif(latest);
+        if (prevChatCountRef.current !== -1 && allMsgs.length > prevChatCountRef.current) {
+          try {
+            playNotificationChime();
+          } catch (e) {
+            // ignore
+          }
+        }
+      }
+
+      prevChatCountRef.current = allMsgs.length;
+    };
+
+    checkIncomingChat();
+
+    window.addEventListener('cms_data_changed', checkIncomingChat);
+    window.addEventListener('storage', checkIncomingChat);
+
+    const interval = setInterval(checkIncomingChat, 2500);
+
+    return () => {
+      window.removeEventListener('cms_data_changed', checkIncomingChat);
+      window.removeEventListener('storage', checkIncomingChat);
+      clearInterval(interval);
+    };
+  }, [activeTab, effectiveUser, lastDismissedChatId]);
 
   const handleSelectTab = (tab: NavTab) => {
     setActiveTab(tab);
@@ -430,6 +521,98 @@ export default function App() {
           )}
         </main>
       </div>
+
+      {/* NOTIFIKASI KARTU KECIL MENGAMBANG LIVE CHAT - SELALU MUNCUL SAAT TIDAK BERADA DI RUANG CHAT */}
+      {activeTab !== 'chat' && incomingChatNotif && (
+        <div
+          role="alert"
+          className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[9990] max-w-sm w-[calc(100vw-2rem)] sm:w-84 p-3.5 rounded-2xl bg-slate-900/95 border border-indigo-500/50 shadow-2xl backdrop-blur-xl text-white transition-all ring-4 ring-indigo-500/20 animate-fade-in"
+        >
+          <div className="flex items-start gap-3">
+            <div className="relative shrink-0 mt-0.5">
+              <div className="w-10 h-10 rounded-xl bg-indigo-600/30 border border-indigo-500/50 flex items-center justify-center text-indigo-400 shadow-inner">
+                <MessageCircle className="w-5 h-5 text-indigo-300" />
+              </div>
+              <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-emerald-400 rounded-full border-2 border-slate-900 animate-ping" />
+              <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-emerald-400 rounded-full border-2 border-slate-900" />
+            </div>
+
+            <div className="flex-1 min-w-0 pr-1">
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-xs font-bold text-indigo-300 truncate">
+                  {incomingChatNotif.sender_name}
+                </span>
+                <span className="text-[10px] text-emerald-400 font-semibold shrink-0 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
+                  Chat Masuk
+                </span>
+              </div>
+
+              <p className="text-xs text-slate-200 line-clamp-2 mt-1 font-normal leading-relaxed">
+                {incomingChatNotif.message}
+              </p>
+
+              <div className="flex items-center gap-2 mt-2.5 pt-2 border-t border-slate-800/80">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (incomingChatNotif && incomingChatNotif.id) {
+                      try {
+                        sessionStorage.setItem('cms_last_seen_chat_id', incomingChatNotif.id);
+                      } catch (e) {
+                        // ignore
+                      }
+                      setLastDismissedChatId(incomingChatNotif.id);
+                    }
+                    setIncomingChatNotif(null);
+                    handleSelectTab('chat');
+                  }}
+                  className="text-xs font-bold px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-1.5 transition-all shadow-md shadow-indigo-600/30 cursor-pointer"
+                >
+                  <MessageCircle className="w-3.5 h-3.5" />
+                  <span>Buka Chat</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (incomingChatNotif && incomingChatNotif.id) {
+                      try {
+                        sessionStorage.setItem('cms_last_seen_chat_id', incomingChatNotif.id);
+                      } catch (e) {
+                        // ignore
+                      }
+                      setLastDismissedChatId(incomingChatNotif.id);
+                    }
+                    setIncomingChatNotif(null);
+                  }}
+                  className="text-xs text-slate-400 hover:text-white px-2.5 py-1.5 rounded-xl hover:bg-slate-800 transition-all cursor-pointer"
+                >
+                  Tutup
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (incomingChatNotif && incomingChatNotif.id) {
+                  try {
+                    sessionStorage.setItem('cms_last_seen_chat_id', incomingChatNotif.id);
+                  } catch (e) {
+                    // ignore
+                  }
+                  setLastDismissedChatId(incomingChatNotif.id);
+                }
+                setIncomingChatNotif(null);
+              }}
+              className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-all shrink-0 cursor-pointer"
+              title="Tutup Notifikasi"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Mobile Bottom Navigation Bar */}
       <BottomNav
