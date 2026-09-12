@@ -680,7 +680,12 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
     }
 
     if (u.username === 'superadmin' || u.role === 'SUPER_ADMIN') {
-      alert('Akun Super Admin tidak boleh dihapus oleh Admin biasa.');
+      alert('Akun Super Admin tidak boleh dihapus.');
+      return;
+    }
+
+    if (u.username.toLowerCase() === 'admin_monapa') {
+      alert('Akun Admin Monapa Puriala adalah akun sistem utama dan tidak dapat dihapus.');
       return;
     }
 

@@ -568,9 +568,43 @@ export const StorageManager = {
       }
     }
 
-    const hasSuperAdmin = list.some((u) => u.role === 'SUPER_ADMIN' || u.username.toLowerCase() === 'superadmin');
+    const hasSuperAdmin = list.some((u) => u && (u.role === 'SUPER_ADMIN' || u.username?.toLowerCase() === 'superadmin'));
     if (!hasSuperAdmin) {
-      list = [initialUsers[0], initialUsers[1], ...list];
+      list = [initialUsers[0], ...list];
+    }
+
+    // Ensure core Admin Monapa Puriala account always exists with active credentials
+    const monapaIndex = list.findIndex((u) => u && u.username && u.username.toLowerCase().trim() === 'admin_monapa');
+    if (monapaIndex === -1) {
+      const monapaAccount: User = {
+        user_id: 'USR-MONAPA',
+        username: 'admin_monapa',
+        password_hash: 'admin123',
+        nama: 'Admin Monapa Puriala',
+        role: 'ADMIN',
+        email: 'admin_monapa@puriala.org',
+        no_hp: '+62 881-0363-58650',
+        status: 'Aktif',
+        created_at: '2025-01-01 08:00',
+        last_login: '2026-07-28 20:45',
+        tenant_id: 'CHURCH-001'
+      };
+      list.push(monapaAccount);
+      setItem(KEYS.USERS, list);
+    } else {
+      const monapa = list[monapaIndex];
+      let updated = false;
+      if (!monapa.password_hash) {
+        monapa.password_hash = 'admin123';
+        updated = true;
+      }
+      if (monapa.status !== 'Aktif') {
+        monapa.status = 'Aktif';
+        updated = true;
+      }
+      if (updated) {
+        setItem(KEYS.USERS, list);
+      }
     }
 
     // Auto-link users with role JEMAAT to their matching Jemaat profiles in memory
@@ -629,10 +663,14 @@ export const StorageManager = {
     window.dispatchEvent(new Event('cms_data_changed'));
   },
   deleteUser: (userId: string, username?: string, jemaatId?: string, nama?: string): void => {
+    const cleanUsername = (username || '').toLowerCase().trim();
+    if (cleanUsername === 'superadmin' || cleanUsername === 'admin_monapa') {
+      return;
+    }
     const currentUsers = StorageManager.getUsers();
     const updatedUsers = currentUsers.filter((u) => {
       if (u.user_id === userId) return false;
-      if (username && u.username && u.username.toLowerCase().trim() === username.toLowerCase().trim()) return false;
+      if (username && u.username && u.username.toLowerCase().trim() === cleanUsername) return false;
       return true;
     });
 
@@ -703,10 +741,7 @@ export const StorageManager = {
     return `USR-${(maxNum + 1).toString().padStart(3, '0')}`;
   },
   resetAdminAccounts: (): void => {
-    const currentUsers = getItem<User[]>(KEYS.USERS, initialUsers);
-    const nonAdmins = currentUsers.filter((u) => u.role !== 'SUPER_ADMIN' && u.role !== 'ADMIN');
-    const resetList = [initialUsers[0], initialUsers[1], ...nonAdmins];
-    setItem(KEYS.USERS, resetList);
+    // Deprecated for security: Do not reset or wipe admin accounts
   },
 
   getNextJemaatId: (): string => {

@@ -264,23 +264,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 <motion.div
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="p-3.5 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-medium space-y-2"
+                  className="p-3.5 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-medium"
                 >
                   <p>{errorMessage}</p>
-                  <div className="pt-2 border-t border-rose-500/20 flex justify-end">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        StorageManager.resetAdminAccounts();
-                        setUsername('superadmin');
-                        setPassword('admin123');
-                        setErrorMessage('Kredensial dipulihkan ke default: superadmin / admin123');
-                      }}
-                      className="text-[11px] text-amber-300 hover:text-amber-200 underline font-bold cursor-pointer"
-                    >
-                      ⚡ Reset Kredensial Super Admin
-                    </button>
-                  </div>
                 </motion.div>
               )}
 

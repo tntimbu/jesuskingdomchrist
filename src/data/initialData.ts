@@ -73,6 +73,22 @@ export const initialTenants: ChurchTenant[] = [
     paket_langganan: 'BASIC_MONTHLY',
     harga_sewa: 'Rp 250.000 / Bulan',
     catatan_admin: 'Masa berlaku lisensi telah habis. Diperlukan pembayaran untuk mengaktifkan kembali.'
+  },
+  {
+    tenant_id: 'CHURCH-004',
+    nama_gereja: 'Gereja Monapa Puriala',
+    kode_unik: 'GMP-04',
+    admin_username: 'admin_monapa',
+    admin_nama: 'Admin Monapa Puriala',
+    admin_email: 'admin_monapa@puriala.org',
+    admin_wa: '0881036358650',
+    alamat: 'Puriala, Sulawesi Tenggara',
+    status: 'AKTIF',
+    tanggal_pendaftaran: '2025-01-01',
+    tanggal_kadaluarsa: '2028-12-31',
+    paket_langganan: 'PRO_SAAS_ANNUAL',
+    harga_sewa: 'Rp 2.500.000 / Tahun',
+    catatan_admin: 'Akun Lisensi Resmi Gereja Monapa Puriala'
   }
 ];
 
@@ -208,6 +224,19 @@ export const initialUsers: User[] = [
     no_hp: '+62 812-9876-5432',
     status: 'Aktif',
     created_at: '2025-01-10 09:30',
+    last_login: '2026-07-28 20:45',
+    tenant_id: 'CHURCH-001'
+  },
+  {
+    user_id: 'USR-MONAPA',
+    username: 'admin_monapa',
+    password_hash: 'admin123',
+    nama: 'Admin Monapa Puriala',
+    role: 'ADMIN',
+    email: 'admin_monapa@puriala.org',
+    no_hp: '+62 881-0363-58650',
+    status: 'Aktif',
+    created_at: '2025-01-01 08:00',
     last_login: '2026-07-28 20:45',
     tenant_id: 'CHURCH-001'
   },
