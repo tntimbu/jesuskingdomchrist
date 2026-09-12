@@ -232,8 +232,25 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUser, settings }) => 
 
   // Delete message
   const handleDeleteMessage = (id: string) => {
-    StorageManager.deleteChatMessage(id);
-    setMessages(StorageManager.getChatMessages());
+    const msg = messages.find((m) => m.id === id);
+    const isPinned = msg?.is_pinned;
+    if (
+      window.confirm(
+        isPinned
+          ? 'Pesan ini sedang DI-SEMATKAN (Pinned). Anda yakin ingin menghapus pesan ini?'
+          : 'Hapus pesan ini dari ruang chat?'
+      )
+    ) {
+      StorageManager.deleteChatMessage(id);
+      setMessages(StorageManager.getChatMessages());
+      if (isAdmin) {
+        StorageManager.logActivity(
+          currentUser.username,
+          `Menghapus pesan chat: ${msg?.message.slice(0, 35) || id}`,
+          'Ruang Chat'
+        );
+      }
+    }
   };
 
   // Toggle Pin message (Admin only)
@@ -493,12 +510,24 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUser, settings }) => 
               {pinnedMessages[pinnedMessages.length - 1].sender_name}: {pinnedMessages[pinnedMessages.length - 1].message}
             </span>
           </div>
-          <button
-            onClick={() => setFilterTag('PINNED')}
-            className="text-[11px] font-bold text-amber-400 hover:underline shrink-0 cursor-pointer"
-          >
-            Lihat ({pinnedMessages.length})
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            {isAdmin && (
+              <button
+                onClick={() => handleDeleteMessage(pinnedMessages[pinnedMessages.length - 1].id)}
+                className="text-[11px] font-bold text-rose-400 hover:text-rose-300 flex items-center gap-1 bg-rose-500/15 hover:bg-rose-500/25 px-2 py-0.5 rounded-lg border border-rose-500/30 cursor-pointer transition-all"
+                title="Admin: Hapus Pesan yang Sedang Disematkan Ini"
+              >
+                <Trash2 className="w-3 h-3" />
+                <span>Hapus</span>
+              </button>
+            )}
+            <button
+              onClick={() => setFilterTag('PINNED')}
+              className="text-[11px] font-bold text-amber-400 hover:underline cursor-pointer"
+            >
+              Lihat ({pinnedMessages.length})
+            </button>
+          </div>
         </div>
       )}
 
@@ -607,8 +636,8 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUser, settings }) => 
                   </div>
                 </div>
 
-                {/* Action Bar on Hover (Reply, Pin, Delete) */}
-                <div className="flex items-center gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity px-1 text-[11px]">
+                {/* Action Bar (Reply, Pin, Delete) - Visible on mobile/touch, hover on desktop */}
+                <div className="flex items-center gap-1.5 mt-1.5 opacity-80 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity px-1 text-[11px]">
                   <button
                     onClick={() => {
                       setReplyTarget(msg);
@@ -627,20 +656,20 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUser, settings }) => 
                       title={msg.is_pinned ? 'Lepas Sematan' : 'Sematkan Pesan'}
                       className={`flex items-center gap-1 px-1.5 py-0.5 rounded cursor-pointer ${
                         msg.is_pinned
-                          ? 'text-amber-400 hover:bg-amber-950/40'
+                          ? 'text-amber-400 bg-amber-950/40 border border-amber-800/30'
                           : 'text-slate-400 hover:text-amber-400 hover:bg-slate-800'
                       }`}
                     >
                       <Pin className="w-3 h-3" />
-                      <span>{msg.is_pinned ? 'Lepas' : 'Sematkan'}</span>
+                      <span>{msg.is_pinned ? 'Lepas Semat' : 'Sematkan'}</span>
                     </button>
                   )}
 
                   {(isAdmin || isMine) && (
                     <button
                       onClick={() => handleDeleteMessage(msg.id)}
-                      title="Hapus Pesan"
-                      className="flex items-center gap-1 text-slate-500 hover:text-rose-400 px-1.5 py-0.5 rounded hover:bg-slate-800 cursor-pointer"
+                      title={isAdmin ? 'Admin: Hapus Pesan Ini (Termasuk yang Disematkan)' : 'Hapus Pesan Anda'}
+                      className="flex items-center gap-1 text-rose-400 hover:text-rose-300 px-1.5 py-0.5 rounded bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 cursor-pointer font-medium"
                     >
                       <Trash2 className="w-3 h-3" />
                       <span>Hapus</span>

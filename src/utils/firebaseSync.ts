@@ -58,7 +58,8 @@ const DOC_MAPPING: Record<string, string> = {
   cms_pro_prayer_requests: 'prayer_requests',
   cms_pro_saas_tenants: 'saas_tenants',
   cms_pro_superadmin_contact: 'superadmin_contact',
-  cms_pro_chat_messages: 'chat_messages'
+  cms_pro_chat_messages: 'chat_messages',
+  cms_pro_komisi: 'komisi'
 };
 
 const REVERSE_DOC_MAPPING: Record<string, string> = {
@@ -68,6 +69,7 @@ const REVERSE_DOC_MAPPING: Record<string, string> = {
   keluarga: 'cms_pro_keluarga',
   wilayah: 'cms_pro_wilayah',
   pelayanan: 'cms_pro_pelayanan',
+  komisi: 'cms_pro_komisi',
   baptisan: 'cms_pro_baptisan',
   sidi: 'cms_pro_sidi',
   pernikahan: 'cms_pro_pernikahan',

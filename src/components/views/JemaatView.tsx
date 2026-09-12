@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Jemaat, Keluarga, User } from '../../types';
+import { Jemaat, Keluarga, User, Wilayah } from '../../types';
 import { StorageManager } from '../../utils/storage';
 import { exportToExcel, exportToPDF } from '../../utils/exportTools';
 import {
@@ -28,9 +28,17 @@ interface JemaatViewProps {
 export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
   const [jemaatList, setJemaatList] = useState<Jemaat[]>([]);
   const [keluargaList, setKeluargaList] = useState<Keluarga[]>([]);
+  const [wilayahList, setWilayahList] = useState<Wilayah[]>([]);
+  const [komisiList, setKomisiList] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterWilayah, setFilterWilayah] = useState('ALL');
   const [filterKomisi, setFilterKomisi] = useState('ALL');
+
+  // Quick Add Wilayah / Komisi Modals
+  const [showAddWilayahModal, setShowAddWilayahModal] = useState(false);
+  const [newWilayahName, setNewWilayahName] = useState('');
+  const [showAddKomisiModal, setShowAddKomisiModal] = useState(false);
+  const [newKomisiName, setNewKomisiName] = useState('');
 
   // Modal States
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -81,6 +89,8 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
   const loadData = () => {
     setJemaatList(StorageManager.getJemaat());
     setKeluargaList(StorageManager.getKeluarga());
+    setWilayahList(StorageManager.getWilayah());
+    setKomisiList(StorageManager.getKomisi());
   };
 
   const filteredJemaat = jemaatList.filter((j) => {
@@ -96,6 +106,8 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
 
   const handleOpenAdd = () => {
     setEditingJemaat(null);
+    const defaultW = wilayahList[0]?.nama_wilayah || 'Wilayah I - Sunter';
+    const defaultK = komisiList[0] || 'Komisi Pria (Bapa)';
     setFormData({
       nik: `3171${Math.floor(100000000000 + Math.random() * 900000000000)}`,
       no_kk: `3171${Math.floor(100000000000 + Math.random() * 900000000000)}`,
@@ -104,14 +116,14 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
       tempat_lahir: 'Jakarta',
       tanggal_lahir: '1995-05-15',
       alamat: 'Jl. Pemuda No. 10',
-      wilayah: 'Wilayah I - Sunter',
-      komisi: 'Komisi Pria (Bapa)',
+      wilayah: defaultW,
+      komisi: defaultK,
       status_baptis: 'Sudah',
       status_sidi: 'Sudah',
       status_pernikahan: 'Menikah',
       pekerjaan: 'Karyawan Swasta',
       nomor_hp: '+62 812-3456-7890',
-      email: 'jemaat.baru@gmail.com',
+      email: '',
       foto: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
       status: 'Aktif'
     });
@@ -147,8 +159,9 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
       StorageManager.saveJemaat(updated);
       StorageManager.logActivity(currentUser.username, `Mengubah data jemaat: ${formData.nama_lengkap}`, 'Master Jemaat');
     } else {
+      const generatedJmtId = StorageManager.getNextJemaatId();
       const newJemaat: Jemaat = {
-        jemaat_id: `JMT-${(jemaatList.length + 1).toString().padStart(3, '0')}`,
+        jemaat_id: generatedJmtId,
         ...(formData as Jemaat)
       };
       const updated = [newJemaat, ...jemaatList];
@@ -175,8 +188,9 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
         counter++;
       }
 
+      const generatedUserId = StorageManager.getNextUserId();
       const newJemaatUser: User = {
-        user_id: `USR-${(allUsers.length + 1).toString().padStart(3, '0')}`,
+        user_id: generatedUserId,
         jemaat_id: newJemaat.jemaat_id,
         username: finalUsername,
         nama: newJemaat.nama_lengkap,
@@ -196,6 +210,39 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
     }
 
     setIsModalOpen(false);
+  };
+
+  const handleQuickAddWilayah = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = newWilayahName.trim();
+    if (!trimmed) return;
+    const currentW = StorageManager.getWilayah();
+    const newW: Wilayah = {
+      wilayah_id: `WIL-${(currentW.length + 1).toString().padStart(3, '0')}`,
+      nama_wilayah: trimmed,
+      ketua: 'Belum Ditentukan',
+      jumlah_jemaat: 0
+    };
+    const updated = [...currentW, newW];
+    StorageManager.saveWilayah(updated);
+    setWilayahList(updated);
+    setFormData((prev) => ({ ...prev, wilayah: trimmed }));
+    setNewWilayahName('');
+    setShowAddWilayahModal(false);
+    StorageManager.logActivity(currentUser.username, `Menambahkan wilayah sektor baru: ${trimmed}`, 'Wilayah');
+  };
+
+  const handleQuickAddKomisi = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = newKomisiName.trim();
+    if (!trimmed) return;
+    StorageManager.addKomisi(trimmed);
+    const updated = StorageManager.getKomisi();
+    setKomisiList(updated);
+    setFormData((prev) => ({ ...prev, komisi: trimmed }));
+    setNewKomisiName('');
+    setShowAddKomisiModal(false);
+    StorageManager.logActivity(currentUser.username, `Menambahkan komisi pelayanan baru: ${trimmed}`, 'Komisi');
   };
 
   const handleExportExcel = () => {
@@ -278,10 +325,11 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
             className="w-full px-3 py-2 bg-slate-950 border border-slate-700/80 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
           >
             <option value="ALL">Semua Wilayah</option>
-            <option value="Wilayah I - Sunter">Wilayah I - Sunter</option>
-            <option value="Wilayah II - Kelapa Gading">Wilayah II - Kelapa Gading</option>
-            <option value="Wilayah III - Cempaka Putih">Wilayah III - Cempaka Putih</option>
-            <option value="Wilayah IV - Kemayoran & Menteng">Wilayah IV - Kemayoran</option>
+            {wilayahList.map((w) => (
+              <option key={w.wilayah_id} value={w.nama_wilayah}>
+                {w.nama_wilayah}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -292,11 +340,11 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
             className="w-full px-3 py-2 bg-slate-950 border border-slate-700/80 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
           >
             <option value="ALL">Semua Komisi</option>
-            <option value="Komisi Pria (Bapa)">Komisi Pria (Bapa)</option>
-            <option value="Komisi Wanita (WBI)">Komisi Wanita (WBI)</option>
-            <option value="Komisi Pemuda (Youth)">Komisi Pemuda (Youth)</option>
-            <option value="Komisi Remaja">Komisi Remaja</option>
-            <option value="Komisi Anak (Sekolah Minggu)">Sekolah Minggu</option>
+            {komisiList.map((k) => (
+              <option key={k} value={k}>
+                {k}
+              </option>
+            ))}
           </select>
         </div>
       </div>
@@ -542,31 +590,54 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 mb-1">Wilayah</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-slate-400">Wilayah Sektor</label>
+                    <button
+                      type="button"
+                      onClick={() => setShowAddWilayahModal(true)}
+                      className="text-[11px] font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 bg-indigo-500/15 hover:bg-indigo-500/30 px-2 py-0.5 rounded-lg border border-indigo-500/40 cursor-pointer"
+                      title="Tambah Wilayah Sektor Baru Secara Mandiri"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Tambah Wilayah</span>
+                    </button>
+                  </div>
                   <select
-                    value={formData.wilayah || 'Wilayah I - Sunter'}
+                    value={formData.wilayah || (wilayahList[0]?.nama_wilayah || '')}
                     onChange={(e) => setFormData({ ...formData, wilayah: e.target.value })}
                     className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-indigo-500"
                   >
-                    <option value="Wilayah I - Sunter">Wilayah I - Sunter</option>
-                    <option value="Wilayah II - Kelapa Gading">Wilayah II - Kelapa Gading</option>
-                    <option value="Wilayah III - Cempaka Putih">Wilayah III - Cempaka Putih</option>
-                    <option value="Wilayah IV - Kemayoran & Menteng">Wilayah IV - Kemayoran</option>
+                    {wilayahList.map((w) => (
+                      <option key={w.wilayah_id} value={w.nama_wilayah}>
+                        {w.nama_wilayah}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 mb-1">Komisi</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-slate-400">Komisi</label>
+                    <button
+                      type="button"
+                      onClick={() => setShowAddKomisiModal(true)}
+                      className="text-[11px] font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 bg-indigo-500/15 hover:bg-indigo-500/30 px-2 py-0.5 rounded-lg border border-indigo-500/40 cursor-pointer"
+                      title="Tambah Komisi Baru Secara Mandiri"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Tambah Komisi</span>
+                    </button>
+                  </div>
                   <select
-                    value={formData.komisi || 'Komisi Pria (Bapa)'}
+                    value={formData.komisi || (komisiList[0] || '')}
                     onChange={(e) => setFormData({ ...formData, komisi: e.target.value })}
                     className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-indigo-500"
                   >
-                    <option value="Komisi Pria (Bapa)">Komisi Pria (Bapa)</option>
-                    <option value="Komisi Wanita (WBI)">Komisi Wanita (WBI)</option>
-                    <option value="Komisi Pemuda (Youth)">Komisi Pemuda (Youth)</option>
-                    <option value="Komisi Remaja">Komisi Remaja</option>
-                    <option value="Komisi Anak (Sekolah Minggu)">Sekolah Minggu</option>
+                    {komisiList.map((k) => (
+                      <option key={k} value={k}>
+                        {k}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -638,6 +709,103 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
                   className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow-md shadow-indigo-600/30"
                 >
                   Simpan Data
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Quick Add Wilayah Modal */}
+      {showAddWilayahModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-sm rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <h3 className="text-sm font-bold flex items-center gap-2">
+                <Plus className="w-4 h-4 text-indigo-400" />
+                <span>Tambah Wilayah Sektor Baru</span>
+              </h3>
+              <button
+                onClick={() => setShowAddWilayahModal(false)}
+                className="text-slate-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleQuickAddWilayah} className="space-y-3 text-xs">
+              <div>
+                <label className="block text-slate-400 mb-1">Nama Wilayah / Sektor *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Contoh: Wilayah V - Jakarta Barat"
+                  value={newWilayahName}
+                  onChange={(e) => setNewWilayahName(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-indigo-500"
+                  autoFocus
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddWilayahModal(false)}
+                  className="px-3 py-1.5 rounded-xl text-slate-400 hover:bg-slate-800 cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold cursor-pointer shadow-md"
+                >
+                  Simpan Wilayah
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Quick Add Komisi Modal */}
+      {showAddKomisiModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-sm rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <h3 className="text-sm font-bold flex items-center gap-2">
+                <Plus className="w-4 h-4 text-indigo-400" />
+                <span>Tambah Komisi Baru</span>
+              </h3>
+              <button
+                onClick={() => setShowAddKomisiModal(false)}
+                className="text-slate-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleQuickAddKomisi} className="space-y-3 text-xs">
+              <div>
+                <label className="block text-slate-400 mb-1">Nama Komisi Baru *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Contoh: Komisi Lansia (Simeon Hanna)"
+                  value={newKomisiName}
+                  onChange={(e) => setNewKomisiName(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-indigo-500"
+                  autoFocus
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddKomisiModal(false)}
+                  className="px-3 py-1.5 rounded-xl text-slate-400 hover:bg-slate-800 cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold cursor-pointer shadow-md"
+                >
+                  Simpan Komisi
                 </button>
               </div>
             </form>

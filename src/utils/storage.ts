@@ -90,8 +90,17 @@ const KEYS = {
   CHAT_MESSAGES: 'cms_pro_chat_messages',
   HYMN_SONGS: 'cms_pro_hymn_songs',
   FAVORITE_SONGS: 'cms_pro_favorite_songs',
-  FAVORITE_VERSES: 'cms_pro_favorite_verses'
+  FAVORITE_VERSES: 'cms_pro_favorite_verses',
+  KOMISI: 'cms_pro_komisi'
 };
+
+const defaultKomisi: string[] = [
+  'Komisi Pria (Bapa)',
+  'Komisi Wanita (WBI)',
+  'Komisi Pemuda (Youth)',
+  'Komisi Remaja',
+  'Komisi Anak (Sekolah Minggu)'
+];
 
 const defaultKas: KasPengeluaran[] = [
   {
@@ -623,15 +632,30 @@ export const StorageManager = {
   saveUsers: (users: User[]): void => {
     setItem(KEYS.USERS, users);
     const current = getItem<User | null>(KEYS.CURRENT_USER, null);
-    if (current) {
+    // STRICT SECURITY: Only refresh current user if matching by exact username!
+    // NEVER match by user_id alone which could collide and hijack the active session!
+    if (current && current.username) {
       const fresh = users.find(
-        (u) => u.user_id === current.user_id || u.username.toLowerCase() === current.username.toLowerCase()
+        (u) => u.username && u.username.toLowerCase() === current.username.toLowerCase()
       );
       if (fresh) {
         setItem(KEYS.CURRENT_USER, { ...current, ...fresh });
       }
     }
     window.dispatchEvent(new Event('cms_data_changed'));
+  },
+  getNextUserId: (): string => {
+    const users = getItem<User[]>(KEYS.USERS, initialUsers);
+    let maxNum = 0;
+    users.forEach((u) => {
+      if (u.user_id && u.user_id.startsWith('USR-')) {
+        const numPart = parseInt(u.user_id.replace('USR-', ''), 10);
+        if (!isNaN(numPart) && numPart > maxNum) {
+          maxNum = numPart;
+        }
+      }
+    });
+    return `USR-${(maxNum + 1).toString().padStart(3, '0')}`;
   },
   resetAdminAccounts: (): void => {
     const currentUsers = getItem<User[]>(KEYS.USERS, initialUsers);
@@ -640,6 +664,19 @@ export const StorageManager = {
     setItem(KEYS.USERS, resetList);
   },
 
+  getNextJemaatId: (): string => {
+    const list = getItem<Jemaat[]>(KEYS.JEMAAT, initialJemaat);
+    let maxNum = 0;
+    list.forEach((j) => {
+      if (j.jemaat_id && j.jemaat_id.startsWith('JMT-')) {
+        const numPart = parseInt(j.jemaat_id.replace('JMT-', ''), 10);
+        if (!isNaN(numPart) && numPart > maxNum) {
+          maxNum = numPart;
+        }
+      }
+    });
+    return `JMT-${(maxNum + 1).toString().padStart(3, '0')}`;
+  },
   getJemaat: (): Jemaat[] => {
     let list = getItem<Jemaat[]>(KEYS.JEMAAT, initialJemaat);
     
@@ -697,8 +734,8 @@ export const StorageManager = {
     if (usersNeedSave) {
       setItem(KEYS.USERS, updatedUsers);
       const current = getItem<User | null>(KEYS.CURRENT_USER, null);
-      if (current) {
-        const fresh = updatedUsers.find((u) => u.user_id === current.user_id || u.username === current.username);
+      if (current && current.username) {
+        const fresh = updatedUsers.find((u) => u.username && u.username.toLowerCase() === current.username.toLowerCase());
         if (fresh) {
           setItem(KEYS.CURRENT_USER, { ...current, ...fresh });
         }
@@ -719,10 +756,48 @@ export const StorageManager = {
   saveKeluarga: (list: Keluarga[]): void => setItem(KEYS.KELUARGA, list),
 
   getWilayah: (): Wilayah[] => getItem(KEYS.WILAYAH, initialWilayah),
-  saveWilayah: (list: Wilayah[]): void => setItem(KEYS.WILAYAH, list),
+  saveWilayah: (list: Wilayah[]): void => {
+    setItem(KEYS.WILAYAH, list);
+    window.dispatchEvent(new Event('cms_data_changed'));
+  },
+  deleteWilayah: (wilayahId: string): void => {
+    const list = StorageManager.getWilayah().filter((w) => w.wilayah_id !== wilayahId);
+    setItem(KEYS.WILAYAH, list);
+    window.dispatchEvent(new Event('cms_data_changed'));
+  },
 
   getPelayanan: (): Pelayanan[] => getItem(KEYS.PELAYANAN, initialPelayanan),
-  savePelayanan: (list: Pelayanan[]): void => setItem(KEYS.PELAYANAN, list),
+  savePelayanan: (list: Pelayanan[]): void => {
+    setItem(KEYS.PELAYANAN, list);
+    window.dispatchEvent(new Event('cms_data_changed'));
+  },
+  deletePelayanan: (pelayananId: string): void => {
+    const list = StorageManager.getPelayanan().filter((p) => p.pelayanan_id !== pelayananId);
+    setItem(KEYS.PELAYANAN, list);
+    window.dispatchEvent(new Event('cms_data_changed'));
+  },
+
+  getKomisi: (): string[] => {
+    return getItem<string[]>(KEYS.KOMISI, defaultKomisi);
+  },
+  saveKomisi: (list: string[]): void => {
+    setItem(KEYS.KOMISI, list);
+    window.dispatchEvent(new Event('cms_data_changed'));
+  },
+  addKomisi: (name: string): void => {
+    const clean = name.trim();
+    if (!clean) return;
+    const current = StorageManager.getKomisi();
+    if (!current.some((k) => k.toLowerCase() === clean.toLowerCase())) {
+      const updated = [...current, clean];
+      StorageManager.saveKomisi(updated);
+    }
+  },
+  deleteKomisi: (name: string): void => {
+    const current = StorageManager.getKomisi();
+    const updated = current.filter((k) => k.toLowerCase() !== name.toLowerCase());
+    StorageManager.saveKomisi(updated);
+  },
 
   getBaptisan: (): Baptisan[] => getItem(KEYS.BAPTISAN, initialBaptisan),
   saveBaptisan: (list: Baptisan[]): void => setItem(KEYS.BAPTISAN, list),
@@ -988,10 +1063,11 @@ export const StorageManager = {
 
   getCurrentUser: (): User | null => {
     const saved = getItem<User | null>(KEYS.CURRENT_USER, null);
-    if (!saved) return null;
+    if (!saved || !saved.username) return null;
     const allUsers = getItem<User[]>(KEYS.USERS, initialUsers);
+    // STRICT: Only look up by username to avoid ID collision hijacking session
     const fresh = allUsers.find(
-      (u) => u.user_id === saved.user_id || u.username.toLowerCase() === saved.username.toLowerCase()
+      (u) => u.username && u.username.toLowerCase() === saved.username.toLowerCase()
     );
     if (fresh) {
       return { ...saved, ...fresh };

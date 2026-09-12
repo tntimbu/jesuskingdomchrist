@@ -13,7 +13,8 @@ import {
   FeaturedVideo,
   GalleryItem,
   Doa,
-  EventReservation
+  EventReservation,
+  ChatMessage
 } from '../types';
 import { StorageManager } from '../utils/storage';
 import { parseSocialVideoUrl } from '../utils/videoHelper';
@@ -160,6 +161,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [isAdminResModalOpen, setIsAdminResModalOpen] = useState<boolean>(false);
   const [isSuperAdminChatModalOpen, setIsSuperAdminChatModalOpen] = useState<boolean>(false);
   const [activeVideoUrl, setActiveVideoUrl] = useState<string>('');
+
+  // Floating Live Chat Notification State (Ukuran Kecil Mengambang di Dashboard)
+  const [incomingChatNotif, setIncomingChatNotif] = useState<ChatMessage | null>(null);
+  const lastChatCountRef = React.useRef<number>(StorageManager.getChatMessages().length);
 
   // Prayer Request Form State
   const [prayerText, setPrayerText] = useState('');
@@ -515,6 +520,53 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     const res = StorageManager.getEventReservations();
     setReservationsList((prev) => (prev.length !== res.length || JSON.stringify(prev) !== JSON.stringify(res) ? res : prev));
   }, []);
+
+  // Notifikasi ketika chat berlangsung yang mengambang dengan ukuran kecil di dashboard
+  useEffect(() => {
+    let dismissTimer: any = null;
+
+    const checkLiveChat = () => {
+      const allMsgs = StorageManager.getChatMessages();
+      if (allMsgs.length > lastChatCountRef.current) {
+        const latest = allMsgs[allMsgs.length - 1];
+        lastChatCountRef.current = allMsgs.length;
+
+        const myName = (currentUser.nama || currentUser.username || '').toLowerCase().trim();
+        const senderName = (latest.sender_name || '').toLowerCase().trim();
+        const isFromMe =
+          (currentUser.user_id && latest.sender_id === currentUser.user_id) ||
+          (senderName && myName && senderName === myName);
+
+        if (!isFromMe && latest.message) {
+          setIncomingChatNotif(latest);
+          try {
+            playNotificationChime();
+          } catch (e) {
+            console.warn('Audio chime notice:', e);
+          }
+
+          if (dismissTimer) clearTimeout(dismissTimer);
+          dismissTimer = setTimeout(() => {
+            setIncomingChatNotif(null);
+          }, 8000);
+        }
+      } else {
+        lastChatCountRef.current = allMsgs.length;
+      }
+    };
+
+    window.addEventListener('cms_data_changed', checkLiveChat);
+    window.addEventListener('storage', checkLiveChat);
+
+    const interval = setInterval(checkLiveChat, 2000);
+
+    return () => {
+      window.removeEventListener('cms_data_changed', checkLiveChat);
+      window.removeEventListener('storage', checkLiveChat);
+      clearInterval(interval);
+      if (dismissTimer) clearTimeout(dismissTimer);
+    };
+  }, [currentUser]);
 
   const handleSaveNotification = (e: React.FormEvent) => {
     e.preventDefault();
@@ -3977,6 +4029,67 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 Tutup Layar Penuh
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* NOTIFIKASI KETIKA CHAT BERLANGSUNG YANG MENGAMBANG DENGAN UKURAN KECIL DI DASHBOARD */}
+      {incomingChatNotif && (
+        <div
+          role="alert"
+          className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[998] max-w-sm w-[calc(100vw-2rem)] sm:w-80 p-3.5 rounded-2xl bg-slate-900/95 border border-indigo-500/40 shadow-2xl backdrop-blur-xl text-white transition-all ring-2 ring-indigo-500/20 animate-fade-in"
+        >
+          <div className="flex items-start gap-3">
+            <div className="relative shrink-0 mt-0.5">
+              <div className="w-9 h-9 rounded-xl bg-indigo-600/25 border border-indigo-500/40 flex items-center justify-center text-indigo-400 shadow-inner">
+                <MessageCircle className="w-5 h-5 text-indigo-300" />
+              </div>
+              <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-slate-900 animate-ping" />
+              <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-slate-900" />
+            </div>
+
+            <div className="flex-1 min-w-0 pr-1">
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-xs font-bold text-indigo-300 truncate">
+                  {incomingChatNotif.sender_name}
+                </span>
+                <span className="text-[10px] text-slate-400 shrink-0">Pesan Masuk</span>
+              </div>
+
+              <p className="text-xs text-slate-200 line-clamp-2 mt-0.5 font-normal leading-relaxed">
+                {incomingChatNotif.message}
+              </p>
+
+              <div className="flex items-center gap-2 mt-2.5 pt-1.5 border-t border-slate-800/80">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIncomingChatNotif(null);
+                    onNavigate('chat');
+                  }}
+                  className="text-xs font-bold px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-1.5 transition-all shadow-md shadow-indigo-600/30 cursor-pointer"
+                >
+                  <MessageCircle className="w-3.5 h-3.5" />
+                  <span>Buka Chat</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIncomingChatNotif(null)}
+                  className="text-xs text-slate-400 hover:text-white px-2.5 py-1.5 rounded-xl hover:bg-slate-800 transition-all cursor-pointer"
+                >
+                  Tutup
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIncomingChatNotif(null)}
+              className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-all shrink-0 cursor-pointer"
+              title="Tutup Notifikasi"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
       )}

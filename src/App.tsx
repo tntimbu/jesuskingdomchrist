@@ -125,7 +125,19 @@ export default function App() {
       setTenantStatus(StorageManager.checkTenantStatus());
       const savedUser = StorageManager.getCurrentUser();
       if (savedUser) {
-        setCurrentUser(savedUser);
+        // SECURITY GUARD: Only refresh current user if it is the EXACT same username.
+        // Never allow adding/syncing jemaat or storage events to switch the logged-in session to another user!
+        setCurrentUser((prev) => {
+          if (!prev) return savedUser;
+          if (
+            savedUser.username &&
+            prev.username &&
+            savedUser.username.toLowerCase() === prev.username.toLowerCase()
+          ) {
+            return savedUser;
+          }
+          return prev;
+        });
       }
     };
 
