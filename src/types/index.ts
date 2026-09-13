@@ -274,6 +274,12 @@ export interface AppSettings {
   card_size?: 'COMPACT' | 'NORMAL' | 'SPACIOUS';
   card_border_accent?: 'NONE' | 'ACCENT_FULL' | 'ACCENT_LEFT' | 'ACCENT_TOP' | 'ACCENT_GLOW';
   font_family?: 'SANS' | 'SERIF' | 'MONO';
+  // Navbar Visual Customization
+  navbar_theme_preset?: 'DEFAULT_DARK' | 'MATCH_THEME' | 'MIDNIGHT_BLUE' | 'DEEP_PURPLE' | 'EMERALD_GREEN' | 'CRIMSON_RED' | 'WARM_GOLD' | 'PURE_BLACK' | 'CLEAN_LIGHT' | 'CUSTOM_HEX';
+  navbar_custom_bg?: string;
+  navbar_custom_text?: 'AUTO' | 'WHITE' | 'DARK' | 'GOLD';
+  navbar_style?: 'GLASS' | 'SOLID' | 'GRADIENT';
+  navbar_border_accent?: 'NONE' | 'THEME_COLOR' | 'SUBTLE' | 'GLOW';
   // Jemaat Portal Visual Customization
   jemaat_banner_title?: string;
   jemaat_banner_subtitle?: string;

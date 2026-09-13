@@ -52,8 +52,12 @@ import {
   ExternalLink,
   HelpCircle,
   Info,
-  FileJson
+  FileJson,
+  Palette,
+  Layers,
+  Sun
 } from 'lucide-react';
+import { getNavbarTheme } from '../../utils/themeHelper';
 import { DashboardVisibilityManager } from '../dashboard/DashboardVisibilityManager';
 import {
   sendOneSignalPushNotification,
@@ -1361,6 +1365,338 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                         <div className="text-[9px] text-slate-500 mt-0.5">{b.desc}</div>
                       </button>
                     ))}
+                  </div>
+                </div>
+
+                {/* SUB-SECTION KHUSUS: KUSTOMISASI NAVBAR / HEADER ATAS */}
+                <div className="sm:col-span-2 lg:col-span-3 p-4 sm:p-6 rounded-2xl bg-gradient-to-br from-slate-950/95 to-indigo-950/30 border-2 border-indigo-500/30 space-y-5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-indigo-500/20">
+                    <div className="flex items-center gap-2.5">
+                      <div className="p-2 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 shadow-lg">
+                        <Palette className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm sm:text-base font-black text-white flex items-center gap-2">
+                          <span>Kustomisasi Warna, Tema &amp; Garis Navbar Atas</span>
+                          <span className="px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-bold border border-indigo-500/30">
+                            Fitur Admin
+                          </span>
+                        </h4>
+                        <p className="text-[11px] text-slate-400 mt-0.5">
+                          Atur warna bar navigasi paling atas secara bebas (pilihan preset, kode warna hex mandiri, style blur, dan aksen garis).
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Live Mini Preview Bar */}
+                  {(() => {
+                    const previewNb = getNavbarTheme(metaForm);
+                    return (
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-xs font-bold text-slate-300">
+                          <span className="flex items-center gap-1.5 text-indigo-300">
+                            <Eye className="w-4 h-4 text-amber-400" />
+                            <span>Pratinjau Langsung Navbar</span>
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-mono">
+                            Preset: {metaForm.navbar_theme_preset || 'DEFAULT_DARK'}
+                          </span>
+                        </div>
+                        <div
+                          className={`w-full rounded-2xl p-3 sm:p-4 transition-all duration-300 border flex items-center justify-between ${previewNb.containerClass} ${previewNb.borderBottomClass} shadow-xl`}
+                          style={{
+                            ...previewNb.containerStyle,
+                            ...previewNb.borderBottomStyle
+                          }}
+                        >
+                          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                            <button
+                              type="button"
+                              className="px-2.5 py-1.5 rounded-xl text-white font-black text-[11px] shadow flex items-center gap-1.5 shrink-0"
+                              style={previewNb.menuBtnStyle}
+                            >
+                              <span>Kartu Menu</span>
+                            </button>
+                            <div className="flex items-center gap-2 min-w-0">
+                              <img
+                                src={metaForm.logo || DEFAULT_CHURCH_LOGO}
+                                alt="Logo"
+                                className="w-7 h-7 rounded-lg object-cover border border-white/20 shrink-0"
+                              />
+                              <div className="truncate">
+                                <p className={`text-xs font-extrabold truncate ${previewNb.titleClass}`}>
+                                  {metaForm.nama_gereja || 'Gereja'}
+                                </p>
+                                <p className="text-[9px] uppercase tracking-wider text-amber-400 font-bold leading-none">
+                                  Enterprise CMS Pro
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <div
+                              className={`hidden sm:flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-mono font-bold ${previewNb.pillClass}`}
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                              <span>Real-Time Cloud</span>
+                            </div>
+                            <div
+                              className={`w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-black ${
+                                previewNb.isLight ? 'bg-indigo-600 text-white' : 'bg-indigo-500 text-white'
+                              }`}
+                            >
+                              AD
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* 1. Preset Tema Navbar */}
+                  <div className="space-y-2">
+                    <label className="block text-slate-300 font-semibold text-xs">
+                      1. Preset Warna Tema Navbar
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+                      {[
+                        { id: 'DEFAULT_DARK', name: 'Dark Slate', bg: 'bg-slate-950' },
+                        { id: 'MATCH_THEME', name: 'Serasi Tema Gereja', bg: 'bg-gradient-to-r from-rose-900 to-slate-900' },
+                        { id: 'MIDNIGHT_BLUE', name: 'Midnight Blue', bg: 'bg-[#060c1d]' },
+                        { id: 'DEEP_PURPLE', name: 'Deep Amethyst', bg: 'bg-[#120520]' },
+                        { id: 'EMERALD_GREEN', name: 'Forest Emerald', bg: 'bg-[#031a0e]' },
+                        { id: 'CRIMSON_RED', name: 'Crimson Burgundy', bg: 'bg-[#20050b]' },
+                        { id: 'WARM_GOLD', name: 'Warm Gold Luxe', bg: 'bg-[#1c1202]' },
+                        { id: 'PURE_BLACK', name: 'Obsidian OLED', bg: 'bg-black' },
+                        { id: 'CLEAN_LIGHT', name: 'Luxe Clean Light', bg: 'bg-white text-slate-900' },
+                        { id: 'CUSTOM_HEX', name: 'Kustom Hex Bebas', bg: 'bg-gradient-to-r from-indigo-900 to-purple-900' }
+                      ].map((preset) => {
+                        const isSelected = (metaForm.navbar_theme_preset || 'DEFAULT_DARK') === preset.id;
+                        return (
+                          <button
+                            key={preset.id}
+                            type="button"
+                            onClick={() => setMetaForm({ ...metaForm, navbar_theme_preset: preset.id as any })}
+                            className={`p-2.5 rounded-xl border text-left text-[11px] font-bold transition-all flex items-center justify-between cursor-pointer ${
+                              isSelected
+                                ? 'border-amber-400 ring-2 ring-amber-400/50 bg-slate-800 text-white shadow-md'
+                                : 'border-slate-800 bg-slate-950/70 text-slate-300 hover:border-slate-700'
+                            }`}
+                          >
+                            <div className="flex items-center gap-1.5 truncate">
+                              <span className={`w-3 h-3 rounded-full border border-white/20 shrink-0 ${preset.bg}`} />
+                              <span className="truncate">{preset.name}</span>
+                            </div>
+                            {isSelected && <Check className="w-3.5 h-3.5 text-amber-400 shrink-0" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* 2. Custom Hex Input & Swatches */}
+                  <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div>
+                        <label className="text-xs font-bold text-amber-300 flex items-center gap-2">
+                          <Palette className="w-4 h-4 text-amber-400" />
+                          <span>2. Kustom Kode Warna Hex Navbar Bebas (Contoh: #0f172a, #020617)</span>
+                        </label>
+                        <p className="text-[11px] text-slate-400">
+                          Masukkan kode hex warna apa saja yang diinginkan untuk bar navigasi atas.
+                        </p>
+                      </div>
+                      <div
+                        className="w-9 h-9 rounded-xl border-2 border-white/20 shadow shrink-0 flex items-center justify-center font-mono text-[9px] text-white font-bold"
+                        style={{ backgroundColor: metaForm.navbar_custom_bg || '#1e293b' }}
+                      >
+                        {metaForm.navbar_custom_bg || '#1e293b'}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <div className="relative flex-1">
+                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-mono font-bold text-xs">
+                          HEX:
+                        </span>
+                        <input
+                          type="text"
+                          value={metaForm.navbar_custom_bg || '#1e293b'}
+                          onChange={(e) =>
+                            setMetaForm({
+                              ...metaForm,
+                              navbar_theme_preset: 'CUSTOM_HEX',
+                              navbar_custom_bg: e.target.value
+                            })
+                          }
+                          placeholder="#1e293b"
+                          className="w-full pl-14 pr-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono font-bold text-xs focus:ring-2 focus:ring-amber-400 outline-none uppercase"
+                        />
+                      </div>
+                      <label className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 cursor-pointer flex items-center gap-2 text-xs font-bold text-slate-200 shrink-0">
+                        <input
+                          type="color"
+                          value={
+                            metaForm.navbar_custom_bg && /^#[0-9A-F]{6}$/i.test(metaForm.navbar_custom_bg)
+                              ? metaForm.navbar_custom_bg
+                              : '#1e293b'
+                          }
+                          onChange={(e) =>
+                            setMetaForm({
+                              ...metaForm,
+                              navbar_theme_preset: 'CUSTOM_HEX',
+                              navbar_custom_bg: e.target.value
+                            })
+                          }
+                          className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent"
+                        />
+                        <span>Pilih Visual</span>
+                      </label>
+                    </div>
+
+                    {/* Quick Swatches */}
+                    <div>
+                      <span className="text-[11px] font-bold text-slate-400 block mb-1.5">
+                        Rekomendasi Warna Navbar:
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {[
+                          { name: 'Obsidian OLED', hex: '#000000' },
+                          { name: 'Slate 950', hex: '#020617' },
+                          { name: 'Navy Midnight', hex: '#0f172a' },
+                          { name: 'Deep Indigo', hex: '#1e1b4b' },
+                          { name: 'Royal Purple', hex: '#3b0764' },
+                          { name: 'Deep Teal', hex: '#042f2e' },
+                          { name: 'Forest Green', hex: '#052e16' },
+                          { name: 'Crimson Wine', hex: '#4c0519' },
+                          { name: 'Dark Amber', hex: '#451a03' },
+                          { name: 'Charcoal', hex: '#18181b' },
+                          { name: 'Terracotta', hex: '#CD5C5C' },
+                          { name: 'Clean White', hex: '#ffffff' }
+                        ].map((chip) => {
+                          const isActive =
+                            metaForm.navbar_theme_preset === 'CUSTOM_HEX' &&
+                            (metaForm.navbar_custom_bg || '').toUpperCase() === chip.hex.toUpperCase();
+                          return (
+                            <button
+                              key={chip.hex}
+                              type="button"
+                              onClick={() =>
+                                setMetaForm({
+                                  ...metaForm,
+                                  navbar_theme_preset: 'CUSTOM_HEX',
+                                  navbar_custom_bg: chip.hex
+                                })
+                              }
+                              className={`px-2.5 py-1 rounded-xl border text-[10px] font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                                isActive
+                                  ? 'border-amber-400 text-white bg-slate-800 ring-2 ring-amber-400/40'
+                                  : 'border-slate-800 text-slate-300 hover:border-slate-600 bg-slate-950'
+                              }`}
+                            >
+                              <span
+                                className="w-2.5 h-2.5 rounded-full border border-white/20 shrink-0"
+                                style={{ backgroundColor: chip.hex }}
+                              />
+                              <span>{chip.name}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3. Style Navbar, Garis Bawah & Kontras Teks */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {/* Gaya Transparansi */}
+                    <div className="space-y-2">
+                      <label className="block text-slate-300 font-semibold text-xs flex items-center gap-1.5">
+                        <Layers className="w-3.5 h-3.5 text-indigo-400" />
+                        <span>3. Gaya &amp; Transparansi</span>
+                      </label>
+                      <div className="space-y-1.5">
+                        {[
+                          { id: 'GLASS', label: '✨ Glass Blur', desc: 'Transparan Modern' },
+                          { id: 'SOLID', label: '⬛ Solid Dark', desc: 'Pekat Tanpa Blur' },
+                          { id: 'GRADIENT', label: '🌈 Gradient', desc: 'Gradasi Halus' }
+                        ].map((s) => (
+                          <button
+                            key={s.id}
+                            type="button"
+                            onClick={() => setMetaForm({ ...metaForm, navbar_style: s.id as any })}
+                            className={`w-full p-2 rounded-xl border text-left transition-all cursor-pointer ${
+                              (metaForm.navbar_style || 'GLASS') === s.id
+                                ? 'border-indigo-500 bg-indigo-600/20 text-white font-bold ring-1 ring-indigo-500'
+                                : 'border-slate-800 bg-slate-950/60 text-slate-400 hover:text-white'
+                            }`}
+                          >
+                            <p className="text-[11px] font-bold">{s.label}</p>
+                            <p className="text-[9px] text-slate-500">{s.desc}</p>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Garis Bawah Aksen */}
+                    <div className="space-y-2">
+                      <label className="block text-slate-300 font-semibold text-xs flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                        <span>4. Garis Bawah Aksen</span>
+                      </label>
+                      <div className="space-y-1.5">
+                        {[
+                          { id: 'SUBTLE', label: '➖ Garis Halus', desc: 'Standar Elegan' },
+                          { id: 'THEME_COLOR', label: '🔲 Warna Tema', desc: 'Garis Aksen Tema' },
+                          { id: 'GLOW', label: '✨ Glowing Glow', desc: 'Cahaya Neon' },
+                          { id: 'NONE', label: '✖️ Tanpa Garis', desc: 'Menyatu Bersih' }
+                        ].map((b) => (
+                          <button
+                            key={b.id}
+                            type="button"
+                            onClick={() => setMetaForm({ ...metaForm, navbar_border_accent: b.id as any })}
+                            className={`w-full p-2 rounded-xl border text-left transition-all cursor-pointer ${
+                              (metaForm.navbar_border_accent || 'SUBTLE') === b.id
+                                ? 'border-indigo-500 bg-indigo-600/20 text-white font-bold ring-1 ring-indigo-500'
+                                : 'border-slate-800 bg-slate-950/60 text-slate-400 hover:text-white'
+                            }`}
+                          >
+                            <p className="text-[11px] font-bold truncate">{b.label}</p>
+                            <p className="text-[9px] text-slate-500 truncate">{b.desc}</p>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Kontras Teks */}
+                    <div className="space-y-2">
+                      <label className="block text-slate-300 font-semibold text-xs flex items-center gap-1.5">
+                        <Sun className="w-3.5 h-3.5 text-amber-400" />
+                        <span>5. Warna Teks Navbar</span>
+                      </label>
+                      <div className="space-y-1.5">
+                        {[
+                          { id: 'AUTO', label: '⚡ Otomatis Pintar', desc: 'Deteksi Kecerahan' },
+                          { id: 'WHITE', label: '⚪ Selalu Putih', desc: 'Teks Putih Terang' },
+                          { id: 'DARK', label: '⚫ Selalu Gelap', desc: 'Teks Gelap/Hitam' }
+                        ].map((t) => (
+                          <button
+                            key={t.id}
+                            type="button"
+                            onClick={() => setMetaForm({ ...metaForm, navbar_custom_text: t.id as any })}
+                            className={`w-full p-2 rounded-xl border text-left transition-all cursor-pointer ${
+                              (metaForm.navbar_custom_text || 'AUTO') === t.id
+                                ? 'border-amber-400 bg-amber-500/15 text-white font-bold ring-1 ring-amber-400'
+                                : 'border-slate-800 bg-slate-950/60 text-slate-400 hover:text-white'
+                            }`}
+                          >
+                            <p className="text-[11px] font-bold">{t.label}</p>
+                            <p className="text-[9px] text-slate-500">{t.desc}</p>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

@@ -1,6 +1,230 @@
 import React, { CSSProperties } from 'react';
 import { AppSettings } from '../types';
 
+export interface NavbarThemeStyles {
+  containerClass: string;
+  containerStyle: CSSProperties;
+  textClass: string;
+  titleClass: string;
+  subtextClass: string;
+  isLight: boolean;
+  pillClass: string;
+  pillBorderClass: string;
+  iconBtnClass: string;
+  badgeClass: string;
+  borderBottomClass: string;
+  borderBottomStyle: CSSProperties;
+  menuBtnStyle: CSSProperties;
+}
+
+export function isColorLight(hex?: string): boolean {
+  if (!hex) return false;
+  let clean = hex.trim().replace('#', '');
+  if (clean.length === 3) {
+    clean = clean.split('').map((c) => c + c).join('');
+  }
+  if (clean.length < 6) return false;
+  const r = parseInt(clean.substring(0, 2), 16);
+  const g = parseInt(clean.substring(2, 4), 16);
+  const b = parseInt(clean.substring(4, 6), 16);
+  if (isNaN(r) || isNaN(g) || isNaN(b)) return false;
+  const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  return luminance > 0.6;
+}
+
+export const getNavbarTheme = (settings?: AppSettings): NavbarThemeStyles => {
+  const preset = settings?.navbar_theme_preset || 'DEFAULT_DARK';
+  const customBg = (settings?.navbar_custom_bg || settings?.warna_tema || '#1e293b').trim();
+  const hex = customBg.startsWith('#') ? customBg : `#${customBg}`;
+  const churchHex = (settings?.warna_tema || '#CD5C5C').trim().startsWith('#')
+    ? (settings?.warna_tema || '#CD5C5C').trim()
+    : `#${(settings?.warna_tema || '#CD5C5C').trim()}`;
+  const style = settings?.navbar_style || 'GLASS';
+  const borderAccent = settings?.navbar_border_accent || 'SUBTLE';
+  const customTextChoice = settings?.navbar_custom_text || 'AUTO';
+
+  let isLight = false;
+  let containerClass = 'backdrop-blur-xl border-b';
+  let containerStyle: CSSProperties = {};
+
+  switch (preset) {
+    case 'MATCH_THEME': {
+      isLight = isColorLight(churchHex);
+      if (style === 'SOLID') {
+        containerClass = 'border-b';
+        containerStyle = { backgroundColor: churchHex };
+      } else if (style === 'GRADIENT') {
+        containerClass = 'border-b';
+        containerStyle = { background: `linear-gradient(135deg, ${churchHex}, #090d16)` };
+      } else {
+        // GLASS
+        containerClass = 'backdrop-blur-xl border-b';
+        containerStyle = { backgroundColor: `${churchHex}e0` };
+      }
+      break;
+    }
+    case 'MIDNIGHT_BLUE': {
+      isLight = false;
+      if (style === 'SOLID') {
+        containerClass = 'bg-[#060c1d] border-b';
+      } else if (style === 'GRADIENT') {
+        containerClass = 'border-b';
+        containerStyle = { background: 'linear-gradient(135deg, #0f2452, #060c1d 70%)' };
+      } else {
+        containerClass = 'bg-[#060c1d]/90 backdrop-blur-xl border-b';
+      }
+      break;
+    }
+    case 'DEEP_PURPLE': {
+      isLight = false;
+      if (style === 'SOLID') {
+        containerClass = 'bg-[#120520] border-b';
+      } else if (style === 'GRADIENT') {
+        containerClass = 'border-b';
+        containerStyle = { background: 'linear-gradient(135deg, #270942, #0c0316 70%)' };
+      } else {
+        containerClass = 'bg-[#120520]/90 backdrop-blur-xl border-b';
+      }
+      break;
+    }
+    case 'EMERALD_GREEN': {
+      isLight = false;
+      if (style === 'SOLID') {
+        containerClass = 'bg-[#031a0e] border-b';
+      } else if (style === 'GRADIENT') {
+        containerClass = 'border-b';
+        containerStyle = { background: 'linear-gradient(135deg, #07381d, #021209 70%)' };
+      } else {
+        containerClass = 'bg-[#031a0e]/90 backdrop-blur-xl border-b';
+      }
+      break;
+    }
+    case 'CRIMSON_RED': {
+      isLight = false;
+      if (style === 'SOLID') {
+        containerClass = 'bg-[#20050b] border-b';
+      } else if (style === 'GRADIENT') {
+        containerClass = 'border-b';
+        containerStyle = { background: 'linear-gradient(135deg, #420a17, #140206 70%)' };
+      } else {
+        containerClass = 'bg-[#20050b]/90 backdrop-blur-xl border-b';
+      }
+      break;
+    }
+    case 'WARM_GOLD': {
+      isLight = false;
+      if (style === 'SOLID') {
+        containerClass = 'bg-[#1c1202] border-b';
+      } else if (style === 'GRADIENT') {
+        containerClass = 'border-b';
+        containerStyle = { background: 'linear-gradient(135deg, #3d2703, #120b01 70%)' };
+      } else {
+        containerClass = 'bg-[#1c1202]/90 backdrop-blur-xl border-b';
+      }
+      break;
+    }
+    case 'PURE_BLACK': {
+      isLight = false;
+      containerClass = 'bg-black/95 backdrop-blur-xl border-b border-white/10 text-white';
+      break;
+    }
+    case 'CLEAN_LIGHT': {
+      isLight = true;
+      if (style === 'SOLID') {
+        containerClass = 'bg-white border-b shadow-sm';
+      } else if (style === 'GRADIENT') {
+        containerClass = 'border-b shadow-sm';
+        containerStyle = { background: 'linear-gradient(135deg, #ffffff, #f1f5f9 80%)' };
+      } else {
+        containerClass = 'bg-white/95 backdrop-blur-xl border-b shadow-sm';
+      }
+      break;
+    }
+    case 'CUSTOM_HEX': {
+      isLight = isColorLight(hex);
+      if (style === 'SOLID') {
+        containerClass = 'border-b';
+        containerStyle = { backgroundColor: hex };
+      } else if (style === 'GRADIENT') {
+        containerClass = 'border-b';
+        containerStyle = { background: `linear-gradient(135deg, ${hex}, #090d16)` };
+      } else {
+        // GLASS
+        containerClass = 'backdrop-blur-xl border-b';
+        containerStyle = { backgroundColor: `${hex}e6` };
+      }
+      break;
+    }
+    case 'DEFAULT_DARK':
+    default: {
+      const isSystemLight = settings?.theme_preset === 'LUXE_LIGHT';
+      if (isSystemLight) {
+        isLight = true;
+        containerClass = 'bg-white/90 border-slate-200 shadow-sm backdrop-blur-xl border-b';
+      } else {
+        isLight = false;
+        containerClass = 'bg-slate-950/80 backdrop-blur-xl border-b border-white/10';
+      }
+      break;
+    }
+  }
+
+  // Override text lighting if explicitly chosen
+  if (customTextChoice === 'WHITE') isLight = false;
+  if (customTextChoice === 'DARK') isLight = true;
+
+  // Border bottom styling
+  let borderBottomClass = 'border-white/10';
+  let borderBottomStyle: CSSProperties = {};
+  if (isLight) {
+    borderBottomClass = 'border-slate-200';
+  }
+
+  if (borderAccent === 'THEME_COLOR') {
+    borderBottomClass = 'border-b-2';
+    borderBottomStyle = { borderBottomColor: churchHex };
+  } else if (borderAccent === 'GLOW') {
+    borderBottomClass = 'border-b border-indigo-400/40 shadow-lg shadow-indigo-500/20';
+  } else if (borderAccent === 'NONE') {
+    borderBottomClass = 'border-b-0';
+  }
+
+  // Text & UI elements classes
+  const textClass = isLight ? 'text-slate-800' : 'text-slate-100';
+  const titleClass = isLight ? 'text-slate-900' : 'text-white';
+  const subtextClass = isLight ? 'text-slate-500' : 'text-slate-400';
+  const pillClass = isLight
+    ? 'bg-slate-100/90 text-slate-800 border-slate-300'
+    : 'bg-white/5 text-indigo-300 border-white/10';
+  const pillBorderClass = isLight ? 'border-slate-300' : 'border-white/10';
+  const iconBtnClass = isLight
+    ? 'text-slate-600 hover:text-slate-900 bg-slate-100/80 hover:bg-slate-200 border-slate-300'
+    : 'text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 border-white/10';
+  const badgeClass = isLight
+    ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+    : 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30';
+
+  const menuBtnStyle: CSSProperties = {
+    backgroundColor: churchHex
+  };
+
+  return {
+    containerClass,
+    containerStyle,
+    textClass,
+    titleClass,
+    subtextClass,
+    isLight,
+    pillClass,
+    pillBorderClass,
+    iconBtnClass,
+    badgeClass,
+    borderBottomClass,
+    borderBottomStyle,
+    menuBtnStyle
+  };
+};
+
 export interface ThemeStyles {
   rootBg: string;
   cardBg: string;
@@ -18,6 +242,7 @@ export interface ThemeStyles {
   customBgStyle: CSSProperties;
   customTextStyle: CSSProperties;
   customBorderStyle: CSSProperties;
+  navbar: NavbarThemeStyles;
 }
 
 export const getThemeClasses = (settings?: AppSettings): ThemeStyles => {
@@ -189,6 +414,7 @@ export const getThemeClasses = (settings?: AppSettings): ThemeStyles => {
     customHexColor,
     customBgStyle: { backgroundColor: customHexColor },
     customTextStyle: { color: customHexColor },
-    customBorderStyle: { borderColor: customHexColor }
+    customBorderStyle: { borderColor: customHexColor },
+    navbar: getNavbarTheme(settings)
   };
 };

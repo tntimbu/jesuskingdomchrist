@@ -149,6 +149,12 @@ export const initialSettings: AppSettings = {
   accent_color: 'INDIGO',
   card_style: 'GLASS',
   card_size: 'NORMAL',
+  // Navbar Visual Customization
+  navbar_theme_preset: 'DEFAULT_DARK',
+  navbar_custom_bg: '#1e293b',
+  navbar_custom_text: 'AUTO',
+  navbar_style: 'GLASS',
+  navbar_border_accent: 'SUBTLE',
   // Custom Jemaat Portal Banner & Toggles
   jemaat_banner_title: 'Shalom & Selamat Datang',
   jemaat_banner_subtitle: 'Portal Layanan Jemaat Resmi & Sistem Informasi Terpadu',

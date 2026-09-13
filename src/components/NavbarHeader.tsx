@@ -31,8 +31,10 @@ import {
   Grid,
   ArrowLeft,
   Home,
-  Download
+  Download,
+  Palette
 } from 'lucide-react';
+import { NavbarCustomizerModal } from './NavbarCustomizerModal';
 
 interface NavbarHeaderProps {
   currentUser: User;
@@ -47,6 +49,8 @@ interface NavbarHeaderProps {
   onOpenSuperAdminSaaSPanel?: () => void;
   activeTab?: string;
   onNavigateToDashboard?: () => void;
+  onUpdateSettings?: (newSettings: AppSettings) => void;
+  onNavigateToSettings?: () => void;
 }
 
 export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
@@ -61,13 +65,16 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
   canInstallPWA,
   onOpenSuperAdminSaaSPanel,
   activeTab,
-  onNavigateToDashboard
+  onNavigateToDashboard,
+  onUpdateSettings,
+  onNavigateToSettings
 }) => {
   const [timeStr, setTimeStr] = useState('');
   const [dateStr, setDateStr] = useState('');
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [showNotifDropdown, setShowNotifDropdown] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [isNavbarCustomizerOpen, setIsNavbarCustomizerOpen] = useState(false);
 
   // Self Profile Modal State
   const [isSelfModalOpen, setIsSelfModalOpen] = useState(false);
@@ -258,14 +265,20 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
   const theme = getThemeClasses(settings);
 
   return (
-    <header className={`sticky top-0 z-30 h-20 w-full ${theme.isLight ? 'bg-white/90 border-slate-200 text-slate-900' : 'bg-slate-950/80 border-white/10 text-white'} backdrop-blur-xl border-b px-3 sm:px-6 flex items-center justify-between transition-colors duration-300`}>
+    <header
+      className={`sticky top-0 z-30 h-20 w-full ${theme.navbar.containerClass} ${theme.navbar.borderBottomClass} ${theme.navbar.textClass} px-3 sm:px-6 flex items-center justify-between transition-all duration-300`}
+      style={{
+        ...theme.navbar.containerStyle,
+        ...theme.navbar.borderBottomStyle
+      }}
+    >
       {/* Left section: Kartu Menu Utama toggle & Church Branding */}
       <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink">
         {/* Button 1: Kartu Menu */}
         <button
           onClick={onOpenMobileMenu}
           className="px-3 py-2 rounded-2xl text-white font-extrabold text-xs shadow-lg flex items-center gap-2 border border-white/20 hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer"
-          style={{ backgroundColor: settings.warna_tema || '#CD5C5C' }}
+          style={theme.navbar.menuBtnStyle}
           title="Buka Pusat Kartu Menu Utama Mewah"
         >
           <Grid className="w-4 h-4 text-white" />
@@ -297,7 +310,7 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
             />
           </div>
           <div className="flex flex-col min-w-0">
-            <h1 className="text-xs sm:text-base font-extrabold leading-tight text-white tracking-tight max-w-[100px] xs:max-w-[140px] sm:max-w-none truncate">
+            <h1 className={`text-xs sm:text-base font-extrabold leading-tight ${theme.navbar.titleClass} tracking-tight max-w-[100px] xs:max-w-[140px] sm:max-w-none truncate`}>
               {settings.nama_gereja || 'Gereja'}
             </h1>
             <p className="text-[8px] sm:text-[10px] uppercase tracking-widest text-amber-400 font-bold leading-none mt-0.5 truncate">
@@ -308,24 +321,24 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
       </div>
 
       {/* Middle section: Digital Clock & Date */}
-      <div className="hidden md:flex items-center gap-4 px-5 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md text-xs">
-        <div className="flex items-center gap-2 text-indigo-300 font-mono font-medium">
+      <div className={`hidden md:flex items-center gap-4 px-5 py-2 rounded-full ${theme.navbar.pillClass} border ${theme.navbar.pillBorderClass} backdrop-blur-md text-xs`}>
+        <div className="flex items-center gap-2 font-mono font-medium">
           <Clock className="w-3.5 h-3.5 text-indigo-400" />
           <span>{timeStr}</span>
         </div>
-        <div className="h-3 w-[1px] bg-white/10" />
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[10px] text-emerald-300 font-bold">
+        <div className={`h-3 w-[1px] ${theme.navbar.pillBorderClass}`} />
+        <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full ${theme.navbar.badgeClass} border text-[10px] font-bold`}>
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
           <span>Real-Time Cloud</span>
         </div>
-        <div className="h-3 w-[1px] bg-white/10" />
-        <div className="flex items-center gap-2 text-slate-400 text-[11px] font-medium uppercase tracking-wider">
-          <Calendar className="w-3.5 h-3.5 text-slate-400" />
+        <div className={`h-3 w-[1px] ${theme.navbar.pillBorderClass}`} />
+        <div className={`flex items-center gap-2 ${theme.navbar.subtextClass} text-[11px] font-medium uppercase tracking-wider`}>
+          <Calendar className="w-3.5 h-3.5" />
           <span>{dateStr}</span>
         </div>
       </div>
 
-      {/* Right section: SuperAdmin SaaS Switcher, Install PWA, Notifications, Profile Dropdown */}
+      {/* Right section: SuperAdmin SaaS Switcher, Install PWA, Quick Palette, Notifications, Profile Dropdown */}
       <div className="flex items-center gap-2 sm:gap-3">
         {currentUser.role === 'SUPER_ADMIN' && onOpenSuperAdminSaaSPanel && (
           <button
@@ -350,6 +363,17 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
           </button>
         )}
 
+        {/* Quick Navbar Customizer Palette Button for Admin */}
+        {(currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN') && (
+          <button
+            onClick={() => setIsNavbarCustomizerOpen(true)}
+            className={`p-2.5 rounded-xl ${theme.navbar.iconBtnClass} transition-all cursor-pointer relative group`}
+            title="Kustomisasi Warna & Tema Navbar"
+          >
+            <Palette className="w-4 h-4 text-amber-400 group-hover:rotate-12 transition-transform" />
+          </button>
+        )}
+
         {/* Notifications Dropdown */}
         <div className="relative">
           <button
@@ -357,7 +381,7 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
               setShowNotifDropdown(!showNotifDropdown);
               setShowUserDropdown(false);
             }}
-            className="relative p-2.5 rounded-xl text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all cursor-pointer"
+            className={`relative p-2.5 rounded-xl ${theme.navbar.iconBtnClass} transition-all cursor-pointer`}
           >
             <Bell className="w-4 h-4" />
             {unreadCount > 0 && (
@@ -469,20 +493,20 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
                   setShowUserDropdown(!showUserDropdown);
                   setShowNotifDropdown(false);
                 }}
-                className="flex items-center gap-2.5 p-1.5 pr-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all"
+                className={`flex items-center gap-2.5 p-1.5 pr-3 rounded-xl ${theme.navbar.iconBtnClass} transition-all`}
               >
                 <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center font-bold text-white text-xs shadow-md shadow-indigo-500/20">
                   {currentUser.nama.slice(0, 2).toUpperCase()}
                 </div>
                 <div className="hidden lg:block text-left">
-                  <p className="text-xs font-bold leading-tight text-white truncate max-w-[120px]">
+                  <p className={`text-xs font-bold leading-tight ${theme.navbar.titleClass} truncate max-w-[120px]`}>
                     {currentUser.nama}
                   </p>
                   <span className={`inline-block px-1.5 py-0.2 rounded text-[9px] font-bold mt-0.5 ${getRoleBadge(currentUser.role)}`}>
                     {currentUser.role}
                   </span>
                 </div>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden lg:block" />
+                <ChevronDown className={`w-3.5 h-3.5 ${theme.navbar.subtextClass} hidden lg:block`} />
               </button>
 
               {showUserDropdown && (
@@ -494,6 +518,20 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
                       Role: {currentUser.role}
                     </span>
                   </div>
+
+                  {/* Kustom Warna Navbar (Khusus Admin / Super Admin) */}
+                  {(currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN') && (
+                    <button
+                      onClick={() => {
+                        setShowUserDropdown(false);
+                        setIsNavbarCustomizerOpen(true);
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-amber-300 hover:bg-amber-500/10 text-xs font-semibold transition-all text-left"
+                    >
+                      <Palette className="w-4 h-4 text-amber-400" />
+                      <span>Kustom Warna &amp; Tema Navbar</span>
+                    </button>
+                  )}
 
                   <button
                     onClick={() => {
@@ -679,6 +717,14 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
           </div>
         </div>
       )}
+      {/* Modal Kustomisasi Warna & Tema Navbar */}
+      <NavbarCustomizerModal
+        isOpen={isNavbarCustomizerOpen}
+        onClose={() => setIsNavbarCustomizerOpen(false)}
+        settings={settings}
+        onUpdateSettings={onUpdateSettings || (() => {})}
+        onNavigateToSettings={onNavigateToSettings}
+      />
     </header>
   );
 };

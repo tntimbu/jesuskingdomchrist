@@ -367,6 +367,8 @@ export default function App() {
         onOpenSuperAdminSaaSPanel={() => setIsSaaSPanelOpen(true)}
         activeTab={activeTab}
         onNavigateToDashboard={() => handleSelectTab('dashboard')}
+        onUpdateSettings={handleUpdateSettings}
+        onNavigateToSettings={() => handleSelectTab('settings')}
       />
 
       {/* Card Menu Overlay Modal (Replaces Left Sidebar for All Devices) */}
