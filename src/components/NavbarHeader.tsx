@@ -51,6 +51,7 @@ interface NavbarHeaderProps {
   onNavigateToDashboard?: () => void;
   onUpdateSettings?: (newSettings: AppSettings) => void;
   onNavigateToSettings?: () => void;
+  onOpenNavbarCustomizer?: () => void;
 }
 
 export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
@@ -67,7 +68,8 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
   activeTab,
   onNavigateToDashboard,
   onUpdateSettings,
-  onNavigateToSettings
+  onNavigateToSettings,
+  onOpenNavbarCustomizer
 }) => {
   const [timeStr, setTimeStr] = useState('');
   const [dateStr, setDateStr] = useState('');
@@ -363,16 +365,21 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
           </button>
         )}
 
-        {/* Quick Navbar Customizer Palette Button for Admin */}
-        {(currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN') && (
-          <button
-            onClick={() => setIsNavbarCustomizerOpen(true)}
-            className={`p-2.5 rounded-xl ${theme.navbar.iconBtnClass} transition-all cursor-pointer relative group`}
-            title="Kustomisasi Warna & Tema Navbar"
-          >
-            <Palette className="w-4 h-4 text-amber-400 group-hover:rotate-12 transition-transform" />
-          </button>
-        )}
+        {/* Quick Navbar Customizer Palette Button - ALWAYS VISIBLE */}
+        <button
+          onClick={() => {
+            if (onOpenNavbarCustomizer) {
+              onOpenNavbarCustomizer();
+            } else {
+              setIsNavbarCustomizerOpen(true);
+            }
+          }}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 hover:text-white border border-amber-500/40 text-xs font-black shadow-lg shadow-amber-500/10 cursor-pointer active:scale-95 transition-all shrink-0"
+          title="Klik untuk Kustomisasi Warna & Tema Navbar"
+        >
+          <Palette className="w-4 h-4 text-amber-400 group-hover:rotate-12 transition-transform" />
+          <span className="hidden xs:inline">Warna Navbar</span>
+        </button>
 
         {/* Notifications Dropdown */}
         <div className="relative">
@@ -519,19 +526,21 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
                     </span>
                   </div>
 
-                  {/* Kustom Warna Navbar (Khusus Admin / Super Admin) */}
-                  {(currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN') && (
-                    <button
-                      onClick={() => {
-                        setShowUserDropdown(false);
+                  {/* Kustom Warna Navbar */}
+                  <button
+                    onClick={() => {
+                      setShowUserDropdown(false);
+                      if (onOpenNavbarCustomizer) {
+                        onOpenNavbarCustomizer();
+                      } else {
                         setIsNavbarCustomizerOpen(true);
-                      }}
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-amber-300 hover:bg-amber-500/10 text-xs font-semibold transition-all text-left"
-                    >
-                      <Palette className="w-4 h-4 text-amber-400" />
-                      <span>Kustom Warna &amp; Tema Navbar</span>
-                    </button>
-                  )}
+                      }
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-amber-300 hover:bg-amber-500/10 text-xs font-semibold transition-all text-left"
+                  >
+                    <Palette className="w-4 h-4 text-amber-400" />
+                    <span>Kustom Warna &amp; Tema Navbar</span>
+                  </button>
 
                   <button
                     onClick={() => {

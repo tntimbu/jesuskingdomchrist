@@ -195,12 +195,12 @@ export const menuModules: MenuItem[] = [
   },
   {
     id: 'settings',
-    title: 'Pengaturan System & Visual',
-    subtitle: 'Kustomisasi Tema Hex (#CD5C5C), Logo Gereja & Kredensial User',
-    category: 'SYSTEM ADMIN',
+    title: 'Pengaturan System & Tema Navbar',
+    subtitle: 'Kustomisasi Warna Navbar, Tema Hex (#CD5C5C), Logo Gereja & Tampilan',
+    category: 'PENGATURAN & TEMA',
     icon: Settings,
     gradient: 'from-slate-700 via-slate-800 to-slate-900',
-    badge: 'SuperAdmin',
-    roles: ['ADMIN', 'SUPER_ADMIN']
+    badge: 'Tema & Navbar',
+    roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
   }
 ];

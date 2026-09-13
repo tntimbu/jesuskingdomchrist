@@ -55,7 +55,8 @@ import {
   FileJson,
   Palette,
   Layers,
-  Sun
+  Sun,
+  ArrowDown
 } from 'lucide-react';
 import { getNavbarTheme } from '../../utils/themeHelper';
 import { DashboardVisibilityManager } from '../dashboard/DashboardVisibilityManager';
@@ -791,11 +792,12 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
         <div className="flex flex-wrap items-center gap-1.5 bg-slate-900 border border-slate-800 p-1 rounded-2xl">
           <button
             onClick={() => setActiveTab('METADATA')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
               activeTab === 'METADATA' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'
             }`}
           >
-            Profil & Custom Tampilan
+            <Palette className="w-3.5 h-3.5 text-amber-400" />
+            <span>Profil, Tema &amp; Navbar</span>
           </button>
 
           <button
@@ -861,6 +863,39 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
       {/* Tab 1: Metadata profil gereja & Custom Visual */}
       {activeTab === 'METADATA' && (
         <div className="space-y-6">
+          {/* Quick Jump Banner for Navbar */}
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/20 via-indigo-900/30 to-purple-900/20 border-2 border-amber-500/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-white shadow-xl">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shrink-0">
+                <Palette className="w-6 h-6" />
+              </div>
+              <div>
+                <h4 className="text-xs sm:text-sm font-black text-amber-300 flex items-center gap-2">
+                  <span>Pengaturan Warna &amp; Tema Navbar (Bar Navigasi Paling Atas)</span>
+                  <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold border border-amber-500/30">
+                    Lokasi di Sini
+                  </span>
+                </h4>
+                <p className="text-[11px] text-slate-300 mt-0.5">
+                  Ubah tema warna preset, kode hex bebas, blur, dan garis bawah navbar di sini atau melalui tombol <strong>"Warna Navbar"</strong> di bar paling atas.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                const el = document.getElementById('navbar-customizer-section');
+                if (el) {
+                  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+              }}
+              className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg flex items-center justify-center gap-1.5 shrink-0 transition-all cursor-pointer active:scale-95"
+            >
+              <span>Lompat ke Pengaturan Navbar</span>
+              <ArrowDown className="w-4 h-4 text-slate-950" />
+            </button>
+          </div>
+
           {savedSuccess && (
             <div className="p-4 bg-emerald-500/20 border-2 border-emerald-500/50 text-emerald-300 rounded-2xl text-xs sm:text-sm font-extrabold flex items-center justify-between gap-3 shadow-2xl animate-bounce">
               <div className="flex items-center gap-2">
@@ -1369,7 +1404,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                 </div>
 
                 {/* SUB-SECTION KHUSUS: KUSTOMISASI NAVBAR / HEADER ATAS */}
-                <div className="sm:col-span-2 lg:col-span-3 p-4 sm:p-6 rounded-2xl bg-gradient-to-br from-slate-950/95 to-indigo-950/30 border-2 border-indigo-500/30 space-y-5">
+                <div id="navbar-customizer-section" className="sm:col-span-2 lg:col-span-3 p-4 sm:p-6 rounded-2xl bg-gradient-to-br from-slate-950/95 to-indigo-950/30 border-2 border-indigo-500/30 space-y-5 scroll-mt-24">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-indigo-500/20">
                     <div className="flex items-center gap-2.5">
                       <div className="p-2 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 shadow-lg">

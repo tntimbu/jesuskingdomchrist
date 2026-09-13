@@ -32,6 +32,7 @@ import { LainnyaView } from './components/views/LainnyaView';
 import { SplashScreen } from './components/SplashScreen';
 import { SuperAdminSaaSPanel } from './components/SuperAdminSaaSPanel';
 import { TenantLockedScreen } from './components/TenantLockedScreen';
+import { NavbarCustomizerModal } from './components/NavbarCustomizerModal';
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -41,6 +42,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSaaSPanelOpen, setIsSaaSPanelOpen] = useState(false);
+  const [isNavbarCustomizerOpen, setIsNavbarCustomizerOpen] = useState(false);
   const [tenantStatus, setTenantStatus] = useState(() => StorageManager.checkTenantStatus());
 
   // Default Guest user for public browsing when not logged in
@@ -369,6 +371,7 @@ export default function App() {
         onNavigateToDashboard={() => handleSelectTab('dashboard')}
         onUpdateSettings={handleUpdateSettings}
         onNavigateToSettings={() => handleSelectTab('settings')}
+        onOpenNavbarCustomizer={() => setIsNavbarCustomizerOpen(true)}
       />
 
       {/* Card Menu Overlay Modal (Replaces Left Sidebar for All Devices) */}
@@ -380,6 +383,7 @@ export default function App() {
         activeTab={activeTab}
         onSelectTab={handleSelectTab}
         onOpenSuperAdminSaaSPanel={() => setIsSaaSPanelOpen(true)}
+        onOpenNavbarCustomizer={() => setIsNavbarCustomizerOpen(true)}
       />
 
       {/* Content Layout - Full Width Without Left Sidebar */}
@@ -640,6 +644,15 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* Modal Kustomisasi Warna & Tema Navbar Global */}
+      <NavbarCustomizerModal
+        isOpen={isNavbarCustomizerOpen}
+        onClose={() => setIsNavbarCustomizerOpen(false)}
+        settings={settings}
+        onUpdateSettings={handleUpdateSettings}
+        onNavigateToSettings={() => handleSelectTab('settings')}
+      />
     </div>
   );
 }

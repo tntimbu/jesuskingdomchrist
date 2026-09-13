@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { User, AppSettings } from '../types';
 import { NavTab } from './Sidebar';
 import { menuModules } from '../data/navigationMenu';
-import { X, Search, Grid, ArrowRight, Sparkles, Building2 } from 'lucide-react';
+import { X, Search, Grid, ArrowRight, Sparkles, Building2, Palette } from 'lucide-react';
 
 interface CardMenuModalProps {
   isOpen: boolean;
@@ -12,6 +12,7 @@ interface CardMenuModalProps {
   activeTab: NavTab;
   onSelectTab: (tab: NavTab) => void;
   onOpenSuperAdminSaaSPanel?: () => void;
+  onOpenNavbarCustomizer?: () => void;
 }
 
 export const CardMenuModal: React.FC<CardMenuModalProps> = ({
@@ -21,7 +22,8 @@ export const CardMenuModal: React.FC<CardMenuModalProps> = ({
   settings,
   activeTab,
   onSelectTab,
-  onOpenSuperAdminSaaSPanel
+  onOpenSuperAdminSaaSPanel,
+  onOpenNavbarCustomizer
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
@@ -79,6 +81,21 @@ export const CardMenuModal: React.FC<CardMenuModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
+            {onOpenNavbarCustomizer && (
+              <button
+                onClick={() => {
+                  onClose();
+                  onOpenNavbarCustomizer();
+                }}
+                className="px-3.5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-black shadow-lg flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
+                title="Kustomisasi Warna & Tema Navbar"
+              >
+                <Palette className="w-4 h-4 text-amber-400" />
+                <span className="hidden sm:inline">Kustom Warna Navbar</span>
+                <span className="sm:hidden">Warna Navbar</span>
+              </button>
+            )}
+
             {isSuperAdmin && onOpenSuperAdminSaaSPanel && (
               <button
                 onClick={() => {
