@@ -30,7 +30,8 @@ import {
   ShieldCheck,
   Grid,
   ArrowLeft,
-  Home
+  Home,
+  Download
 } from 'lucide-react';
 
 interface NavbarHeaderProps {
@@ -341,10 +342,11 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
         {canInstallPWA && (
           <button
             onClick={onInstallPWA}
-            className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 text-xs font-semibold shadow-sm transition-all border border-indigo-500/30"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 text-xs font-semibold shadow-sm transition-all border border-emerald-500/30 cursor-pointer"
+            title="Download File APK Android (.apk)"
           >
-            <Smartphone className="w-3.5 h-3.5" />
-            <span>Install App</span>
+            <Download className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Download APK</span>
           </button>
         )}
 

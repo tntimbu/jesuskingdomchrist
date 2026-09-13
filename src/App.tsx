@@ -6,8 +6,7 @@ import { NavbarHeader } from './components/NavbarHeader';
 import { Sidebar, NavTab } from './components/Sidebar';
 import { CardMenuModal } from './components/CardMenuModal';
 import { BottomNav } from './components/BottomNav';
-import { PWABanner } from './components/PWABanner';
-import { PWAInstallGuideModal } from './components/PWAInstallGuideModal';
+import { APK_DOWNLOAD_URL } from './components/FloatingApkDownloadButton';
 import { AlertTriangle, ArrowLeft, Grid, Home, MessageCircle, X } from 'lucide-react';
 import { menuModules } from './data/navigationMenu';
 import { playNotificationChime } from './utils/soundHelper';
@@ -56,12 +55,6 @@ export default function App() {
 
   const effectiveUser = currentUser || GUEST_USER;
 
-  // PWA Install Prompt & Standalone Mode State
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [showPWABanner, setShowPWABanner] = useState(false);
-  const [isPWAGuideOpen, setIsPWAGuideOpen] = useState(false);
-  const [isStandalone, setIsStandalone] = useState(false);
-
   useEffect(() => {
     // Check local storage logged-in user session
     const savedUser = StorageManager.getCurrentUser();
@@ -72,37 +65,6 @@ export default function App() {
       const savedTab = (sessionStorage.getItem('cms_active_tab') as NavTab) || 'dashboard';
       setActiveTab(savedTab);
     }
-
-    // Check if app is already running in PWA standalone mode
-    const standaloneMode =
-      window.matchMedia('(display-mode: standalone)').matches ||
-      (window.navigator as unknown as { standalone?: boolean }).standalone === true;
-    setIsStandalone(standaloneMode);
-
-    // If not standalone and banner hasn't been permanently closed in this session, show PWA banner
-    const isBannerDismissed = sessionStorage.getItem('cms_pwa_banner_dismissed') === 'true';
-    if (!standaloneMode && !isBannerDismissed) {
-      setShowPWABanner(true);
-    }
-
-    // PWA BeforeInstallPrompt Event Listener
-    const handleBeforeInstall = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-      if (!standaloneMode && !isBannerDismissed) {
-        setShowPWABanner(true);
-      }
-    };
-
-    const handleAppInstalled = () => {
-      console.log('[PWA] App successfully installed');
-      setIsStandalone(true);
-      setShowPWABanner(false);
-      setDeferredPrompt(null);
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
-    window.addEventListener('appinstalled', handleAppInstalled);
 
     // Register Service Worker for PWA & Offline Support
     if ('serviceWorker' in navigator) {
@@ -124,8 +86,6 @@ export default function App() {
     });
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
-      window.removeEventListener('appinstalled', handleAppInstalled);
       unsubscribeFCM();
     };
   }, []);
@@ -298,23 +258,9 @@ export default function App() {
     };
   }, [currentUser, isLoginPageOpen]);
 
-  const handleInstallPWA = async () => {
-    if (deferredPrompt) {
-      try {
-        await deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-          console.log('[PWA] User accepted installation prompt');
-          setDeferredPrompt(null);
-          setShowPWABanner(false);
-        }
-      } catch (err) {
-        console.warn('[PWA] Prompt error, showing guide modal:', err);
-        setIsPWAGuideOpen(true);
-      }
-    } else {
-      setIsPWAGuideOpen(true);
-    }
+  const handleDownloadAPK = () => {
+    const downloadUrl = settings?.apk_download_url || APK_DOWNLOAD_URL;
+    window.open(downloadUrl, '_blank', 'noopener,noreferrer');
   };
 
   const handleLoginSuccess = (user: User) => {
@@ -384,8 +330,8 @@ export default function App() {
         settings={settings}
         onLoginSuccess={handleLoginSuccess}
         onClose={handleCloseLoginPage}
-        onInstallPWA={handleInstallPWA}
-        canInstallPWA={!!deferredPrompt || true}
+        onInstallPWA={handleDownloadAPK}
+        canInstallPWA={true}
       />
     );
   }
@@ -407,22 +353,6 @@ export default function App() {
 
   return (
     <div id="app-container" className={`min-h-screen ${theme.rootBg} ${theme.fontClass} flex flex-col selection:bg-indigo-500/30 selection:text-white relative transition-colors duration-300`}>
-      {/* PWA Install Notification Banner */}
-      {showPWABanner && !isStandalone && (
-        <PWABanner
-          onInstall={handleInstallPWA}
-          onShowGuide={() => setIsPWAGuideOpen(true)}
-          onDismiss={() => {
-            setShowPWABanner(false);
-            try {
-              sessionStorage.setItem('cms_pwa_banner_dismissed', 'true');
-            } catch (e) {
-              // ignore
-            }
-          }}
-        />
-      )}
-
       {/* Main Top Header */}
       <NavbarHeader
         currentUser={effectiveUser}
@@ -432,8 +362,8 @@ export default function App() {
         onLogout={requestLogout}
         onUpdateCurrentUser={(updatedUser) => setCurrentUser(updatedUser)}
         onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
-        onInstallPWA={handleInstallPWA}
-        canInstallPWA={!isStandalone}
+        onInstallPWA={handleDownloadAPK}
+        canInstallPWA={true}
         onOpenSuperAdminSaaSPanel={() => setIsSaaSPanelOpen(true)}
         activeTab={activeTab}
         onNavigateToDashboard={() => handleSelectTab('dashboard')}
@@ -708,13 +638,6 @@ export default function App() {
           </div>
         </div>
       )}
-      {/* PWA Install Guide Modal (Panduan Titik Tiga Chrome & Direct Install) */}
-      <PWAInstallGuideModal
-        isOpen={isPWAGuideOpen}
-        onClose={() => setIsPWAGuideOpen(false)}
-        onDirectInstall={handleInstallPWA}
-        canDirectInstall={!!deferredPrompt}
-      />
     </div>
   );
 }

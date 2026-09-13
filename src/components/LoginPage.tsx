@@ -16,7 +16,8 @@ import {
   X,
   AlertTriangle,
   LogOut,
-  Home
+  Home,
+  Download
 } from 'lucide-react';
 
 interface LoginPageProps {
@@ -179,10 +180,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           {canInstallPWA && onInstallPWA && (
             <button
               onClick={onInstallPWA}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 text-xs font-semibold border border-indigo-500/30 transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 text-xs font-semibold border border-emerald-500/30 transition-all cursor-pointer"
+              title="Download File APK Android (.apk)"
             >
-              <Smartphone className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Install PWA</span>
+              <Download className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="hidden sm:inline">Download APK</span>
             </button>
           )}
 
