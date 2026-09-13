@@ -7,6 +7,7 @@ import { Sidebar, NavTab } from './components/Sidebar';
 import { CardMenuModal } from './components/CardMenuModal';
 import { BottomNav } from './components/BottomNav';
 import { PWABanner } from './components/PWABanner';
+import { PWAInstallGuideModal } from './components/PWAInstallGuideModal';
 import { AlertTriangle, ArrowLeft, Grid, Home, MessageCircle, X } from 'lucide-react';
 import { menuModules } from './data/navigationMenu';
 import { playNotificationChime } from './utils/soundHelper';
@@ -55,9 +56,11 @@ export default function App() {
 
   const effectiveUser = currentUser || GUEST_USER;
 
-  // PWA Install Prompt State
+  // PWA Install Prompt & Standalone Mode State
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showPWABanner, setShowPWABanner] = useState(false);
+  const [isPWAGuideOpen, setIsPWAGuideOpen] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
 
   useEffect(() => {
     // Check local storage logged-in user session
@@ -70,22 +73,50 @@ export default function App() {
       setActiveTab(savedTab);
     }
 
+    // Check if app is already running in PWA standalone mode
+    const standaloneMode =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as unknown as { standalone?: boolean }).standalone === true;
+    setIsStandalone(standaloneMode);
+
+    // If not standalone and banner hasn't been permanently closed in this session, show PWA banner
+    const isBannerDismissed = sessionStorage.getItem('cms_pwa_banner_dismissed') === 'true';
+    if (!standaloneMode && !isBannerDismissed) {
+      setShowPWABanner(true);
+    }
+
     // PWA BeforeInstallPrompt Event Listener
     const handleBeforeInstall = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      setShowPWABanner(true);
+      if (!standaloneMode && !isBannerDismissed) {
+        setShowPWABanner(true);
+      }
+    };
+
+    const handleAppInstalled = () => {
+      console.log('[PWA] App successfully installed');
+      setIsStandalone(true);
+      setShowPWABanner(false);
+      setDeferredPrompt(null);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    window.addEventListener('appinstalled', handleAppInstalled);
 
-    // Register Service Worker for PWA & Push Notifications
+    // Register Service Worker for PWA & Offline Support
     if ('serviceWorker' in navigator) {
-      registerMessagingServiceWorker().then((reg) => {
-        if (reg) {
-          console.log('CMS Pro Service Worker & Messaging Registered:', reg.scope);
-        }
-      });
+      navigator.serviceWorker
+        .register('/sw.js', { scope: '/' })
+        .then((reg) => {
+          console.log('[PWA] Service Worker registered:', reg.scope);
+        })
+        .catch((err) => {
+          console.warn('[PWA] Service Worker registration note:', err);
+        });
+
+      // Also register Firebase Messaging SW if supported
+      registerMessagingServiceWorker().catch(() => {});
     }
 
     const unsubscribeFCM = listenToForegroundMessages((payload) => {
@@ -94,6 +125,7 @@ export default function App() {
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+      window.removeEventListener('appinstalled', handleAppInstalled);
       unsubscribeFCM();
     };
   }, []);
@@ -268,17 +300,20 @@ export default function App() {
 
   const handleInstallPWA = async () => {
     if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        console.log('User accepted PWA installation');
+      try {
+        await deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          console.log('[PWA] User accepted installation prompt');
+          setDeferredPrompt(null);
+          setShowPWABanner(false);
+        }
+      } catch (err) {
+        console.warn('[PWA] Prompt error, showing guide modal:', err);
+        setIsPWAGuideOpen(true);
       }
-      setDeferredPrompt(null);
-      setShowPWABanner(false);
     } else {
-      alert(
-        'Untuk menginstal CMS Pro sebagai aplikasi Android/iOS:\n1. Di Chrome: Tekan Titik Tiga (⋮) -> Tambahkan ke Layar Utama / Install App.\n2. Di Safari iOS: Tekan tombol Share -> Add to Home Screen.'
-      );
+      setIsPWAGuideOpen(true);
     }
   };
 
@@ -373,10 +408,18 @@ export default function App() {
   return (
     <div id="app-container" className={`min-h-screen ${theme.rootBg} ${theme.fontClass} flex flex-col selection:bg-indigo-500/30 selection:text-white relative transition-colors duration-300`}>
       {/* PWA Install Notification Banner */}
-      {showPWABanner && (
+      {showPWABanner && !isStandalone && (
         <PWABanner
           onInstall={handleInstallPWA}
-          onDismiss={() => setShowPWABanner(false)}
+          onShowGuide={() => setIsPWAGuideOpen(true)}
+          onDismiss={() => {
+            setShowPWABanner(false);
+            try {
+              sessionStorage.setItem('cms_pwa_banner_dismissed', 'true');
+            } catch (e) {
+              // ignore
+            }
+          }}
         />
       )}
 
@@ -390,7 +433,7 @@ export default function App() {
         onUpdateCurrentUser={(updatedUser) => setCurrentUser(updatedUser)}
         onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
         onInstallPWA={handleInstallPWA}
-        canInstallPWA={!!deferredPrompt}
+        canInstallPWA={!isStandalone}
         onOpenSuperAdminSaaSPanel={() => setIsSaaSPanelOpen(true)}
         activeTab={activeTab}
         onNavigateToDashboard={() => handleSelectTab('dashboard')}
@@ -665,6 +708,13 @@ export default function App() {
           </div>
         </div>
       )}
+      {/* PWA Install Guide Modal (Panduan Titik Tiga Chrome & Direct Install) */}
+      <PWAInstallGuideModal
+        isOpen={isPWAGuideOpen}
+        onClose={() => setIsPWAGuideOpen(false)}
+        onDirectInstall={handleInstallPWA}
+        canDirectInstall={!!deferredPrompt}
+      />
     </div>
   );
 }

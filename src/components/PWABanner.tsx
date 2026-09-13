@@ -1,38 +1,65 @@
 import React from 'react';
-import { Smartphone, Download, X } from 'lucide-react';
+import { Smartphone, Download, X, HelpCircle, Sparkles } from 'lucide-react';
 
 interface PWABannerProps {
   onInstall: () => void;
   onDismiss: () => void;
+  onShowGuide?: () => void;
 }
 
-export const PWABanner: React.FC<PWABannerProps> = ({ onInstall, onDismiss }) => {
+export const PWABanner: React.FC<PWABannerProps> = ({ onInstall, onDismiss, onShowGuide }) => {
   return (
-    <div className="bg-gradient-to-r from-indigo-900 via-indigo-800 to-blue-900 border-b border-indigo-700/50 text-white px-4 py-3 flex items-center justify-between shadow-lg relative z-30">
+    <div
+      id="pwa-install-banner"
+      className="bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 border-b-2 border-indigo-500/40 text-white px-3 sm:px-4 py-2.5 sm:py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xl relative z-30 animate-fade-in"
+    >
       <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-xl bg-indigo-500/30 border border-indigo-400/30 flex items-center justify-center shrink-0">
-          <Smartphone className="w-5 h-5 text-indigo-300 animate-bounce" />
+        <div className="relative shrink-0">
+          <img
+            src="/pwa-192x192.png"
+            alt="PWA Icon"
+            className="w-10 h-10 rounded-2xl shadow-lg border border-amber-400/40 object-cover"
+          />
+          <span className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full border-2 border-slate-900 animate-pulse" />
         </div>
         <div>
-          <h4 className="text-xs sm:text-sm font-bold">Install Church Management System (CMS Pro)</h4>
-          <p className="text-[11px] text-indigo-200">
-            Akses offline lebih cepat, notifikasi push realtime, dan tampilan layaknya aplikasi Android/iOS native.
+          <div className="flex items-center gap-2">
+            <h4 className="text-xs sm:text-sm font-black text-white tracking-wide">
+              Pasang Aplikasi CMS Gereja (Android PWA)
+            </h4>
+            <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-extrabold text-[10px] border border-amber-500/30">
+              <Sparkles className="w-2.5 h-2.5" /> Standalone Fullscreen
+            </span>
+          </div>
+          <p className="text-[11px] text-slate-300 line-clamp-1 sm:line-clamp-none mt-0.5">
+            Bisa diinstal langsung dari menu titik tiga (⋮) Google Chrome tanpa perlu Google Play Store.
           </p>
         </div>
       </div>
 
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+        {onShowGuide && (
+          <button
+            onClick={onShowGuide}
+            className="px-2.5 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-indigo-300 hover:text-white border border-indigo-500/30 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+            title="Lihat petunjuk instal lewat Titik Tiga Chrome"
+          >
+            <HelpCircle className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Cara Pasang (⋮)</span>
+          </button>
+        )}
         <button
           onClick={onInstall}
-          className="px-3 py-1.5 rounded-xl bg-white text-indigo-950 font-bold text-xs hover:bg-indigo-50 shadow-md flex items-center gap-1.5 transition-all"
+          className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs shadow-lg flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
         >
           <Download className="w-3.5 h-3.5" />
-          <span>Install Sekarang</span>
+          <span>Instal Sekarang</span>
         </button>
         <button
           onClick={onDismiss}
-          className="p-1.5 rounded-lg text-indigo-300 hover:text-white hover:bg-indigo-800/60 transition-all"
-          title="Tutup"
+          className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 transition-all cursor-pointer"
+          title="Tutup banner"
+          aria-label="Tutup"
         >
           <X className="w-4 h-4" />
         </button>
