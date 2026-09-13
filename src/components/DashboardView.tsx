@@ -665,7 +665,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const totalLaki = jemaatList.filter((j) => j.jenis_kelamin === 'Laki-laki').length;
   const totalPerempuan = jemaatList.filter((j) => j.jenis_kelamin === 'Perempuan').length;
   const totalPersembahan = persembahanList.reduce((acc, curr) => acc + (curr.jumlah || 0), 0);
-  const totalKeluarga = StorageManager.getKeluarga().length;
+  const totalKeluarga = React.useMemo(() => {
+    return StorageManager.getKeluarga().length;
+  }, [jemaatList]);
 
   // Single Latest Updates for Jemaat Focus Mode
   const latestRenungan = renunganList.length > 0 ? renunganList[0] : null;
@@ -1597,7 +1599,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
 
               {/* Kartu 2: Total Kepala Keluarga (KK) */}
-              <div className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} border border-purple-500/30 flex flex-col justify-between space-y-2`}>
+              <div 
+                className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} border border-purple-500/30 flex flex-col justify-between space-y-2`}
+                title="Total Kartu Keluarga unik. Jemaat dengan Nomor KK yang sama dihitung sebagai satu keluarga."
+              >
                 <div className="flex items-center justify-between gap-1">
                   <span className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider truncate">Total KK</span>
                   <div className="p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl bg-purple-500/20 text-purple-400 border border-purple-500/30 shadow-md shrink-0">
@@ -1609,7 +1614,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <span className="text-[10px] sm:text-xs text-slate-400 font-medium">Keluarga</span>
                 </div>
                 <div className="pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 truncate">
-                  <span>Kepala Keluarga</span>
+                  <span>Kartu Keluarga (Unik)</span>
                 </div>
               </div>
             </div>
@@ -2549,7 +2554,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
 
               {/* Total Keluarga Card */}
-              <div className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} border border-purple-500/30 flex flex-col justify-between space-y-2 text-white`}>
+              <div 
+                className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} border border-purple-500/30 flex flex-col justify-between space-y-2 text-white`}
+                title="Total Kartu Keluarga unik. Jemaat dengan Nomor KK yang sama dihitung sebagai satu keluarga."
+              >
                 <div className="flex items-center justify-between gap-1">
                   <span className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider truncate">Total KK</span>
                   <div className="p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl bg-purple-500/20 text-purple-400 border border-purple-500/30 shadow-md shrink-0">
@@ -2561,7 +2569,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <span className="text-[10px] sm:text-xs text-slate-400 font-medium">Keluarga</span>
                 </div>
                 <div className="pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 truncate">
-                  <span>Kepala Keluarga</span>
+                  <span>Kartu Keluarga (Unik)</span>
                 </div>
               </div>
 

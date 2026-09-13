@@ -18,7 +18,9 @@ import {
   Phone,
   Mail,
   MapPin,
-  Calendar
+  Calendar,
+  CheckCircle2,
+  Home
 } from 'lucide-react';
 
 interface JemaatViewProps {
@@ -104,25 +106,31 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
     return matchesQuery && matchesWilayah && matchesKomisi;
   });
 
+  const matchingKeluarga = React.useMemo(() => {
+    const clean = (formData.no_kk || '').trim().replace(/[\s.-]/g, '');
+    if (!clean || clean === '-') return null;
+    return keluargaList.find((k) => (k.no_kk || '').trim().replace(/[\s.-]/g, '') === clean);
+  }, [formData.no_kk, keluargaList]);
+
   const handleOpenAdd = () => {
     setEditingJemaat(null);
     const defaultW = wilayahList[0]?.nama_wilayah || 'Wilayah I - Sunter';
     const defaultK = komisiList[0] || 'Komisi Pria (Bapa)';
     setFormData({
-      nik: `3171${Math.floor(100000000000 + Math.random() * 900000000000)}`,
-      no_kk: `3171${Math.floor(100000000000 + Math.random() * 900000000000)}`,
+      nik: '',
+      no_kk: '',
       nama_lengkap: '',
       jenis_kelamin: 'Laki-laki',
       tempat_lahir: 'Jakarta',
       tanggal_lahir: '1995-05-15',
-      alamat: 'Jl. Pemuda No. 10',
+      alamat: '',
       wilayah: defaultW,
       komisi: defaultK,
       status_baptis: 'Sudah',
       status_sidi: 'Sudah',
-      status_pernikahan: 'Menikah',
+      status_pernikahan: 'Belum Menikah',
       pekerjaan: 'Karyawan Swasta',
-      nomor_hp: '+62 812-3456-7890',
+      nomor_hp: '+62 ',
       email: '',
       foto: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
       status: 'Aktif'
@@ -567,14 +575,80 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 mb-1">No. KK *</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-slate-400">No. Kartu Keluarga (KK) *</label>
+                    {keluargaList.length > 0 && (
+                      <span className="text-[10px] text-indigo-400 font-medium">1 KK dengan keluarga terdaftar?</span>
+                    )}
+                  </div>
+
+                  {/* Dropdown Pilihan Cepat KK Terdaftar */}
+                  {keluargaList.length > 0 && (
+                    <div className="mb-2">
+                      <select
+                        value={matchingKeluarga ? matchingKeluarga.no_kk : ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (val) {
+                            const found = keluargaList.find((k) => k.no_kk === val);
+                            if (found) {
+                              setFormData({
+                                ...formData,
+                                no_kk: found.no_kk,
+                                alamat: formData.alamat || found.alamat,
+                                wilayah: found.wilayah || formData.wilayah
+                              });
+                            }
+                          }
+                        }}
+                        className="w-full px-3 py-1.5 rounded-xl bg-slate-900 border border-indigo-500/40 text-xs text-indigo-200 focus:outline-none focus:border-indigo-400"
+                      >
+                        <option value="">-- Pilih jika 1 KK dengan keluarga yang sudah ada --</option>
+                        {keluargaList.map((k) => (
+                          <option key={k.keluarga_id} value={k.no_kk}>
+                            KK: {k.kepala_keluarga} ({k.no_kk}) • {k.jumlah_anggota || 1} Jiwa
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
                   <input
                     type="text"
                     required
+                    placeholder="Contoh: 3171011005120099 (16 Digit)"
                     value={formData.no_kk || ''}
                     onChange={(e) => setFormData({ ...formData, no_kk: e.target.value })}
                     className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-indigo-500 font-mono"
                   />
+
+                  {/* Deteksi Status Keluarga Realtime */}
+                  {matchingKeluarga ? (
+                    <div className="mt-2 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-start gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-semibold text-emerald-200">
+                          Satu KK dengan Keluarga Bpk/Ibu {matchingKeluarga.kepala_keluarga} ({matchingKeluarga.jumlah_anggota || 1} Anggota)
+                        </p>
+                        <p className="text-[10px] text-emerald-300/80 mt-0.5">
+                          ✓ Jemaat ini akan terdata sebagai anggota keluarga ini.<br />
+                          ✓ <strong>Total KK di Dashboard tetap</strong> (tidak bertambah), hanya <strong>Total Jemaat</strong> yang bertambah +1.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (formData.no_kk && formData.no_kk.trim().length >= 6) ? (
+                    <div className="mt-2 p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs flex items-start gap-2">
+                      <Home className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-indigo-200">
+                          Nomor KK Baru Terdeteksi
+                        </p>
+                        <p className="text-[10px] text-indigo-300/80 mt-0.5">
+                          Akan didaftarkan sebagai Kartu Keluarga baru di gereja (Total KK di Dashboard bertambah +1).
+                        </p>
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
 
                 <div>

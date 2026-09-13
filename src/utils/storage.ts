@@ -251,21 +251,31 @@ if (typeof window !== 'undefined') {
   });
 }
 
+function normalizeNoKk(val?: string): string {
+  if (!val) return '';
+  const clean = val.trim().replace(/[\s.-]/g, '');
+  return clean === '-' ? '' : clean;
+}
+
 function syncKeluargaFromJemaatWithData(rawKeluarga: Keluarga[], jemaatList: Jemaat[]): Keluarga[] {
-  // Index existing metadata by no_kk
+  // Index existing metadata by normalized no_kk
   const existingKeluargaMap = new Map<string, Keluarga>();
   (rawKeluarga || []).forEach((k) => {
-    if (k && k.no_kk && k.no_kk.trim() !== '' && k.no_kk.trim() !== '-') {
-      existingKeluargaMap.set(k.no_kk.trim(), { ...k });
+    if (k && k.no_kk) {
+      const norm = normalizeNoKk(k.no_kk);
+      if (norm) {
+        existingKeluargaMap.set(norm, { ...k });
+      }
     }
   });
 
-  // Group active jemaat by no_kk
+  // Group active jemaat by normalized no_kk
+  // Members sharing the same No. KK belong to the same family (1 KK)
   const jemaatByKk = new Map<string, Jemaat[]>();
   (jemaatList || []).forEach((j) => {
-    if (j) {
-      const rawKk = (j.no_kk || '').trim();
-      const cleanKk = (rawKk && rawKk !== '-') ? rawKk : `KK-IND-${j.jemaat_id}`;
+    if (j && j.status !== 'Meninggal') {
+      const normKk = normalizeNoKk(j.no_kk);
+      const cleanKk = normKk || `KK-IND-${j.jemaat_id}`;
       const existing = jemaatByKk.get(cleanKk) || [];
       existing.push(j);
       jemaatByKk.set(cleanKk, existing);
@@ -276,22 +286,34 @@ function syncKeluargaFromJemaatWithData(rawKeluarga: Keluarga[], jemaatList: Jem
   let counter = 1;
 
   jemaatByKk.forEach((members, cleanKk) => {
-    const existing = existingKeluargaMap.get(cleanKk);
-    const kepala = members.find((m) => m.jenis_kelamin === 'Laki-laki') || members[0];
-    const alamat = kepala?.alamat || members[0]?.alamat || 'Alamat Jemaat';
-    const wilayah = kepala?.wilayah || members[0]?.wilayah || 'Wilayah I';
+    const isIndividual = cleanKk.startsWith('KK-IND-');
+    const existing = isIndividual ? undefined : existingKeluargaMap.get(cleanKk);
+    
+    // Tentukan Kepala Keluarga:
+    // Prioritas 1: Kepala keluarga tersimpan sebelumnya
+    // Prioritas 2: Anggota laki-laki yang sudah menikah, atau laki-laki dewasa tertua, atau anggota pertama
+    const kepalaCandidate = members.find((m) => m.jenis_kelamin === 'Laki-laki' && m.status_pernikahan === 'Menikah')
+      || members.find((m) => m.jenis_kelamin === 'Laki-laki')
+      || members[0];
+
+    const alamat = existing?.alamat || kepalaCandidate?.alamat || members[0]?.alamat || 'Alamat Jemaat';
+    const wilayah = existing?.wilayah || kepalaCandidate?.wilayah || members[0]?.wilayah || 'Wilayah I';
 
     const keluargaId = existing?.keluarga_id || `KK-${counter.toString().padStart(3, '0')}`;
     counter++;
 
+    const displayNoKk = isIndividual
+      ? (existing?.no_kk || '-')
+      : (members.find((m) => m.no_kk && m.no_kk.trim())?.no_kk?.trim() || cleanKk);
+
     syncedKeluarga.push({
       keluarga_id: keluargaId,
-      no_kk: cleanKk.startsWith('KK-IND-') ? (existing?.no_kk || '-') : cleanKk,
+      no_kk: displayNoKk,
       kepala_keluarga: (existing && existing.kepala_keluarga && existing.kepala_keluarga !== 'Belum diisi' && existing.kepala_keluarga !== '-') 
         ? existing.kepala_keluarga 
-        : (kepala?.nama_lengkap || 'Kepala Keluarga'),
-      alamat: existing?.alamat || alamat,
-      wilayah: existing?.wilayah || wilayah,
+        : (kepalaCandidate?.nama_lengkap || 'Kepala Keluarga'),
+      alamat,
+      wilayah,
       jumlah_anggota: members.length
     });
   });
