@@ -199,12 +199,13 @@ export interface EventSchedule {
 export interface EventReservation {
   reservation_id: string;
   event_id: string;
+  user_id?: string;
   nama_jemaat: string;
   nomor_wa: string;
   jumlah_kursi: number;
   catatan?: string;
   tanggal_reservasi: string;
-  status: 'TERKONFIRMASI' | 'MENUNGGU' | 'DIBATALKAN';
+  status: 'TERKONFIRMASI' | 'MENUNGGU' | 'DIBATALKAN' | 'DITOLAK';
 }
 
 export interface GalleryItem {

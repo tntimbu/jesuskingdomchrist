@@ -284,12 +284,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     const newRes: EventReservation = {
       reservation_id: `RES-2026-${Date.now().toString().slice(-4)}${Math.floor(Math.random() * 100)}`,
       event_id: selectedEventForRes.event_id,
+      user_id: currentUser.user_id || currentUser.username,
       nama_jemaat: eventResForm.nama_jemaat,
       nomor_wa: eventResForm.nomor_wa,
       jumlah_kursi: Number(eventResForm.jumlah_kursi) || 1,
       catatan: eventResForm.catatan,
       tanggal_reservasi: new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }),
-      status: 'TERKONFIRMASI'
+      status: 'MENUNGGU'
     };
 
     const updated = [newRes, ...existingRes];
@@ -301,8 +302,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       notif_id: `NTF-RES-${Date.now().toString().slice(-4)}`,
       user_id: 'ALL',
       tujuan_role: 'ADMIN',
-      judul: '🎟️ Reservasi Kursi Event Baru',
-      pesan: `${eventResForm.nama_jemaat} telah memesan ${eventResForm.jumlah_kursi} kursi untuk "${selectedEventForRes.nama}". WA: ${eventResForm.nomor_wa}`,
+      judul: '🎟️ Reservasi Kursi Event Baru (Menunggu Konfirmasi)',
+      pesan: `${eventResForm.nama_jemaat} mengajukan reservasi ${eventResForm.jumlah_kursi} kursi untuk "${selectedEventForRes.nama}". WA: ${eventResForm.nomor_wa}. Mohon verifikasi & konfirmasi.`,
       status_baca: 'Belum',
       tanggal: new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }),
       tipe: 'Penting',
@@ -315,7 +316,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
     StorageManager.logActivity(
       currentUser.username,
-      `Melakukan reservasi event "${selectedEventForRes.nama}" sebanyak ${eventResForm.jumlah_kursi} kursi`,
+      `Mengajukan reservasi event "${selectedEventForRes.nama}" sebanyak ${eventResForm.jumlah_kursi} kursi`,
       'Events'
     );
 
@@ -324,13 +325,88 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
     setEventResMsg({
       type: 'success',
-      text: `✅ Reservasi berhasil! ${eventResForm.jumlah_kursi} kursi terkonfirmasi dan telah terdaftar di Panel Admin.`
+      text: `✅ Pengajuan reservasi berhasil! ${eventResForm.jumlah_kursi} kursi telah diajukan dan sedang menunggu konfirmasi admin.`
     });
 
     setTimeout(() => {
       setIsEventResModalOpen(false);
       setEventResMsg(null);
-    }, 2000);
+    }, 2500);
+  };
+
+  const [adminResToast, setAdminResToast] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
+
+  const handleUpdateReservationStatus = (id: string, newStatus: 'TERKONFIRMASI' | 'MENUNGGU' | 'DIBATALKAN' | 'DITOLAK') => {
+    const target = reservationsList.find((r) => r.reservation_id === id);
+    if (!target) return;
+
+    const matchedEvent = eventsList.find((e) => e.event_id === target.event_id);
+    const eventName = matchedEvent?.nama || 'Kegiatan Gereja';
+
+    const updated = reservationsList.map((r) => (r.reservation_id === id ? { ...r, status: newStatus } : r));
+    setReservationsList(updated);
+    StorageManager.saveEventReservations(updated);
+
+    // Send Notification to User
+    let notifTitle = '';
+    let notifMessage = '';
+    let notifType: 'Penting' | 'Peringatan' | 'Informasi' = 'Informasi';
+
+    if (newStatus === 'TERKONFIRMASI') {
+      notifTitle = '🎉 Reservasi Kursi Anda DITERIMA!';
+      notifMessage = `Puji Tuhan! Reservasi ${target.jumlah_kursi} kursi atas nama ${target.nama_jemaat} untuk acara "${eventName}" telah DIKONFIRMASI & DITERIMA oleh Admin. Sampai jumpa di ibadah!`;
+      notifType = 'Penting';
+      setAdminResToast({
+        type: 'success',
+        message: `✅ Reservasi ${target.nama_jemaat} berhasil DIKONFIRMASI! Notifikasi telah dikirim ke jemaat.`
+      });
+    } else if (newStatus === 'DITOLAK') {
+      notifTitle = '⚠️ Status Reservasi Kursi: DITOLAK';
+      notifMessage = `Mohon maaf, permohonan reservasi ${target.jumlah_kursi} kursi atas nama ${target.nama_jemaat} untuk acara "${eventName}" DITOLAK oleh Admin karena penyesuaian kuota atau jadwal gereja.`;
+      notifType = 'Peringatan';
+      setAdminResToast({
+        type: 'error',
+        message: `⚠️ Reservasi ${target.nama_jemaat} telah DITOLAK. Notifikasi telah dikirim ke jemaat.`
+      });
+    } else if (newStatus === 'DIBATALKAN') {
+      notifTitle = 'ℹ️ Reservasi Kursi Dibatalkan';
+      notifMessage = `Reservasi kursi atas nama ${target.nama_jemaat} untuk acara "${eventName}" telah dibatalkan oleh Admin.`;
+      notifType = 'Informasi';
+      setAdminResToast({
+        type: 'info',
+        message: `ℹ️ Reservasi ${target.nama_jemaat} dibatalkan.`
+      });
+    }
+
+    if (notifTitle) {
+      const userNotif: NotificationItem = {
+        notif_id: `NTF-RES-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        user_id: target.user_id || target.nama_jemaat,
+        tujuan_role: 'JEMAAT',
+        judul: notifTitle,
+        pesan: notifMessage,
+        status_baca: 'Belum',
+        tanggal: new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }),
+        tipe: notifType,
+        pengirim: 'Admin Gereja',
+        is_pinned: true
+      };
+      const cur = StorageManager.getNotifications();
+      StorageManager.saveNotifications([userNotif, ...cur]);
+      setNotificationsList([userNotif, ...cur]);
+    }
+
+    StorageManager.logActivity(
+      currentUser.username,
+      `Mengubah status reservasi "${target.nama_jemaat}" (${eventName}) menjadi ${newStatus}`,
+      'Reservasi'
+    );
+
+    window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { action: 'reservation_status_changed', status: newStatus } }));
+
+    setTimeout(() => {
+      setAdminResToast(null);
+    }, 4000);
   };
 
   // Quick Customizer Modal State
@@ -3717,6 +3793,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </button>
             </div>
 
+            {adminResToast && (
+              <div className={`p-3 rounded-2xl border text-xs font-bold flex items-center gap-2 ${
+                adminResToast.type === 'success'
+                  ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
+                  : adminResToast.type === 'error'
+                  ? 'bg-rose-500/20 border-rose-500/40 text-rose-300'
+                  : 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300'
+              }`}>
+                {adminResToast.type === 'success' ? <Check className="w-4 h-4 shrink-0" /> : <Info className="w-4 h-4 shrink-0" />}
+                <span>{adminResToast.message}</span>
+              </div>
+            )}
+
             <div className="overflow-y-auto space-y-2.5 pr-1 flex-1">
               {reservationsList.length === 0 ? (
                 <div className="p-8 text-center text-slate-400 space-y-2">
@@ -3732,14 +3821,28 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       key={res.reservation_id}
                       className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 transition-all"
                     >
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-extrabold text-sm text-white">{res.nama_jemaat}</span>
                           <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-extrabold text-[10px] border border-amber-500/30">
                             {res.jumlah_kursi} Kursi
                           </span>
-                          <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-bold text-[10px]">
-                            {res.status || 'TERKONFIRMASI'}
+                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                            res.status === 'TERKONFIRMASI'
+                              ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                              : res.status === 'DITOLAK'
+                              ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                              : res.status === 'DIBATALKAN'
+                              ? 'bg-slate-800 text-slate-400 border-slate-700'
+                              : 'bg-amber-500/20 text-amber-300 border-amber-500/40 animate-pulse'
+                          }`}>
+                            {res.status === 'TERKONFIRMASI'
+                              ? '✅ Diterima'
+                              : res.status === 'DITOLAK'
+                              ? '❌ Ditolak'
+                              : res.status === 'DIBATALKAN'
+                              ? 'Dibatalkan'
+                              : '⏳ Menunggu'}
                           </span>
                         </div>
                         <p className="text-xs text-indigo-300 font-semibold">
@@ -3752,20 +3855,42 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         </div>
                       </div>
 
-                      <button
-                        onClick={() => {
-                          if (confirm(`Hapus reservasi atas nama ${res.nama_jemaat}?`)) {
-                            const updated = reservationsList.filter((r) => r.reservation_id !== res.reservation_id);
-                            StorageManager.saveEventReservations(updated);
-                            setReservationsList(updated);
-                            window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { action: 'reservation_deleted' } }));
-                          }
-                        }}
-                        className="px-2.5 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/40 text-rose-300 border border-rose-500/30 text-[11px] font-bold flex items-center gap-1 cursor-pointer shrink-0 self-end sm:self-center"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        <span>Hapus</span>
-                      </button>
+                      <div className="flex items-center gap-2 shrink-0 self-end sm:self-center flex-wrap">
+                        {res.status !== 'TERKONFIRMASI' && (
+                          <button
+                            onClick={() => handleUpdateReservationStatus(res.reservation_id, 'TERKONFIRMASI')}
+                            className="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all shadow"
+                            title="Konfirmasi & Terima reservasi jemaat"
+                          >
+                            <Check className="w-3.5 h-3.5" />
+                            <span>Terima</span>
+                          </button>
+                        )}
+                        {res.status !== 'DITOLAK' && (
+                          <button
+                            onClick={() => handleUpdateReservationStatus(res.reservation_id, 'DITOLAK')}
+                            className="px-2.5 py-1.5 rounded-xl bg-rose-600/80 hover:bg-rose-600 text-white text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all shadow"
+                            title="Tolak permohonan reservasi"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                            <span>Tolak</span>
+                          </button>
+                        )}
+                        <button
+                          onClick={() => {
+                            if (confirm(`Hapus reservasi atas nama ${res.nama_jemaat}?`)) {
+                              const updated = reservationsList.filter((r) => r.reservation_id !== res.reservation_id);
+                              StorageManager.saveEventReservations(updated);
+                              setReservationsList(updated);
+                              window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { action: 'reservation_deleted' } }));
+                            }
+                          }}
+                          className="p-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/40 text-rose-300 border border-rose-500/30 text-[11px] font-bold flex items-center gap-1 cursor-pointer"
+                          title="Hapus data reservasi"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
                   );
                 })

@@ -150,14 +150,22 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
 
   const relevantNotifications = notifications.filter((n) => {
     if (currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'ADMIN') return true;
-    return (
-      n.user_id === 'ALL' ||
-      n.user_id === 'JEMAAT' ||
+    
+    // Check if notification is specifically for this user
+    const isTargetUser =
       n.user_id === currentUser.username ||
+      n.user_id === currentUser.user_id ||
       n.user_id === currentUser.jemaat_id ||
-      n.tujuan_role === 'ALL' ||
-      n.tujuan_role === 'JEMAAT'
-    );
+      (n.user_id && currentUser.nama && n.user_id.toLowerCase().trim() === currentUser.nama.toLowerCase().trim());
+    
+    if (isTargetUser) return true;
+
+    // Check broadcast notifications
+    const isBroadcast =
+      (n.user_id === 'ALL' || n.user_id === 'JEMAAT' || !n.user_id) &&
+      (n.tujuan_role === 'ALL' || n.tujuan_role === 'JEMAAT' || !n.tujuan_role);
+
+    return isBroadcast;
   });
 
   const unreadCount = relevantNotifications.filter((n) => n.status_baca === 'Belum').length;

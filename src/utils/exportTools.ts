@@ -90,3 +90,80 @@ export function exportToPDF(
 
   doc.save(`${fileName}_${new Date().toISOString().slice(0, 10)}.pdf`);
 }
+
+export function printDocument(
+  title: string,
+  headers: string[],
+  rows: (string | number)[][],
+  settings?: AppSettings
+) {
+  const activeSettings = settings || StorageManager.getSettings();
+  const churchName = (activeSettings?.nama_gereja || 'SYSTEM MANAGEMENT CHURCH').trim();
+  const address = activeSettings?.alamat || 'Gereja Management System';
+  const email = activeSettings?.email || '-';
+  const telepon = activeSettings?.telepon || '-';
+
+  const printWindow = window.open('', '_blank');
+  if (!printWindow) {
+    alert('Popup diblokir oleh browser/aplikasi. Silakan gunakan tombol "Buka di Browser HP" di bagian atas halaman.');
+    return;
+  }
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <title>${title}</title>
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 25px; color: #1e293b; }
+          .kop { border-bottom: 2px solid #0f172a; padding-bottom: 12px; margin-bottom: 20px; }
+          .kop h1 { margin: 0 0 6px 0; font-size: 18px; text-transform: uppercase; letter-spacing: 0.5px; }
+          .kop p { margin: 2px 0; font-size: 11px; color: #475569; }
+          .title { font-size: 15px; font-weight: bold; margin-bottom: 4px; color: #0f172a; }
+          .meta { font-size: 11px; color: #64748b; margin-bottom: 16px; font-style: italic; }
+          table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
+          th, td { border: 1px solid #cbd5e1; padding: 6px 8px; text-align: left; }
+          th { background: #f1f5f9; font-weight: bold; color: #0f172a; }
+          tr:nth-child(even) { background: #f8fafc; }
+          @media print {
+            body { padding: 10px; }
+            .no-print { display: none; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="no-print" style="margin-bottom: 15px; display: flex; gap: 10px;">
+          <button onclick="window.print()" style="padding: 8px 16px; background: #2563eb; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
+            🖨️ Cetak / Print Sekarang
+          </button>
+          <button onclick="window.close()" style="padding: 8px 16px; background: #64748b; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
+            Tutup Jendela
+          </button>
+        </div>
+        <div class="kop">
+          <h1>${churchName}</h1>
+          <p>${address} | Email: ${email} | Telp: ${telepon}</p>
+        </div>
+        <div class="title">${title}</div>
+        <div class="meta">Dicetak pada: ${new Date().toLocaleString('id-ID')}</div>
+        <table>
+          <thead>
+            <tr>${headers.map((h) => `<th>${h}</th>`).join('')}</tr>
+          </thead>
+          <tbody>
+            ${rows.map((row) => `<tr>${row.map((cell) => `<td>${cell !== undefined && cell !== null ? cell : ''}</td>`).join('')}</tr>`).join('')}
+          </tbody>
+        </table>
+      </body>
+    </html>
+  `;
+
+  printWindow.document.write(html);
+  printWindow.document.close();
+  try {
+    printWindow.focus();
+  } catch (err) {
+    console.error('Window focus error:', err);
+  }
+}

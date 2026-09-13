@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { EventSchedule, EventReservation, Doa, User } from '../../types';
+import { EventSchedule, EventReservation, Doa, User, NotificationItem } from '../../types';
 import { StorageManager } from '../../utils/storage';
 import {
   CalendarDays,
@@ -54,6 +54,7 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
   const [resSeats, setResSeats] = useState(1);
   const [resNotes, setResNotes] = useState('');
   const [resSuccess, setResSuccess] = useState('');
+  const [adminToast, setAdminToast] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
 
   // Admin View Reservations Modal
   const [selectedEventForAdmin, setSelectedEventForAdmin] = useState<EventSchedule | null>(null);
@@ -145,30 +146,115 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
     const newRes: EventReservation = {
       reservation_id: `RES-2026-${Date.now().toString().slice(-4)}`,
       event_id: selectedEventForReservation.event_id,
+      user_id: currentUser.user_id || currentUser.username,
       nama_jemaat: resName,
       nomor_wa: resWa,
       jumlah_kursi: Number(resSeats) || 1,
       catatan: resNotes,
       tanggal_reservasi: new Date().toLocaleString('id-ID'),
-      status: 'TERKONFIRMASI'
+      status: 'MENUNGGU'
     };
 
     const updated = [newRes, ...reservationsList];
     setReservationsList(updated);
     StorageManager.saveEventReservations(updated);
-    StorageManager.logActivity(currentUser.username, `Melakukan reservasi event "${selectedEventForReservation.nama}" sebanyak ${resSeats} kursi`, 'Events');
 
-    setResSuccess(`✅ Reservasi berhasil! ${resSeats} kursi terkonfirmasi.`);
+    // Notify Admin about new reservation request
+    const notifForAdmin: NotificationItem = {
+      notif_id: `NTF-RES-NEW-${Date.now()}`,
+      user_id: 'ALL',
+      tujuan_role: 'ADMIN',
+      judul: '🎟️ Reservasi Kursi Baru (Menunggu Konfirmasi)',
+      pesan: `${resName} mengajukan reservasi ${resSeats} kursi untuk acara "${selectedEventForReservation.nama}". WA: ${resWa}. Mohon verifikasi & konfirmasi.`,
+      status_baca: 'Belum',
+      tanggal: new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }),
+      tipe: 'Penting',
+      pengirim: resName,
+      is_pinned: true
+    };
+    const currentNotifs = StorageManager.getNotifications();
+    StorageManager.saveNotifications([notifForAdmin, ...currentNotifs]);
+
+    StorageManager.logActivity(currentUser.username, `Mengajukan reservasi event "${selectedEventForReservation.nama}" sebanyak ${resSeats} kursi`, 'Events');
+    window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { action: 'reservation_added' } }));
+
+    setResSuccess(`✅ Pengajuan reservasi berhasil dikirim! Status saat ini: Menunggu Konfirmasi Admin.`);
     setTimeout(() => {
       setResSuccess('');
       setSelectedEventForReservation(null);
-    }, 2000);
+    }, 2500);
   };
 
-  const handleUpdateReservationStatus = (id: string, newStatus: 'TERKONFIRMASI' | 'MENUNGGU' | 'DIBATALKAN') => {
+  const handleUpdateReservationStatus = (id: string, newStatus: 'TERKONFIRMASI' | 'MENUNGGU' | 'DIBATALKAN' | 'DITOLAK') => {
+    const target = reservationsList.find((r) => r.reservation_id === id);
+    if (!target) return;
+
+    const matchedEvent = eventsList.find((e) => isMatchingEvent(e.event_id, target.event_id));
+    const eventName = matchedEvent?.nama || 'Kegiatan Gereja';
+
     const updated = reservationsList.map((r) => (r.reservation_id === id ? { ...r, status: newStatus } : r));
     setReservationsList(updated);
     StorageManager.saveEventReservations(updated);
+
+    // Send Notification to User
+    let notifTitle = '';
+    let notifMessage = '';
+    let notifType: 'Penting' | 'Peringatan' | 'Informasi' = 'Informasi';
+
+    if (newStatus === 'TERKONFIRMASI') {
+      notifTitle = '🎉 Reservasi Kursi Anda DITERIMA!';
+      notifMessage = `Puji Tuhan! Reservasi ${target.jumlah_kursi} kursi atas nama ${target.nama_jemaat} untuk acara "${eventName}" telah DIKONFIRMASI & DITERIMA oleh Admin. Sampai jumpa di ibadah!`;
+      notifType = 'Penting';
+      setAdminToast({
+        type: 'success',
+        message: `✅ Reservasi ${target.nama_jemaat} berhasil DIKONFIRMASI! Notifikasi penerimaan telah dikirim ke jemaat.`
+      });
+    } else if (newStatus === 'DITOLAK') {
+      notifTitle = '⚠️ Status Reservasi Kursi: DITOLAK';
+      notifMessage = `Mohon maaf, permohonan reservasi ${target.jumlah_kursi} kursi atas nama ${target.nama_jemaat} untuk acara "${eventName}" DITOLAK oleh Admin karena penyesuaian kuota atau jadwal gereja. Silakan hubungi admin untuk informasi lebih lanjut.`;
+      notifType = 'Peringatan';
+      setAdminToast({
+        type: 'error',
+        message: `⚠️ Reservasi ${target.nama_jemaat} telah DITOLAK. Notifikasi penolakan telah dikirim ke jemaat.`
+      });
+    } else if (newStatus === 'DIBATALKAN') {
+      notifTitle = 'ℹ️ Reservasi Kursi Dibatalkan';
+      notifMessage = `Reservasi kursi atas nama ${target.nama_jemaat} untuk acara "${eventName}" telah dibatalkan oleh Admin.`;
+      notifType = 'Informasi';
+      setAdminToast({
+        type: 'info',
+        message: `ℹ️ Reservasi ${target.nama_jemaat} telah dibatalkan.`
+      });
+    }
+
+    if (notifTitle) {
+      const userNotif: NotificationItem = {
+        notif_id: `NTF-RES-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        user_id: target.user_id || target.nama_jemaat,
+        tujuan_role: 'JEMAAT',
+        judul: notifTitle,
+        pesan: notifMessage,
+        status_baca: 'Belum',
+        tanggal: new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }),
+        tipe: notifType,
+        pengirim: 'Admin Gereja',
+        is_pinned: true
+      };
+      const cur = StorageManager.getNotifications();
+      StorageManager.saveNotifications([userNotif, ...cur]);
+    }
+
+    StorageManager.logActivity(
+      currentUser.username,
+      `Mengubah status reservasi "${target.nama_jemaat}" (${eventName}) menjadi ${newStatus}`,
+      'Reservasi'
+    );
+
+    window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { action: 'reservation_status_changed', status: newStatus } }));
+
+    setTimeout(() => {
+      setAdminToast(null);
+    }, 4000);
   };
 
   const handleDeleteReservation = (id: string) => {
@@ -176,6 +262,12 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
       const updated = reservationsList.filter((r) => r.reservation_id !== id);
       setReservationsList(updated);
       StorageManager.saveEventReservations(updated);
+      window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { action: 'reservation_deleted' } }));
+      setAdminToast({
+        type: 'info',
+        message: 'Data reservasi berhasil dihapus.'
+      });
+      setTimeout(() => setAdminToast(null), 3000);
     }
   };
 
@@ -485,9 +577,36 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
                   {/* Actions Area */}
                   <div className="space-y-2 pt-2 border-t border-slate-800">
                     {userRes && (
-                      <div className="p-2.5 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-1.5">
-                        <Check className="w-4 h-4" />
-                        <span>Anda telah reservasi ({userRes.jumlah_kursi} kursi)</span>
+                      <div className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-between gap-1.5 ${
+                        userRes.status === 'TERKONFIRMASI'
+                          ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
+                          : userRes.status === 'DITOLAK'
+                          ? 'bg-rose-500/20 border-rose-500/40 text-rose-300'
+                          : userRes.status === 'DIBATALKAN'
+                          ? 'bg-slate-800 border-slate-700 text-slate-400'
+                          : 'bg-amber-500/20 border-amber-500/40 text-amber-300 animate-pulse'
+                      }`}>
+                        <div className="flex items-center gap-1.5">
+                          {userRes.status === 'TERKONFIRMASI' ? (
+                            <Check className="w-4 h-4 text-emerald-400" />
+                          ) : userRes.status === 'DITOLAK' ? (
+                            <X className="w-4 h-4 text-rose-400" />
+                          ) : (
+                            <Clock className="w-4 h-4 text-amber-400" />
+                          )}
+                          <span>
+                            Reservasi Anda: {userRes.jumlah_kursi} Kursi
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-black/40">
+                          {userRes.status === 'TERKONFIRMASI'
+                            ? '✅ Diterima'
+                            : userRes.status === 'DITOLAK'
+                            ? '❌ Ditolak'
+                            : userRes.status === 'DIBATALKAN'
+                            ? 'Dibatalkan'
+                            : '⏳ Menunggu'}
+                        </span>
                       </div>
                     )}
 
@@ -712,6 +831,19 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
               </button>
             </div>
 
+            {adminToast && (
+              <div className={`p-3 rounded-2xl border text-xs font-bold flex items-center gap-2 ${
+                adminToast.type === 'success'
+                  ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
+                  : adminToast.type === 'error'
+                  ? 'bg-rose-500/20 border-rose-500/40 text-rose-300'
+                  : 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300'
+              }`}>
+                {adminToast.type === 'success' ? <Check className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
+                <span>{adminToast.message}</span>
+              </div>
+            )}
+
             {/* List */}
             <div className="flex-1 overflow-y-auto space-y-3 pr-1">
               {reservationsList.filter((r) => isMatchingEvent(r.event_id, selectedEventForAdmin.event_id)).length === 0 ? (
@@ -720,13 +852,25 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
                 reservationsList
                   .filter((r) => isMatchingEvent(r.event_id, selectedEventForAdmin.event_id))
                   .map((r) => (
-                    <div key={r.reservation_id} className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2 text-xs">
-                      <div className="flex items-center justify-between">
+                    <div key={r.reservation_id} className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2.5 text-xs">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
                         <span className="font-extrabold text-white text-sm">{r.nama_jemaat}</span>
-                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                          r.status === 'TERKONFIRMASI' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold border ${
+                          r.status === 'TERKONFIRMASI'
+                            ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                            : r.status === 'DITOLAK'
+                            ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                            : r.status === 'DIBATALKAN'
+                            ? 'bg-slate-800 text-slate-400 border-slate-700'
+                            : 'bg-amber-500/20 text-amber-300 border-amber-500/40 animate-pulse'
                         }`}>
-                          {r.status}
+                          {r.status === 'TERKONFIRMASI'
+                            ? '✅ Diterima (Terkonfirmasi)'
+                            : r.status === 'DITOLAK'
+                            ? '❌ Ditolak'
+                            : r.status === 'DIBATALKAN'
+                            ? 'Dibatalkan'
+                            : '⏳ Menunggu Konfirmasi'}
                         </span>
                       </div>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-slate-300 text-[11px]">
@@ -740,24 +884,41 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
                         </p>
                         <p className="text-slate-400 text-[10px]">{r.tanggal_reservasi}</p>
                       </div>
-                      {r.catatan && <p className="text-[11px] text-slate-400 italic">Catatan: "{r.catatan}"</p>}
+                      {r.catatan && <p className="text-[11px] text-slate-400 italic bg-slate-900/60 p-2 rounded-xl">Catatan: "{r.catatan}"</p>}
 
-                      <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-900">
-                        <button
-                          onClick={() => handleUpdateReservationStatus(r.reservation_id, 'TERKONFIRMASI')}
-                          className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold cursor-pointer"
-                        >
-                          Konfirmasi
-                        </button>
-                        <button
-                          onClick={() => handleUpdateReservationStatus(r.reservation_id, 'DIBATALKAN')}
-                          className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold cursor-pointer"
-                        >
-                          Batalkan
-                        </button>
+                      <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-slate-900">
+                        {r.status !== 'TERKONFIRMASI' && (
+                          <button
+                            onClick={() => handleUpdateReservationStatus(r.reservation_id, 'TERKONFIRMASI')}
+                            className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold flex items-center gap-1.5 shadow cursor-pointer transition-all"
+                            title="Konfirmasi & Terima reservasi ini (akan mengirim notifikasi ke jemaat)"
+                          >
+                            <Check className="w-3.5 h-3.5" />
+                            <span>Konfirmasi (Terima)</span>
+                          </button>
+                        )}
+                        {r.status !== 'DITOLAK' && (
+                          <button
+                            onClick={() => handleUpdateReservationStatus(r.reservation_id, 'DITOLAK')}
+                            className="px-3 py-1.5 rounded-xl bg-rose-600/80 hover:bg-rose-600 text-white text-[11px] font-bold flex items-center gap-1.5 shadow cursor-pointer transition-all"
+                            title="Tolak reservasi ini (akan mengirim notifikasi ke jemaat)"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                            <span>Tolak</span>
+                          </button>
+                        )}
+                        {r.status === 'TERKONFIRMASI' && (
+                          <button
+                            onClick={() => handleUpdateReservationStatus(r.reservation_id, 'DIBATALKAN')}
+                            className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-semibold cursor-pointer transition-all"
+                          >
+                            Batalkan
+                          </button>
+                        )}
                         <button
                           onClick={() => handleDeleteReservation(r.reservation_id)}
-                          className="p-1 rounded-lg bg-rose-900/40 text-rose-300 hover:bg-rose-900/80 cursor-pointer"
+                          className="p-2 rounded-xl bg-rose-900/30 hover:bg-rose-900/60 text-rose-300 border border-rose-900/40 cursor-pointer transition-all"
+                          title="Hapus data reservasi"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -792,6 +953,19 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
               </button>
             </div>
 
+            {adminToast && (
+              <div className={`p-3 rounded-2xl border text-xs font-bold flex items-center gap-2 ${
+                adminToast.type === 'success'
+                  ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
+                  : adminToast.type === 'error'
+                  ? 'bg-rose-500/20 border-rose-500/40 text-rose-300'
+                  : 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300'
+              }`}>
+                {adminToast.type === 'success' ? <Check className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
+                <span>{adminToast.message}</span>
+              </div>
+            )}
+
             {/* Search Input */}
             <div className="relative">
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
@@ -824,7 +998,7 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
                   .map((r) => {
                     const matchedEvent = eventsList.find((e) => isMatchingEvent(e.event_id, r.event_id));
                     return (
-                      <div key={r.reservation_id} className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2 text-xs">
+                      <div key={r.reservation_id} className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2.5 text-xs">
                         <div className="flex items-center justify-between flex-wrap gap-2">
                           <div>
                             <span className="font-extrabold text-white text-sm block">{r.nama_jemaat}</span>
@@ -833,11 +1007,23 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
                             </span>
                           </div>
                           <span
-                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                              r.status === 'TERKONFIRMASI' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'
+                            className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold border ${
+                              r.status === 'TERKONFIRMASI'
+                                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                                : r.status === 'DITOLAK'
+                                ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                                : r.status === 'DIBATALKAN'
+                                ? 'bg-slate-800 text-slate-400 border-slate-700'
+                                : 'bg-amber-500/20 text-amber-300 border-amber-500/40 animate-pulse'
                             }`}
                           >
-                            {r.status}
+                            {r.status === 'TERKONFIRMASI'
+                              ? '✅ Diterima (Terkonfirmasi)'
+                              : r.status === 'DITOLAK'
+                              ? '❌ Ditolak'
+                              : r.status === 'DIBATALKAN'
+                              ? 'Dibatalkan'
+                              : '⏳ Menunggu Konfirmasi'}
                           </span>
                         </div>
 
@@ -861,24 +1047,41 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
                           <p className="text-slate-400 text-[10px]">{r.tanggal_reservasi}</p>
                         </div>
 
-                        {r.catatan && <p className="text-[11px] text-slate-400 italic bg-slate-900/60 p-2 rounded-lg">Catatan: "{r.catatan}"</p>}
+                        {r.catatan && <p className="text-[11px] text-slate-400 italic bg-slate-900/60 p-2 rounded-xl">Catatan: "{r.catatan}"</p>}
 
-                        <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-900">
-                          <button
-                            onClick={() => handleUpdateReservationStatus(r.reservation_id, 'TERKONFIRMASI')}
-                            className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold cursor-pointer"
-                          >
-                            Konfirmasi
-                          </button>
-                          <button
-                            onClick={() => handleUpdateReservationStatus(r.reservation_id, 'DIBATALKAN')}
-                            className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold cursor-pointer"
-                          >
-                            Batalkan
-                          </button>
+                        <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-slate-900">
+                          {r.status !== 'TERKONFIRMASI' && (
+                            <button
+                              onClick={() => handleUpdateReservationStatus(r.reservation_id, 'TERKONFIRMASI')}
+                              className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold flex items-center gap-1.5 shadow cursor-pointer transition-all"
+                              title="Konfirmasi & Terima reservasi ini (akan mengirim notifikasi ke jemaat)"
+                            >
+                              <Check className="w-3.5 h-3.5" />
+                              <span>Konfirmasi (Terima)</span>
+                            </button>
+                          )}
+                          {r.status !== 'DITOLAK' && (
+                            <button
+                              onClick={() => handleUpdateReservationStatus(r.reservation_id, 'DITOLAK')}
+                              className="px-3 py-1.5 rounded-xl bg-rose-600/80 hover:bg-rose-600 text-white text-[11px] font-bold flex items-center gap-1.5 shadow cursor-pointer transition-all"
+                              title="Tolak reservasi ini (akan mengirim notifikasi ke jemaat)"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                              <span>Tolak</span>
+                            </button>
+                          )}
+                          {r.status === 'TERKONFIRMASI' && (
+                            <button
+                              onClick={() => handleUpdateReservationStatus(r.reservation_id, 'DIBATALKAN')}
+                              className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-semibold cursor-pointer transition-all"
+                            >
+                              Batalkan
+                            </button>
+                          )}
                           <button
                             onClick={() => handleDeleteReservation(r.reservation_id)}
-                            className="p-1 rounded-lg bg-rose-900/40 text-rose-300 hover:bg-rose-900/80 cursor-pointer"
+                            className="p-2 rounded-xl bg-rose-900/30 hover:bg-rose-900/60 text-rose-300 border border-rose-900/40 cursor-pointer transition-all"
+                            title="Hapus data reservasi"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
