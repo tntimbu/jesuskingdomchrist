@@ -280,6 +280,16 @@ export interface AppSettings {
   navbar_custom_text?: 'AUTO' | 'WHITE' | 'DARK' | 'GOLD';
   navbar_style?: 'GLASS' | 'SOLID' | 'GRADIENT';
   navbar_border_accent?: 'NONE' | 'THEME_COLOR' | 'SUBTLE' | 'GLOW';
+  // Footer & Bottom Nav Visual Customization
+  footer_theme_preset?: 'DEFAULT_DARK' | 'MATCH_THEME' | 'MATCH_NAVBAR' | 'MIDNIGHT_BLUE' | 'DEEP_PURPLE' | 'EMERALD_GREEN' | 'CRIMSON_RED' | 'WARM_GOLD' | 'PURE_BLACK' | 'CLEAN_LIGHT' | 'CUSTOM_HEX';
+  footer_custom_bg?: string;
+  footer_style?: 'GLASS' | 'SOLID' | 'GRADIENT';
+  footer_border_accent?: 'NONE' | 'THEME_COLOR' | 'SUBTLE' | 'GLOW';
+  footer_icon_bg_style?: 'NONE' | 'SUBTLE' | 'SOLID' | 'GLOW' | 'PILL' | 'CIRCLE';
+  footer_icon_custom_bg?: string;
+  footer_icon_active_bg?: string;
+  footer_icon_active_text?: string;
+  footer_icon_inactive_text?: string;
   // Jemaat Portal Visual Customization
   jemaat_banner_title?: string;
   jemaat_banner_subtitle?: string;

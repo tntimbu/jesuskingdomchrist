@@ -155,6 +155,16 @@ export const initialSettings: AppSettings = {
   navbar_custom_text: 'AUTO',
   navbar_style: 'GLASS',
   navbar_border_accent: 'SUBTLE',
+  // Footer & Bottom Nav Visual Customization
+  footer_theme_preset: 'DEFAULT_DARK',
+  footer_custom_bg: '#020617',
+  footer_style: 'GLASS',
+  footer_border_accent: 'SUBTLE',
+  footer_icon_bg_style: 'SUBTLE',
+  footer_icon_custom_bg: 'transparent',
+  footer_icon_active_bg: '',
+  footer_icon_active_text: '',
+  footer_icon_inactive_text: '',
   // Custom Jemaat Portal Banner & Toggles
   jemaat_banner_title: 'Shalom & Selamat Datang',
   jemaat_banner_subtitle: 'Portal Layanan Jemaat Resmi & Sistem Informasi Terpadu',

@@ -671,17 +671,6 @@ export const StorageManager = {
   },
   saveUsers: (users: User[]): void => {
     setItem(KEYS.USERS, users);
-    const current = getItem<User | null>(KEYS.CURRENT_USER, null);
-    // STRICT SECURITY: Only refresh current user if matching by exact username!
-    // NEVER match by user_id alone which could collide and hijack the active session!
-    if (current && current.username) {
-      const fresh = users.find(
-        (u) => u.username && u.username.toLowerCase() === current.username.toLowerCase()
-      );
-      if (fresh) {
-        setItem(KEYS.CURRENT_USER, { ...current, ...fresh });
-      }
-    }
     window.dispatchEvent(new Event('cms_data_changed'));
   },
   deleteUser: (userId: string, username?: string, jemaatId?: string, nama?: string): void => {
@@ -751,16 +740,26 @@ export const StorageManager = {
   },
   getNextUserId: (): string => {
     const users = getItem<User[]>(KEYS.USERS, initialUsers);
+    const existingIds = new Set(users.map((u) => u.user_id));
     let maxNum = 0;
     users.forEach((u) => {
-      if (u.user_id && u.user_id.startsWith('USR-')) {
-        const numPart = parseInt(u.user_id.replace('USR-', ''), 10);
-        if (!isNaN(numPart) && numPart > maxNum) {
-          maxNum = numPart;
+      if (u.user_id) {
+        const matches = u.user_id.match(/\d+/g);
+        if (matches) {
+          matches.forEach((m) => {
+            const n = parseInt(m, 10);
+            if (!isNaN(n) && n > maxNum) maxNum = n;
+          });
         }
       }
     });
-    return `USR-${(maxNum + 1).toString().padStart(3, '0')}`;
+    let nextNum = maxNum + 1;
+    let nextId = `USR-${nextNum.toString().padStart(3, '0')}`;
+    while (existingIds.has(nextId)) {
+      nextNum++;
+      nextId = `USR-${nextNum.toString().padStart(3, '0')}`;
+    }
+    return nextId;
   },
   resetAdminAccounts: (): void => {
     // Deprecated for security: Do not reset or wipe admin accounts
@@ -815,7 +814,7 @@ export const StorageManager = {
 
     const updatedUsers = users.map((u) => {
       if (u.jemaat_id || u.role === 'JEMAAT') {
-        const match = list.find((j) => j.jemaat_id === u.jemaat_id || (j.nama_lengkap && u.nama && j.nama_lengkap.toLowerCase().trim() === u.nama.toLowerCase().trim()));
+        const match = list.find((j) => (u.jemaat_id && j.jemaat_id && j.jemaat_id === u.jemaat_id) || (j.nama_lengkap && u.nama && j.nama_lengkap.toLowerCase().trim() === u.nama.toLowerCase().trim()));
         if (match) {
           if (u.nama !== match.nama_lengkap || u.email !== match.email || u.no_hp !== match.nomor_hp || u.foto !== match.foto || u.jemaat_id !== match.jemaat_id) {
             usersNeedSave = true;
@@ -835,13 +834,6 @@ export const StorageManager = {
 
     if (usersNeedSave) {
       setItem(KEYS.USERS, updatedUsers);
-      const current = getItem<User | null>(KEYS.CURRENT_USER, null);
-      if (current && current.username) {
-        const fresh = updatedUsers.find((u) => u.username && u.username.toLowerCase() === current.username.toLowerCase());
-        if (fresh) {
-          setItem(KEYS.CURRENT_USER, { ...current, ...fresh });
-        }
-      }
     }
 
     // Auto-sync Keluarga list whenever Jemaat list is updated

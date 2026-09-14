@@ -2,6 +2,7 @@ import React from 'react';
 import { NavTab } from './Sidebar';
 import { User, AppSettings } from '../types';
 import { LayoutDashboard, Users, CalendarDays, BookOpen, MoreHorizontal, UserCheck } from 'lucide-react';
+import { getFooterTheme } from '../utils/themeHelper';
 
 interface BottomNavProps {
   activeTab: NavTab;
@@ -19,33 +20,20 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   settings
 }) => {
   const isJemaat = (currentUser?.role || 'JEMAAT') === 'JEMAAT';
-
-  let rawHex = (settings?.warna_tema || '#CD5C5C').trim();
-  if (!rawHex.startsWith('#')) {
-    rawHex = `#${rawHex}`;
-  }
-  const customHex = rawHex;
-
-  const getItemStyle = (isActive: boolean) => {
-    if (isActive) {
-      return {
-        color: customHex,
-        backgroundColor: `${customHex}20`,
-        borderColor: `${customHex}50`
-      };
-    }
-    return {};
-  };
+  const footerTheme = getFooterTheme(settings);
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-2xl border-t border-white/10 lg:hidden px-3 py-2 flex items-center justify-around text-slate-400 shadow-2xl">
+    <div
+      id="app-bottom-nav-footer"
+      className={footerTheme.containerClass}
+      style={footerTheme.containerStyle}
+    >
       {/* 1. HOME */}
       <button
+        id="bottom-nav-btn-home"
         onClick={() => onSelectTab('dashboard')}
-        style={getItemStyle(activeTab === 'dashboard')}
-        className={`flex flex-col items-center gap-1 px-2.5 py-1.5 rounded-xl text-[10px] transition-all cursor-pointer border border-transparent ${
-          activeTab === 'dashboard' ? 'font-black scale-105 shadow-md' : 'hover:text-slate-200'
-        }`}
+        style={footerTheme.getItemStyle(activeTab === 'dashboard')}
+        className={footerTheme.getItemClass(activeTab === 'dashboard')}
       >
         <LayoutDashboard className="w-5 h-5" />
         <span>Home</span>
@@ -53,11 +41,10 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
       {/* 2. RENUNGAN */}
       <button
+        id="bottom-nav-btn-renungan"
         onClick={() => onSelectTab('renungan')}
-        style={getItemStyle(activeTab === 'renungan')}
-        className={`flex flex-col items-center gap-1 px-2.5 py-1.5 rounded-xl text-[10px] transition-all cursor-pointer border border-transparent ${
-          activeTab === 'renungan' ? 'font-black scale-105 shadow-md' : 'hover:text-slate-200'
-        }`}
+        style={footerTheme.getItemStyle(activeTab === 'renungan')}
+        className={footerTheme.getItemClass(activeTab === 'renungan')}
       >
         <BookOpen className="w-5 h-5" />
         <span>Renungan</span>
@@ -65,11 +52,10 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
       {/* 3. JADWAL */}
       <button
+        id="bottom-nav-btn-jadwal"
         onClick={() => onSelectTab('jadwal')}
-        style={getItemStyle(activeTab === 'jadwal' || activeTab === 'agenda')}
-        className={`flex flex-col items-center gap-1 px-2.5 py-1.5 rounded-xl text-[10px] transition-all cursor-pointer border border-transparent ${
-          activeTab === 'jadwal' || activeTab === 'agenda' ? 'font-black scale-105 shadow-md' : 'hover:text-slate-200'
-        }`}
+        style={footerTheme.getItemStyle(activeTab === 'jadwal' || activeTab === 'agenda')}
+        className={footerTheme.getItemClass(activeTab === 'jadwal' || activeTab === 'agenda')}
       >
         <CalendarDays className="w-5 h-5" />
         <span>Jadwal</span>
@@ -78,22 +64,20 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       {/* 4. PROFIL (for Jemaat) or JEMAAT (for Admin/SuperAdmin) */}
       {isJemaat ? (
         <button
+          id="bottom-nav-btn-profil"
           onClick={() => onSelectTab('jemaat_portal')}
-          style={getItemStyle(activeTab === 'jemaat_portal')}
-          className={`flex flex-col items-center gap-1 px-2.5 py-1.5 rounded-xl text-[10px] transition-all cursor-pointer border border-transparent ${
-            activeTab === 'jemaat_portal' ? 'font-black scale-105 shadow-md' : 'hover:text-slate-200'
-          }`}
+          style={footerTheme.getItemStyle(activeTab === 'jemaat_portal')}
+          className={footerTheme.getItemClass(activeTab === 'jemaat_portal')}
         >
           <UserCheck className="w-5 h-5" />
           <span>Profil</span>
         </button>
       ) : (
         <button
+          id="bottom-nav-btn-jemaat"
           onClick={() => onSelectTab('jemaat')}
-          style={getItemStyle(activeTab === 'jemaat')}
-          className={`flex flex-col items-center gap-1 px-2.5 py-1.5 rounded-xl text-[10px] transition-all cursor-pointer border border-transparent ${
-            activeTab === 'jemaat' ? 'font-black scale-105 shadow-md' : 'hover:text-slate-200'
-          }`}
+          style={footerTheme.getItemStyle(activeTab === 'jemaat')}
+          className={footerTheme.getItemClass(activeTab === 'jemaat')}
         >
           <Users className="w-5 h-5" />
           <span>Jemaat</span>
@@ -102,11 +86,10 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
       {/* 5. LAINNYA */}
       <button
+        id="bottom-nav-btn-lainnya"
         onClick={() => onSelectTab('lainnya')}
-        style={getItemStyle(activeTab === 'lainnya')}
-        className={`flex flex-col items-center gap-1 px-2.5 py-1.5 rounded-xl text-[10px] transition-all cursor-pointer border border-transparent ${
-          activeTab === 'lainnya' ? 'font-black scale-105 shadow-md' : 'hover:text-slate-200'
-        }`}
+        style={footerTheme.getItemStyle(activeTab === 'lainnya')}
+        className={footerTheme.getItemClass(activeTab === 'lainnya')}
       >
         <MoreHorizontal className="w-5 h-5" />
         <span>Lainnya</span>

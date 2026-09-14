@@ -252,7 +252,7 @@ export default function App() {
     if (!currentUser || isLoginPageOpen) return;
 
     const handlePopState = () => {
-      setIsLogoutConfirmOpen(true);
+      setActiveTab((prev) => (prev !== 'dashboard' ? 'dashboard' : prev));
     };
 
     window.addEventListener('popstate', handlePopState);

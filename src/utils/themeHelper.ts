@@ -225,6 +225,133 @@ export const getNavbarTheme = (settings?: AppSettings): NavbarThemeStyles => {
   };
 };
 
+export interface FooterThemeStyles {
+  containerClass: string;
+  containerStyle: CSSProperties;
+  isLight: boolean;
+  getItemStyle: (isActive: boolean) => CSSProperties;
+  getItemClass: (isActive: boolean) => string;
+}
+
+export const getFooterTheme = (settings?: AppSettings): FooterThemeStyles => {
+  const preset = settings?.footer_theme_preset || 'DEFAULT_DARK';
+  const churchHex = (settings?.warna_tema || '#CD5C5C').trim().startsWith('#')
+    ? (settings?.warna_tema || '#CD5C5C').trim()
+    : `#${(settings?.warna_tema || '#CD5C5C').trim()}`;
+
+  let baseBgHex = '#020617';
+  if (preset === 'MATCH_THEME') {
+    baseBgHex = churchHex;
+  } else if (preset === 'MATCH_NAVBAR') {
+    const navbarPreset = settings?.navbar_theme_preset || 'DEFAULT_DARK';
+    if (navbarPreset === 'MATCH_THEME') baseBgHex = churchHex;
+    else if (navbarPreset === 'CUSTOM_HEX') baseBgHex = (settings?.navbar_custom_bg || '#1e293b').trim();
+    else if (navbarPreset === 'MIDNIGHT_BLUE') baseBgHex = '#060c1d';
+    else if (navbarPreset === 'DEEP_PURPLE') baseBgHex = '#120520';
+    else if (navbarPreset === 'EMERALD_GREEN') baseBgHex = '#031a0e';
+    else if (navbarPreset === 'CRIMSON_RED') baseBgHex = '#20050b';
+    else if (navbarPreset === 'WARM_GOLD') baseBgHex = '#1c1202';
+    else if (navbarPreset === 'PURE_BLACK') baseBgHex = '#000000';
+    else if (navbarPreset === 'CLEAN_LIGHT') baseBgHex = '#ffffff';
+    else baseBgHex = '#020617';
+  } else if (preset === 'CUSTOM_HEX') {
+    const raw = (settings?.footer_custom_bg || '#020617').trim();
+    baseBgHex = raw.startsWith('#') ? raw : `#${raw}`;
+  } else if (preset === 'MIDNIGHT_BLUE') {
+    baseBgHex = '#060c1d';
+  } else if (preset === 'DEEP_PURPLE') {
+    baseBgHex = '#120520';
+  } else if (preset === 'EMERALD_GREEN') {
+    baseBgHex = '#031a0e';
+  } else if (preset === 'CRIMSON_RED') {
+    baseBgHex = '#20050b';
+  } else if (preset === 'WARM_GOLD') {
+    baseBgHex = '#1c1202';
+  } else if (preset === 'PURE_BLACK') {
+    baseBgHex = '#000000';
+  } else if (preset === 'CLEAN_LIGHT') {
+    baseBgHex = '#ffffff';
+  } else {
+    baseBgHex = '#020617';
+  }
+
+  const isLight = isColorLight(baseBgHex);
+  const style = settings?.footer_style || 'GLASS';
+  const borderAccent = settings?.footer_border_accent || 'SUBTLE';
+  const iconBgStyle = settings?.footer_icon_bg_style || 'SUBTLE';
+
+  let containerClass = 'fixed bottom-0 left-0 right-0 z-40 lg:hidden px-3 py-2 flex items-center justify-around shadow-2xl transition-all';
+  let containerStyle: CSSProperties = {};
+
+  if (style === 'SOLID') {
+    containerStyle.backgroundColor = baseBgHex;
+  } else if (style === 'GRADIENT') {
+    containerStyle.background = `linear-gradient(180deg, ${baseBgHex}ee, ${baseBgHex})`;
+  } else {
+    // GLASS
+    containerClass += ' backdrop-blur-2xl';
+    containerStyle.backgroundColor = baseBgHex.length === 7 ? `${baseBgHex}f0` : baseBgHex;
+  }
+
+  // Border top
+  if (borderAccent === 'THEME_COLOR') {
+    containerClass += ' border-t-2';
+    containerStyle.borderTopColor = churchHex;
+  } else if (borderAccent === 'GLOW') {
+    containerClass += ' border-t border-indigo-400/40 shadow-[0_-4px_20px_rgba(99,102,241,0.25)]';
+  } else if (borderAccent === 'NONE') {
+    containerClass += ' border-t-0';
+  } else {
+    // SUBTLE
+    containerClass += isLight ? ' border-t border-slate-200/80 shadow-md' : ' border-t border-white/10';
+  }
+
+  // Text color on footer
+  containerClass += isLight ? ' text-slate-600' : ' text-slate-400';
+
+  // Icon Button background & styling
+  const activeBg = settings?.footer_icon_active_bg?.trim() || `${churchHex}25`;
+  const activeText = settings?.footer_icon_active_text?.trim() || churchHex;
+  const inactiveBg = settings?.footer_icon_custom_bg?.trim() || 'transparent';
+  const inactiveText = settings?.footer_icon_inactive_text?.trim() || (isLight ? '#64748b' : '#94a3b8');
+
+  const getItemStyle = (isActive: boolean): CSSProperties => {
+    if (isActive) {
+      return {
+        backgroundColor: activeBg,
+        color: activeText,
+        borderColor: `${activeText}60`
+      };
+    }
+    return {
+      backgroundColor: inactiveBg,
+      color: inactiveText,
+      borderColor: inactiveBg !== 'transparent' ? `${inactiveText}20` : 'transparent'
+    };
+  };
+
+  const getItemClass = (isActive: boolean): string => {
+    let shapeClass = 'rounded-xl';
+    if (iconBgStyle === 'PILL') shapeClass = 'rounded-full px-3 py-1.5';
+    else if (iconBgStyle === 'CIRCLE') shapeClass = 'rounded-2xl px-2.5 py-1.5';
+    else if (iconBgStyle === 'NONE') shapeClass = 'rounded-lg px-2 py-1';
+    else shapeClass = 'rounded-xl px-2.5 py-1.5';
+
+    const glowClass = isActive && iconBgStyle === 'GLOW' ? 'shadow-md shadow-indigo-500/30' : '';
+    const activeStateClass = isActive ? `font-black scale-105 ${glowClass}` : 'hover:text-slate-200 opacity-80 hover:opacity-100';
+
+    return `flex flex-col items-center gap-1 text-[10px] transition-all cursor-pointer border ${shapeClass} ${activeStateClass}`;
+  };
+
+  return {
+    containerClass,
+    containerStyle,
+    isLight,
+    getItemStyle,
+    getItemClass
+  };
+};
+
 export interface ThemeStyles {
   rootBg: string;
   cardBg: string;

@@ -46,6 +46,7 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingJemaat, setEditingJemaat] = useState<Jemaat | null>(null);
   const [viewingJemaat, setViewingJemaat] = useState<Jemaat | null>(null);
+  const [toastNotification, setToastNotification] = useState<{ title: string; message: string } | null>(null);
 
   // Form State
   const [formData, setFormData] = useState<Partial<Jemaat>>({
@@ -214,7 +215,11 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
       StorageManager.saveUsers([newJemaatUser, ...allUsers]);
       StorageManager.logActivity(currentUser.username, `Menambahkan jemaat baru: ${newJemaat.nama_lengkap} & akun login: ${finalUsername}`, 'Master Jemaat');
 
-      alert(`Data Jemaat "${newJemaat.nama_lengkap}" berhasil ditambahkan!\n\nAkun Login Portal Jemaat telah dibuat secara otomatis:\n- Username: ${finalUsername}\n- Password: jemaat123`);
+      setToastNotification({
+        title: `Jemaat "${newJemaat.nama_lengkap}" berhasil ditambahkan!`,
+        message: `Akun Login Jemaat dibuat: Username: ${finalUsername} (Password: jemaat123)`
+      });
+      setTimeout(() => setToastNotification(null), 6000);
     }
 
     setIsModalOpen(false);
@@ -274,6 +279,24 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
 
   return (
     <div className="space-y-6">
+      {toastNotification && (
+        <div className="p-4 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 flex items-start justify-between gap-3 shadow-lg animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-start gap-3">
+            <UserCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold text-sm text-emerald-200">{toastNotification.title}</p>
+              <p className="text-xs text-emerald-300/90 mt-0.5">{toastNotification.message}</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setToastNotification(null)}
+            className="text-xs px-2 py-1 rounded-md bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-200"
+          >
+            Tutup
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

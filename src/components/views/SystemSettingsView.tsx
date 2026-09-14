@@ -56,9 +56,15 @@ import {
   Palette,
   Layers,
   Sun,
-  ArrowDown
+  ArrowDown,
+  LayoutDashboard,
+  BookOpen,
+  CalendarDays,
+  UserCheck,
+  MoreHorizontal,
+  Box
 } from 'lucide-react';
-import { getNavbarTheme } from '../../utils/themeHelper';
+import { getNavbarTheme, getFooterTheme } from '../../utils/themeHelper';
 import { DashboardVisibilityManager } from '../dashboard/DashboardVisibilityManager';
 import {
   sendOneSignalPushNotification,
@@ -516,7 +522,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
     }
 
     const newUser: User = {
-      user_id: `USR-${(globalUsers.length + 1).toString().padStart(3, '0')}`,
+      user_id: StorageManager.getNextUserId(),
       jemaat_id: assignedJemaatId,
       username: trimmedUsername,
       email: userForm.email.trim(),
@@ -538,9 +544,8 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
       'User Management'
     );
     setIsUserModal(false);
-    setUserSuccess(`Berhasil membuat user akun baru "${newUser.username}". Password: ${userForm.password_hash.trim()}`);
-    alert(`Akun Pengguna Baru Berhasil Dibuat!\n\nKredensial Login:\n- Role: ${newUser.role}\n- Username: ${newUser.username}\n- Password: ${userForm.password_hash.trim()}`);
-    setTimeout(() => setUserSuccess(''), 3000);
+    setUserSuccess(`Akun baru "${newUser.username}" (${newUser.role}) berhasil dibuat.`);
+    setTimeout(() => setUserSuccess(''), 4000);
   };
 
   const handleOpenEditUser = (u: User) => {
@@ -630,8 +635,8 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
     setUsersList(updatedGlobal);
 
     // If edited account is current logged in user, update current user session
-    if (editingUser.user_id === currentUser.user_id) {
-      const updatedSelf = updatedGlobal.find((u) => u.user_id === currentUser.user_id);
+    if (editingUser.username.toLowerCase() === currentUser.username.toLowerCase()) {
+      const updatedSelf = updatedGlobal.find((u) => u.username.toLowerCase() === currentUser.username.toLowerCase());
       if (updatedSelf) {
         StorageManager.saveCurrentUser(updatedSelf);
       }
@@ -1732,6 +1737,304 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                         ))}
                       </div>
                     </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 2.5: Kustomisasi Background Footer & Icon Navigasi (Mobile / Bottom Bar) */}
+            <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-5 shadow-xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-800 gap-2">
+                <div>
+                  <h3 className="text-base font-bold text-indigo-300 flex items-center gap-2">
+                    <Layers className="w-5 h-5 text-indigo-400" />
+                    <span>2.5. Kustomisasi Background Footer &amp; Tombol Icon (Bottom Nav)</span>
+                    <span className="px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-bold border border-indigo-500/30">
+                      Admin &amp; SuperAdmin
+                    </span>
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Sesuaikan warna latar belakang footer mobile, garis pembatas atas, bentuk background icon (Home, Renungan, Jadwal, Profil, Lainnya), serta warna aktif dan idle.
+                  </p>
+                </div>
+              </div>
+
+              {/* Live Preview Box */}
+              <div className="space-y-2 p-4 rounded-2xl bg-slate-950/80 border border-slate-800">
+                <div className="flex items-center justify-between text-xs font-bold text-slate-300 mb-1">
+                  <span className="flex items-center gap-1.5 text-indigo-300">
+                    <Eye className="w-4 h-4 text-indigo-400" />
+                    <span>Pratinjau Langsung Tampilan Footer &amp; Icon:</span>
+                  </span>
+                  <span className="text-[10px] text-slate-400">
+                    Preset: {metaForm.footer_theme_preset || 'DEFAULT_DARK'}
+                  </span>
+                </div>
+                {(() => {
+                  const ft = getFooterTheme(metaForm);
+                  return (
+                    <div
+                      className={`w-full rounded-2xl p-3 flex items-center justify-around shadow-xl border ${ft.containerClass.replace('fixed bottom-0 left-0 right-0 z-40 lg:hidden', '')}`}
+                      style={ft.containerStyle}
+                    >
+                      <div style={ft.getItemStyle(true)} className={ft.getItemClass(true)}>
+                        <LayoutDashboard className="w-5 h-5" />
+                        <span>Home</span>
+                      </div>
+                      <div style={ft.getItemStyle(false)} className={ft.getItemClass(false)}>
+                        <BookOpen className="w-5 h-5" />
+                        <span>Renungan</span>
+                      </div>
+                      <div style={ft.getItemStyle(false)} className={ft.getItemClass(false)}>
+                        <CalendarDays className="w-5 h-5" />
+                        <span>Jadwal</span>
+                      </div>
+                      <div style={ft.getItemStyle(false)} className={ft.getItemClass(false)}>
+                        <UserCheck className="w-5 h-5" />
+                        <span>Profil</span>
+                      </div>
+                      <div style={ft.getItemStyle(false)} className={ft.getItemClass(false)}>
+                        <MoreHorizontal className="w-5 h-5" />
+                        <span>Lainnya</span>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* 1. Preset Background Footer */}
+              <div className="space-y-2">
+                <label className="block text-slate-300 font-semibold text-xs">
+                  1. Pilih Preset Warna Background Footer:
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    { id: 'DEFAULT_DARK', name: 'Dark Slate', desc: 'Default Gelap Elegan' },
+                    { id: 'MATCH_THEME', name: 'Sesuai Tema Gereja', desc: 'Ikuti Warna Tema' },
+                    { id: 'MATCH_NAVBAR', name: 'Sama dengan Navbar', desc: 'Serasi dengan Header' },
+                    { id: 'MIDNIGHT_BLUE', name: 'Midnight Blue', desc: 'Biru Laut Dalam' },
+                    { id: 'DEEP_PURPLE', name: 'Deep Amethyst', desc: 'Ungu Megah' },
+                    { id: 'EMERALD_GREEN', name: 'Forest Emerald', desc: 'Hijau Zamrud' },
+                    { id: 'CRIMSON_RED', name: 'Crimson Burgundy', desc: 'Merah Marun' },
+                    { id: 'WARM_GOLD', name: 'Warm Gold', desc: 'Emas Hangat' },
+                    { id: 'PURE_BLACK', name: 'Pure Obsidian', desc: 'Hitam OLED' },
+                    { id: 'CLEAN_LIGHT', name: 'Clean Light', desc: 'Putih Terang' },
+                    { id: 'CUSTOM_HEX', name: 'Kustom Hex', desc: 'Warna Bebas' }
+                  ].map((p) => {
+                    const isSelected = (metaForm.footer_theme_preset || 'DEFAULT_DARK') === p.id;
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => setMetaForm({ ...metaForm, footer_theme_preset: p.id as any })}
+                        className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                          isSelected
+                            ? 'border-indigo-500 bg-indigo-600/20 text-white font-bold ring-1 ring-indigo-500'
+                            : 'border-slate-800 bg-slate-950/60 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        <p className="text-[11px] font-bold truncate">{p.name}</p>
+                        <p className="text-[9px] text-slate-500 truncate mt-0.5">{p.desc}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 2. Kustom Hex Footer Khusus */}
+              <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <Palette className="w-3.5 h-3.5 text-indigo-400" />
+                    <span>2. Warna Hex Background Footer Khusus</span>
+                  </label>
+                  <span
+                    className="w-6 h-6 rounded-lg border border-white/20 inline-block"
+                    style={{ backgroundColor: metaForm.footer_custom_bg || '#020617' }}
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={metaForm.footer_custom_bg || '#020617'}
+                    onChange={(e) =>
+                      setMetaForm({
+                        ...metaForm,
+                        footer_theme_preset: 'CUSTOM_HEX',
+                        footer_custom_bg: e.target.value
+                      })
+                    }
+                    placeholder="#020617"
+                    className="flex-1 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-xs uppercase outline-none"
+                  />
+                  <label className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 cursor-pointer flex items-center gap-1.5 text-xs text-slate-200">
+                    <input
+                      type="color"
+                      value={
+                        metaForm.footer_custom_bg && /^#[0-9A-F]{6}$/i.test(metaForm.footer_custom_bg)
+                          ? metaForm.footer_custom_bg
+                          : '#020617'
+                      }
+                      onChange={(e) =>
+                        setMetaForm({
+                          ...metaForm,
+                          footer_theme_preset: 'CUSTOM_HEX',
+                          footer_custom_bg: e.target.value
+                        })
+                      }
+                      className="w-4 h-4 rounded cursor-pointer border-0 bg-transparent"
+                    />
+                    <span>Pilih Warna</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* 3. Gaya, Garis Atas & Bentuk Icon */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* Gaya Transparansi Footer */}
+                <div className="space-y-1.5">
+                  <label className="block text-slate-300 font-semibold text-xs">
+                    3. Gaya Transparansi Footer:
+                  </label>
+                  {[
+                    { id: 'GLASS', label: '✨ Glass Blur' },
+                    { id: 'SOLID', label: '⬛ Solid Pekat' },
+                    { id: 'GRADIENT', label: '🌈 Gradient' }
+                  ].map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => setMetaForm({ ...metaForm, footer_style: s.id as any })}
+                      className={`w-full p-2 rounded-xl border text-left text-xs transition-all cursor-pointer ${
+                        (metaForm.footer_style || 'GLASS') === s.id
+                          ? 'border-indigo-500 bg-indigo-600/20 text-white font-bold'
+                          : 'border-slate-800 bg-slate-950/60 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Garis Pembatas Atas Footer */}
+                <div className="space-y-1.5">
+                  <label className="block text-slate-300 font-semibold text-xs">
+                    4. Garis Pembatas Atas:
+                  </label>
+                  {[
+                    { id: 'SUBTLE', label: '➖ Garis Halus' },
+                    { id: 'THEME_COLOR', label: '🔲 Warna Tema' },
+                    { id: 'GLOW', label: '✨ Glowing Neon' },
+                    { id: 'NONE', label: '✖️ Tanpa Garis' }
+                  ].map((b) => (
+                    <button
+                      key={b.id}
+                      type="button"
+                      onClick={() => setMetaForm({ ...metaForm, footer_border_accent: b.id as any })}
+                      className={`w-full p-2 rounded-xl border text-left text-xs transition-all cursor-pointer ${
+                        (metaForm.footer_border_accent || 'SUBTLE') === b.id
+                          ? 'border-indigo-500 bg-indigo-600/20 text-white font-bold'
+                          : 'border-slate-800 bg-slate-950/60 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      {b.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Bentuk Background Icon */}
+                <div className="space-y-1.5">
+                  <label className="block text-slate-300 font-semibold text-xs">
+                    5. Bentuk Background Icon:
+                  </label>
+                  {[
+                    { id: 'SUBTLE', label: '📦 Rounded Box' },
+                    { id: 'PILL', label: '💊 Kapsul Pill' },
+                    { id: 'CIRCLE', label: '⚪ Lingkaran Badge' },
+                    { id: 'GLOW', label: '✨ Neon Glow' },
+                    { id: 'NONE', label: '🔘 Minimalis Polos' }
+                  ].map((shape) => (
+                    <button
+                      key={shape.id}
+                      type="button"
+                      onClick={() => setMetaForm({ ...metaForm, footer_icon_bg_style: shape.id as any })}
+                      className={`w-full p-2 rounded-xl border text-left text-xs transition-all cursor-pointer ${
+                        (metaForm.footer_icon_bg_style || 'SUBTLE') === shape.id
+                          ? 'border-amber-400 bg-amber-500/15 text-white font-bold'
+                          : 'border-slate-800 bg-slate-950/60 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      {shape.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 6. Kustom Warna Background Icon Aktif & Diam */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
+                  <label className="text-xs font-bold text-white flex items-center justify-between">
+                    <span>Warna Background Icon Aktif</span>
+                    <span
+                      className="w-4 h-4 rounded border border-white/20 inline-block"
+                      style={{
+                        backgroundColor: metaForm.footer_icon_active_bg || `${metaForm.warna_tema || '#CD5C5C'}25`
+                      }}
+                    />
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={metaForm.footer_icon_active_bg || ''}
+                      onChange={(e) => setMetaForm({ ...metaForm, footer_icon_active_bg: e.target.value })}
+                      placeholder="Default: Warna Tema"
+                      className="flex-1 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-xs outline-none"
+                    />
+                    <label className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 cursor-pointer text-xs text-slate-200">
+                      <input
+                        type="color"
+                        value={
+                          metaForm.footer_icon_active_bg && /^#[0-9A-F]{6}$/i.test(metaForm.footer_icon_active_bg)
+                            ? metaForm.footer_icon_active_bg
+                            : metaForm.warna_tema || '#CD5C5C'
+                        }
+                        onChange={(e) => setMetaForm({ ...metaForm, footer_icon_active_bg: e.target.value })}
+                        className="w-4 h-4 rounded cursor-pointer border-0 bg-transparent"
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
+                  <label className="text-xs font-bold text-white flex items-center justify-between">
+                    <span>Warna Background Icon Diam</span>
+                    <span
+                      className="w-4 h-4 rounded border border-white/20 inline-block"
+                      style={{
+                        backgroundColor: metaForm.footer_icon_custom_bg || 'transparent'
+                      }}
+                    />
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={metaForm.footer_icon_custom_bg || ''}
+                      onChange={(e) => setMetaForm({ ...metaForm, footer_icon_custom_bg: e.target.value })}
+                      placeholder="Default: Transparan"
+                      className="flex-1 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-xs outline-none"
+                    />
+                    <label className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 cursor-pointer text-xs text-slate-200">
+                      <input
+                        type="color"
+                        value={
+                          metaForm.footer_icon_custom_bg && /^#[0-9A-F]{6}$/i.test(metaForm.footer_icon_custom_bg)
+                            ? metaForm.footer_icon_custom_bg
+                            : '#1e293b'
+                        }
+                        onChange={(e) => setMetaForm({ ...metaForm, footer_icon_custom_bg: e.target.value })}
+                        className="w-4 h-4 rounded cursor-pointer border-0 bg-transparent"
+                      />
+                    </label>
                   </div>
                 </div>
               </div>
