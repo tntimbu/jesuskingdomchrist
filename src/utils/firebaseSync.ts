@@ -56,10 +56,14 @@ const DOC_MAPPING: Record<string, string> = {
   cms_pro_activity_logs: 'activity_logs',
   cms_pro_login_history: 'login_history',
   cms_pro_prayer_requests: 'prayer_requests',
+  cms_pro_event_reservations: 'event_reservations',
   cms_pro_saas_tenants: 'saas_tenants',
   cms_pro_superadmin_contact: 'superadmin_contact',
   cms_pro_chat_messages: 'chat_messages',
-  cms_pro_komisi: 'komisi'
+  cms_pro_komisi: 'komisi',
+  cms_pro_hymn_songs: 'hymn_songs',
+  cms_pro_favorite_songs: 'favorite_songs',
+  cms_pro_favorite_verses: 'favorite_verses'
 };
 
 const REVERSE_DOC_MAPPING: Record<string, string> = {
@@ -87,9 +91,13 @@ const REVERSE_DOC_MAPPING: Record<string, string> = {
   activity_logs: 'cms_pro_activity_logs',
   login_history: 'cms_pro_login_history',
   prayer_requests: 'cms_pro_prayer_requests',
+  event_reservations: 'cms_pro_event_reservations',
   saas_tenants: 'cms_pro_saas_tenants',
   superadmin_contact: 'cms_pro_superadmin_contact',
-  chat_messages: 'cms_pro_chat_messages'
+  chat_messages: 'cms_pro_chat_messages',
+  hymn_songs: 'cms_pro_hymn_songs',
+  favorite_songs: 'cms_pro_favorite_songs',
+  favorite_verses: 'cms_pro_favorite_verses'
 };
 
 /**
@@ -452,10 +460,19 @@ export async function forceManualSyncPush(): Promise<{ success: boolean; message
       message: 'Sinkronisasi manual berhasil dijalankan ke Cloud Firebase.'
     };
   } catch (e: any) {
-    markQuotaExhausted();
+    if (
+      e?.code === 'resource-exhausted' ||
+      (e?.message && (e.message.includes('Quota limit exceeded') || e.message.includes('Quota exceeded')))
+    ) {
+      markQuotaExhausted();
+      return {
+        success: false,
+        message: 'Sinkronisasi cloud tidak dapat dilakukan karena kuota harian terlampaui. Data Anda aman tersimpan secara lokal.'
+      };
+    }
     return {
       success: false,
-      message: 'Sinkronisasi cloud tidak dapat dilakukan karena kuota harian terlampaui. Data Anda aman tersimpan secara lokal.'
+      message: `Sinkronisasi cloud belum berhasil: ${e?.message || 'Periksa koneksi internet Anda.'}`
     };
   }
 }
@@ -494,28 +511,23 @@ export async function pullAllFromCloud(onDataReceived?: () => void): Promise<boo
                   ? cloudData.payload
                   : JSON.stringify(cloudData.payload);
 
-              const lastLocalSave = Math.max(
-                localSaveTimestamps.get(docId) || 0,
-                localSaveTimestamps.get(storageKey) || 0
-              );
-              const timeSinceLocalSave = Date.now() - lastLocalSave;
-              const remoteTimestamp = typeof cloudData.updatedAt === 'number' ? cloudData.updatedAt : 0;
-              const isLocalNewer = lastLocalSave > 0 && (remoteTimestamp < lastLocalSave || timeSinceLocalSave < 10000);
-
-              // Record that the cloud already holds this payload so pushToCloud won't re-upload identical data
-              lastPushedPayloads.set(docId, cloudPayloadStr);
-
               const currentLocalStr = localStorage.getItem(storageKey);
 
-              if (!isLocalNewer && currentLocalStr !== cloudPayloadStr) {
-                localStorage.setItem(storageKey, cloudPayloadStr);
-                hasChanges = true;
+              // Skip if current local storage already has this exact payload
+              if (currentLocalStr === cloudPayloadStr) {
+                lastPushedPayloads.set(docId, cloudPayloadStr);
+                return;
               }
+
+              // Apply remote cloud update to localStorage
+              localStorage.setItem(storageKey, cloudPayloadStr);
+              lastPushedPayloads.set(docId, cloudPayloadStr);
+              hasChanges = true;
             }
           });
 
       if (hasChanges) {
-        window.dispatchEvent(new Event('cms_data_changed'));
+        window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { source: 'firebase_pull' } }));
         window.dispatchEvent(new Event('storage'));
         if (onDataReceived) onDataReceived();
       }
@@ -589,30 +601,31 @@ export function initRealtimeCloudSync(onDataReceived?: () => void): () => void {
                     ? cloudData.payload
                     : JSON.stringify(cloudData.payload);
 
-                const lastLocalSave = Math.max(
-                  localSaveTimestamps.get(docId) || 0,
-                  localSaveTimestamps.get(storageKey) || 0
-                );
-                const timeSinceLocalSave = Date.now() - lastLocalSave;
-                const remoteTimestamp = typeof cloudData.updatedAt === 'number' ? cloudData.updatedAt : 0;
-                const isLocalNewer = lastLocalSave > 0 && (remoteTimestamp < lastLocalSave || timeSinceLocalSave < 10000);
-
-                lastPushedPayloads.set(docId, cloudPayloadStr);
-
                 const currentLocalStr = localStorage.getItem(storageKey);
 
-                if (!isLocalNewer && currentLocalStr !== cloudPayloadStr) {
-                  localStorage.setItem(storageKey, cloudPayloadStr);
-                  hasChanges = true;
+                // Skip if current local storage already has this exact payload
+                if (currentLocalStr === cloudPayloadStr) {
+                  lastPushedPayloads.set(docId, cloudPayloadStr);
+                  return;
+                }
 
-                  // If settings were updated with new firebaseConfig, check if project switched
-                  if (storageKey === 'cms_pro_settings') {
-                    const newConfig = getActiveFirebaseConfig();
-                    if (newConfig.projectId !== lastActiveProjectId) {
-                      setTimeout(() => {
-                        reconnectRealtimeCloudSync(onDataReceived);
-                      }, 300);
-                    }
+                // If this client just pushed this exact payload, skip duplicate re-write
+                if (lastPushedPayloads.get(docId) === cloudPayloadStr) {
+                  return;
+                }
+
+                // Apply incoming update from Cloud Firestore
+                localStorage.setItem(storageKey, cloudPayloadStr);
+                lastPushedPayloads.set(docId, cloudPayloadStr);
+                hasChanges = true;
+
+                // If settings were updated with new firebaseConfig, check if project switched
+                if (storageKey === 'cms_pro_settings') {
+                  const newConfig = getActiveFirebaseConfig();
+                  if (newConfig.projectId !== lastActiveProjectId) {
+                    setTimeout(() => {
+                      reconnectRealtimeCloudSync(onDataReceived);
+                    }, 300);
                   }
                 }
               }
@@ -621,7 +634,7 @@ export function initRealtimeCloudSync(onDataReceived?: () => void): () => void {
 
           if (hasChanges) {
             // Notify app components of remote data updates
-            window.dispatchEvent(new Event('cms_data_changed'));
+            window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { source: 'firebase_listener' } }));
             window.dispatchEvent(new Event('storage'));
             if (onDataReceived) onDataReceived();
           }

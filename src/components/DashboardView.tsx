@@ -14,7 +14,8 @@ import {
   GalleryItem,
   Doa,
   EventReservation,
-  ChatMessage
+  ChatMessage,
+  KasPengeluaran
 } from '../types';
 import { StorageManager } from '../utils/storage';
 import { parseSocialVideoUrl } from '../utils/videoHelper';
@@ -87,7 +88,8 @@ import {
   HelpCircle,
   Info,
   FileJson,
-  BookMarked
+  BookMarked,
+  Eye
 } from 'lucide-react';
 import { broadcastChurchAnnouncement } from '../utils/pushNotificationService';
 import { Website2ApkNotificationGuideModal } from './Website2ApkNotificationGuideModal';
@@ -180,6 +182,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     bukti_transfer: ''
   });
   const [transferMsg, setTransferMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [kasList, setKasList] = useState<KasPengeluaran[]>(() => StorageManager.getKasPengeluaran());
+  const [previewReceiptItem, setPreviewReceiptItem] = useState<Persembahan | null>(null);
 
   const handleCopyBank = () => {
     const num = settings.rekening_bank_nomor || '527-089-1122';
@@ -221,9 +225,24 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       'Dashboard Home'
     );
 
+    // Kirim notifikasi ke Admin agar muncul chime suara, alert badge, dan toast secara real-time
+    const adminNotif: NotificationItem = {
+      notif_id: `NTF-TRF-${Date.now()}`,
+      user_id: 'ADMIN',
+      tujuan_role: 'ADMIN',
+      judul: 'Konfirmasi Transfer Persembahan Masuk Baru',
+      pesan: `Jemaat ${newTransfer.nama_pengirim} telah mengirimkan konfirmasi transfer ${newTransfer.jenis} sebesar Rp ${newTransfer.jumlah.toLocaleString('id-ID')}. Mohon verifikasi bukti transfer di Dashboard / Keuangan.`,
+      status_baca: 'Belum',
+      tipe: 'Peringatan',
+      tanggal: new Date().toLocaleString('id-ID'),
+      pengirim: newTransfer.nama_pengirim
+    };
+    const currentNotifs = StorageManager.getNotifications();
+    StorageManager.saveNotifications([adminNotif, ...currentNotifs]);
+
     setTransferMsg({
       type: 'success',
-      text: '✅ Konfirmasi transfer persembahan berhasil dikirim! Admin/Bendahara gereja akan memverifikasi transaksi Anda.'
+      text: '✅ Konfirmasi transfer persembahan berhasil dikirim! Admin/Bendahara gereja akan segera memverifikasi transaksi Anda.'
     });
 
     setTimeout(() => {
@@ -238,6 +257,93 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         bukti_transfer: ''
       });
     }, 2500);
+  };
+
+  // Handler Verifikasi Persembahan Transfer oleh Admin di Dashboard
+  const handleVerifyPersembahan = (persembahanId: string) => {
+    const all = StorageManager.getPersembahan();
+    const target = all.find((p) => p.persembahan_id === persembahanId);
+    if (!target) return;
+
+    const updated = all.map((p) =>
+      p.persembahan_id === persembahanId
+        ? {
+            ...p,
+            status: 'TERVERIFIKASI' as const,
+            catatan_admin: `Diverifikasi & Diterima oleh ${currentUser.nama} pada ${new Date().toLocaleString('id-ID')}`
+          }
+        : p
+    );
+    StorageManager.savePersembahan(updated);
+    setPersembahanList(updated);
+
+    // Notifikasi langsung ke Jemaat bersangkutan
+    const jemaatNotif: NotificationItem = {
+      notif_id: `NTF-JMT-${Date.now()}`,
+      user_id: target.jemaat_id || target.nama_pengirim || 'JEMAAT',
+      tujuan_role: 'JEMAAT',
+      judul: 'Persembahan Transfer Berhasil Diverifikasi',
+      pesan: `Puji Tuhan, transfer persembahan Anda (${target.jenis}) sebesar Rp ${target.jumlah.toLocaleString('id-ID')} telah diverifikasi dan resmi tercatat di kas gereja. Terima kasih, Tuhan memberkati persembahan kasih Anda!`,
+      status_baca: 'Belum',
+      tipe: 'Informasi',
+      tanggal: new Date().toLocaleString('id-ID'),
+      pengirim: 'Admin Keuangan Gereja'
+    };
+    const curNotifs = StorageManager.getNotifications();
+    StorageManager.saveNotifications([jemaatNotif, ...curNotifs]);
+
+    StorageManager.logActivity(
+      currentUser.username,
+      `Verifikasi Persembahan ${target.persembahan_id} (${target.nama_pengirim}) Rp ${target.jumlah.toLocaleString('id-ID')}`,
+      'Dashboard Verifikasi Transfer'
+    );
+    setRefreshToast(`✅ Persembahan ${target.nama_pengirim} Rp ${target.jumlah.toLocaleString('id-ID')} berhasil diverifikasi dan masuk kas!`);
+    setTimeout(() => setRefreshToast(''), 3500);
+  };
+
+  // Handler Penolakan Persembahan Transfer oleh Admin di Dashboard
+  const handleRejectPersembahan = (persembahanId: string) => {
+    const all = StorageManager.getPersembahan();
+    const target = all.find((p) => p.persembahan_id === persembahanId);
+    if (!target) return;
+
+    const alasan = prompt('Masukkan alasan penolakan transfer (akan dikirimkan ke jemaat):', 'Bukti transfer tidak terbaca atau nominal tidak sesuai.');
+    if (alasan === null) return;
+
+    const updated = all.map((p) =>
+      p.persembahan_id === persembahanId
+        ? {
+            ...p,
+            status: 'DITOLAK' as const,
+            catatan_admin: `Ditolak: ${alasan}`
+          }
+        : p
+    );
+    StorageManager.savePersembahan(updated);
+    setPersembahanList(updated);
+
+    // Notifikasi alasan penolakan ke Jemaat
+    const jemaatNotif: NotificationItem = {
+      notif_id: `NTF-JMT-REJ-${Date.now()}`,
+      user_id: target.jemaat_id || target.nama_pengirim || 'JEMAAT',
+      tujuan_role: 'JEMAAT',
+      judul: 'Konfirmasi Transfer Persembahan Belum Disetujui',
+      pesan: `Transfer persembahan Anda (${target.jenis}) sebesar Rp ${target.jumlah.toLocaleString('id-ID')} belum dapat disetujui. Catatan: ${alasan}. Silakan unggah ulang bukti transfer yang valid.`,
+      status_baca: 'Belum',
+      tipe: 'Peringatan',
+      tanggal: new Date().toLocaleString('id-ID'),
+      pengirim: 'Admin Keuangan Gereja'
+    };
+    const curNotifs = StorageManager.getNotifications();
+    StorageManager.saveNotifications([jemaatNotif, ...curNotifs]);
+
+    StorageManager.logActivity(
+      currentUser.username,
+      `Menolak Persembahan ${target.persembahan_id} (${target.nama_pengirim}): ${alasan}`,
+      'Dashboard Verifikasi Transfer'
+    );
+    setRefreshToast(`ℹ️ Status transfer persembahan diubah menjadi Ditolak.`);
+    setTimeout(() => setRefreshToast(''), 3500);
   };
 
   // Event Reservation State & Handler
@@ -530,11 +636,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     window.addEventListener('storage', handleSync);
     window.addEventListener('focus', handleSync);
 
+    const pollInterval = setInterval(loadDashboardData, 1500);
+
     return () => {
       unsubscribe();
       window.removeEventListener('cms_data_changed', handleSync);
       window.removeEventListener('storage', handleSync);
       window.removeEventListener('focus', handleSync);
+      clearInterval(pollInterval);
     };
   }, []);
 
@@ -591,6 +700,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     setGalleryList((prev) => (prev.length !== g.length || JSON.stringify(prev) !== JSON.stringify(g) ? g : prev));
     const res = StorageManager.getEventReservations();
     setReservationsList((prev) => (prev.length !== res.length || JSON.stringify(prev) !== JSON.stringify(res) ? res : prev));
+    const k = StorageManager.getKasPengeluaran();
+    setKasList((prev) => (prev.length !== k.length || JSON.stringify(prev) !== JSON.stringify(k) ? k : prev));
   }, []);
 
   const handleSaveNotification = (e: React.FormEvent) => {
@@ -664,7 +775,31 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const totalJemaat = jemaatList.length;
   const totalLaki = jemaatList.filter((j) => j.jenis_kelamin === 'Laki-laki').length;
   const totalPerempuan = jemaatList.filter((j) => j.jenis_kelamin === 'Perempuan').length;
-  const totalPersembahan = persembahanList.reduce((acc, curr) => acc + (curr.jumlah || 0), 0);
+
+  const verifiedPersembahanList = React.useMemo(() => {
+    return persembahanList.filter((p) => p.status === 'TERVERIFIKASI' || !p.status);
+  }, [persembahanList]);
+
+  const totalPersembahan = React.useMemo(() => {
+    return verifiedPersembahanList.reduce((acc, curr) => acc + (curr.jumlah || 0), 0);
+  }, [verifiedPersembahanList]);
+
+  const totalKasPenerimaan = React.useMemo(() => {
+    return kasList.filter((k) => k.tipe === 'Penerimaan').reduce((acc, curr) => acc + (curr.jumlah || 0), 0);
+  }, [kasList]);
+
+  const totalPengeluaran = React.useMemo(() => {
+    return kasList.filter((k) => k.tipe === 'Pengeluaran').reduce((acc, curr) => acc + (curr.jumlah || 0), 0);
+  }, [kasList]);
+
+  const saldoKasBersih = React.useMemo(() => {
+    return totalPersembahan + totalKasPenerimaan - totalPengeluaran;
+  }, [totalPersembahan, totalKasPenerimaan, totalPengeluaran]);
+
+  const pendingPersembahanList = React.useMemo(() => {
+    return persembahanList.filter((p) => p.status === 'PENDING');
+  }, [persembahanList]);
+
   const totalKeluarga = React.useMemo(() => {
     return StorageManager.getKeluarga().length;
   }, [jemaatList]);
@@ -1633,11 +1768,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </div>
                 <div className="flex items-baseline gap-1 flex-wrap">
                   <span className="text-base sm:text-2xl font-black text-emerald-400 leading-tight">
-                    Rp {totalPersembahan.toLocaleString('id-ID')}
+                    Rp {saldoKasBersih.toLocaleString('id-ID')}
                   </span>
                 </div>
-                <div className="pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 truncate">
-                  <span>Tercatat di Kas Gereja</span>
+                <div className="pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 flex items-center justify-between">
+                  <span>Saldo Kas Bersih Realtime</span>
+                  <span className="text-emerald-300 font-semibold">Tersinkron</span>
                 </div>
               </div>
 
@@ -2140,11 +2276,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </h4>
 
               {(() => {
-                const myTransfers = persembahanList.filter(
-                  (p) =>
-                    (p.jemaat_id && (p.jemaat_id === currentUser.jemaat_id || p.jemaat_id === currentUser.user_id)) ||
-                    (p.nama_pengirim && p.nama_pengirim.toLowerCase() === currentUser.nama.toLowerCase())
-                );
+                const myTransfers = persembahanList.filter((p) => {
+                  const matchesId = p.jemaat_id && (p.jemaat_id === currentUser.jemaat_id || p.jemaat_id === currentUser.user_id);
+                  const userNama = (currentUser.nama || currentUser.username || '').toLowerCase().trim();
+                  const pengirimNama = (p.nama_pengirim || '').toLowerCase().trim();
+                  const matchesName = userNama && pengirimNama && (
+                    userNama === pengirimNama ||
+                    pengirimNama.includes(userNama) ||
+                    userNama.includes(pengirimNama)
+                  );
+                  return Boolean(matchesId || matchesName);
+                });
 
                 if (myTransfers.length === 0) {
                   return (
@@ -2174,9 +2316,25 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                               <span className="text-[10px] text-slate-400 font-mono">({p.tanggal})</span>
                             </div>
                             <p className="text-[11px] text-slate-400">{p.keterangan || '-'}</p>
+                            {p.catatan_admin && (
+                              <p className="text-[10px] text-amber-300/90 italic">
+                                Catatan Admin: {p.catatan_admin}
+                              </p>
+                            )}
                           </div>
 
-                          <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0">
+                          <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0">
+                            {p.bukti_transfer && (
+                              <button
+                                type="button"
+                                onClick={() => setPreviewReceiptItem(p)}
+                                className="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-indigo-300 text-[11px] font-semibold border border-slate-700 flex items-center gap-1 cursor-pointer"
+                              >
+                                <Eye className="w-3 h-3 text-indigo-400" />
+                                <span>Bukti</span>
+                              </button>
+                            )}
+
                             <span className="font-bold text-sm text-emerald-400">
                               Rp {p.jumlah.toLocaleString('id-ID')}
                             </span>
@@ -2375,6 +2533,100 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     </button>
                   </div>
                 </form>
+              </div>
+            </div>
+          )}
+
+          {/* Modal Preview Bukti Transfer */}
+          {previewReceiptItem && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+              <div className="w-full max-w-xl rounded-3xl bg-slate-900 border border-slate-700 p-6 text-white space-y-4 shadow-2xl">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                  <div className="flex items-center gap-2">
+                    <Eye className="w-5 h-5 text-indigo-400" />
+                    <h3 className="text-base font-bold">Bukti Transfer Persembahan</h3>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setPreviewReceiptItem(null)}
+                    className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-1 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400">Pengirim:</span>
+                    <strong className="text-white">{previewReceiptItem.nama_pengirim}</strong>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400">Jenis Persembahan:</span>
+                    <strong className="text-indigo-300">{previewReceiptItem.jenis}</strong>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400">Nominal:</span>
+                    <strong className="text-emerald-400 text-sm font-mono">Rp {previewReceiptItem.jumlah.toLocaleString('id-ID')}</strong>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400">Tanggal:</span>
+                    <span className="text-slate-300 font-mono">{previewReceiptItem.tanggal}</span>
+                  </div>
+                  {previewReceiptItem.keterangan && (
+                    <div className="pt-1 border-t border-slate-800 text-slate-400 text-[11px]">
+                      Catatan: {previewReceiptItem.keterangan}
+                    </div>
+                  )}
+                </div>
+
+                <div className="rounded-2xl overflow-hidden bg-black border border-slate-800 max-h-[60vh] flex items-center justify-center p-2">
+                  {previewReceiptItem.bukti_transfer ? (
+                    <img
+                      src={previewReceiptItem.bukti_transfer}
+                      alt="Bukti Transfer"
+                      className="max-h-[55vh] w-auto max-w-full object-contain rounded-lg"
+                    />
+                  ) : (
+                    <p className="text-xs text-slate-400 py-10">Tidak ada lampiran foto bukti transfer.</p>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewReceiptItem(null)}
+                    className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white text-xs font-bold cursor-pointer"
+                  >
+                    Tutup
+                  </button>
+
+                  {isAdmin && previewReceiptItem.status === 'PENDING' && (
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const id = previewReceiptItem.persembahan_id;
+                          setPreviewReceiptItem(null);
+                          handleRejectPersembahan(id);
+                        }}
+                        className="px-3.5 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/40 text-rose-300 text-xs font-bold border border-rose-500/30 transition-all cursor-pointer"
+                      >
+                        Tolak
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const id = previewReceiptItem.persembahan_id;
+                          setPreviewReceiptItem(null);
+                          handleVerifyPersembahan(id);
+                        }}
+                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-extrabold shadow transition-all cursor-pointer"
+                      >
+                        Verifikasi &amp; Terima (Masuk Kas)
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -2583,11 +2835,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </div>
                 <div className="flex items-baseline gap-1 flex-wrap">
                   <span className="text-base sm:text-2xl font-black text-emerald-400 leading-tight">
-                    Rp {totalPersembahan.toLocaleString('id-ID')}
+                    Rp {saldoKasBersih.toLocaleString('id-ID')}
                   </span>
                 </div>
-                <div className="pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 truncate">
-                  <span>Tersimpan di Kas</span>
+                <div className="pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 flex items-center justify-between">
+                  <span>Saldo Kas Bersih Realtime</span>
+                  <span className="text-emerald-300 font-semibold">Tersinkron</span>
                 </div>
               </div>
 
@@ -2607,6 +2860,126 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <span>Ibadah & Agenda</span>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* KONFIRMASI TRANSFER PERSEMBAHAN JEMAAT REALTIME (ADMIN WIDGET) */}
+          {pendingPersembahanList.length > 0 ? (
+            <div className="p-4 sm:p-6 rounded-3xl bg-gradient-to-r from-amber-950/70 via-slate-900/90 to-emerald-950/70 border-2 border-amber-500/50 shadow-2xl space-y-4 text-white animate-fade-in">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 sm:p-3 rounded-2xl bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-inner shrink-0">
+                    <Bell className="w-5 h-5 sm:w-6 sm:h-6 animate-bounce" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="px-2.5 py-0.5 rounded-full bg-amber-500 text-slate-950 text-xs font-black uppercase tracking-wider">
+                        {pendingPersembahanList.length} Menunggu Konfirmasi
+                      </span>
+                      <span className="text-xs text-amber-300 font-semibold flex items-center gap-1">
+                        <Sparkles className="w-3.5 h-3.5" /> Transfer Jemaat Masuk Real-Time
+                      </span>
+                    </div>
+                    <h3 className="text-base sm:text-lg font-black text-white mt-1">
+                      Konfirmasi Transfer Persembahan Jemaat
+                    </h3>
+                    <p className="text-xs text-slate-300">
+                      Jemaat telah mengunggah bukti transfer. Verifikasi sekarang agar resmi masuk dan tercatat di Kas Gereja.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => onNavigate('keuangan')}
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-indigo-300 hover:text-white text-xs font-bold border border-slate-700 transition-all flex items-center gap-1.5 self-start sm:self-center cursor-pointer shrink-0"
+                >
+                  <span>Buka Menu Keuangan</span>
+                  <ArrowUpRight className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                {pendingPersembahanList.map((p) => (
+                  <div
+                    key={p.persembahan_id}
+                    className="p-4 rounded-2xl bg-slate-950/80 border border-amber-500/30 hover:border-amber-400/60 transition-all space-y-3 shadow-lg"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 text-[10px] font-bold border border-indigo-500/30">
+                            {p.jenis || 'Persembahan'}
+                          </span>
+                          <span className="text-[11px] text-slate-400 font-mono">{p.tanggal}</span>
+                        </div>
+                        <h4 className="font-extrabold text-sm text-white mt-1">
+                          {p.nama_pengirim || 'Jemaat'}
+                        </h4>
+                        <p className="text-[11px] text-slate-400 line-clamp-1">{p.keterangan || '-'}</p>
+                      </div>
+
+                      <div className="text-right shrink-0">
+                        <div className="text-base font-black text-emerald-400">
+                          Rp {p.jumlah.toLocaleString('id-ID')}
+                        </div>
+                        <span className="text-[10px] text-slate-400">{p.metode_pembayaran || 'Transfer Bank'}</span>
+                      </div>
+                    </div>
+
+                    {/* Receipt thumbnail & Action buttons */}
+                    <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/10">
+                      {p.bukti_transfer ? (
+                        <button
+                          type="button"
+                          onClick={() => setPreviewReceiptItem(p)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-indigo-300 text-xs font-semibold border border-slate-700 transition-all cursor-pointer"
+                        >
+                          <Eye className="w-3.5 h-3.5 text-indigo-400" />
+                          <span>Lihat Bukti Transfer</span>
+                        </button>
+                      ) : (
+                        <span className="text-[11px] text-slate-500 italic">Tanpa lampiran foto</span>
+                      )}
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleRejectPersembahan(p.persembahan_id)}
+                          className="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/30 text-rose-300 text-xs font-bold border border-rose-500/30 transition-all cursor-pointer flex items-center gap-1"
+                        >
+                          <XCircle className="w-3.5 h-3.5 text-rose-400" />
+                          <span>Tolak</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleVerifyPersembahan(p.persembahan_id)}
+                          className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-extrabold shadow-md shadow-emerald-600/30 transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                          <span>Verifikasi &amp; Terima (Masuk Kas)</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800/80 flex items-center justify-between gap-3 text-xs text-slate-400">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <span>Seluruh konfirmasi transfer persembahan jemaat telah terverifikasi (0 transaksi menunggu).</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => onNavigate('keuangan')}
+                className="text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 cursor-pointer"
+              >
+                <span>Kelola Keuangan &amp; Kas</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              </button>
             </div>
           )}
 
