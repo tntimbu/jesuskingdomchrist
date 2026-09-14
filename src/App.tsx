@@ -56,6 +56,7 @@ export default function App() {
   };
 
   const effectiveUser = currentUser || GUEST_USER;
+  const isEffectiveAdmin = effectiveUser.role === 'ADMIN' || effectiveUser.role === 'SUPER_ADMIN';
 
   useEffect(() => {
     // Check local storage logged-in user session
@@ -371,7 +372,7 @@ export default function App() {
         onNavigateToDashboard={() => handleSelectTab('dashboard')}
         onUpdateSettings={handleUpdateSettings}
         onNavigateToSettings={() => handleSelectTab('settings')}
-        onOpenNavbarCustomizer={() => setIsNavbarCustomizerOpen(true)}
+        onOpenNavbarCustomizer={isEffectiveAdmin ? () => setIsNavbarCustomizerOpen(true) : undefined}
       />
 
       {/* Card Menu Overlay Modal (Replaces Left Sidebar for All Devices) */}
@@ -383,7 +384,7 @@ export default function App() {
         activeTab={activeTab}
         onSelectTab={handleSelectTab}
         onOpenSuperAdminSaaSPanel={() => setIsSaaSPanelOpen(true)}
-        onOpenNavbarCustomizer={() => setIsNavbarCustomizerOpen(true)}
+        onOpenNavbarCustomizer={isEffectiveAdmin ? () => setIsNavbarCustomizerOpen(true) : undefined}
       />
 
       {/* Content Layout - Full Width Without Left Sidebar */}
@@ -484,11 +485,18 @@ export default function App() {
           )}
 
           {activeTab === 'settings' && (
-            <SystemSettingsView
-              currentUser={effectiveUser}
-              settings={settings}
-              onUpdateSettings={handleUpdateSettings}
-            />
+            isEffectiveAdmin ? (
+              <SystemSettingsView
+                currentUser={effectiveUser}
+                settings={settings}
+                onUpdateSettings={handleUpdateSettings}
+              />
+            ) : (
+              <div className="p-8 text-center bg-slate-900/60 rounded-3xl border border-slate-800 text-slate-300">
+                <p className="font-bold text-lg mb-2 text-rose-400">Akses Khusus Administrator</p>
+                <p className="text-sm text-slate-400">Menu Pengaturan Sistem dan Kustomisasi Warna Tema Navbar hanya dapat diakses oleh Admin & SuperAdmin.</p>
+              </div>
+            )
           )}
 
           {activeTab === 'lainnya' && (
@@ -645,14 +653,16 @@ export default function App() {
         </div>
       )}
 
-      {/* Modal Kustomisasi Warna & Tema Navbar Global */}
-      <NavbarCustomizerModal
-        isOpen={isNavbarCustomizerOpen}
-        onClose={() => setIsNavbarCustomizerOpen(false)}
-        settings={settings}
-        onUpdateSettings={handleUpdateSettings}
-        onNavigateToSettings={() => handleSelectTab('settings')}
-      />
+      {/* Modal Kustomisasi Warna & Tema Navbar Global (Hanya untuk Admin & SuperAdmin) */}
+      {isEffectiveAdmin && (
+        <NavbarCustomizerModal
+          isOpen={isNavbarCustomizerOpen}
+          onClose={() => setIsNavbarCustomizerOpen(false)}
+          settings={settings}
+          onUpdateSettings={handleUpdateSettings}
+          onNavigateToSettings={() => handleSelectTab('settings')}
+        />
+      )}
     </div>
   );
 }

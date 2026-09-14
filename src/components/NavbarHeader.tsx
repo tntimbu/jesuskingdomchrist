@@ -78,6 +78,9 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [isNavbarCustomizerOpen, setIsNavbarCustomizerOpen] = useState(false);
 
+  // Admin access check - color settings are strictly restricted to Admin & SuperAdmin
+  const isAdmin = currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN';
+
   // Self Profile Modal State
   const [isSelfModalOpen, setIsSelfModalOpen] = useState(false);
   const [showSelfPass, setShowSelfPass] = useState(false);
@@ -365,21 +368,23 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
           </button>
         )}
 
-        {/* Quick Navbar Customizer Palette Button - ALWAYS VISIBLE */}
-        <button
-          onClick={() => {
-            if (onOpenNavbarCustomizer) {
-              onOpenNavbarCustomizer();
-            } else {
-              setIsNavbarCustomizerOpen(true);
-            }
-          }}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 hover:text-white border border-amber-500/40 text-xs font-black shadow-lg shadow-amber-500/10 cursor-pointer active:scale-95 transition-all shrink-0"
-          title="Klik untuk Kustomisasi Warna & Tema Navbar"
-        >
-          <Palette className="w-4 h-4 text-amber-400 group-hover:rotate-12 transition-transform" />
-          <span className="hidden xs:inline">Warna Navbar</span>
-        </button>
+        {/* Quick Navbar Customizer Palette Button - ONLY FOR ADMIN */}
+        {isAdmin && (
+          <button
+            onClick={() => {
+              if (onOpenNavbarCustomizer) {
+                onOpenNavbarCustomizer();
+              } else {
+                setIsNavbarCustomizerOpen(true);
+              }
+            }}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 hover:text-white border border-amber-500/40 text-xs font-black shadow-lg shadow-amber-500/10 cursor-pointer active:scale-95 transition-all shrink-0"
+            title="Klik untuk Kustomisasi Warna & Tema Navbar (Khusus Admin)"
+          >
+            <Palette className="w-4 h-4 text-amber-400 group-hover:rotate-12 transition-transform" />
+            <span className="hidden xs:inline">Warna Navbar</span>
+          </button>
+        )}
 
         {/* Notifications Dropdown */}
         <div className="relative">
@@ -526,21 +531,23 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
                     </span>
                   </div>
 
-                  {/* Kustom Warna Navbar */}
-                  <button
-                    onClick={() => {
-                      setShowUserDropdown(false);
-                      if (onOpenNavbarCustomizer) {
-                        onOpenNavbarCustomizer();
-                      } else {
-                        setIsNavbarCustomizerOpen(true);
-                      }
-                    }}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-amber-300 hover:bg-amber-500/10 text-xs font-semibold transition-all text-left"
-                  >
-                    <Palette className="w-4 h-4 text-amber-400" />
-                    <span>Kustom Warna &amp; Tema Navbar</span>
-                  </button>
+                  {/* Kustom Warna Navbar (Khusus Admin) */}
+                  {isAdmin && (
+                    <button
+                      onClick={() => {
+                        setShowUserDropdown(false);
+                        if (onOpenNavbarCustomizer) {
+                          onOpenNavbarCustomizer();
+                        } else {
+                          setIsNavbarCustomizerOpen(true);
+                        }
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-amber-300 hover:bg-amber-500/10 text-xs font-semibold transition-all text-left"
+                    >
+                      <Palette className="w-4 h-4 text-amber-400" />
+                      <span>Kustom Warna &amp; Tema Navbar</span>
+                    </button>
+                  )}
 
                   <button
                     onClick={() => {

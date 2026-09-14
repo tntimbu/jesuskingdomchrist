@@ -31,6 +31,7 @@ export const CardMenuModal: React.FC<CardMenuModalProps> = ({
   if (!isOpen) return null;
 
   const isSuperAdmin = currentUser.role === 'SUPER_ADMIN';
+  const isAdmin = currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN';
 
   // Filter modules based on user role
   const availableModules = menuModules.filter((m) =>
@@ -81,14 +82,14 @@ export const CardMenuModal: React.FC<CardMenuModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            {onOpenNavbarCustomizer && (
+            {isAdmin && onOpenNavbarCustomizer && (
               <button
                 onClick={() => {
                   onClose();
                   onOpenNavbarCustomizer();
                 }}
                 className="px-3.5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-black shadow-lg flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
-                title="Kustomisasi Warna & Tema Navbar"
+                title="Kustomisasi Warna & Tema Navbar (Khusus Admin)"
               >
                 <Palette className="w-4 h-4 text-amber-400" />
                 <span className="hidden sm:inline">Kustom Warna Navbar</span>
