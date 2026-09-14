@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Baptisan, Sidi, Pernikahan, User, Jemaat } from '../../types';
 import { StorageManager } from '../../utils/storage';
-import { exportToPDF } from '../../utils/exportTools';
-import { FileText, Plus, Award, Heart, Scroll, Printer, Download, X, Trash2, Upload, CheckCircle, ExternalLink } from 'lucide-react';
+import { exportToPDF, printDocument, SignatureBlock } from '../../utils/exportTools';
+import { FileText, Plus, Award, Heart, Scroll, Printer, Download, X, Trash2, Upload, CheckCircle, ExternalLink, Eye, Check } from 'lucide-react';
 
 interface AdministrasiViewProps {
   currentUser: User;
@@ -24,6 +24,20 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
   // Upload file state for specific Baptisan
   const [uploadTargetId, setUploadTargetId] = useState<string | null>(null);
   const [uploadUrlInput, setUploadUrlInput] = useState<string>('');
+
+  // Berita Acara Preview Modal
+  const [selectedBeritaAcara, setSelectedBeritaAcara] = useState<{
+    type: 'BAPTISAN' | 'SIDI' | 'PERNIKAHAN';
+    title: string;
+    nomor: string;
+    nama: string;
+    tanggal: string;
+    pendeta: string;
+    lokasi?: string;
+    suami?: string;
+    istri?: string;
+    items: { label: string; val: string }[];
+  } | null>(null);
 
   // Form states
   const [baptisForm, setBaptisForm] = useState({
@@ -192,22 +206,144 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
     }
   };
 
+  // Helper Signatures Builder
+  const getSakramenSignatures = (pendetaName?: string, tanggalText?: string): SignatureBlock => {
+    const settings = StorageManager.getSettings();
+    return {
+      mengetahuiText: 'Mengetahui,',
+      leftTitle: 'Pendeta Jemaat / Gembala',
+      leftName: pendetaName || 'Pdt. Dr. Herman Setyawan, M.Th',
+      leftRole: 'Pendeta Pelayan / Gembala Jemaat',
+      rightTitle: 'Ketua Majelis',
+      rightName: '....................................................',
+      rightRole: 'Ketua Majelis Jemaat',
+      dateCity: `Ditetapkan di ${settings.alamat ? settings.alamat.split(',')[0].trim() : 'Gereja'}, ${tanggalText || new Date().toISOString().slice(0, 10)}`
+    };
+  };
+
   // Cetak Berita Acara Baptisan Kudus (PDF)
   const cetakBeritaAcaraBaptisPDF = (b: Baptisan) => {
     const settings = StorageManager.getSettings();
     const churchName = (settings.nama_gereja || 'SYSTEM MANAGEMENT CHURCH').trim();
-    const title = `BERITA ACARA BAPTISAN KUDUS (No. ${b.nomor_surat || b.baptisan_id})`;
+    const title = `BERITA ACARA SAKRAMEN BAPTISAN KUDUS (No. ${b.nomor_surat || b.baptisan_id})`;
     const headers = ['Parameter Berita Acara', 'Rincian & Keterangan Resmi'];
     const rows = [
       ['Gereja Penyelenggara', churchName],
-      ['Nomor Berita Acara', b.nomor_surat || b.baptisan_id],
+      ['Nomor Berita Acara / Surat', b.nomor_surat || b.baptisan_id],
       ['Nama Jemaat Yang Dibaptis', b.nama_jemaat || '-'],
       ['Tanggal Pelaksanaan Baptis', b.tanggal],
       ['Pendeta Pembaptis', b.pendeta],
-      ['Lokasi Sakramen', b.lokasi],
-      ['Keterangan Status', 'Berita Acara Resmi Sakramen Baptisan Kudus Sah']
+      ['Lokasi Sakramen', b.lokasi || 'Gedung Sanctuary Utama'],
+      ['Dasar Alkitabiah', 'Matius 28:19 - Dalam Nama Bapa, Anak, dan Roh Kudus'],
+      ['Keterangan Status', 'Berita Acara Resmi Sakramen Baptisan Kudus Sah & Tercatat']
     ];
-    exportToPDF(title, headers, rows, settings, `Berita_Acara_Baptis_${b.nama_jemaat || 'Jemaat'}`);
+    const signatures = getSakramenSignatures(b.pendeta, b.tanggal);
+    exportToPDF(title, headers, rows, settings, `Berita_Acara_Baptis_${b.nama_jemaat || 'Jemaat'}`, signatures);
+  };
+
+  // Cetak Berita Acara Peneguhan Sidi (PDF)
+  const cetakBeritaAcaraSidiPDF = (s: Sidi) => {
+    const settings = StorageManager.getSettings();
+    const churchName = (settings.nama_gereja || 'SYSTEM MANAGEMENT CHURCH').trim();
+    const title = `BERITA ACARA PENEGUHAN SIDI (No. ${s.nomor_surat || s.sidi_id})`;
+    const headers = ['Parameter Berita Acara', 'Rincian & Keterangan Resmi'];
+    const rows = [
+      ['Gereja Penyelenggara', churchName],
+      ['Nomor Berita Acara / Surat', s.nomor_surat || s.sidi_id],
+      ['Nama Peserta Peneguhan Sidi', s.nama_jemaat || '-'],
+      ['Tanggal Peneguhan Sidi', s.tanggal],
+      ['Pendeta Yang Meneguhkan', s.pendeta],
+      ['Dasar Pengakuan Iman', 'Roma 10:9-10 - Pengakuan Percaya di Hadapan Allah dan Jemaat'],
+      ['Keterangan Status', 'Berita Acara Resmi Peneguhan Sidi Anggota Penuh Gereja Sah']
+    ];
+    const signatures = getSakramenSignatures(s.pendeta, s.tanggal);
+    exportToPDF(title, headers, rows, settings, `Berita_Acara_Sidi_${s.nama_jemaat || 'Jemaat'}`, signatures);
+  };
+
+  // Cetak Berita Acara Pemberkatan Pernikahan (PDF)
+  const cetakBeritaAcaraNikahPDF = (n: Pernikahan) => {
+    const settings = StorageManager.getSettings();
+    const churchName = (settings.nama_gereja || 'SYSTEM MANAGEMENT CHURCH').trim();
+    const title = `BERITA ACARA PEMBERKATAN PERNIKAHAN KUDUS (No. ${n.nomor_surat || n.nikah_id})`;
+    const headers = ['Parameter Berita Acara', 'Rincian & Keterangan Resmi'];
+    const rows = [
+      ['Gereja Penyelenggara', churchName],
+      ['Nomor Akta / Berita Acara', n.nomor_surat || n.nikah_id],
+      ['Nama Mempelai Pria (Suami)', n.suami],
+      ['Nama Mempelai Wanita (Istri)', n.istri],
+      ['Tanggal Pemberkatan Nikah', n.tanggal],
+      ['Pendeta Pemberkat', n.pendeta],
+      ['Lokasi Pemberkatan', n.lokasi || 'Gedung Sanctuary Utama'],
+      ['Dasar Firman Tuhan', 'Matius 19:6 - Apa yang dipersatukan Allah tidak boleh diceraikan manusia'],
+      ['Keterangan Status', 'Berita Acara Resmi Pemberkatan Pernikahan Kudus Gerejawi Sah']
+    ];
+    const signatures = getSakramenSignatures(n.pendeta, n.tanggal);
+    exportToPDF(title, headers, rows, settings, `Berita_Acara_Nikah_${n.suami}_dan_${n.istri}`, signatures);
+  };
+
+  // Buka Pratinjau Berita Acara
+  const handleOpenPreviewBaptis = (b: Baptisan) => {
+    setSelectedBeritaAcara({
+      type: 'BAPTISAN',
+      title: 'BERITA ACARA SAKRAMEN BAPTISAN KUDUS',
+      nomor: b.nomor_surat || b.baptisan_id,
+      nama: b.nama_jemaat || '-',
+      tanggal: b.tanggal,
+      pendeta: b.pendeta,
+      lokasi: b.lokasi || 'Gedung Sanctuary Utama',
+      items: [
+        { label: 'Nomor Berita Acara / Surat', val: b.nomor_surat || b.baptisan_id },
+        { label: 'Nama Jemaat Yang Dibaptis', val: b.nama_jemaat || '-' },
+        { label: 'Tanggal Pelaksanaan', val: b.tanggal },
+        { label: 'Pendeta Pembaptis', val: b.pendeta },
+        { label: 'Lokasi Sakramen', val: b.lokasi || 'Gedung Sanctuary Utama' },
+        { label: 'Dasar Firman', val: 'Matius 28:19 - Dalam Nama Bapa, Anak, dan Roh Kudus' },
+        { label: 'Status Dokumen', val: 'Surat & Berita Acara Sah Tercatat di Buku Induk Gereja' }
+      ]
+    });
+  };
+
+  const handleOpenPreviewSidi = (s: Sidi) => {
+    setSelectedBeritaAcara({
+      type: 'SIDI',
+      title: 'BERITA ACARA PENEGUHAN SIDI (PENGAKUAN PERCAYA)',
+      nomor: s.nomor_surat || s.sidi_id,
+      nama: s.nama_jemaat || '-',
+      tanggal: s.tanggal,
+      pendeta: s.pendeta,
+      items: [
+        { label: 'Nomor Berita Acara / Surat', val: s.nomor_surat || s.sidi_id },
+        { label: 'Nama Peserta Peneguhan Sidi', val: s.nama_jemaat || '-' },
+        { label: 'Tanggal Peneguhan Sidi', val: s.tanggal },
+        { label: 'Pendeta Yang Meneguhkan', val: s.pendeta },
+        { label: 'Dasar Firman', val: 'Roma 10:9-10 - Pengakuan Percaya di Hadapan Allah dan Jemaat' },
+        { label: 'Status Dokumen', val: 'Berita Acara Resmi Keanggotaan Penuh Gereja Sah' }
+      ]
+    });
+  };
+
+  const handleOpenPreviewNikah = (n: Pernikahan) => {
+    setSelectedBeritaAcara({
+      type: 'PERNIKAHAN',
+      title: 'BERITA ACARA PEMBERKATAN PERNIKAHAN KUDUS',
+      nomor: n.nomor_surat || n.nikah_id,
+      nama: `${n.suami} & ${n.istri}`,
+      tanggal: n.tanggal,
+      pendeta: n.pendeta,
+      suami: n.suami,
+      istri: n.istri,
+      lokasi: n.lokasi || 'Gedung Sanctuary Utama',
+      items: [
+        { label: 'Nomor Akta / Berita Acara', val: n.nomor_surat || n.nikah_id },
+        { label: 'Mempelai Pria (Suami)', val: n.suami },
+        { label: 'Mempelai Wanita (Istri)', val: n.istri },
+        { label: 'Tanggal Pemberkatan Nikah', val: n.tanggal },
+        { label: 'Pendeta Pemberkat', val: n.pendeta },
+        { label: 'Lokasi Sakramen', val: n.lokasi || 'Gedung Sanctuary Utama' },
+        { label: 'Dasar Firman', val: 'Matius 19:6 - Apa yang dipersatukan Allah tidak boleh diceraikan manusia' },
+        { label: 'Status Dokumen', val: 'Berita Acara Resmi Pemberkatan Pernikahan Kudus Sah' }
+      ]
+    });
   };
 
   return (
@@ -333,13 +469,24 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                         )}
                       </td>
                       <td className="p-3.5 text-center">
-                        <button
-                          onClick={() => cetakBeritaAcaraBaptisPDF(b)}
-                          className="px-3 py-1.5 rounded-lg bg-indigo-900/40 text-indigo-300 hover:bg-indigo-900/80 inline-flex items-center gap-1 text-[11px] font-semibold cursor-pointer"
-                        >
-                          <Printer className="w-3.5 h-3.5" />
-                          <span>PDF Berita Acara</span>
-                        </button>
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            onClick={() => handleOpenPreviewBaptis(b)}
+                            className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white inline-flex items-center gap-1 text-[11px] font-semibold cursor-pointer border border-slate-700 transition-all shadow-sm"
+                            title="Pratinjau Berita Acara & Tanda Tangan"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-indigo-400" />
+                            <span>Lihat Akta</span>
+                          </button>
+                          <button
+                            onClick={() => cetakBeritaAcaraBaptisPDF(b)}
+                            className="px-2.5 py-1.5 rounded-lg bg-indigo-900/50 hover:bg-indigo-900/90 text-indigo-300 inline-flex items-center gap-1 text-[11px] font-semibold cursor-pointer border border-indigo-700/40 transition-all shadow-sm"
+                            title="Unduh PDF Berita Acara Resmi"
+                          >
+                            <Printer className="w-3.5 h-3.5" />
+                            <span>PDF</span>
+                          </button>
+                        </div>
                       </td>
                       {isAdmin && (
                         <td className="p-3.5 text-center">

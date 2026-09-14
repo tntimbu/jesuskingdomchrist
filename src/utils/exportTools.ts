@@ -41,12 +41,24 @@ export function exportToExcel(data: any[], fileName: string = 'Laporan_CMS_Pro',
   XLSX.writeFile(workbook, `${fileName}_${new Date().toISOString().slice(0, 10)}.xlsx`);
 }
 
+export interface SignatureBlock {
+  mengetahuiText?: string;
+  leftTitle: string;
+  leftName?: string;
+  leftRole?: string;
+  rightTitle: string;
+  rightName?: string;
+  rightRole?: string;
+  dateCity?: string;
+}
+
 export function exportToPDF(
   title: string,
   headers: string[],
   rows: (string | number)[][],
   settings?: AppSettings,
-  fileName: string = 'Dokumen_CMS_Pro'
+  fileName: string = 'Dokumen_CMS_Pro',
+  signatures?: SignatureBlock
 ) {
   const doc = new jsPDF();
   const activeSettings = settings || StorageManager.getSettings();
@@ -88,6 +100,64 @@ export function exportToPDF(
     alternateRowStyles: { fillColor: [248, 250, 252] }
   });
 
+  // Tanda Tangan Mengetahui jika tersedia
+  if (signatures) {
+    let currentY = ((doc as any).lastAutoTable?.finalY || 120) + 14;
+    if (currentY > 220) {
+      doc.addPage();
+      currentY = 25;
+    }
+
+    // Tanggal / Kota Ditetapkan
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(71, 85, 105);
+    const dateText = signatures.dateCity || `Ditetapkan pada: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+    doc.text(dateText, 196, currentY, { align: 'right' });
+    currentY += 8;
+
+    // Mengetahui
+    doc.setFontSize(10.5);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(15, 23, 42);
+    doc.text(signatures.mengetahuiText || 'Mengetahui,', 105, currentY, { align: 'center' });
+    currentY += 8;
+
+    // Jabatan / Role Titles
+    doc.setFontSize(9.5);
+    doc.setFont('helvetica', 'bold');
+    // Sebelah kiri: Pendeta jemaat/Gembala
+    doc.text(signatures.leftTitle || 'Pendeta Jemaat / Gembala', 55, currentY, { align: 'center' });
+    // Sebelah kanan: Ketua Majelis
+    doc.text(signatures.rightTitle || 'Ketua Majelis', 155, currentY, { align: 'center' });
+
+    // Space untuk Tanda Tangan (tanda tangan & cap)
+    currentY += 12;
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(148, 163, 184);
+    doc.text('(Tanda Tangan & Cap Gereja)', 55, currentY, { align: 'center' });
+    doc.text('(Tanda Tangan & Cap Majelis)', 155, currentY, { align: 'center' });
+    currentY += 16;
+
+    // Garis / Nama
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(15, 23, 42);
+    const leftNameStr = signatures.leftName ? `( ${signatures.leftName} )` : '( .................................................... )';
+    const rightNameStr = signatures.rightName ? `( ${signatures.rightName} )` : '( .................................................... )';
+    doc.text(leftNameStr, 55, currentY, { align: 'center' });
+    doc.text(rightNameStr, 155, currentY, { align: 'center' });
+
+    if (signatures.leftRole || signatures.rightRole) {
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(100, 116, 139);
+      if (signatures.leftRole) doc.text(signatures.leftRole, 55, currentY + 4, { align: 'center' });
+      if (signatures.rightRole) doc.text(signatures.rightRole, 155, currentY + 4, { align: 'center' });
+    }
+  }
+
   doc.save(`${fileName}_${new Date().toISOString().slice(0, 10)}.pdf`);
 }
 
@@ -95,7 +165,8 @@ export function printDocument(
   title: string,
   headers: string[],
   rows: (string | number)[][],
-  settings?: AppSettings
+  settings?: AppSettings,
+  signatures?: SignatureBlock
 ) {
   const activeSettings = settings || StorageManager.getSettings();
   const churchName = (activeSettings?.nama_gereja || 'SYSTEM MANAGEMENT CHURCH').trim();
@@ -108,6 +179,47 @@ export function printDocument(
     alert('Popup diblokir oleh browser/aplikasi. Silakan gunakan tombol "Buka di Browser HP" di bagian atas halaman.');
     return;
   }
+
+  const signatureHtml = signatures
+    ? `
+      <div style="margin-top: 36px; page-break-inside: avoid;">
+        <div style="text-align: right; font-size: 11px; color: #475569; margin-bottom: 12px; font-style: italic;">
+          ${signatures.dateCity || `Ditetapkan pada: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`}
+        </div>
+        <div style="text-align: center; font-size: 12px; font-weight: bold; margin-bottom: 16px; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px;">
+          ${signatures.mengetahuiText || 'Mengetahui,'}
+        </div>
+        <table style="width: 100%; border: none; margin-top: 6px;">
+          <tr style="background: transparent;">
+            <td style="width: 50%; border: none; text-align: center; vertical-align: top; padding: 0 16px;">
+              <div style="font-weight: bold; font-size: 11px; color: #0f172a; margin-bottom: 8px;">
+                ${signatures.leftTitle || 'Pendeta Jemaat / Gembala'}
+              </div>
+              <div style="height: 65px; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 10px; font-style: italic;">
+                (Space Tanda Tangan &amp; Cap Gereja)
+              </div>
+              <div style="font-weight: bold; font-size: 11px; color: #0f172a; border-top: 1px solid #94a3b8; display: inline-block; padding-top: 4px; min-width: 220px;">
+                (${signatures.leftName || '....................................................'})
+              </div>
+              ${signatures.leftRole ? `<div style="font-size: 10px; color: #64748b; margin-top: 2px;">${signatures.leftRole}</div>` : ''}
+            </td>
+            <td style="width: 50%; border: none; text-align: center; vertical-align: top; padding: 0 16px;">
+              <div style="font-weight: bold; font-size: 11px; color: #0f172a; margin-bottom: 8px;">
+                ${signatures.rightTitle || 'Ketua Majelis'}
+              </div>
+              <div style="height: 65px; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 10px; font-style: italic;">
+                (Space Tanda Tangan &amp; Cap Majelis)
+              </div>
+              <div style="font-weight: bold; font-size: 11px; color: #0f172a; border-top: 1px solid #94a3b8; display: inline-block; padding-top: 4px; min-width: 220px;">
+                (${signatures.rightName || '....................................................'})
+              </div>
+              ${signatures.rightRole ? `<div style="font-size: 10px; color: #64748b; margin-top: 2px;">${signatures.rightRole}</div>` : ''}
+            </td>
+          </tr>
+        </table>
+      </div>
+    `
+    : '';
 
   const html = `
     <!DOCTYPE html>
@@ -155,6 +267,7 @@ export function printDocument(
             ${rows.map((row) => `<tr>${row.map((cell) => `<td>${cell !== undefined && cell !== null ? cell : ''}</td>`).join('')}</tr>`).join('')}
           </tbody>
         </table>
+        ${signatureHtml}
       </body>
     </html>
   `;
