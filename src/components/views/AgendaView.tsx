@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { EventSchedule, EventReservation, Doa, User, NotificationItem } from '../../types';
 import { StorageManager } from '../../utils/storage';
+import { playNotificationChime } from '../../utils/soundHelper';
 import {
   CalendarDays,
   Plus,
@@ -288,13 +289,81 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
     setDoaList(updated);
     StorageManager.saveDoa(updated);
     StorageManager.logActivity(currentUser.username, `Mengirimkan permohonan doa: ${newD.kategori}`, 'Permohonan Doa');
+
+    // Kirim notifikasi yang muncul pada ADMIN
+    const notifForAdmin: NotificationItem = {
+      notif_id: `NTF-DOA-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      user_id: 'ADMIN',
+      tujuan_role: 'ADMIN',
+      judul: '🙏 Permohonan Doa Baru Masuk',
+      pesan: `Permohonan doa baru dari ${doaForm.nama_pemohon} (${doaForm.kategori}): "${doaForm.isi_permohonan}". Mohon didukung dalam doa bersama majelis.`,
+      status_baca: 'Belum',
+      tanggal: new Date().toISOString().slice(0, 10),
+      tipe: 'Penting',
+      pengirim: doaForm.nama_pemohon
+    };
+    const currentNotifs = StorageManager.getNotifications();
+    StorageManager.saveNotifications([notifForAdmin, ...currentNotifs]);
+
+    // Bunyikan chime notifikasi
+    playNotificationChime();
+
+    window.dispatchEvent(new Event('cms_data_changed'));
+    setAdminToast(`Permohonan doa berhasil dikirim dan notifikasi telah dikirim ke Tim Pendoa / Admin!`);
+    setTimeout(() => setAdminToast(null), 3500);
+
     setIsDoaModal(false);
   };
 
   const handleUpdateStatusDoa = (id: string, newStatus: string) => {
+    const target = doaList.find((d) => d.doa_id === id);
     const updated = doaList.map((d) => (d.doa_id === id ? { ...d, status: newStatus as any } : d));
     setDoaList(updated);
     StorageManager.saveDoa(updated);
+
+    // Sinkronisasi status ke prayer requests di storage bila ada
+    try {
+      const currentPrayers = StorageManager.getPrayerRequests();
+      const updatedPrayers = currentPrayers.map((p) => {
+        if (target && (p.jemaat_name === target.nama_pemohon || p.permohonan === target.isi_permohonan)) {
+          return { ...p, status: (newStatus === 'Selesai Doa' ? 'Terjawab' : 'Dalam Doa') as any };
+        }
+        return p;
+      });
+      StorageManager.savePrayerRequests(updatedPrayers);
+    } catch (e) {
+      console.warn('Error syncing prayer request:', e);
+    }
+
+    // Jika admin menekan selesai doa, jemaat mendapat notifikasi bahwa permohonan sudah didoakan
+    if (newStatus === 'Selesai Doa' && target) {
+      const jemaatNotif: NotificationItem = {
+        notif_id: `NTF-DOA-DONE-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        user_id: target.nama_pemohon,
+        tujuan_role: 'JEMAAT',
+        judul: '🕊️ Pokok Doa Anda Sudah Didoakan',
+        pesan: `Puji Tuhan, Saudara/i ${target.nama_pemohon}. Permohonan doa Anda mengenai "${target.kategori}": "${target.isi_permohonan}" telah selesai didoakan oleh Pelayan & Tim Pendoa Gereja. "Doa orang yang benar, bila dengan yakin didoakan, sangat besar kuasanya." (Yakobus 5:16)`,
+        status_baca: 'Belum',
+        tanggal: new Date().toISOString().slice(0, 10),
+        tipe: 'Penting',
+        pengirim: currentUser.nama || 'Pelayan & Tim Pendoa Gereja'
+      };
+
+      const currentNotifs = StorageManager.getNotifications();
+      StorageManager.saveNotifications([jemaatNotif, ...currentNotifs]);
+      playNotificationChime();
+
+      StorageManager.logActivity(
+        currentUser.username,
+        `Mendoakan & menyelesaikan permohonan doa jemaat: ${target.nama_pemohon}`,
+        'Permohonan Doa'
+      );
+
+      setAdminToast(`Permohonan doa "${target.nama_pemohon}" telah ditandai Selesai Doa (Sudah Didoakan) dan notifikasi telah dikirim ke jemaat!`);
+      setTimeout(() => setAdminToast(null), 4000);
+    }
+
+    window.dispatchEvent(new Event('cms_data_changed'));
   };
 
   const handleDeleteEvent = (id: string, nama: string) => {
@@ -679,23 +748,45 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
                 </div>
 
                 <div className="flex items-center justify-between pt-2 border-t border-slate-800 text-xs">
-                  <span className={`px-2.5 py-1 rounded-xl text-[10px] font-bold ${
-                    d.status === 'Selesai Doa' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'
+                  <span className={`px-2.5 py-1 rounded-xl text-[10px] font-bold flex items-center gap-1.5 ${
+                    d.status === 'Selesai Doa' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                   }`}>
-                    {d.status || 'Proses Doa'}
+                    {d.status === 'Selesai Doa' ? (
+                      <>
+                        <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                        <span>Sudah Didoakan</span>
+                      </>
+                    ) : (
+                      <>
+                        <Heart className="w-3 h-3 text-amber-400 animate-pulse" />
+                        <span>Proses Doa</span>
+                      </>
+                    )}
                   </span>
 
                   {currentUser.role !== 'JEMAAT' && (
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => handleUpdateStatusDoa(d.doa_id, 'Selesai Doa')}
-                        className="px-2 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold cursor-pointer"
-                      >
-                        Selesai Doa
-                      </button>
+                    <div className="flex items-center gap-1.5">
+                      {d.status !== 'Selesai Doa' ? (
+                        <button
+                          onClick={() => handleUpdateStatusDoa(d.doa_id, 'Selesai Doa')}
+                          className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold flex items-center gap-1 shadow-sm cursor-pointer transition-all active:scale-95"
+                          title="Tandai Sudah Didoakan & Kirim Notifikasi ke Jemaat"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                          <span>Selesai Doa</span>
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleUpdateStatusDoa(d.doa_id, 'Proses Doa')}
+                          className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] cursor-pointer"
+                          title="Kembalikan status ke Proses Doa"
+                        >
+                          Ubah
+                        </button>
+                      )}
                       <button
                         onClick={() => handleDeleteDoa(d.doa_id)}
-                        className="p-1 rounded-lg bg-rose-900/40 text-rose-300 hover:bg-rose-900/80 cursor-pointer"
+                        className="p-1.5 rounded-lg bg-rose-900/40 text-rose-300 hover:bg-rose-900/80 cursor-pointer transition-all"
                         title="Hapus Doa"
                       >
                         <Trash2 className="w-3.5 h-3.5" />

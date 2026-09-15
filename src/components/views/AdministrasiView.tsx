@@ -610,6 +610,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                     <th className="p-3.5">Nama Peserta Sidi</th>
                     <th className="p-3.5">Tanggal Sidi</th>
                     <th className="p-3.5">Pendeta Melayani</th>
+                    <th className="p-3.5 text-center">Berita Acara</th>
                     {isAdmin && <th className="p-3.5 text-center">Aksi</th>}
                   </tr>
                 </thead>
@@ -620,6 +621,26 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                       <td className="p-3.5 font-bold text-white text-sm">{s.nama_jemaat || s.jemaat_id}</td>
                       <td className="p-3.5">{s.tanggal}</td>
                       <td className="p-3.5">{s.pendeta}</td>
+                      <td className="p-3.5 text-center">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            onClick={() => handleOpenPreviewSidi(s)}
+                            className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white inline-flex items-center gap-1 text-[11px] font-semibold cursor-pointer border border-slate-700 transition-all shadow-sm"
+                            title="Pratinjau Berita Acara Peneguhan Sidi"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-blue-400" />
+                            <span>Lihat Akta</span>
+                          </button>
+                          <button
+                            onClick={() => cetakBeritaAcaraSidiPDF(s)}
+                            className="px-2.5 py-1.5 rounded-lg bg-blue-900/50 hover:bg-blue-900/90 text-blue-300 inline-flex items-center gap-1 text-[11px] font-semibold cursor-pointer border border-blue-700/40 transition-all shadow-sm"
+                            title="Unduh PDF Berita Acara Sidi"
+                          >
+                            <Printer className="w-3.5 h-3.5" />
+                            <span>PDF</span>
+                          </button>
+                        </div>
+                      </td>
                       {isAdmin && (
                         <td className="p-3.5 text-center">
                           <button
@@ -666,6 +687,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                     <th className="p-3.5">Mempelai Wanita (Istri)</th>
                     <th className="p-3.5">Tanggal Pemberkatan</th>
                     <th className="p-3.5">Pendeta Pemberkat</th>
+                    <th className="p-3.5 text-center">Berita Acara</th>
                     {isAdmin && <th className="p-3.5 text-center">Aksi</th>}
                   </tr>
                 </thead>
@@ -677,6 +699,26 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                       <td className="p-3.5 font-bold text-white">{n.istri}</td>
                       <td className="p-3.5">{n.tanggal}</td>
                       <td className="p-3.5">{n.pendeta}</td>
+                      <td className="p-3.5 text-center">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            onClick={() => handleOpenPreviewNikah(n)}
+                            className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white inline-flex items-center gap-1 text-[11px] font-semibold cursor-pointer border border-slate-700 transition-all shadow-sm"
+                            title="Pratinjau Berita Acara Pemberkatan Pernikahan"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-pink-400" />
+                            <span>Lihat Akta</span>
+                          </button>
+                          <button
+                            onClick={() => cetakBeritaAcaraNikahPDF(n)}
+                            className="px-2.5 py-1.5 rounded-lg bg-emerald-900/50 hover:bg-emerald-900/90 text-emerald-300 inline-flex items-center gap-1 text-[11px] font-semibold cursor-pointer border border-emerald-700/40 transition-all shadow-sm"
+                            title="Unduh PDF Berita Acara Nikah"
+                          >
+                            <Printer className="w-3.5 h-3.5" />
+                            <span>PDF</span>
+                          </button>
+                        </div>
+                      </td>
                       {isAdmin && (
                         <td className="p-3.5 text-center">
                           <button
@@ -893,6 +935,187 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL PRATINJAU BERITA ACARA RESMI & TANDA TANGAN */}
+      {selectedBeritaAcara && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md overflow-y-auto animate-fade-in">
+          <div className="w-full max-w-3xl bg-slate-900 border-2 border-indigo-500/50 rounded-3xl shadow-2xl overflow-hidden my-auto text-slate-100 flex flex-col max-h-[92vh]">
+            {/* Modal Top Bar */}
+            <div className="p-4 sm:p-5 bg-slate-950 border-b border-slate-800 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2.5">
+                <Scroll className="w-5 h-5 text-indigo-400" />
+                <div>
+                  <h3 className="font-extrabold text-white text-sm sm:text-base leading-snug">
+                    {selectedBeritaAcara.title}
+                  </h3>
+                  <p className="text-[11px] text-slate-400 font-mono">
+                    Nomor Dokumen: {selectedBeritaAcara.nomor}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedBeritaAcara(null)}
+                className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-all cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Document Preview Area */}
+            <div className="p-4 sm:p-6 overflow-y-auto flex-1 bg-slate-950/60 space-y-5">
+              {/* Paper Layout */}
+              <div className="bg-white text-slate-900 rounded-2xl p-6 sm:p-8 shadow-xl border border-slate-200">
+                {/* Kop Surat Gereja */}
+                <div className="text-center pb-4 border-b-2 border-slate-900 mb-6">
+                  <h2 className="text-base sm:text-lg font-black uppercase tracking-wider text-slate-950">
+                    {StorageManager.getSettings().nama_gereja || 'SYSTEM MANAGEMENT CHURCH'}
+                  </h2>
+                  <p className="text-xs text-slate-600 mt-1">
+                    {StorageManager.getSettings().alamat || 'Sekretariat & Gedung Ibadah Jemaat'}
+                  </p>
+                  <p className="text-[10px] text-slate-500 mt-0.5 font-mono">
+                    {StorageManager.getSettings().telepon ? `Telp: ${StorageManager.getSettings().telepon} | ` : ''}
+                    Sistem Administrasi Sakramen &amp; Akta Gerejawi Sah
+                  </p>
+                </div>
+
+                {/* Judul Berita Acara */}
+                <div className="text-center my-4">
+                  <h3 className="text-sm sm:text-base font-extrabold tracking-wide text-slate-950 uppercase underline decoration-2 underline-offset-4">
+                    {selectedBeritaAcara.title}
+                  </h3>
+                  <p className="text-xs font-semibold text-slate-600 mt-1 font-mono">
+                    No: {selectedBeritaAcara.nomor}
+                  </p>
+                </div>
+
+                {/* Paragraf Pembuka */}
+                <p className="text-xs leading-relaxed text-slate-700 my-4 text-justify">
+                  Pada hari ini, dengan penuh rasa syukur ke hadapan Tuhan Yang Maha Esa dan disaksikan oleh Majelis serta Jemaat, telah dilaksanakan sakramen gerejawi yang sah dengan data dan ketetapan sebagai berikut:
+                </p>
+
+                {/* Tabel Data Berita Acara */}
+                <div className="overflow-hidden rounded-xl border border-slate-300 my-4 text-xs">
+                  <table className="w-full border-collapse">
+                    <tbody>
+                      {selectedBeritaAcara.items.map((item, idx) => (
+                        <tr key={idx} className={idx % 2 === 0 ? 'bg-slate-50' : 'bg-white'}>
+                          <td className="w-1/3 px-3.5 py-2.5 font-bold text-slate-700 border-b border-slate-200">
+                            {item.label}
+                          </td>
+                          <td className="w-2/3 px-3.5 py-2.5 text-slate-900 font-semibold border-b border-slate-200">
+                            : {item.val}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Paragraf Penutup */}
+                <p className="text-xs leading-relaxed text-slate-700 my-3 text-justify">
+                  Demikian Berita Acara ini dibuat dan disahkan dengan sebenar-benarnya dalam persekutuan jemaat untuk dipergunakan sebagaimana mestinya.
+                </p>
+
+                {/* BLOK TANDA TANGAN MENGETAHUI */}
+                <div className="mt-8 pt-4 border-t border-slate-200">
+                  <div className="text-right text-xs text-slate-600 mb-3 italic">
+                    Ditetapkan pada: {selectedBeritaAcara.tanggal || new Date().toISOString().slice(0, 10)}
+                  </div>
+
+                  <div className="text-center font-bold text-xs uppercase tracking-wider text-slate-900 mb-4">
+                    Mengetahui,
+                  </div>
+
+                  {/* Dua Kolom: Sebelah Kiri & Sebelah Kanan */}
+                  <div className="grid grid-cols-2 gap-4 text-center">
+                    {/* Sebelah Kiri: Pendeta Jemaat / Gembala */}
+                    <div className="flex flex-col items-center">
+                      <div className="text-xs font-bold text-slate-950 mb-1">
+                        Pendeta Jemaat / Gembala
+                      </div>
+                      <div className="w-full max-w-[200px] h-20 border border-dashed border-slate-300 rounded-lg my-2 flex items-center justify-center bg-slate-50/50">
+                        <span className="text-[10px] text-slate-400 italic">
+                          (Tanda Tangan &amp; Cap Gereja)
+                        </span>
+                      </div>
+                      <div className="font-bold text-xs text-slate-900 border-b border-slate-800 pb-0.5 min-w-[190px]">
+                        ( {selectedBeritaAcara.pendeta || 'Pdt. Dr. Herman Setyawan, M.Th'} )
+                      </div>
+                      <div className="text-[10px] text-slate-500 mt-1">
+                        Pendeta Pelayan / Gembala Jemaat
+                      </div>
+                    </div>
+
+                    {/* Sebelah Kanan: Ketua Majelis */}
+                    <div className="flex flex-col items-center">
+                      <div className="text-xs font-bold text-slate-950 mb-1">
+                        Ketua Majelis
+                      </div>
+                      <div className="w-full max-w-[200px] h-20 border border-dashed border-slate-300 rounded-lg my-2 flex items-center justify-center bg-slate-50/50">
+                        <span className="text-[10px] text-slate-400 italic">
+                          (Tanda Tangan &amp; Cap Majelis)
+                        </span>
+                      </div>
+                      <div className="font-bold text-xs text-slate-900 border-b border-slate-800 pb-0.5 min-w-[190px]">
+                        ( .................................................... )
+                      </div>
+                      <div className="text-[10px] text-slate-500 mt-1">
+                        Ketua Majelis Jemaat
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Bottom Actions */}
+            <div className="p-4 bg-slate-950 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 shrink-0">
+              <div className="text-xs text-slate-400 flex items-center gap-1.5">
+                <Check className="w-4 h-4 text-emerald-400" />
+                <span>Format resmi sesuai ketentuan Sinode / PGI &amp; Buku Induk Gereja</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const settings = StorageManager.getSettings();
+                    const headers = ['Parameter Berita Acara', 'Keterangan Resmi'];
+                    const rows = selectedBeritaAcara.items.map((it) => [it.label, it.val]);
+                    const sigs = getSakramenSignatures(selectedBeritaAcara.pendeta, selectedBeritaAcara.tanggal);
+                    printDocument(selectedBeritaAcara.title, headers, rows, settings, sigs);
+                  }}
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-slate-700 transition-all shadow-sm"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Cetak / Print</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const settings = StorageManager.getSettings();
+                    const headers = ['Parameter Berita Acara', 'Keterangan Resmi'];
+                    const rows = selectedBeritaAcara.items.map((it) => [it.label, it.val]);
+                    const sigs = getSakramenSignatures(selectedBeritaAcara.pendeta, selectedBeritaAcara.tanggal);
+                    exportToPDF(
+                      selectedBeritaAcara.title,
+                      headers,
+                      rows,
+                      settings,
+                      `Berita_Acara_${selectedBeritaAcara.type}_${selectedBeritaAcara.nama.replace(/[^a-zA-Z0-9]/g, '_')}`,
+                      sigs
+                    );
+                  }}
+                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-lg shadow-indigo-600/30 transition-all"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Unduh PDF Resmi</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

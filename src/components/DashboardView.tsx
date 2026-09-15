@@ -656,6 +656,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           n.user_id === 'JEMAAT' ||
           n.user_id === currentUser.username ||
           n.user_id === currentUser.jemaat_id ||
+          (n.user_id && currentUser.nama && n.user_id.toLowerCase().trim() === currentUser.nama.toLowerCase().trim()) ||
           n.tujuan_role === 'ALL' ||
           n.tujuan_role === 'JEMAAT' ||
           isAdmin)
@@ -942,11 +943,73 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       'Permohonan Doa'
     );
 
+    // Kirim notifikasi yang muncul pada ADMIN
+    const notifForAdmin: NotificationItem = {
+      notif_id: `NTF-DOA-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      user_id: 'ADMIN',
+      tujuan_role: 'ADMIN',
+      judul: '🙏 Permohonan Doa Baru Masuk',
+      pesan: `Permohonan doa baru dari jemaat ${currentUser.nama || 'Jemaat'} (${prayerTopic}): "${prayerText}". Mohon didukung dalam doa bersama majelis.`,
+      status_baca: 'Belum',
+      tanggal: new Date().toISOString().slice(0, 10),
+      tipe: 'Penting',
+      pengirim: currentUser.nama || 'Jemaat'
+    };
+    const currentNotifs = StorageManager.getNotifications();
+    StorageManager.saveNotifications([notifForAdmin, ...currentNotifs]);
+    setNotificationsList([notifForAdmin, ...currentNotifs]);
+    playNotificationChime();
+
     window.dispatchEvent(new Event('cms_data_changed'));
 
     setPrayerText('');
     setPrayerSubmitted(true);
     setTimeout(() => setPrayerSubmitted(false), 4000);
+  };
+
+  // Tandai Permohonan Doa Selesai oleh Admin & Kirim Notifikasi ke Jemaat
+  const handleAdminSelesaiDoa = (prayerId: string) => {
+    const target = prayerRequests.find((p) => p.prayer_id === prayerId);
+    const updated = prayerRequests.map((p) =>
+      p.prayer_id === prayerId ? { ...p, status: 'Terjawab' as const } : p
+    );
+    setPrayerRequests(updated);
+    StorageManager.savePrayerRequests(updated);
+
+    // Sync to Doa list
+    const doaList = StorageManager.getDoa();
+    const updatedDoa = doaList.map((d) => {
+      if (target && (d.nama_pemohon === target.jemaat_name || d.isi_permohonan === target.permohonan)) {
+        return { ...d, status: 'Selesai Doa' as const };
+      }
+      return d;
+    });
+    StorageManager.saveDoa(updatedDoa);
+
+    if (target) {
+      const jemaatNotif: NotificationItem = {
+        notif_id: `NTF-DOA-DONE-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        user_id: target.jemaat_name,
+        tujuan_role: 'JEMAAT',
+        judul: '🕊️ Pokok Doa Anda Sudah Didoakan',
+        pesan: `Puji Tuhan, Saudara/i ${target.jemaat_name}. Permohonan doa Anda mengenai "${target.topik}": "${target.permohonan}" telah selesai didoakan oleh Pelayan & Tim Pendoa Gereja. "Doa orang yang benar, bila dengan yakin didoakan, sangat besar kuasanya." (Yakobus 5:16)`,
+        status_baca: 'Belum',
+        tanggal: new Date().toISOString().slice(0, 10),
+        tipe: 'Penting',
+        pengirim: currentUser.nama || 'Pelayan & Tim Pendoa Gereja'
+      };
+      const curNotifs = StorageManager.getNotifications();
+      StorageManager.saveNotifications([jemaatNotif, ...curNotifs]);
+      setNotificationsList([jemaatNotif, ...curNotifs]);
+      playNotificationChime();
+
+      StorageManager.logActivity(
+        currentUser.nama,
+        `Mendoakan & menyelesaikan permohonan doa jemaat: ${target.jemaat_name}`,
+        'Permohonan Doa'
+      );
+    }
+    window.dispatchEvent(new Event('cms_data_changed'));
   };
 
   // Quick Save Customizer Settings
@@ -1569,6 +1632,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               n.user_id === 'JEMAAT' ||
               n.user_id === currentUser.username ||
               n.user_id === currentUser.jemaat_id ||
+              (n.user_id && currentUser.nama && n.user_id.toLowerCase().trim() === currentUser.nama.toLowerCase().trim()) ||
               n.tujuan_role === 'ALL' ||
               n.tujuan_role === 'JEMAAT' ||
               isAdmin)
@@ -2150,7 +2214,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       />
                       <button
                         type="submit"
-                        className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/30 flex items-center gap-1.5 shrink-0"
+                        className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/30 flex items-center gap-1.5 shrink-0 cursor-pointer"
                       >
                         <Send className="w-3.5 h-3.5" />
                         <span>Kirim</span>
@@ -2159,6 +2223,83 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </div>
                 </div>
               </form>
+
+              {/* Status Permohonan Doa untuk Jemaat atau Tindakan Doa Cepat untuk Admin */}
+              {prayerRequests.length > 0 && (
+                <div className="pt-3 border-t border-white/10 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                      {isAdmin ? 'Permohonan Doa Jemaat Masuk' : 'Status Permohonan Doa Anda'}
+                    </span>
+                    <span className="text-[10px] text-slate-400">
+                      {isAdmin ? 'Admin & Majelis dapat menekan Selesai Doa' : 'Dipantau langsung oleh Tim Pendoa Gereja'}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+                    {(isAdmin
+                      ? prayerRequests
+                      : prayerRequests.filter(
+                          (p) =>
+                            p.jemaat_name?.toLowerCase().trim() === currentUser.nama?.toLowerCase().trim()
+                        )
+                    )
+                      .slice(0, 5)
+                      .map((pr) => {
+                        const isDone = pr.status === 'Terjawab' || pr.status === 'Selesai Doa';
+                        return (
+                          <div
+                            key={pr.prayer_id}
+                            className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs"
+                          >
+                            <div className="space-y-1 flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-white truncate">
+                                  {isAdmin ? pr.jemaat_name : 'Permohonan Anda'}
+                                </span>
+                                <span className="px-2 py-0.5 rounded-md bg-indigo-950/80 text-indigo-300 text-[10px] border border-indigo-800/40">
+                                  {pr.topik}
+                                </span>
+                                <span className="text-[10px] text-slate-500">{pr.tanggal}</span>
+                              </div>
+                              <p className="text-slate-300 text-[11px] italic truncate">
+                                "{pr.permohonan}"
+                              </p>
+                            </div>
+
+                            <div className="flex items-center gap-2 shrink-0">
+                              {isDone ? (
+                                <span className="px-2.5 py-1 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold flex items-center gap-1.5">
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                                  <span>Sudah Didoakan</span>
+                                </span>
+                              ) : (
+                                <>
+                                  <span className="px-2.5 py-1 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[11px] font-bold flex items-center gap-1.5">
+                                    <Clock className="w-3.5 h-3.5 text-amber-400" />
+                                    <span>Dalam Doa</span>
+                                  </span>
+
+                                  {isAdmin && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleAdminSelesaiDoa(pr.prayer_id)}
+                                      className="px-2.5 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold flex items-center gap-1 shadow-sm cursor-pointer transition-all active:scale-95"
+                                      title="Tandai Selesai Doa & Beritahu Jemaat"
+                                    >
+                                      <Check className="w-3.5 h-3.5" />
+                                      <span>Selesai Doa</span>
+                                    </button>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

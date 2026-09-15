@@ -161,7 +161,7 @@ export interface Doa {
   kategori: string;
   isi_permohonan: string;
   tanggal: string;
-  status: 'Proses Doa' | 'Dijawab';
+  status: 'Proses Doa' | 'Dijawab' | 'Selesai Doa';
 }
 
 export interface Pengumuman {
