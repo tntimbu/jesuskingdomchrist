@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { GalleryItem, User, FeaturedVideo } from '../../types';
 import { StorageManager } from '../../utils/storage';
 import { parseSocialVideoUrl } from '../../utils/videoHelper';
+import { broadcastContentNotification } from '../../utils/notificationBroadcast';
 import {
   Image as ImageIcon,
   Video,
@@ -193,6 +194,17 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser, initialTab 
       const updatedFeats = [newFeat, ...existing];
       StorageManager.saveFeaturedVideos(updatedFeats);
       setFeaturedVideos(updatedFeats);
+
+      // Broadcast floating notification for new video
+      broadcastContentNotification({
+        category: 'Video',
+        action: 'TAMBAH',
+        title: mediaForm.judul,
+        summary: mediaForm.keterangan || `Video kegiatan "${mediaForm.judul}" telah diunggah ke galeri gereja.`,
+        targetView: 'galeri',
+        targetId: newItem.gallery_id,
+        senderName: currentUser.nama || 'Tim Multimedia Gereja'
+      });
     }
 
     StorageManager.logActivity(currentUser.username, `Mengunggah media galeri: ${newItem.judul}`, 'Galeri');
@@ -236,6 +248,17 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser, initialTab 
     StorageManager.saveFeaturedVideos(updatedList);
     StorageManager.logActivity(currentUser.username, `Menambahkan video media sosial: ${newVideo.judul}`, 'Galeri');
 
+    // Broadcast floating notification for newly added social video
+    broadcastContentNotification({
+      category: 'Video',
+      action: 'TAMBAH',
+      title: videoForm.judul,
+      summary: videoForm.keterangan || `Tayangan video ${videoForm.platform} "${videoForm.judul}" telah ditambahkan.`,
+      targetView: 'galeri',
+      targetId: newVideo.video_id,
+      senderName: currentUser.nama || 'Tim Multimedia Gereja'
+    });
+
     setIsVideoModalOpen(false);
     setVideoForm({
       judul: '',
@@ -255,6 +278,19 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser, initialTab 
     setFeaturedVideos(updated);
     StorageManager.saveFeaturedVideos(updated);
     StorageManager.logActivity(currentUser.username, `Mengaktifkan tayangan video utama ID ${id}`, 'Galeri');
+
+    const activated = updated.find((v) => v.video_id === id);
+    if (activated) {
+      broadcastContentNotification({
+        category: 'Video',
+        action: 'UPDATE',
+        title: activated.judul,
+        summary: `Tayangan video utama diperbarui: "${activated.judul}". Klik untuk menonton.`,
+        targetView: 'galeri',
+        targetId: id,
+        senderName: currentUser.nama || 'Tim Multimedia Gereja'
+      });
+    }
   };
 
   const handleDeleteSocialVideo = (id: string) => {

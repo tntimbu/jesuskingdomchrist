@@ -33,6 +33,7 @@ import { SplashScreen } from './components/SplashScreen';
 import { SuperAdminSaaSPanel } from './components/SuperAdminSaaSPanel';
 import { TenantLockedScreen } from './components/TenantLockedScreen';
 import { NavbarCustomizerModal } from './components/NavbarCustomizerModal';
+import { FloatingNotificationBanner } from './components/FloatingNotificationBanner';
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -246,6 +247,18 @@ export default function App() {
       // ignore
     }
   };
+
+  // Global listener for tab navigation events triggered by notifications or quick links
+  useEffect(() => {
+    const handleNavigateTab = (e: Event) => {
+      const ce = e as CustomEvent<{ tab: NavTab }>;
+      if (ce.detail && ce.detail.tab) {
+        handleSelectTab(ce.detail.tab);
+      }
+    };
+    window.addEventListener('navigate_to_tab', handleNavigateTab);
+    return () => window.removeEventListener('navigate_to_tab', handleNavigateTab);
+  }, []);
 
   // Handle Android Back Button / Navigation when logged in
   useEffect(() => {
@@ -600,6 +613,13 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* Floating Interactive Notification Banner for Content Updates & Announcements */}
+      <FloatingNotificationBanner
+        currentUser={effectiveUser}
+        settings={settings}
+        onNavigate={handleSelectTab}
+      />
 
       {/* Mobile Bottom Navigation Bar */}
       <BottomNav

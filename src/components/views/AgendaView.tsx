@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { EventSchedule, EventReservation, Doa, User, NotificationItem } from '../../types';
 import { StorageManager } from '../../utils/storage';
 import { playNotificationChime } from '../../utils/soundHelper';
+import { broadcastContentNotification } from '../../utils/notificationBroadcast';
 import {
   CalendarDays,
   Plus,
@@ -12,6 +13,7 @@ import {
   MessageSquare,
   X,
   Trash2,
+  Edit2,
   Sparkles,
   Ticket,
   Users,
@@ -61,6 +63,7 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
   const [selectedEventForAdmin, setSelectedEventForAdmin] = useState<EventSchedule | null>(null);
   const [isAllAdminReservationsModal, setIsAllAdminReservationsModal] = useState(false);
   const [reservationSearch, setReservationSearch] = useState('');
+  const [editingEventId, setEditingEventId] = useState<string | null>(null);
 
   const isMatchingEvent = (rEventId?: string, targetEventId?: string) => {
     if (!rEventId || !targetEventId) return false;
@@ -116,28 +119,98 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
     setDoaList(StorageManager.getDoa());
   };
 
+  const handleOpenAddEvent = () => {
+    setEditingEventId(null);
+    setEventForm({
+      nama: '',
+      kategori: 'Upcoming Special Event',
+      tanggal: new Date().toISOString().slice(0, 10),
+      jam: '09:00 - 12:00 WIB',
+      lokasi: 'Sanctuary Main Hall GKFC Pro',
+      pembicara: 'Pdt. Dr. Herman Setyawan, M.Th',
+      keterangan: 'Kebaktian KKR & Persekutuan Spesial',
+      kuota_kursi: 150
+    });
+    setIsEventModal(true);
+  };
+
+  const handleOpenEditEvent = (e: EventSchedule) => {
+    setEditingEventId(e.event_id);
+    setEventForm({
+      nama: e.nama,
+      kategori: e.kategori || 'Ibadah Raya',
+      tanggal: e.tanggal,
+      jam: e.jam,
+      lokasi: e.lokasi,
+      pembicara: e.pembicara || '',
+      keterangan: e.keterangan || '',
+      kuota_kursi: e.kuota_kursi || 150
+    });
+    setIsEventModal(true);
+  };
+
   const handleSaveEvent = (e: React.FormEvent) => {
     e.preventDefault();
     if (!eventForm.nama) return;
 
-    const uniqueSuffix = `${Date.now().toString().slice(-4)}${Math.random().toString(36).substring(2, 5)}`;
-    const newE: EventSchedule = {
-      event_id: `EVT-2026-${uniqueSuffix}`,
-      nama: eventForm.nama,
-      kategori: eventForm.kategori,
-      tanggal: eventForm.tanggal,
-      jam: eventForm.jam,
-      lokasi: eventForm.lokasi,
-      pembicara: eventForm.pembicara,
-      keterangan: eventForm.keterangan,
-      kuota_kursi: Number(eventForm.kuota_kursi) || 150
-    };
+    let updated: EventSchedule[];
+    let targetEventId = '';
+    const isEdit = !!editingEventId;
 
-    const updated = [newE, ...eventsList];
+    if (editingEventId) {
+      updated = eventsList.map((item) =>
+        item.event_id === editingEventId
+          ? {
+              ...item,
+              nama: eventForm.nama,
+              kategori: eventForm.kategori,
+              tanggal: eventForm.tanggal,
+              jam: eventForm.jam,
+              lokasi: eventForm.lokasi,
+              pembicara: eventForm.pembicara,
+              keterangan: eventForm.keterangan,
+              kuota_kursi: Number(eventForm.kuota_kursi) || 150
+            }
+          : item
+      );
+      targetEventId = editingEventId;
+      StorageManager.logActivity(currentUser.username, `Mengedit jadwal event: ${eventForm.nama}`, 'Jadwal & Event');
+      setAdminToast({ type: 'success', message: `Jadwal "${eventForm.nama}" berhasil diperbarui!` });
+    } else {
+      const uniqueSuffix = `${Date.now().toString().slice(-4)}${Math.random().toString(36).substring(2, 5)}`;
+      const newE: EventSchedule = {
+        event_id: `EVT-2026-${uniqueSuffix}`,
+        nama: eventForm.nama,
+        kategori: eventForm.kategori,
+        tanggal: eventForm.tanggal,
+        jam: eventForm.jam,
+        lokasi: eventForm.lokasi,
+        pembicara: eventForm.pembicara,
+        keterangan: eventForm.keterangan,
+        kuota_kursi: Number(eventForm.kuota_kursi) || 150
+      };
+      updated = [newE, ...eventsList];
+      targetEventId = newE.event_id;
+      StorageManager.logActivity(currentUser.username, `Membuat event baru: ${newE.nama}`, 'Jadwal & Event');
+      setAdminToast({ type: 'success', message: `Jadwal "${newE.nama}" berhasil diterbitkan!` });
+    }
+
     setEventsList(updated);
     StorageManager.saveEvents(updated);
-    StorageManager.logActivity(currentUser.username, `Membuat event baru: ${newE.nama}`, 'Jadwal & Event');
+
+    // Broadcast Floating Notification to all users
+    broadcastContentNotification({
+      category: 'Jadwal',
+      action: isEdit ? 'UPDATE' : 'TAMBAH',
+      title: eventForm.nama,
+      summary: `Informasi ${eventForm.kategori} "${eventForm.nama}" (${eventForm.tanggal}, ${eventForm.jam}) di ${eventForm.lokasi}`,
+      targetView: 'jadwal',
+      targetId: targetEventId,
+      senderName: currentUser.nama || 'Admin Jadwal & Acara'
+    });
+
     setIsEventModal(false);
+    setEditingEventId(null);
   };
 
   const handleSaveReservation = (e: React.FormEvent) => {
@@ -469,7 +542,17 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
             {currentUser.role !== 'JEMAAT' && (
               <button
                 onClick={() => {
-                  setEventForm((prev) => ({ ...prev, kategori: 'Ibadah Raya' }));
+                  setEditingEventId(null);
+                  setEventForm({
+                    nama: '',
+                    kategori: 'Ibadah Raya',
+                    tanggal: new Date().toISOString().slice(0, 10),
+                    jam: '09:00 - 11:30 WIB',
+                    lokasi: 'Sanctuary GKFC Pro',
+                    pembicara: 'Pdt. Dr. Herman Setyawan, M.Th',
+                    keterangan: 'Ibadah Raya Mingguan',
+                    kuota_kursi: 150
+                  });
                   setIsEventModal(true);
                 }}
                 className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md flex items-center gap-1.5 cursor-pointer"
@@ -494,13 +577,22 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-mono text-slate-400">{e.tanggal}</span>
                       {currentUser.role !== 'JEMAAT' && (
-                        <button
-                          onClick={() => handleDeleteEvent(e.event_id, e.nama)}
-                          className="p-1.5 rounded-lg bg-rose-900/40 text-rose-300 hover:bg-rose-900/80 transition-all text-[11px] cursor-pointer"
-                          title="Hapus Event"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleOpenEditEvent(e)}
+                            className="p-1.5 rounded-lg bg-indigo-900/40 text-indigo-300 hover:bg-indigo-800 transition-all text-[11px] cursor-pointer"
+                            title="Edit Jadwal"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteEvent(e.event_id, e.nama)}
+                            className="p-1.5 rounded-lg bg-rose-900/40 text-rose-300 hover:bg-rose-900/80 transition-all text-[11px] cursor-pointer"
+                            title="Hapus Event"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -548,7 +640,17 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
                 </button>
                 <button
                   onClick={() => {
-                    setEventForm((prev) => ({ ...prev, kategori: 'Upcoming Event Spesial' }));
+                    setEditingEventId(null);
+                    setEventForm({
+                      nama: '',
+                      kategori: 'Upcoming Event Spesial',
+                      tanggal: new Date().toISOString().slice(0, 10),
+                      jam: '18:00 - 21:00 WIB',
+                      lokasi: 'Sanctuary GKFC Pro',
+                      pembicara: '',
+                      keterangan: 'Kebaktian & Persekutuan Spesial',
+                      kuota_kursi: 150
+                    });
                     setIsEventModal(true);
                   }}
                   className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold shadow-md flex items-center gap-1.5 cursor-pointer"
@@ -583,13 +685,22 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-mono text-amber-300 font-bold">{e.tanggal}</span>
                         {currentUser.role !== 'JEMAAT' && (
-                          <button
-                            onClick={() => handleDeleteEvent(e.event_id, e.nama)}
-                            className="p-1 rounded-lg bg-rose-900/40 text-rose-300 hover:bg-rose-900/80 transition-all cursor-pointer"
-                            title="Hapus Event"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => handleOpenEditEvent(e)}
+                              className="p-1 rounded-lg bg-indigo-900/40 text-indigo-300 hover:bg-indigo-800 transition-all cursor-pointer"
+                              title="Edit Event"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteEvent(e.event_id, e.nama)}
+                              className="p-1 rounded-lg bg-rose-900/40 text-rose-300 hover:bg-rose-900/80 transition-all cursor-pointer"
+                              title="Hapus Event"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -1191,8 +1302,16 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
           <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-6 text-white space-y-4">
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <h3 className="text-base font-bold text-white">Tambah Jadwal Ibadah / Event Baru</h3>
-              <button onClick={() => setIsEventModal(false)} className="p-1 rounded-lg text-slate-400 hover:text-white cursor-pointer">
+              <h3 className="text-base font-bold text-white">
+                {editingEventId ? 'Edit Jadwal Ibadah / Event' : 'Tambah Jadwal Ibadah / Event Baru'}
+              </h3>
+              <button
+                onClick={() => {
+                  setIsEventModal(false);
+                  setEditingEventId(null);
+                }}
+                className="p-1 rounded-lg text-slate-400 hover:text-white cursor-pointer"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>

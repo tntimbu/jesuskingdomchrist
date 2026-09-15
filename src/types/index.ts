@@ -220,6 +220,26 @@ export interface GalleryItem {
   penulis?: string;
 }
 
+export type NavTab =
+  | 'dashboard'
+  | 'jemaat'
+  | 'wilayah'
+  | 'administrasi'
+  | 'keuangan'
+  | 'jadwal'
+  | 'doa'
+  | 'pengumuman'
+  | 'renungan'
+  | 'galeri'
+  | 'laporan'
+  | 'jemaat_portal'
+  | 'settings'
+  | 'agenda'
+  | 'media'
+  | 'chat'
+  | 'pustaka'
+  | 'lainnya';
+
 export interface NotificationItem {
   notif_id: string;
   user_id: string;
@@ -231,6 +251,9 @@ export interface NotificationItem {
   tipe?: 'Peringatan' | 'Informasi' | 'Penting';
   pengirim?: string;
   is_pinned?: boolean;
+  target_view?: NavTab | string;
+  target_id?: string;
+  kategori_sumber?: 'Jadwal' | 'Renungan' | 'Pengumuman' | 'Video' | 'Lainnya';
 }
 
 export interface FeaturedVideo {

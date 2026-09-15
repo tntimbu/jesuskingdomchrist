@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Pengumuman, Renungan, User } from '../../types';
 import { StorageManager } from '../../utils/storage';
+import { broadcastContentNotification } from '../../utils/notificationBroadcast';
 import { Megaphone, BookOpen, Plus, Heart, Share2, Sparkles, X, Trash2, Volume2, Maximize2, Edit3, Check } from 'lucide-react';
 import { RenunganFullscreenModal } from '../RenunganFullscreenModal';
 import { RenunganAudioPlayer } from '../RenunganAudioPlayer';
@@ -161,6 +162,20 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
 
     setPengumumanList(updated);
     StorageManager.savePengumuman(updated);
+
+    // Broadcast Floating Notification for Pengumuman
+    const isEditPengumuman = !!editingPengumumanId;
+    const targetPengumumanId = editingPengumumanId || (updated[0] && updated[0].pengumuman_id);
+    broadcastContentNotification({
+      category: 'Pengumuman',
+      action: isEditPengumuman ? 'UPDATE' : 'TAMBAH',
+      title: pengumumanForm.judul,
+      summary: pengumumanForm.isi.length > 110 ? `${pengumumanForm.isi.slice(0, 110)}...` : pengumumanForm.isi,
+      targetView: 'pengumuman',
+      targetId: targetPengumumanId,
+      senderName: pengumumanForm.penulis || currentUser.nama || 'Sekretariat Gereja'
+    });
+
     window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { action: 'pengumuman_updated' } }));
     setIsPengumumanModal(false);
   };
@@ -170,6 +185,7 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
     if (!renunganForm.judul || !renunganForm.isi) return;
 
     let updated: Renungan[];
+    const isEditRenungan = !!editingRenunganId;
 
     if (editingRenunganId) {
       updated = renunganList.map((item) =>
@@ -202,6 +218,20 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
 
     setRenunganList(updated);
     StorageManager.saveRenungan(updated);
+
+    // Broadcast Floating Notification for Renungan
+    const targetRenunganId = editingRenunganId || (updated[0] && updated[0].renungan_id);
+    const summaryPrefix = renunganForm.ayat_alkitab ? `(${renunganForm.ayat_alkitab}) ` : '';
+    broadcastContentNotification({
+      category: 'Renungan',
+      action: isEditRenungan ? 'UPDATE' : 'TAMBAH',
+      title: renunganForm.judul,
+      summary: `${summaryPrefix}${renunganForm.isi.length > 100 ? `${renunganForm.isi.slice(0, 100)}...` : renunganForm.isi}`,
+      targetView: 'renungan',
+      targetId: targetRenunganId,
+      senderName: renunganForm.penulis || currentUser.nama || 'Pelayan Firman'
+    });
+
     setIsRenunganModal(false);
     setEditingRenunganId(null);
   };
