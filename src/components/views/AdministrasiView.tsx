@@ -21,8 +21,12 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
   const [isSidiModal, setIsSidiModal] = useState(false);
   const [isNikahModal, setIsNikahModal] = useState(false);
 
-  // Upload file state for specific Baptisan
-  const [uploadTargetId, setUploadTargetId] = useState<string | null>(null);
+  // Upload file state for specific Sakramen (Baptisan, Sidi, Pernikahan)
+  const [uploadTarget, setUploadTarget] = useState<{
+    type: 'BAPTISAN' | 'SIDI' | 'PERNIKAHAN';
+    id: string;
+    name: string;
+  } | null>(null);
   const [uploadUrlInput, setUploadUrlInput] = useState<string>('');
 
   // Berita Acara Preview Modal
@@ -51,7 +55,8 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
   const [sidiForm, setSidiForm] = useState({
     nama_jemaat: '',
     tanggal: new Date().toISOString().slice(0, 10),
-    pendeta: 'Pdt. Dr. Herman Setyawan, M.Th'
+    pendeta: 'Pdt. Dr. Herman Setyawan, M.Th',
+    file_surat_sidi: ''
   });
 
   const [nikahForm, setNikahForm] = useState({
@@ -59,7 +64,8 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
     istri: '',
     tanggal: new Date().toISOString().slice(0, 10),
     pendeta: 'Pdt. Dr. Herman Setyawan, M.Th',
-    lokasi: 'Gedung Sanctuary Utama'
+    lokasi: 'Gedung Sanctuary Utama',
+    file_surat_nikah: ''
   });
 
   useEffect(() => {
@@ -125,18 +131,46 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
     });
   };
 
-  const handleUploadSuratFile = (baptisan_id: string, fileData: string) => {
-    const updated = baptisanList.map((b) => {
-      if (b.baptisan_id === baptisan_id) {
-        return { ...b, file_surat_baptis: fileData };
-      }
-      return b;
-    });
-    setBaptisanList(updated);
-    StorageManager.saveBaptisan(updated);
-    StorageManager.logActivity(currentUser.username, `Upload Surat Baptisan ID: ${baptisan_id}`, 'Administrasi Sacraments');
-    window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { action: 'baptisan_file_uploaded' } }));
-    setUploadTargetId(null);
+  const handleUploadSuratFile = (
+    type: 'BAPTISAN' | 'SIDI' | 'PERNIKAHAN',
+    targetId: string,
+    fileData: string
+  ) => {
+    if (type === 'BAPTISAN') {
+      const updated = baptisanList.map((b) => {
+        if (b.baptisan_id === targetId) {
+          return { ...b, file_surat_baptis: fileData };
+        }
+        return b;
+      });
+      setBaptisanList(updated);
+      StorageManager.saveBaptisan(updated);
+      StorageManager.logActivity(currentUser.username, `Upload Surat Baptisan ID: ${targetId}`, 'Administrasi Sacraments');
+      window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { action: 'baptisan_file_uploaded' } }));
+    } else if (type === 'SIDI') {
+      const updated = sidiList.map((s) => {
+        if (s.sidi_id === targetId) {
+          return { ...s, file_surat_sidi: fileData };
+        }
+        return s;
+      });
+      setSidiList(updated);
+      StorageManager.saveSidi(updated);
+      StorageManager.logActivity(currentUser.username, `Upload Surat Sidi ID: ${targetId}`, 'Administrasi Sacraments');
+      window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { action: 'sidi_file_uploaded' } }));
+    } else if (type === 'PERNIKAHAN') {
+      const updated = pernikahanList.map((n) => {
+        if (n.nikah_id === targetId) {
+          return { ...n, file_surat_nikah: fileData };
+        }
+        return n;
+      });
+      setPernikahanList(updated);
+      StorageManager.savePernikahan(updated);
+      StorageManager.logActivity(currentUser.username, `Upload Surat Nikah ID: ${targetId}`, 'Administrasi Sacraments');
+      window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { action: 'nikah_file_uploaded' } }));
+    }
+    setUploadTarget(null);
     setUploadUrlInput('');
   };
 
@@ -150,13 +184,21 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
       nama_jemaat: sidiForm.nama_jemaat,
       tanggal: sidiForm.tanggal,
       pendeta: sidiForm.pendeta,
-      nomor_surat: `SDI/${settings.nama_gereja ? settings.nama_gereja.slice(0, 4).toUpperCase() : 'GKFC'}/2026/${sidiForm.tanggal.slice(5, 7)}/${(sidiList.length + 1).toString().padStart(3, '0')}`
+      nomor_surat: `SDI/${settings.nama_gereja ? settings.nama_gereja.slice(0, 4).toUpperCase() : 'GKFC'}/2026/${sidiForm.tanggal.slice(5, 7)}/${(sidiList.length + 1).toString().padStart(3, '0')}`,
+      file_surat_sidi: sidiForm.file_surat_sidi
     };
     const updated = [newS, ...sidiList];
     setSidiList(updated);
     StorageManager.saveSidi(updated);
     StorageManager.logActivity(currentUser.username, `Input Surat Peneguhan Sidi: ${newS.nama_jemaat}`, 'Administrasi Sacraments');
+    window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { action: 'sidi_updated' } }));
     setIsSidiModal(false);
+    setSidiForm({
+      nama_jemaat: '',
+      tanggal: new Date().toISOString().slice(0, 10),
+      pendeta: 'Pdt. Dr. Herman Setyawan, M.Th',
+      file_surat_sidi: ''
+    });
   };
 
   const handleSaveNikah = (e: React.FormEvent) => {
@@ -170,13 +212,23 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
       tanggal: nikahForm.tanggal,
       pendeta: nikahForm.pendeta,
       lokasi: nikahForm.lokasi,
-      nomor_surat: `NKH/${settings.nama_gereja ? settings.nama_gereja.slice(0, 4).toUpperCase() : 'GKFC'}/2026/${nikahForm.tanggal.slice(5, 7)}/${(pernikahanList.length + 1).toString().padStart(3, '0')}`
+      nomor_surat: `NKH/${settings.nama_gereja ? settings.nama_gereja.slice(0, 4).toUpperCase() : 'GKFC'}/2026/${nikahForm.tanggal.slice(5, 7)}/${(pernikahanList.length + 1).toString().padStart(3, '0')}`,
+      file_surat_nikah: nikahForm.file_surat_nikah
     };
     const updated = [newN, ...pernikahanList];
     setPernikahanList(updated);
     StorageManager.savePernikahan(updated);
     StorageManager.logActivity(currentUser.username, `Input Surat Pemberkatan Nikah: ${newN.suami} & ${newN.istri}`, 'Administrasi Sacraments');
+    window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { action: 'nikah_updated' } }));
     setIsNikahModal(false);
+    setNikahForm({
+      suami: '',
+      istri: '',
+      tanggal: new Date().toISOString().slice(0, 10),
+      pendeta: 'Pdt. Dr. Herman Setyawan, M.Th',
+      lokasi: 'Gedung Sanctuary Utama',
+      file_surat_nikah: ''
+    });
   };
 
   const handleDeleteBaptis = (id: string, nama: string) => {
@@ -447,7 +499,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                             </a>
                             {isAdmin && (
                               <button
-                                onClick={() => setUploadTargetId(b.baptisan_id)}
+                                onClick={() => setUploadTarget({ type: 'BAPTISAN', id: b.baptisan_id, name: b.nama_jemaat || b.jemaat_id })}
                                 className="text-[10px] text-slate-400 hover:text-white underline cursor-pointer"
                               >
                                 Ganti
@@ -456,7 +508,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                           </div>
                         ) : isAdmin ? (
                           <button
-                            onClick={() => setUploadTargetId(b.baptisan_id)}
+                            onClick={() => setUploadTarget({ type: 'BAPTISAN', id: b.baptisan_id, name: b.nama_jemaat || b.jemaat_id })}
                             className="px-2.5 py-1 rounded-xl bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 border border-amber-500/40 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all"
                           >
                             <Upload className="w-3 h-3" />
@@ -508,22 +560,33 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
         </div>
       )}
 
-      {/* Modal Upload Surat Baptisan Jadi */}
-      {uploadTargetId && (
+      {/* Modal Upload Surat Jadi Resmi (Baptisan / Sidi / Pernikahan) */}
+      {uploadTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
           <div className="w-full max-w-md rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <div className="flex items-center gap-2">
                 <Upload className="w-5 h-5 text-emerald-400" />
-                <h3 className="text-base font-bold">Upload Surat Baptisan Resmi (PDF / Foto)</h3>
+                <h3 className="text-base font-bold">
+                  Upload Surat {uploadTarget.type === 'BAPTISAN' ? 'Baptisan' : uploadTarget.type === 'SIDI' ? 'Peneguhan Sidi' : 'Pemberkatan Nikah'} Resmi
+                </h3>
               </div>
-              <button onClick={() => setUploadTargetId(null)} className="text-slate-400 hover:text-white cursor-pointer">
+              <button onClick={() => setUploadTarget(null)} className="text-slate-400 hover:text-white cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
+            <div className="bg-slate-950 p-3 rounded-2xl border border-slate-800 space-y-1">
+              <p className="text-[11px] text-slate-400">
+                Nama Record: <span className="text-white font-bold">{uploadTarget.name}</span>
+              </p>
+              <p className="text-[11px] text-slate-400">
+                ID Dokumen: <span className="text-indigo-400 font-mono font-bold">{uploadTarget.id}</span>
+              </p>
+            </div>
+
             <p className="text-xs text-slate-400 leading-relaxed">
-              Unggah file Surat Baptisan yang telah selesai ditandatangani gereja agar jemaat dapat langsung mengunduhnya dari Portal Jemaat.
+              Unggah file Surat {uploadTarget.type === 'BAPTISAN' ? 'Baptisan' : uploadTarget.type === 'SIDI' ? 'Sidi' : 'Pernikahan'} yang telah selesai ditandatangani gereja (PDF/Foto) agar jemaat dapat langsung mengunduhnya dari portal gereja.
             </p>
 
             <div className="space-y-3 text-xs">
@@ -539,7 +602,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                       const reader = new FileReader();
                       reader.onload = (evt) => {
                         if (evt.target?.result) {
-                          handleUploadSuratFile(uploadTargetId, evt.target.result as string);
+                          handleUploadSuratFile(uploadTarget.type, uploadTarget.id, evt.target.result as string);
                         }
                       };
                       reader.readAsDataURL(file);
@@ -563,7 +626,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
 
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
                 <button
-                  onClick={() => setUploadTargetId(null)}
+                  onClick={() => setUploadTarget(null)}
                   className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-bold cursor-pointer"
                 >
                   Batal
@@ -571,7 +634,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                 <button
                   onClick={() => {
                     if (uploadUrlInput) {
-                      handleUploadSuratFile(uploadTargetId, uploadUrlInput);
+                      handleUploadSuratFile(uploadTarget.type, uploadTarget.id, uploadUrlInput);
                     }
                   }}
                   disabled={!uploadUrlInput}
@@ -610,6 +673,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                     <th className="p-3.5">Nama Peserta Sidi</th>
                     <th className="p-3.5">Tanggal Sidi</th>
                     <th className="p-3.5">Pendeta Melayani</th>
+                    <th className="p-3.5">Dokumen Surat Jadi</th>
                     <th className="p-3.5 text-center">Berita Acara</th>
                     {isAdmin && <th className="p-3.5 text-center">Aksi</th>}
                   </tr>
@@ -621,6 +685,58 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                       <td className="p-3.5 font-bold text-white text-sm">{s.nama_jemaat || s.jemaat_id}</td>
                       <td className="p-3.5">{s.tanggal}</td>
                       <td className="p-3.5">{s.pendeta}</td>
+                      <td className="p-3.5">
+                        {s.file_surat_sidi ? (
+                          <div className="flex items-center gap-2">
+                            <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold flex items-center gap-1">
+                              <CheckCircle className="w-3 h-3 text-emerald-400" />
+                              <span>Surat Jadi</span>
+                            </span>
+                            <a
+                              href={s.file_surat_sidi}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="px-2.5 py-1 rounded-xl bg-blue-600/30 hover:bg-blue-600/60 text-blue-300 border border-blue-500/30 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all"
+                              title="Lihat / Download Surat Sidi"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" />
+                              <span>Buka / Unduh</span>
+                            </a>
+                            {isAdmin && (
+                              <button
+                                onClick={() =>
+                                  setUploadTarget({
+                                    type: 'SIDI',
+                                    id: s.sidi_id,
+                                    name: s.nama_jemaat || s.jemaat_id
+                                  })
+                                }
+                                className="text-[10px] text-slate-400 hover:text-white underline cursor-pointer"
+                              >
+                                Ganti
+                              </button>
+                            )}
+                          </div>
+                        ) : isAdmin ? (
+                          <button
+                            onClick={() =>
+                              setUploadTarget({
+                                type: 'SIDI',
+                                id: s.sidi_id,
+                                name: s.nama_jemaat || s.jemaat_id
+                              })
+                            }
+                            className="px-2.5 py-1 rounded-xl bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 border border-amber-500/40 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all"
+                          >
+                            <Upload className="w-3 h-3" />
+                            <span>Upload Surat Jadi</span>
+                          </button>
+                        ) : (
+                          <span className="px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700 text-[10px]">
+                            Belum Diupload Admin
+                          </span>
+                        )}
+                      </td>
                       <td className="p-3.5 text-center">
                         <div className="flex items-center justify-center gap-1.5">
                           <button
@@ -687,6 +803,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                     <th className="p-3.5">Mempelai Wanita (Istri)</th>
                     <th className="p-3.5">Tanggal Pemberkatan</th>
                     <th className="p-3.5">Pendeta Pemberkat</th>
+                    <th className="p-3.5">Dokumen Surat Jadi</th>
                     <th className="p-3.5 text-center">Berita Acara</th>
                     {isAdmin && <th className="p-3.5 text-center">Aksi</th>}
                   </tr>
@@ -699,6 +816,58 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                       <td className="p-3.5 font-bold text-white">{n.istri}</td>
                       <td className="p-3.5">{n.tanggal}</td>
                       <td className="p-3.5">{n.pendeta}</td>
+                      <td className="p-3.5">
+                        {n.file_surat_nikah ? (
+                          <div className="flex items-center gap-2">
+                            <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold flex items-center gap-1">
+                              <CheckCircle className="w-3 h-3 text-emerald-400" />
+                              <span>Surat Jadi</span>
+                            </span>
+                            <a
+                              href={n.file_surat_nikah}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="px-2.5 py-1 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/60 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all"
+                              title="Lihat / Download Surat Nikah"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" />
+                              <span>Buka / Unduh</span>
+                            </a>
+                            {isAdmin && (
+                              <button
+                                onClick={() =>
+                                  setUploadTarget({
+                                    type: 'PERNIKAHAN',
+                                    id: n.nikah_id,
+                                    name: `${n.suami} & ${n.istri}`
+                                  })
+                                }
+                                className="text-[10px] text-slate-400 hover:text-white underline cursor-pointer"
+                              >
+                                Ganti
+                              </button>
+                            )}
+                          </div>
+                        ) : isAdmin ? (
+                          <button
+                            onClick={() =>
+                              setUploadTarget({
+                                type: 'PERNIKAHAN',
+                                id: n.nikah_id,
+                                name: `${n.suami} & ${n.istri}`
+                              })
+                            }
+                            className="px-2.5 py-1 rounded-xl bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 border border-amber-500/40 text-[11px] font-bold flex items-center gap-1 cursor-pointer transition-all"
+                          >
+                            <Upload className="w-3 h-3" />
+                            <span>Upload Surat Jadi</span>
+                          </button>
+                        ) : (
+                          <span className="px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700 text-[10px]">
+                            Belum Diupload Admin
+                          </span>
+                        )}
+                      </td>
                       <td className="p-3.5 text-center">
                         <div className="flex items-center justify-center gap-1.5">
                           <button
@@ -862,6 +1031,26 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                   className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white"
                 />
               </div>
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">Upload File Surat Peneguhan Sidi Jadi (Opsional)</label>
+                <input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-[11px]"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (evt) => {
+                        if (evt.target?.result) {
+                          setSidiForm({ ...sidiForm, file_surat_sidi: evt.target.result as string });
+                        }
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+              </div>
               <div className="flex justify-end gap-2 pt-2">
                 <button type="button" onClick={() => setIsSidiModal(false)} className="px-4 py-2 text-slate-300 font-bold cursor-pointer">
                   Batal
@@ -924,6 +1113,26 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                   value={nikahForm.pendeta}
                   onChange={(e) => setNikahForm({ ...nikahForm, pendeta: e.target.value })}
                   className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">Upload File Surat Pemberkatan Nikah Jadi (Opsional)</label>
+                <input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-[11px]"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (evt) => {
+                        if (evt.target?.result) {
+                          setNikahForm({ ...nikahForm, file_surat_nikah: evt.target.result as string });
+                        }
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
                 />
               </div>
               <div className="flex justify-end gap-2 pt-2">
