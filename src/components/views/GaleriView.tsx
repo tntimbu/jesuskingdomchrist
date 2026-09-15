@@ -20,8 +20,22 @@ import {
   HardDrive,
   FolderPlus,
   FileImage,
-  UploadCloud
+  UploadCloud,
+  Download,
+  Maximize2,
+  ChevronLeft,
+  ChevronRight,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
+  Info,
+  Check,
+  Eye,
+  Database,
+  Layers,
+  Sparkle
 } from 'lucide-react';
+import { compressImage, downloadPhotoFile } from '../../utils/imageCompressor';
 
 interface GaleriViewProps {
   currentUser: User;
@@ -42,17 +56,21 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser, initialTab 
   const [activeType, setActiveType] = useState<'ALL' | 'Foto' | 'Video'>('ALL');
   const [selectedCategory, setSelectedCategory] = useState<string>('SEMUA');
   
-  // Modals
+  // Modals & Lightbox states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<GalleryItem | null>(null);
   const [selectedVideo, setSelectedVideo] = useState<GalleryItem | null>(null);
+  const [zoomLevel, setZoomLevel] = useState<number>(1);
+  const [isDownloading, setIsDownloading] = useState<string | null>(null);
+  const [showStorageGuide, setShowStorageGuide] = useState<boolean>(false);
+  const [uploadCompressionInfo, setUploadCompressionInfo] = useState<{ sizeKb: number; originalSizeKb: number } | null>(null);
 
   // File input ref for local/offline image uploading
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [offlineFileName, setOfflineFileName] = useState<string>('');
 
-  const handleOfflineFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleOfflineFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -61,19 +79,35 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser, initialTab 
       return;
     }
 
-    setOfflineFileName(file.name);
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const result = event.target?.result as string;
-      if (result) {
-        setMediaForm((prev) => ({
-          ...prev,
-          foto: result,
-          judul: prev.judul || file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ')
-        }));
-      }
-    };
-    reader.readAsDataURL(file);
+    setOfflineFileName(`${file.name} (Memproses kompresi otomatis...)`);
+    try {
+      const result = await compressImage(file, 1600, 0.82);
+      setUploadCompressionInfo({
+        sizeKb: result.sizeKb,
+        originalSizeKb: result.originalSizeKb
+      });
+      setOfflineFileName(file.name);
+      setMediaForm((prev) => ({
+        ...prev,
+        foto: result.dataUrl,
+        judul: prev.judul || file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ')
+      }));
+    } catch (err) {
+      console.warn('Fallback standard reader:', err);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const res = event.target?.result as string;
+        if (res) {
+          setOfflineFileName(file.name);
+          setMediaForm((prev) => ({
+            ...prev,
+            foto: res,
+            judul: prev.judul || file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ')
+          }));
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
   const [mediaForm, setMediaForm] = useState({
     judul: '',
@@ -253,6 +287,56 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser, initialTab 
     return matchesType && matchesCat;
   });
 
+  // Filtered list strictly for photos (for lightbox navigation)
+  const photosOnly = filteredItems.filter((item) => item.tipe !== 'Video' && !item.video_url);
+
+  const currentPhotoIndex = selectedPhoto
+    ? photosOnly.findIndex((p) => p.gallery_id === selectedPhoto.gallery_id)
+    : -1;
+
+  const handlePrevPhoto = () => {
+    if (photosOnly.length <= 1 || currentPhotoIndex === -1) return;
+    const prevIdx = (currentPhotoIndex - 1 + photosOnly.length) % photosOnly.length;
+    setSelectedPhoto(photosOnly[prevIdx]);
+    setZoomLevel(1);
+  };
+
+  const handleNextPhoto = () => {
+    if (photosOnly.length <= 1 || currentPhotoIndex === -1) return;
+    const nextIdx = (currentPhotoIndex + 1) % photosOnly.length;
+    setSelectedPhoto(photosOnly[nextIdx]);
+    setZoomLevel(1);
+  };
+
+  // Keyboard navigation for fullscreen lightbox
+  useEffect(() => {
+    if (!selectedPhoto) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setSelectedPhoto(null);
+        setZoomLevel(1);
+      } else if (e.key === 'ArrowLeft') {
+        handlePrevPhoto();
+      } else if (e.key === 'ArrowRight') {
+        handleNextPhoto();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedPhoto, currentPhotoIndex, photosOnly]);
+
+  const handleDownload = async (item: GalleryItem, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setIsDownloading(item.gallery_id);
+    try {
+      await downloadPhotoFile(item.foto, item.judul, item.tanggal);
+    } catch (err) {
+      console.error('Download error:', err);
+    } finally {
+      setTimeout(() => setIsDownloading(null), 800);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header Galeri */}
@@ -263,12 +347,22 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser, initialTab 
             <span>Galeri & Video Media Sosial</span>
           </h2>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Kelola foto dokumentasi peribadatan dan tautan video media sosial (YouTube / Reels / TikTok) untuk tayangan Dashboard Jemaat & Admin.
+            Dokumentasi peribadatan dan kegiatan jemaat. Jemaat dapat melihat layar penuh (*full screen*) dan mengunduh foto berkualitas tinggi.
           </p>
         </div>
 
         {/* Tab Selector & Add Buttons */}
         <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => setShowStorageGuide(!showStorageGuide)}
+            className="px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-indigo-300 border border-indigo-500/30 cursor-pointer shadow-sm"
+            title="Klik untuk melihat penjelasan database penyimpanan foto & kapasitas"
+          >
+            <Database className="w-3.5 h-3.5 text-indigo-400" />
+            <span>Info Database & Kapasitas</span>
+          </button>
+
           <div className="p-1 rounded-2xl bg-slate-900 border border-slate-800 flex items-center gap-1">
             <button
               onClick={() => setActiveTab('GALLERY')}
@@ -321,9 +415,97 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser, initialTab 
         </div>
       </div>
 
+      {/* Storage Information Guide Modal / Banner */}
+      {showStorageGuide && (
+        <div className="p-5 rounded-3xl bg-slate-900 border border-indigo-500/30 text-white shadow-xl space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-indigo-600/20 text-indigo-400 border border-indigo-500/30">
+                <Database className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <span>Informasi Database & Penyimpanan Foto Galeri</span>
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/30">
+                    Sistem Otomatis Aktif
+                  </span>
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Penjelasan lokasi penyimpanan, kapasitas memori, dan teknologi optimasi foto.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowStorageGuide(false)}
+              className="p-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
+              <div className="flex items-center gap-2 text-indigo-300 font-bold">
+                <HardDrive className="w-4 h-4 text-indigo-400" />
+                <span>1. Dimana Foto Disimpan?</span>
+              </div>
+              <p className="text-slate-300 leading-relaxed">
+                Foto disimpan secara terpusat pada <strong>Database Aplikasi (LocalStorage & Cloud Firebase Firestore)</strong>. Ketika terhubung ke internet, foto otomatis tersinkronisasi antar perangkat (HP jemaat, laptop sekretariat, dan layar display).
+              </p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
+              <div className="flex items-center gap-2 text-emerald-300 font-bold">
+                <Sparkles className="w-4 h-4 text-emerald-400" />
+                <span>2. Apakah Tidak Akan Penuh?</span>
+              </div>
+              <p className="text-slate-300 leading-relaxed">
+                <strong>Aman & Teroptimasi!</strong> Setiap foto yang diupload dari galeri HP / disk otomatis dikompresi menjadi format <strong>WebP/JPEG resolusi tinggi 1600px</strong> (~100–150 KB per foto dari aslinya 5–10 MB). Ini memungkinkan ratusan foto tersimpan tanpa memenuhi kuota browser.
+              </p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
+              <div className="flex items-center gap-2 text-amber-300 font-bold">
+                <UploadCloud className="w-4 h-4 text-amber-400" />
+                <span>3. Opsi Cloud (Tanpa Batas)</span>
+              </div>
+              <p className="text-slate-300 leading-relaxed">
+                Untuk arsip ribuan foto, Admin dapat menggunakan <strong>URL Gambar Cloud</strong> (Google Drive, Cloudinary, atau web hosting). Tautan URL tidak menggunakan kuota memori aplikasi sama sekali.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pt-2 border-t border-slate-800/80 text-[11px] text-slate-400">
+            <span className="flex items-center gap-1 text-emerald-400">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>Jemaat dapat mengunduh foto kapan saja dengan tombol Download HD di setiap foto.</span>
+            </span>
+            <button
+              onClick={() => setShowStorageGuide(false)}
+              className="text-indigo-400 hover:text-indigo-300 font-bold underline cursor-pointer"
+            >
+              Tutup Penjelasan
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* TAB 1: GALERI FOTO & DOKUMENTASI */}
       {activeTab === 'GALLERY' && (
         <>
+          {/* Quick Notice Banner */}
+          <div className="px-4 py-2.5 rounded-2xl bg-indigo-950/40 border border-indigo-500/20 text-indigo-300 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Eye className="w-4 h-4 text-indigo-400 shrink-0" />
+              <span>
+                <strong>Petunjuk:</strong> Klik pada foto untuk membuka <strong>Layar Penuh (Lightbox)</strong>, memperbesar (zoom), dan <strong>Mengunduh (Download)</strong> langsung ke perangkat Anda.
+              </span>
+            </div>
+            <span className="text-[11px] text-slate-400 font-mono shrink-0">
+              {photosOnly.length} Foto Siap Diunduh
+            </span>
+          </div>
+
           {/* Filter Bar */}
           <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-slate-900/80 p-3 rounded-2xl border border-slate-800">
             {/* Tipe Filter: Semua / Foto / Video */}
@@ -343,7 +525,7 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser, initialTab 
                 }`}
               >
                 <ImageIcon className="w-3.5 h-3.5" />
-                <span>Foto</span>
+                <span>Foto ({galleryList.filter((g) => g.tipe !== 'Video' && !g.video_url).length})</span>
               </button>
               <button
                 onClick={() => setActiveType('Video')}
@@ -383,7 +565,7 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser, initialTab 
               {isAdmin && (
                 <button
                   onClick={() => setIsAddModalOpen(true)}
-                  className="px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold inline-flex items-center gap-1.5"
+                  className="px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Unggah Sekarang</span>
@@ -400,7 +582,10 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser, initialTab 
                     key={item.gallery_id}
                     onClick={() => {
                       if (isVideo) setSelectedVideo(item);
-                      else setSelectedPhoto(item);
+                      else {
+                        setSelectedPhoto(item);
+                        setZoomLevel(1);
+                      }
                     }}
                     className="group relative rounded-3xl bg-slate-900/90 border border-slate-800 hover:border-indigo-500/50 overflow-hidden shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col"
                   >
@@ -443,11 +628,31 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser, initialTab 
                         </div>
                       )}
 
+                      {/* Hover Action Overlay for Photos */}
+                      {!isVideo && (
+                        <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-15 pointer-events-none">
+                          <span className="pointer-events-auto px-3 py-1.5 rounded-xl bg-indigo-600/90 text-white font-bold text-xs flex items-center gap-1.5 shadow-xl backdrop-blur-md">
+                            <Maximize2 className="w-3.5 h-3.5" />
+                            <span>Lihat Penuh</span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => handleDownload(item, e)}
+                            disabled={isDownloading === item.gallery_id}
+                            className="pointer-events-auto px-3 py-1.5 rounded-xl bg-emerald-600/90 hover:bg-emerald-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-xl backdrop-blur-md cursor-pointer transition-all active:scale-95"
+                            title="Unduh foto ini ke HP / Komputer"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                            <span>{isDownloading === item.gallery_id ? 'Mengunduh...' : 'Unduh'}</span>
+                          </button>
+                        </div>
+                      )}
+
                       {/* Delete Button for Admin */}
                       {isAdmin && (
                         <button
                           onClick={(e) => handleDeleteMedia(item.gallery_id, e)}
-                          className="absolute bottom-3 right-3 p-2 rounded-xl bg-rose-600/90 hover:bg-rose-600 text-white shadow-lg z-20 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute bottom-3 right-3 p-2 rounded-xl bg-rose-600/90 hover:bg-rose-600 text-white shadow-lg z-20 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                           title="Hapus Media"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -467,12 +672,29 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser, initialTab 
                         </p>
                       )}
 
-                      <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500 font-medium">
+                      <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400 font-medium">
                         <span className="flex items-center gap-1">
                           <Calendar className="w-3 h-3 text-indigo-400" />
                           {item.tanggal}
                         </span>
-                        <span>Oleh: {item.penulis || 'Admin'}</span>
+
+                        <div className="flex items-center gap-2">
+                          {!isVideo && (
+                            <button
+                              type="button"
+                              onClick={(e) => handleDownload(item, e)}
+                              disabled={isDownloading === item.gallery_id}
+                              className="px-2.5 py-1 rounded-lg bg-emerald-950/80 hover:bg-emerald-700/80 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-all active:scale-95"
+                              title="Download Foto"
+                            >
+                              <Download className="w-3 h-3" />
+                              <span>{isDownloading === item.gallery_id ? '...' : 'Unduh'}</span>
+                            </button>
+                          )}
+                          <span className="text-slate-500 truncate max-w-[85px]">
+                            {item.penulis || 'Admin'}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -626,22 +848,190 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser, initialTab 
         </div>
       )}
 
-      {/* MODAL VIEW PHOTO DETAIL */}
+      {/* MODAL VIEW PHOTO DETAIL (CINEMA FULLSCREEN LIGHTBOX & DOWNLOAD) */}
       {selectedPhoto && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="relative max-w-4xl w-full rounded-3xl bg-slate-900 border border-slate-800 overflow-hidden shadow-2xl space-y-4 p-6">
-            <button
-              onClick={() => setSelectedPhoto(null)}
-              className="absolute top-4 right-4 p-2 rounded-full bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white transition-all z-10"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <div className="aspect-video w-full rounded-2xl overflow-hidden bg-black">
-              <img src={selectedPhoto.foto} alt={selectedPhoto.judul} className="w-full h-full object-contain" />
+        <div 
+          className="fixed inset-0 z-50 flex flex-col justify-between bg-black/95 backdrop-blur-xl transition-all duration-300 select-none overflow-hidden"
+          role="dialog"
+          aria-modal="true"
+        >
+          {/* Top Floating Control Bar */}
+          <div className="relative z-20 flex items-center justify-between p-3 md:p-4 bg-gradient-to-b from-black/90 via-black/60 to-transparent border-b border-slate-800/60">
+            {/* Left: Info badge & Counter */}
+            <div className="flex items-center gap-2 md:gap-3 text-white">
+              <span className="px-2.5 py-1 rounded-xl bg-indigo-600/90 text-white text-[10px] sm:text-[11px] font-black tracking-wider uppercase flex items-center gap-1.5 shadow-md border border-indigo-400/40">
+                <ImageIcon className="w-3.5 h-3.5" />
+                <span>FOTO GEREJA</span>
+              </span>
+              {photosOnly.length > 0 && currentPhotoIndex !== -1 && (
+                <span className="text-xs text-slate-300 font-mono bg-slate-900/90 px-2.5 py-1 rounded-xl border border-slate-800">
+                  Foto {currentPhotoIndex + 1} dari {photosOnly.length}
+                </span>
+              )}
+              {selectedPhoto.kategori && (
+                <span className="hidden sm:inline-block px-2.5 py-1 rounded-xl bg-slate-800/80 text-slate-300 text-xs font-semibold border border-slate-700">
+                  {selectedPhoto.kategori}
+                </span>
+              )}
             </div>
-            <div>
-              <h3 className="text-lg font-bold text-white">{selectedPhoto.judul}</h3>
-              <p className="text-xs text-slate-400 mt-1">{selectedPhoto.keterangan}</p>
+
+            {/* Right: Zoom, Download, New Tab, Close */}
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              {/* Zoom Controls */}
+              <div className="hidden sm:flex items-center bg-slate-900/90 border border-slate-800 rounded-xl p-0.5 text-slate-300">
+                <button
+                  type="button"
+                  onClick={() => setZoomLevel((z) => Math.max(0.6, Number((z - 0.25).toFixed(2))))}
+                  disabled={zoomLevel <= 0.6}
+                  className="p-1.5 hover:text-white hover:bg-slate-800 rounded-lg disabled:opacity-40 cursor-pointer"
+                  title="Perkecil (-)"
+                >
+                  <ZoomOut className="w-4 h-4" />
+                </button>
+                <span className="text-[11px] font-mono px-2 text-slate-300">
+                  {Math.round(zoomLevel * 100)}%
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setZoomLevel((z) => Math.min(3, Number((z + 0.25).toFixed(2))))}
+                  disabled={zoomLevel >= 3}
+                  className="p-1.5 hover:text-white hover:bg-slate-800 rounded-lg disabled:opacity-40 cursor-pointer"
+                  title="Perbesar (+)"
+                >
+                  <ZoomIn className="w-4 h-4" />
+                </button>
+                {zoomLevel !== 1 && (
+                  <button
+                    type="button"
+                    onClick={() => setZoomLevel(1)}
+                    className="p-1.5 hover:text-white hover:bg-slate-800 rounded-lg text-amber-400 cursor-pointer"
+                    title="Reset Zoom Normal (100%)"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {/* Download Button */}
+              <button
+                type="button"
+                onClick={() => handleDownload(selectedPhoto)}
+                disabled={isDownloading === selectedPhoto.gallery_id}
+                className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-600/30 transition-all cursor-pointer active:scale-95"
+                title="Download / Simpan Foto ke Komputer / HP"
+              >
+                <Download className="w-4 h-4" />
+                <span>{isDownloading === selectedPhoto.gallery_id ? 'Mengunduh...' : 'Unduh HD'}</span>
+              </button>
+
+              {/* Open Raw in New Tab if external URL */}
+              {selectedPhoto.foto && !selectedPhoto.foto.startsWith('data:') && (
+                <a
+                  href={selectedPhoto.foto}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition-all cursor-pointer hidden md:flex"
+                  title="Buka File Gambar Asli di Tab Baru"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+              )}
+
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedPhoto(null);
+                  setZoomLevel(1);
+                }}
+                className="p-2 rounded-xl bg-slate-900/90 hover:bg-rose-600/90 text-slate-300 hover:text-white border border-slate-800 transition-all cursor-pointer"
+                title="Tutup Layar Penuh (Esc)"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Center Stage: Photo Display with Next & Prev Buttons */}
+          <div className="relative flex-1 flex items-center justify-center p-2 sm:p-6 overflow-hidden">
+            {/* Prev Photo Arrow */}
+            {photosOnly.length > 1 && (
+              <button
+                type="button"
+                onClick={handlePrevPhoto}
+                className="absolute left-3 sm:left-6 z-30 p-3 sm:p-3.5 rounded-full bg-slate-900/80 hover:bg-slate-800 text-white hover:text-indigo-300 border border-slate-700/60 backdrop-blur-md shadow-2xl transition-all cursor-pointer hover:scale-110 active:scale-95"
+                title="Foto Sebelumnya (Panah Kiri)"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+            )}
+
+            {/* Main Photo Image with Zoom & Full Dimension Display */}
+            <div className="relative max-w-full max-h-[70vh] sm:max-h-[76vh] flex items-center justify-center overflow-auto scrollbar-none">
+              <img
+                src={selectedPhoto.foto}
+                alt={selectedPhoto.judul}
+                style={{
+                  transform: `scale(${zoomLevel})`,
+                  transition: 'transform 0.2s cubic-bezier(0.2, 0, 0, 1)'
+                }}
+                className="max-h-[70vh] sm:max-h-[76vh] max-w-full w-auto h-auto object-contain rounded-2xl shadow-2xl select-none"
+              />
+            </div>
+
+            {/* Next Photo Arrow */}
+            {photosOnly.length > 1 && (
+              <button
+                type="button"
+                onClick={handleNextPhoto}
+                className="absolute right-3 sm:right-6 z-30 p-3 sm:p-3.5 rounded-full bg-slate-900/80 hover:bg-slate-800 text-white hover:text-indigo-300 border border-slate-700/60 backdrop-blur-md shadow-2xl transition-all cursor-pointer hover:scale-110 active:scale-95"
+                title="Foto Selanjutnya (Panah Kanan)"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
+            )}
+          </div>
+
+          {/* Bottom Floating Info & Action Bar */}
+          <div className="relative z-20 p-4 sm:p-5 bg-gradient-to-t from-black/95 via-black/85 to-transparent border-t border-slate-800/60">
+            <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-white">
+              <div className="space-y-1">
+                <h3 className="text-base sm:text-lg font-bold text-white leading-tight">
+                  {selectedPhoto.judul}
+                </h3>
+                {selectedPhoto.keterangan && (
+                  <p className="text-xs sm:text-sm text-slate-300 line-clamp-2 max-w-2xl font-normal">
+                    {selectedPhoto.keterangan}
+                  </p>
+                )}
+                <div className="flex flex-wrap items-center gap-2.5 text-[11px] text-slate-400 font-medium pt-1">
+                  <span className="flex items-center gap-1">
+                    <Calendar className="w-3.5 h-3.5 text-indigo-400" />
+                    {selectedPhoto.tanggal}
+                  </span>
+                  <span>•</span>
+                  <span>Diunggah: {selectedPhoto.penulis || 'Admin Gereja'}</span>
+                  {selectedPhoto.kategori && (
+                    <>
+                      <span>•</span>
+                      <span className="text-indigo-300 font-semibold">{selectedPhoto.kategori}</span>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Bottom Download CTA */}
+              <div className="flex items-center gap-2 self-stretch sm:self-auto shrink-0 pt-2 md:pt-0">
+                <button
+                  type="button"
+                  onClick={() => handleDownload(selectedPhoto)}
+                  disabled={isDownloading === selectedPhoto.gallery_id}
+                  className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 transition-all cursor-pointer active:scale-95"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>{isDownloading === selectedPhoto.gallery_id ? 'Menyimpan ke Perangkat...' : 'Unduh Foto ke Perangkat'}</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -765,6 +1155,23 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser, initialTab 
                     </span>
                   )}
                 </div>
+
+                {/* Compression Info Badge */}
+                {uploadCompressionInfo && mediaForm.foto && mediaForm.foto.startsWith('data:image/') && (
+                  <div className="p-2.5 rounded-xl bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-[11px] flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <span>
+                        Kompresi Otomatis: Asli <strong>{uploadCompressionInfo.originalSizeKb} KB</strong> &rarr; Dioptimalkan <strong>{uploadCompressionInfo.sizeKb} KB</strong>
+                      </span>
+                    </div>
+                    {uploadCompressionInfo.originalSizeKb > uploadCompressionInfo.sizeKb && (
+                      <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold text-[10px]">
+                        Hemat {Math.round((1 - uploadCompressionInfo.sizeKb / uploadCompressionInfo.originalSizeKb) * 100)}%
+                      </span>
+                    )}
+                  </div>
+                )}
 
                 {/* Preview Thumbnail if local image loaded */}
                 {mediaForm.foto && mediaForm.foto.startsWith('data:image/') && (
