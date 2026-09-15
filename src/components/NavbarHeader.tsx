@@ -468,17 +468,29 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
                   relevantNotifications.map((n) => (
                     <div
                       key={n.notif_id}
-                      className={`p-3 rounded-xl border text-xs space-y-1 transition-all ${
+                      onClick={() => {
+                        const updated = notifications.map((item) =>
+                          item.notif_id === n.notif_id ? { ...item, status_baca: 'Sudah' as const } : item
+                        );
+                        setNotifications(updated);
+                        StorageManager.saveNotifications(updated);
+                        setShowNotifDropdown(false);
+                        window.dispatchEvent(new CustomEvent('open_notification_detail', { detail: n }));
+                      }}
+                      className={`p-3 rounded-xl border text-xs space-y-1 transition-all cursor-pointer hover:border-indigo-400/60 active:scale-[0.99] ${
                         n.status_baca === 'Belum'
-                          ? 'bg-indigo-600/15 border-indigo-500/40 text-white'
-                          : 'bg-white/5 border-white/10 text-slate-400'
+                          ? 'bg-indigo-600/15 border-indigo-500/40 text-white hover:bg-indigo-600/25'
+                          : 'bg-white/5 border-white/10 text-slate-400 hover:bg-white/10'
                       }`}
                     >
                       <div className="flex items-center justify-between font-semibold text-slate-200">
                         <span className="truncate max-w-[200px]">{n.judul}</span>
                         <span className="text-[10px] text-slate-500 shrink-0">{n.tanggal}</span>
                       </div>
-                      <p className="text-slate-300 leading-normal text-[11px]">{n.pesan}</p>
+                      <p className="text-slate-300 leading-normal text-[11px] line-clamp-2">{n.pesan}</p>
+                      <div className="text-[10px] text-indigo-400 font-semibold pt-0.5 flex items-center gap-1">
+                        <span>Baca selengkapnya &rarr;</span>
+                      </div>
                     </div>
                   ))
                 )}

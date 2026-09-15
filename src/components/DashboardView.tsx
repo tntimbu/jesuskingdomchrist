@@ -614,6 +614,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   // Notifications State
   const [notificationsList, setNotificationsList] = useState<NotificationItem[]>(() => StorageManager.getNotifications());
   const [dismissedNotifIds, setDismissedNotifIds] = useState<string[]>([]);
+  const [selectedNotifForDetail, setSelectedNotifForDetail] = useState<NotificationItem | null>(null);
   const [isCreateNotifModalOpen, setIsCreateNotifModalOpen] = useState(false);
   const [newNotifForm, setNewNotifForm] = useState({
     judul: '',
@@ -623,6 +624,30 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   });
 
   const prevNotifKeysRef = React.useRef<string>('');
+
+  // Keyboard shortcut (Escape) to close notification detail modal
+  useEffect(() => {
+    if (!selectedNotifForDetail) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setSelectedNotifForDetail(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedNotifForDetail]);
+
+  // Listen to open notification detail from any component (e.g. Navbar)
+  useEffect(() => {
+    const handleOpenNotifDetail = (e: Event) => {
+      const customEvent = e as CustomEvent<NotificationItem>;
+      if (customEvent.detail) {
+        setSelectedNotifForDetail(customEvent.detail);
+      }
+    };
+    window.addEventListener('open_notification_detail', handleOpenNotifDetail);
+    return () => window.removeEventListener('open_notification_detail', handleOpenNotifDetail);
+  }, []);
 
   useEffect(() => {
     loadDashboardData();
@@ -1678,12 +1703,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               return (
                 <div
                   key={notif.notif_id}
-                  className={`relative overflow-hidden p-3 rounded-2xl border shadow-2xl backdrop-blur-xl transition-all ${
+                  onClick={() => setSelectedNotifForDetail(notif)}
+                  className={`group relative overflow-hidden p-3 rounded-2xl border shadow-2xl backdrop-blur-xl transition-all cursor-pointer hover:border-white/50 hover:shadow-indigo-500/20 active:scale-[0.99] ${
                     isWarning
-                      ? 'bg-slate-950/95 border-rose-500/70 text-rose-100 ring-1 ring-rose-500/30'
+                      ? 'bg-slate-950/95 border-rose-500/70 text-rose-100 ring-1 ring-rose-500/30 hover:ring-rose-500/50'
                       : isImportant
-                      ? 'bg-slate-950/95 border-purple-500/70 text-purple-100 ring-1 ring-purple-500/30'
-                      : 'bg-slate-950/95 border-indigo-500/70 text-indigo-100 ring-1 ring-indigo-500/30'
+                      ? 'bg-slate-950/95 border-purple-500/70 text-purple-100 ring-1 ring-purple-500/30 hover:ring-purple-500/50'
+                      : 'bg-slate-950/95 border-indigo-500/70 text-indigo-100 ring-1 ring-indigo-500/30 hover:ring-indigo-500/50'
                   }`}
                 >
                   {/* Subtle Top Glowing Line */}
@@ -1735,7 +1761,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             {notif.tanggal}
                           </span>
                         </div>
-                        <h4 className="text-xs sm:text-sm font-bold text-white leading-snug line-clamp-1 mt-0.5">
+                        <h4 className="text-xs sm:text-sm font-bold text-white leading-snug line-clamp-1 mt-0.5 group-hover:text-indigo-200 transition-colors">
                           {notif.judul}
                         </h4>
                       </div>
@@ -1745,7 +1771,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     <div className="flex items-center gap-1 shrink-0 relative z-10">
                       <button
                         type="button"
-                        onClick={() => (isWarning ? playWarningChime() : playNotificationChime())}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (isWarning) {
+                            playWarningChime();
+                          } else {
+                            playNotificationChime();
+                          }
+                        }}
                         className="p-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/30 text-amber-300 transition-all cursor-pointer"
                         title="Bunyikan Suara"
                       >
@@ -1755,7 +1788,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       {isAdmin && (
                         <button
                           type="button"
-                          onClick={() => handleDeleteNotification(notif.notif_id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteNotification(notif.notif_id);
+                          }}
                           className="p-1.5 rounded-lg bg-rose-500/15 hover:bg-rose-500/30 text-rose-300 transition-all cursor-pointer"
                           title="Hapus Notifikasi (Admin)"
                         >
@@ -1765,7 +1801,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                       <button
                         type="button"
-                        onClick={() => handleDismissNotification(notif.notif_id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDismissNotification(notif.notif_id);
+                        }}
                         className="p-1.5 rounded-lg bg-white/10 hover:bg-rose-600 text-slate-300 hover:text-white transition-all cursor-pointer"
                         title="Tutup Notifikasi"
                       >
@@ -1774,9 +1813,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     </div>
                   </div>
 
-                  {/* Compact Body Message */}
-                  <div className="mt-1.5 text-[11px] sm:text-xs text-slate-200 leading-snug line-clamp-2 bg-black/40 px-2.5 py-1.5 rounded-xl border border-white/5 relative z-10">
-                    {notif.pesan}
+                  {/* Compact Body Message with Clickable cue */}
+                  <div className="mt-1.5 text-[11px] sm:text-xs text-slate-200 leading-snug bg-black/40 px-2.5 py-1.5 rounded-xl border border-white/5 relative z-10 group-hover:bg-black/60 transition-colors">
+                    <p className="line-clamp-2">{notif.pesan}</p>
+                    <div className="mt-1 pt-1 border-t border-white/5 flex items-center justify-between text-[10px] text-indigo-300 font-bold group-hover:text-indigo-200">
+                      <span className="flex items-center gap-1">
+                        <Eye className="w-3 h-3 text-indigo-400" />
+                        <span>Klik untuk baca selengkapnya &rarr;</span>
+                      </span>
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-semibold">
+                        Buka Penuh
+                      </span>
+                    </div>
                   </div>
 
                   {/* Minimal Footer */}
@@ -1786,7 +1834,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     </span>
                     <button
                       type="button"
-                      onClick={() => handleDismissNotification(notif.notif_id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDismissNotification(notif.notif_id);
+                      }}
                       className="text-[10px] text-indigo-300 hover:text-white font-semibold underline cursor-pointer"
                     >
                       Tandai Dibaca
@@ -4664,6 +4715,181 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         senderId={settings.onesignal_google_project_number || '250034601366'}
         appUrl={window.location.origin}
       />
+
+      {/* Modal Detail Notifikasi Penuh (Bisa Dibaca Lengkap & Ditutup) */}
+      {selectedNotifForDetail && (
+        <div
+          className="fixed inset-0 z-[100000] flex items-center justify-center p-4 sm:p-6 bg-slate-950/85 backdrop-blur-md animate-fade-in"
+          onClick={() => setSelectedNotifForDetail(null)}
+        >
+          <div
+            className={`relative w-full max-w-lg sm:max-w-xl rounded-3xl bg-slate-900 border-2 shadow-[0_25px_70px_rgba(0,0,0,0.95)] overflow-hidden flex flex-col max-h-[90vh] text-white ${
+              selectedNotifForDetail.tipe === 'Peringatan'
+                ? 'border-rose-500/80 shadow-rose-950/50'
+                : selectedNotifForDetail.tipe === 'Penting'
+                ? 'border-purple-500/80 shadow-purple-950/50'
+                : 'border-indigo-500/80 shadow-indigo-950/50'
+            }`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Top Gradient Bar */}
+            <div
+              className={`h-2 w-full shrink-0 ${
+                selectedNotifForDetail.tipe === 'Peringatan'
+                  ? 'bg-gradient-to-r from-rose-500 via-amber-400 to-rose-600'
+                  : selectedNotifForDetail.tipe === 'Penting'
+                  ? 'bg-gradient-to-r from-purple-500 via-indigo-400 to-purple-600'
+                  : 'bg-gradient-to-r from-indigo-500 via-sky-400 to-indigo-600'
+              }`}
+            />
+
+            {/* Header */}
+            <div className="p-5 sm:p-6 pb-4 border-b border-white/10 flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3.5 min-w-0 flex-1">
+                <div
+                  className={`p-3 rounded-2xl flex items-center justify-center shrink-0 shadow-lg ${
+                    selectedNotifForDetail.tipe === 'Peringatan'
+                      ? 'bg-rose-600 text-white ring-4 ring-rose-500/20'
+                      : selectedNotifForDetail.tipe === 'Penting'
+                      ? 'bg-purple-600 text-white ring-4 ring-purple-500/20'
+                      : 'bg-indigo-600 text-white ring-4 ring-indigo-500/20'
+                  }`}
+                >
+                  {selectedNotifForDetail.tipe === 'Peringatan' ? (
+                    <AlertTriangle className="w-6 h-6" />
+                  ) : selectedNotifForDetail.tipe === 'Penting' ? (
+                    <ShieldAlert className="w-6 h-6" />
+                  ) : (
+                    <BellRing className="w-6 h-6" />
+                  )}
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span
+                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                        selectedNotifForDetail.tipe === 'Peringatan'
+                          ? 'bg-rose-500/30 text-rose-200 border border-rose-400/40'
+                          : selectedNotifForDetail.tipe === 'Penting'
+                          ? 'bg-purple-500/30 text-purple-200 border border-purple-400/40'
+                          : 'bg-indigo-500/30 text-indigo-200 border border-indigo-400/40'
+                      }`}
+                    >
+                      {selectedNotifForDetail.tipe === 'Peringatan'
+                        ? '⚠️ PERINGATAN RESMI GEREJA'
+                        : selectedNotifForDetail.tipe === 'Penting'
+                        ? '🚨 INFORMASI PENTING'
+                        : '📢 PENGUMUMAN MAJELIS GEREJA'}
+                    </span>
+                    <span className="text-xs text-slate-400">
+                      {selectedNotifForDetail.tanggal}
+                    </span>
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-extrabold text-white leading-snug">
+                    {selectedNotifForDetail.judul}
+                  </h3>
+                  <div className="text-xs text-slate-400 mt-1 flex items-center gap-2 flex-wrap">
+                    <span>
+                      Pengirim: <strong className="text-slate-200">{selectedNotifForDetail.pengirim || 'Admin Gereja'}</strong>
+                    </span>
+                    {selectedNotifForDetail.tujuan_role && (
+                      <>
+                        <span>&bull;</span>
+                        <span>
+                          Target: <span className="text-indigo-300 font-semibold">{selectedNotifForDetail.tujuan_role}</span>
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Close Button (X) */}
+              <button
+                type="button"
+                onClick={() => setSelectedNotifForDetail(null)}
+                className="p-2 rounded-xl bg-white/10 hover:bg-rose-600 text-slate-300 hover:text-white transition-all cursor-pointer shrink-0"
+                title="Tutup (Esc)"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Scrollable Full Body Content */}
+            <div className="p-5 sm:p-6 overflow-y-auto max-h-[50vh] space-y-2.5">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <span className="flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>Isi Lengkap Notifikasi:</span>
+                </span>
+                <span className="text-[11px] text-slate-500 font-normal">
+                  (Dapat digulir ke bawah)
+                </span>
+              </div>
+              <div className="p-4 sm:p-5 rounded-2xl bg-black/50 border border-white/10 text-slate-100 text-sm sm:text-base leading-relaxed whitespace-pre-line select-text font-normal shadow-inner">
+                {selectedNotifForDetail.pesan}
+              </div>
+            </div>
+
+            {/* Footer Actions */}
+            <div className="p-4 sm:p-5 border-t border-white/10 bg-slate-950/70 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (selectedNotifForDetail.tipe === 'Peringatan') {
+                      playWarningChime();
+                    } else {
+                      playNotificationChime();
+                    }
+                  }}
+                  className="px-3 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer w-full sm:w-auto"
+                  title="Bunyikan Suara"
+                >
+                  <Volume2 className="w-4 h-4" />
+                  <span>Bunyikan Suara</span>
+                </button>
+
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleDeleteNotification(selectedNotifForDetail.notif_id);
+                      setSelectedNotifForDetail(null);
+                    }}
+                    className="px-3 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/40 text-rose-300 border border-rose-500/40 text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer w-full sm:w-auto"
+                    title="Hapus Notifikasi (Admin)"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>Hapus</span>
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                <button
+                  type="button"
+                  onClick={() => setSelectedNotifForDetail(null)}
+                  className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-slate-200 font-semibold text-xs sm:text-sm cursor-pointer transition-all flex-1 sm:flex-none text-center"
+                >
+                  Tutup
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleDismissNotification(selectedNotifForDetail.notif_id);
+                    setSelectedNotifForDetail(null);
+                  }}
+                  className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 cursor-pointer transition-all active:scale-95 flex-1 sm:flex-none text-center"
+                >
+                  <CheckCheck className="w-4 h-4" />
+                  <span>Tutup & Tandai Sudah Dibaca</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
