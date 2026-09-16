@@ -33,6 +33,7 @@ import { SplashScreen } from './components/SplashScreen';
 import { SuperAdminSaaSPanel } from './components/SuperAdminSaaSPanel';
 import { TenantLockedScreen } from './components/TenantLockedScreen';
 import { NavbarCustomizerModal } from './components/NavbarCustomizerModal';
+import { AndroidStudioConverterModal } from './components/AndroidStudioConverterModal';
 import { FloatingNotificationBanner } from './components/FloatingNotificationBanner';
 
 export default function App() {
@@ -44,6 +45,7 @@ export default function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSaaSPanelOpen, setIsSaaSPanelOpen] = useState(false);
   const [isNavbarCustomizerOpen, setIsNavbarCustomizerOpen] = useState(false);
+  const [isAndroidStudioModalOpen, setIsAndroidStudioModalOpen] = useState(false);
   const [tenantStatus, setTenantStatus] = useState(() => StorageManager.checkTenantStatus());
 
   // Default Guest user for public browsing when not logged in
@@ -256,8 +258,16 @@ export default function App() {
         handleSelectTab(ce.detail.tab);
       }
     };
+    const handleOpenAndroidStudio = () => {
+      setIsAndroidStudioModalOpen(true);
+    };
+
     window.addEventListener('navigate_to_tab', handleNavigateTab);
-    return () => window.removeEventListener('navigate_to_tab', handleNavigateTab);
+    window.addEventListener('open_android_studio_modal', handleOpenAndroidStudio);
+    return () => {
+      window.removeEventListener('navigate_to_tab', handleNavigateTab);
+      window.removeEventListener('open_android_studio_modal', handleOpenAndroidStudio);
+    };
   }, []);
 
   // Handle Android Back Button / Navigation when logged in
@@ -386,6 +396,7 @@ export default function App() {
         onUpdateSettings={handleUpdateSettings}
         onNavigateToSettings={() => handleSelectTab('settings')}
         onOpenNavbarCustomizer={isEffectiveAdmin ? () => setIsNavbarCustomizerOpen(true) : undefined}
+        onOpenAndroidStudioModal={() => setIsAndroidStudioModalOpen(true)}
       />
 
       {/* Card Menu Overlay Modal (Replaces Left Sidebar for All Devices) */}
@@ -398,6 +409,7 @@ export default function App() {
         onSelectTab={handleSelectTab}
         onOpenSuperAdminSaaSPanel={() => setIsSaaSPanelOpen(true)}
         onOpenNavbarCustomizer={isEffectiveAdmin ? () => setIsNavbarCustomizerOpen(true) : undefined}
+        onOpenAndroidStudioModal={() => setIsAndroidStudioModalOpen(true)}
       />
 
       {/* Content Layout - Full Width Without Left Sidebar */}
@@ -683,6 +695,14 @@ export default function App() {
           onNavigateToSettings={() => handleSelectTab('settings')}
         />
       )}
+
+      {/* Modal Generator Android Studio & Firebase (FCM) & Download google-services.json */}
+      <AndroidStudioConverterModal
+        isOpen={isAndroidStudioModalOpen}
+        onClose={() => setIsAndroidStudioModalOpen(false)}
+        settings={settings}
+        onUpdateSettings={handleUpdateSettings}
+      />
     </div>
   );
 }
