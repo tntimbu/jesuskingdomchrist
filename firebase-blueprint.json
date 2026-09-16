@@ -112,5 +112,11 @@
       },
       "required": ["id", "sender_name", "message", "created_at"]
     }
+  },
+  "firestore": {
+    "/gkfc_cms/{documentId}": {
+      "schema": { "$ref": "#/entities/system_settings" },
+      "description": "Church CMS documents and data sync store"
+    }
   }
 }

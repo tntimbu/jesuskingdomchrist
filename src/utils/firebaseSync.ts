@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import {
   getFirestore,
+  initializeFirestore,
   doc,
   setDoc,
   onSnapshot,
@@ -112,34 +113,68 @@ export function getDefaultFirebaseConfig() {
  */
 export function getActiveFirebaseConfig() {
   try {
-    const rawSettings = localStorage.getItem('cms_pro_settings');
-    if (rawSettings) {
-      const parsed = JSON.parse(rawSettings);
-      const custom = parsed.firebaseConfig;
-      if (
-        custom &&
-        custom.apiKey &&
-        custom.projectId &&
-        !custom.apiKey.includes('DemoKey') &&
-        custom.projectId !== 'cmspro-church-app' &&
-        custom.projectId !== defaultFirebaseConfig.projectId
-      ) {
-        return {
-          apiKey: custom.apiKey.trim(),
-          authDomain: (custom.authDomain || '').trim() || `${custom.projectId.trim()}.firebaseapp.com`,
-          projectId: custom.projectId.trim(),
-          storageBucket: (custom.storageBucket || '').trim() || `${custom.projectId.trim()}.firebasestorage.app`,
-          messagingSenderId: (custom.messagingSenderId || '').trim() || defaultFirebaseConfig.messagingSenderId,
-          appId: (custom.appId || '').trim() || defaultFirebaseConfig.appId,
-          firestoreDatabaseId: (custom.firestoreDatabaseId || defaultFirebaseConfig.firestoreDatabaseId || '(default)').trim(),
-          isCustom: true
-        };
+    if (typeof localStorage !== 'undefined') {
+      const rawSettings = localStorage.getItem('cms_pro_settings');
+      if (rawSettings) {
+        const parsed = JSON.parse(rawSettings);
+        const custom = parsed.firebaseConfig;
+        if (
+          custom &&
+          custom.apiKey &&
+          custom.projectId &&
+          !custom.apiKey.includes('DemoKey') &&
+          custom.projectId !== 'cmspro-church-app' &&
+          custom.projectId !== defaultFirebaseConfig.projectId
+        ) {
+          return {
+            apiKey: custom.apiKey.trim(),
+            authDomain: (custom.authDomain || '').trim() || `${custom.projectId.trim()}.firebaseapp.com`,
+            projectId: custom.projectId.trim(),
+            storageBucket: (custom.storageBucket || '').trim() || `${custom.projectId.trim()}.firebasestorage.app`,
+            messagingSenderId: (custom.messagingSenderId || '').trim() || defaultFirebaseConfig.messagingSenderId,
+            appId: (custom.appId || '').trim() || defaultFirebaseConfig.appId,
+            firestoreDatabaseId: (custom.firestoreDatabaseId || defaultFirebaseConfig.firestoreDatabaseId || '(default)').trim(),
+            isCustom: true
+          };
+        }
       }
     }
   } catch (e) {
     console.warn('[FirebaseSync] Using default automatic Firebase config', e);
   }
   return { ...defaultFirebaseConfig, isCustom: false };
+}
+
+const firestoreInstanceCache = new Map<string, Firestore>();
+
+/**
+ * Safely initializes or retrieves a Firestore instance with experimentalForceLongPolling enabled.
+ * This guarantees stable connectivity through container proxies, sandboxed iframes, and restrictive firewalls,
+ * resolving the "Could not reach Cloud Firestore backend" connection issue.
+ */
+export function getOrInitFirestore(app: FirebaseApp, databaseId?: string): Firestore {
+  const dbId = databaseId && databaseId !== '(default)' ? databaseId : undefined;
+  const cacheKey = `${app.name}_${dbId || 'default'}`;
+
+  if (firestoreInstanceCache.has(cacheKey)) {
+    return firestoreInstanceCache.get(cacheKey)!;
+  }
+
+  let firestoreDb: Firestore;
+  try {
+    firestoreDb = initializeFirestore(
+      app,
+      {
+        experimentalForceLongPolling: true
+      },
+      dbId
+    );
+  } catch {
+    firestoreDb = dbId ? getFirestore(app, dbId) : getFirestore(app);
+  }
+
+  firestoreInstanceCache.set(cacheKey, firestoreDb);
+  return firestoreDb;
 }
 
 /**
@@ -154,12 +189,7 @@ export function getDefaultFirestoreInstance(): Firestore {
     app = initializeApp(defaultFirebaseConfig, appName);
   }
 
-  const firestoreDb =
-    defaultFirebaseConfig.firestoreDatabaseId && defaultFirebaseConfig.firestoreDatabaseId !== '(default)'
-      ? getFirestore(app, defaultFirebaseConfig.firestoreDatabaseId)
-      : getFirestore(app);
-
-  return firestoreDb;
+  return getOrInitFirestore(app, defaultFirebaseConfig.firestoreDatabaseId);
 }
 
 /**
@@ -180,12 +210,7 @@ export function getFirestoreInstance(): Firestore {
     }
   }
 
-  const firestoreDb =
-    config.firestoreDatabaseId && config.firestoreDatabaseId !== '(default)'
-      ? getFirestore(app, config.firestoreDatabaseId)
-      : getFirestore(app);
-
-  return firestoreDb;
+  return getOrInitFirestore(app, config.firestoreDatabaseId);
 }
 
 export const db = getFirestoreInstance();
@@ -414,9 +439,7 @@ export async function testFirestoreConnection(overrideConfig?: any): Promise<{ s
 
     const appName = `test_app_${config.projectId}_${Date.now()}`;
     const app = initializeApp(config, appName);
-    const firestoreDb = config.firestoreDatabaseId && config.firestoreDatabaseId !== '(default)'
-      ? getFirestore(app, config.firestoreDatabaseId)
-      : getFirestore(app);
+    const firestoreDb = getOrInitFirestore(app, config.firestoreDatabaseId);
 
     const testDocRef = doc(firestoreDb, COLLECTION_NAME, 'connection_test');
     
@@ -649,6 +672,9 @@ export function initRealtimeCloudSync(onDataReceived?: () => void): () => void {
         ) {
           markQuotaExhausted();
           console.warn(`[FirebaseSync] Collection snapshot quota exceeded:`, error);
+        } else if (error?.code === 'unavailable') {
+          syncConnectedStatus = false;
+          console.info(`[FirebaseSync] Firestore operating in offline/local cache mode.`);
         } else {
           console.warn(`[FirebaseSync] Collection snapshot error for ${COLLECTION_NAME}:`, error);
         }

@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
+import { getFirestore, initializeFirestore, doc, getDocFromServer } from 'firebase/firestore';
 import { AppSettings } from '../types';
 import defaultFirebaseConfig from '../../firebase-applet-config.json';
 
@@ -74,9 +74,22 @@ export function initFirebase(settings?: AppSettings) {
       firebaseApp = getApp();
     }
     
-    firestoreDb = defaultFirebaseConfig.firestoreDatabaseId
-      ? getFirestore(firebaseApp, defaultFirebaseConfig.firestoreDatabaseId)
-      : getFirestore(firebaseApp);
+    const dbId = defaultFirebaseConfig.firestoreDatabaseId && defaultFirebaseConfig.firestoreDatabaseId !== '(default)'
+      ? defaultFirebaseConfig.firestoreDatabaseId
+      : undefined;
+
+    try {
+      firestoreDb = initializeFirestore(
+        firebaseApp,
+        {
+          experimentalForceLongPolling: true
+        },
+        dbId
+      );
+    } catch {
+      firestoreDb = dbId ? getFirestore(firebaseApp, dbId) : getFirestore(firebaseApp);
+    }
+
     return { app: firebaseApp, db: firestoreDb };
   } catch (err) {
     console.warn('Firebase initialization notice:', err);
@@ -85,6 +98,9 @@ export function initFirebase(settings?: AppSettings) {
 }
 
 export async function testConnection() {
+  if (!firestoreDb) {
+    initFirebase();
+  }
   if (!firestoreDb) return false;
   try {
     await getDocFromServer(doc(firestoreDb, 'test', 'connection'));
