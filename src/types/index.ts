@@ -366,6 +366,21 @@ export interface AppSettings {
   // Push Notification Settings (Website 2 APK Builder + Firebase FCM / OneSignal)
   firebase_package_name?: string;
   firebase_fcm_server_key?: string;
+  // Android Studio & Professional Display Conversion Settings
+  android_web_url?: string;
+  android_package_name?: string;
+  android_app_name?: string;
+  android_status_bar_color?: string;
+  android_status_bar_style?: 'DARK_ICONS' | 'LIGHT_ICONS';
+  android_nav_bar_color?: string;
+  android_enable_pull_to_refresh?: boolean;
+  android_enable_hardware_acceleration?: boolean;
+  android_enable_fullscreen?: boolean;
+  android_safe_area_padding?: boolean;
+  android_splash_bg_color?: string;
+  android_splash_duration_ms?: number;
+  android_user_agent_suffix?: string;
+  android_fcm_default_topic?: string;
   onesignal_enabled?: boolean;
   onesignal_app_id?: string;
   onesignal_rest_api_key?: string;

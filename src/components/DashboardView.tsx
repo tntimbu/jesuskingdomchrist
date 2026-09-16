@@ -94,6 +94,7 @@ import {
 } from 'lucide-react';
 import { broadcastChurchAnnouncement } from '../utils/pushNotificationService';
 import { Website2ApkNotificationGuideModal } from './Website2ApkNotificationGuideModal';
+import { AndroidStudioConverterModal } from './AndroidStudioConverterModal';
 import { downloadGoogleServicesJsonFile } from '../utils/googleServicesHelper';
 
 import {
@@ -529,6 +530,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [wartaSuccessMsg, setWartaSuccessMsg] = useState(false);
   const [sendPushOnSaveWarta, setSendPushOnSaveWarta] = useState(true);
   const [isWebsite2ApkGuideOpen, setIsWebsite2ApkGuideOpen] = useState(false);
+  const [isAndroidStudioModalOpen, setIsAndroidStudioModalOpen] = useState(false);
 
   // Sinkronisasi form saat settings berubah
   useEffect(() => {
@@ -3369,14 +3371,26 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
               {/* Bantuan Website 2 APK Builder & Status OneSignal */}
               <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-[10px]">
-                <button
-                  type="button"
-                  onClick={() => setIsWebsite2ApkGuideOpen(true)}
-                  className="text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1 cursor-pointer underline"
-                >
-                  <HelpCircle className="w-3.5 h-3.5" />
-                  <span>Panduan Website 2 APK Builder (Notifikasi HP)</span>
-                </button>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => setIsAndroidStudioModalOpen(true)}
+                    className="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold flex items-center gap-1.5 transition cursor-pointer shadow-sm"
+                    title="Buka Pengaturan Tampilan Profesional & Push Notifikasi Firebase untuk Android Studio"
+                  >
+                    <Smartphone className="w-3.5 h-3.5 text-amber-300" />
+                    <span>📱 Konversi Android Studio &amp; FCM</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsWebsite2ApkGuideOpen(true)}
+                    className="text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1 cursor-pointer underline"
+                  >
+                    <HelpCircle className="w-3.5 h-3.5" />
+                    <span>Panduan Website 2 APK Builder</span>
+                  </button>
+                </div>
 
                 <button
                   type="button"
@@ -4535,6 +4549,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         onClose={() => setIsWebsite2ApkGuideOpen(false)}
         senderId={settings.onesignal_google_project_number || '250034601366'}
         appUrl={window.location.origin}
+      />
+
+      {/* Modal Konversi Android Studio & Firebase Push Notification */}
+      <AndroidStudioConverterModal
+        isOpen={isAndroidStudioModalOpen}
+        onClose={() => setIsAndroidStudioModalOpen(false)}
+        settings={settings}
+        onUpdateSettings={onUpdateSettings}
       />
 
       {/* Universal notification modal is handled by FloatingNotificationBanner in App.tsx */}

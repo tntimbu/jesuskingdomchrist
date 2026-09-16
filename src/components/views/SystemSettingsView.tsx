@@ -62,7 +62,8 @@ import {
   CalendarDays,
   UserCheck,
   MoreHorizontal,
-  Box
+  Box,
+  ChevronRight
 } from 'lucide-react';
 import { getNavbarTheme, getFooterTheme } from '../../utils/themeHelper';
 import { DashboardVisibilityManager } from '../dashboard/DashboardVisibilityManager';
@@ -71,6 +72,7 @@ import {
   promptOneSignalPermission
 } from '../../utils/pushNotificationService';
 import { Website2ApkNotificationGuideModal } from '../Website2ApkNotificationGuideModal';
+import { AndroidStudioConverterModal } from '../AndroidStudioConverterModal';
 import { downloadGoogleServicesJsonFile } from '../../utils/googleServicesHelper';
 
 interface SystemSettingsViewProps {
@@ -84,7 +86,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
   settings,
   onUpdateSettings
 }) => {
-  const [activeTab, setActiveTab] = useState<'METADATA' | 'PUSH_NOTIF' | 'GAS_FIREBASE' | 'USERS' | 'AUDIT'>('METADATA');
+  const [activeTab, setActiveTab] = useState<'METADATA' | 'PUSH_NOTIF' | 'ANDROID_STUDIO' | 'GAS_FIREBASE' | 'USERS' | 'AUDIT'>('METADATA');
   const [usersList, setUsersList] = useState<User[]>([]);
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
   const [loginHistory, setLoginHistory] = useState<LoginHistory[]>([]);
@@ -92,6 +94,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
   // Metadata Form State
   const [metaForm, setMetaForm] = useState<AppSettings>(settings);
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [isAndroidStudioModalOpen, setIsAndroidStudioModalOpen] = useState(false);
 
   // Push Notification Testing State (OneSignal & Website 2 APK Builder)
   const [testPushTitle, setTestPushTitle] = useState('📢 Warta GKFC Pro (Status Bar)');
@@ -813,6 +816,16 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
           >
             <Bell className="w-3.5 h-3.5 text-amber-400" />
             <span>🔔 Notifikasi HP (Website 2 APK)</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('ANDROID_STUDIO')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
+              activeTab === 'ANDROID_STUDIO' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Smartphone className="w-3.5 h-3.5 text-emerald-400" />
+            <span>📱 Android Studio &amp; FCM Pro</span>
           </button>
 
           <button
@@ -2427,6 +2440,29 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
             </div>
           </div>
 
+          {/* Banner Menuju Android Studio Converter Pro */}
+          <div className="rounded-2xl bg-gradient-to-r from-indigo-950/80 via-slate-900 to-emerald-950/60 border border-indigo-500/40 p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-lg">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shrink-0">
+                <Smartphone className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="font-bold text-white text-sm">Konversi ke Android Studio Resmi &amp; Firebase FCM?</p>
+                <p className="text-slate-300 text-xs">
+                  Dapatkan kode Java lengkap, konfigurasi status bar profesional, safe area notch, dan file google-services.json untuk link <strong>https://tntimbu.github.io/jesuskingdomchrist/</strong>
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsAndroidStudioModalOpen(true)}
+              className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shrink-0 flex items-center gap-1.5 shadow-lg shadow-emerald-600/20 transition cursor-pointer"
+            >
+              <span>Buka Android Studio Converter</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+
           {/* STATUS KONEKSI ONESIGNAL (LIVE STATUS CARD) */}
           <div className="rounded-3xl bg-slate-900 border-2 border-indigo-500/30 p-6 text-white space-y-4 shadow-xl">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
@@ -3261,6 +3297,99 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
             </div>
           </div>
         </form>
+      )}
+
+      {/* Tab: Konversi Android Studio & Firebase Push Notification Pro */}
+      {activeTab === 'ANDROID_STUDIO' && (
+        <div className="space-y-6">
+          <div className="rounded-3xl bg-gradient-to-r from-indigo-950 via-slate-900 to-emerald-950 border-2 border-indigo-500/40 p-6 sm:p-8 text-white space-y-5 shadow-2xl">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+              <div className="flex items-start gap-4">
+                <div className="p-4 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shrink-0 mt-1">
+                  <Smartphone className="w-8 h-8 animate-pulse" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-lg sm:text-xl font-extrabold text-white">
+                      Konversi Android Studio &amp; Firebase Push Notification Pro
+                    </h3>
+                    <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-extrabold border border-emerald-500/30">
+                      Android 14 Ready
+                    </span>
+                    <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 text-xs font-extrabold border border-amber-500/30">
+                      FCM v1 &amp; DeepLink
+                    </span>
+                  </div>
+                  <p className="text-sm text-slate-300 mt-2 leading-relaxed max-w-3xl">
+                    Konversikan website gereja <code className="text-amber-400 font-mono font-bold bg-slate-950 px-2 py-0.5 rounded">https://tntimbu.github.io/jesuskingdomchrist/</code> menjadi aplikasi Android native siap rilis ke Google Play Store dengan status bar profesional, pull-to-refresh, dukungan kamera/upload bukti persembahan, serta push notifikasi Firebase Cloud Messaging gratis tanpa batas.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsAndroidStudioModalOpen(true)}
+                className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-emerald-600 hover:from-indigo-500 hover:to-emerald-500 text-white font-extrabold text-sm shadow-xl shadow-indigo-600/30 flex items-center justify-center gap-2 shrink-0 transition-all cursor-pointer transform hover:scale-[1.02]"
+              >
+                <Sparkles className="w-5 h-5 text-amber-300" />
+                <span>Buka Generator &amp; Kode Sumber Lengkap</span>
+              </button>
+            </div>
+
+            {/* Feature Highlights Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+              <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-2">
+                <div className="flex items-center gap-2 text-indigo-400 font-bold text-sm">
+                  <Palette className="w-4 h-4" />
+                  <span>Tampilan Profesional</span>
+                </div>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Status bar custom color (#0f172a / Navy / Light), NoActionBar, hardware acceleration 60fps, dan penanganan safe-area cutout poni HP.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-2">
+                <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
+                  <Bell className="w-4 h-4" />
+                  <span>Firebase Cloud Messaging</span>
+                </div>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Notifikasi bilah status dengan suara dering & getar saat aplikasi tertutup. 1-click download <code>google-services.json</code> dan tester kirim pesan.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-2">
+                <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm">
+                  <Code className="w-4 h-4" />
+                  <span>Source Code Siap Pakai</span>
+                </div>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Semua file Java (MainActivity, MyFirebaseMessagingService), Gradle, Manifest, dan layout XML siap salin atau download untuk langsung di-build di Android Studio.
+                </p>
+              </div>
+            </div>
+
+            {/* Quick action buttons */}
+            <div className="pt-2 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => setIsAndroidStudioModalOpen(true)}
+                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs flex items-center gap-1.5 transition cursor-pointer"
+              >
+                <span>⚙️ Konfigurasi Warna &amp; URL</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  downloadGoogleServicesJsonFile(settings.firebase_package_name || 'com.jesuskingdomchrist.app', settings);
+                }}
+                className="px-4 py-2 rounded-xl bg-amber-600/80 hover:bg-amber-500 text-white font-semibold text-xs flex items-center gap-1.5 transition cursor-pointer"
+              >
+                <span>📥 Download google-services.json</span>
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Tab 3: Users & RBAC Management */}
@@ -4188,6 +4317,14 @@ fun createHighImportanceChannel(context: Context) {
         senderId={metaForm.onesignal_google_project_number || '250034601366'}
         appUrl={window.location.origin}
         packageName={apkPackageName}
+      />
+
+      {/* Modal Konversi Android Studio & Firebase Push Notification Pro */}
+      <AndroidStudioConverterModal
+        isOpen={isAndroidStudioModalOpen}
+        onClose={() => setIsAndroidStudioModalOpen(false)}
+        settings={settings}
+        onUpdateSettings={onUpdateSettings}
       />
     </div>
   );
