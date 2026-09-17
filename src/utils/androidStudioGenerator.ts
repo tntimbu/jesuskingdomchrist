@@ -24,7 +24,7 @@ export interface AndroidStudioConfig {
 
 export const DEFAULT_ANDROID_CONFIG: AndroidStudioConfig = {
   webUrl: 'https://tntimbu.github.io/jesuskingdomchrist/',
-  appName: 'Jesus Kingdom Christ',
+  appName: 'CMS App',
   packageName: 'com.jesuskingdomchrist.app',
   statusBarColor: '#0f172a',
   statusBarStyle: 'LIGHT_ICONS',
@@ -135,12 +135,38 @@ public class MainActivity extends Activity {
         String defaultUa = webSettings.getUserAgentString();
         webSettings.setUserAgentString(defaultUa + " ${config.userAgentSuffix}");
 
-        // 6. Langganan Notifikasi Warta Gereja via FCM Topic
+        // 6. Izin Push Notifikasi untuk Android 13+ (Tiramisu / API 33+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 101);
+            }
+        }
+
+        // 7. Buat Notification Channel resmi di sistem HP agar warta berdering & muncul di status bar
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            android.app.NotificationChannel channel = new android.app.NotificationChannel(
+                    "church_announcements_channel",
+                    "Warta & Pengumuman Gereja",
+                    android.app.NotificationManager.IMPORTANCE_HIGH
+            );
+            channel.setDescription("Saluran notifikasi untuk info ibadah, renungan harian, dan warta jemaat");
+            channel.enableLights(true);
+            channel.enableVibration(true);
+            android.app.NotificationManager notificationManager = getSystemService(android.app.NotificationManager.class);
+            if (notificationManager != null) {
+                notificationManager.createNotificationChannel(channel);
+            }
+        }
+
+        // 8. Langganan Notifikasi Warta Gereja via FCM Topic (semua variasi didaftarkan agar pasti masuk)
         try {
             com.google.firebase.messaging.FirebaseMessaging.getInstance().subscribeToTopic(FCM_TOPIC);
+            com.google.firebase.messaging.FirebaseMessaging.getInstance().subscribeToTopic("all_jemaat");
+            com.google.firebase.messaging.FirebaseMessaging.getInstance().subscribeToTopic("all_church_members");
+            com.google.firebase.messaging.FirebaseMessaging.getInstance().subscribeToTopic("general");
         } catch (Exception ignored) {}
 
-        // 7. WebViewClient (Menangani navigasi & link eksternal seperti WhatsApp/Telepon/Maps)
+        // 9. WebViewClient (Menangani navigasi & link eksternal seperti WhatsApp/Telepon/Maps)
         mWebView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
@@ -344,10 +370,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 
+        int smallIcon = getApplicationInfo().icon != 0 ? getApplicationInfo().icon : android.R.drawable.ic_popup_reminder;
+
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this, CHANNEL_ID)
-                        .setSmallIcon(R.mipmap.ic_launcher)
-                        .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher))
+                        .setSmallIcon(smallIcon)
                         .setContentTitle(title)
                         .setContentText(messageBody)
                         .setAutoCancel(true)
@@ -497,6 +524,11 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
     implementation("com.google.firebase:firebase-messaging")
     implementation("com.google.firebase:firebase-analytics")
+
+    // Unit Testing (Opsional bawaan Android Studio)
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
 }
 `;
 }

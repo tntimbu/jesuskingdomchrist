@@ -543,6 +543,28 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
                     </label>
                   </div>
                 </div>
+
+                {/* App Icon Asset Studio Tool */}
+                <div className="bg-slate-950/60 p-5 rounded-2xl border border-slate-800 space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-amber-400" />
+                      <span>Icon Aplikasi (Ganti Ikon Robot Android ke Logo Gereja)</span>
+                    </h4>
+                    <a
+                      href="/pwa-512x512.png"
+                      download="church_icon_512x512.png"
+                      className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-xs flex items-center gap-1.5 transition shrink-0 cursor-pointer shadow-md"
+                      title="Download Icon HD 512x512 PNG"
+                    >
+                      <Download className="w-3.5 h-3.5 text-slate-950" />
+                      <span>📥 Download Icon HD (512x512)</span>
+                    </a>
+                  </div>
+                  <p className="text-[11px] text-slate-300 leading-relaxed">
+                    Agar di layar utama HP jemaat muncul logo gereja (bukan robot Android hijau): Unduh gambar icon HD di atas, lalu di Android Studio klik kanan folder <strong>res</strong> &gt; <strong>New &gt; Image Asset</strong> &gt; pilih file gambar ini sebagai Foreground Layer &gt; Next &gt; Finish!
+                  </p>
+                </div>
               </div>
 
               {/* Right Column: Live Phone Mockup Preview */}
@@ -1038,6 +1060,45 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
                     </li>
                     <li>Kirim file APK tersebut ke HP Android Anda (melalui WhatsApp, Google Drive, atau Bluetooth) dan langsung install!</li>
                     <li>Untuk rilis Google Play Store: Klik menu <strong>Build &gt; Generate Signed Bundle / APK</strong>, pilih <em>Android App Bundle (.aab)</em>.</li>
+                  </ul>
+                </div>
+
+                {/* Step 6 */}
+                <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-amber-600 text-white font-bold flex items-center justify-center text-xs">6</span>
+                    <h5 className="font-bold text-white text-sm">Ganti Ikon Aplikasi Menjadi Logo Gereja (Bukan Robot Hijau)</h5>
+                  </div>
+                  <ul className="list-disc list-inside text-slate-300 space-y-1 ml-8">
+                    <li>Unduh file icon HD (512x512 PNG) dari Tab 1 di atas.</li>
+                    <li>Di Android Studio, pada panel sebelah kiri, <strong>klik kanan pada folder <code>res</code></strong> (di bawah <code>app &gt; res</code>).</li>
+                    <li>Pilih <strong>New &gt; Image Asset</strong>.</li>
+                    <li>Pada jendela Asset Studio yang terbuka:
+                      <ul className="list-circle list-inside ml-6 space-y-0.5 text-slate-300">
+                        <li><strong>Icon Type:</strong> Launcher Icons (Adaptive and Legacy)</li>
+                        <li><strong>Name:</strong> biarkan tetap <code>ic_launcher</code></li>
+                        <li><strong>Foreground Layer:</strong> pilih <em>Asset Type: Image</em> &gt; klik ikon folder Path dan pilih file gambar logo yang diunduh tadi. Geser slider <em>Resize</em> sekitar 75-80% agar pas.</li>
+                        <li><strong>Background Layer:</strong> pilih <em>Asset Type: Color</em> &gt; pilih warna latar belakang (misal <code>#0f172a</code> atau warna gereja).</li>
+                      </ul>
+                    </li>
+                    <li>Klik <strong>Next &gt; Finish</strong>. Lalu build ulang APK. Ikon di layar HP akan langsung berubah menjadi logo gereja!</li>
+                  </ul>
+                </div>
+
+                {/* Step 7 */}
+                <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-xs">7</span>
+                    <h5 className="font-bold text-white text-sm">Kirim Push Notifikasi Warta via Firebase Console</h5>
+                  </div>
+                  <ul className="list-disc list-inside text-slate-300 space-y-1 ml-8">
+                    <li>Buka <strong>Firebase Console</strong> &gt; menu <strong>Messaging</strong> &gt; klik <strong>New campaign &gt; Firebase Notification messages</strong>.</li>
+                    <li>Isi Judul (misal: <em>Warta Ibadah Raya</em>) dan Isi Pesan (misal: <em>Ibadah Minggu dimulai jam 09.00</em>).</li>
+                    <li>Pada Target: Pilih <strong>Topic</strong> &gt; ketik <code className="text-emerald-400 font-bold">all_church_members</code> atau <code className="text-emerald-400 font-bold">all_jemaat</code>.</li>
+                    <li>Pilih waktu pengiriman <strong>Now</strong>, klik <strong>Review &gt; Publish</strong>.</li>
+                    <li>
+                      <strong className="text-amber-400">PENTING (Izin Notifikasi di HP):</strong> Pada Android 13/14/15, pastikan saat aplikasi pertama kali dibuka Anda menekan tombol <strong>"Izinkan / Allow"</strong> notifikasi. Atau buka menu <em>Pengaturan HP &gt; Aplikasi &gt; {config.appName} &gt; Notifikasi &gt; Hidupkan Semua</em>. Notifikasi pertama biasanya masuk dalam waktu 10-30 detik setelah dipublikasikan.
+                    </li>
                   </ul>
                 </div>
               </div>
