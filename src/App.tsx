@@ -396,7 +396,7 @@ export default function App() {
         onUpdateSettings={handleUpdateSettings}
         onNavigateToSettings={() => handleSelectTab('settings')}
         onOpenNavbarCustomizer={isEffectiveAdmin ? () => setIsNavbarCustomizerOpen(true) : undefined}
-        onOpenAndroidStudioModal={() => setIsAndroidStudioModalOpen(true)}
+        onOpenAndroidStudioModal={isEffectiveAdmin ? () => setIsAndroidStudioModalOpen(true) : undefined}
       />
 
       {/* Card Menu Overlay Modal (Replaces Left Sidebar for All Devices) */}
@@ -409,7 +409,7 @@ export default function App() {
         onSelectTab={handleSelectTab}
         onOpenSuperAdminSaaSPanel={() => setIsSaaSPanelOpen(true)}
         onOpenNavbarCustomizer={isEffectiveAdmin ? () => setIsNavbarCustomizerOpen(true) : undefined}
-        onOpenAndroidStudioModal={() => setIsAndroidStudioModalOpen(true)}
+        onOpenAndroidStudioModal={isEffectiveAdmin ? () => setIsAndroidStudioModalOpen(true) : undefined}
       />
 
       {/* Content Layout - Full Width Without Left Sidebar */}

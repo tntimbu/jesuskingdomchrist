@@ -1464,56 +1464,58 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       )}
 
-      {/* BANNER PROMINEN UTAMA: KONVERSI ANDROID STUDIO & DOWNLOAD GOOGLE-SERVICES.JSON */}
-      <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-indigo-950 via-slate-900 to-emerald-950 border-2 border-indigo-500/50 shadow-2xl flex flex-col lg:flex-row lg:items-center justify-between gap-4 text-white animate-fade-in">
-        <div className="flex items-start gap-3.5">
-          <div className="p-3 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/40 shrink-0 mt-0.5 shadow-inner">
-            <Smartphone className="w-6 h-6 text-emerald-400 animate-pulse" />
-          </div>
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-black border border-emerald-500/30">
-                PROYEK ANDROID STUDIO
-              </span>
-              <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold border border-amber-500/30">
-                FCM Push Notifikasi
-              </span>
-              <span className="text-[11px] text-slate-300 font-mono hidden sm:inline">
-                https://tntimbu.github.io/jesuskingdomchrist/
-              </span>
+      {/* BANNER PROMINEN UTAMA: KONVERSI ANDROID STUDIO & DOWNLOAD GOOGLE-SERVICES.JSON (KHUSUS ADMIN) */}
+      {isAdmin && (
+        <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-indigo-950 via-slate-900 to-emerald-950 border-2 border-indigo-500/50 shadow-2xl flex flex-col lg:flex-row lg:items-center justify-between gap-4 text-white animate-fade-in">
+          <div className="flex items-start gap-3.5">
+            <div className="p-3 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/40 shrink-0 mt-0.5 shadow-inner">
+              <Smartphone className="w-6 h-6 text-emerald-400 animate-pulse" />
             </div>
-            <h3 className="font-extrabold text-sm sm:text-base text-white">
-              📱 Konversi Android Studio &amp; Berkas Firebase (FCM)
-            </h3>
-            <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
-              Unduh berkas <code className="bg-slate-950 text-amber-300 px-1.5 py-0.5 rounded font-mono font-bold border border-slate-700">google-services.json</code> resmi untuk diletakkan di folder <code className="bg-slate-950 text-emerald-300 px-1.5 py-0.5 rounded font-mono font-bold border border-slate-700">app/</code> Android Studio, serta salin kode Java native (Status bar profesional, WebView, &amp; Push Notifikasi).
-            </p>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-black border border-emerald-500/30">
+                  PROYEK ANDROID STUDIO
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold border border-amber-500/30">
+                  FCM Push Notifikasi
+                </span>
+                <span className="text-[11px] text-slate-300 font-mono hidden sm:inline">
+                  https://tntimbu.github.io/jesuskingdomchrist/
+                </span>
+              </div>
+              <h3 className="font-extrabold text-sm sm:text-base text-white">
+                📱 Konversi Android Studio &amp; Berkas Firebase (FCM)
+              </h3>
+              <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+                Unduh berkas <code className="bg-slate-950 text-amber-300 px-1.5 py-0.5 rounded font-mono font-bold border border-slate-700">google-services.json</code> resmi untuk diletakkan di folder <code className="bg-slate-950 text-emerald-300 px-1.5 py-0.5 rounded font-mono font-bold border border-slate-700">app/</code> Android Studio, serta salin kode Java native (Status bar profesional, WebView, &amp; Push Notifikasi).
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                downloadGoogleServicesJsonFile(settings.firebase_package_name || 'com.jesuskingdomchrist.app', settings);
+              }}
+              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-600 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/25 flex items-center gap-2 transition-all cursor-pointer active:scale-95 border border-amber-400/50"
+              title="Klik untuk langsung mendownload file google-services.json ke komputer Anda"
+            >
+              <Download className="w-4 h-4 text-slate-950" />
+              <span>📥 Download google-services.json</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsAndroidStudioModalOpen(true)}
+              className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition-all cursor-pointer active:scale-95 border border-indigo-400/40"
+            >
+              <Sparkles className="w-4 h-4 text-amber-300" />
+              <span>Buka Generator &amp; Kode Sumber</span>
+            </button>
           </div>
         </div>
-
-        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-          <button
-            type="button"
-            onClick={() => {
-              downloadGoogleServicesJsonFile(settings.firebase_package_name || 'com.jesuskingdomchrist.app', settings);
-            }}
-            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-600 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/25 flex items-center gap-2 transition-all cursor-pointer active:scale-95 border border-amber-400/50"
-            title="Klik untuk langsung mendownload file google-services.json ke komputer Anda"
-          >
-            <Download className="w-4 h-4 text-slate-950" />
-            <span>📥 Download google-services.json</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setIsAndroidStudioModalOpen(true)}
-            className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition-all cursor-pointer active:scale-95 border border-indigo-400/40"
-          >
-            <Sparkles className="w-4 h-4 text-amber-300" />
-            <span>Buka Generator &amp; Kode Sumber</span>
-          </button>
-        </div>
-      </div>
+      )}
 
       {/* BANNER DEDIKASI KHUSUS TAMU / PENGUNJUNG UNTUK PROPORSI PROMINEN & RESPONSIF */}
       {isGuestMode && (

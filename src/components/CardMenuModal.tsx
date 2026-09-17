@@ -113,22 +113,24 @@ export const CardMenuModal: React.FC<CardMenuModalProps> = ({
               </button>
             )}
 
-            <button
-              onClick={() => {
-                onClose();
-                if (onOpenAndroidStudioModal) {
-                  onOpenAndroidStudioModal();
-                } else {
-                  window.dispatchEvent(new CustomEvent('open_android_studio_modal'));
-                }
-              }}
-              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 text-white text-xs font-black shadow-lg flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
-              title="Konversi Android Studio & Download google-services.json"
-            >
-              <Smartphone className="w-4 h-4 text-amber-300" />
-              <span className="hidden sm:inline">📱 Android Studio &amp; FCM</span>
-              <span className="sm:hidden">Android</span>
-            </button>
+            {isAdmin && (
+              <button
+                onClick={() => {
+                  onClose();
+                  if (onOpenAndroidStudioModal) {
+                    onOpenAndroidStudioModal();
+                  } else {
+                    window.dispatchEvent(new CustomEvent('open_android_studio_modal'));
+                  }
+                }}
+                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 text-white text-xs font-black shadow-lg flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
+                title="Konversi Android Studio & Download google-services.json"
+              >
+                <Smartphone className="w-4 h-4 text-amber-300" />
+                <span className="hidden sm:inline">📱 Android Studio &amp; FCM</span>
+                <span className="sm:hidden">Android</span>
+              </button>
+            )}
 
             <button
               onClick={onClose}
@@ -185,53 +187,55 @@ export const CardMenuModal: React.FC<CardMenuModalProps> = ({
           </div>
         </div>
 
-        {/* Banner Spesial: Konversi Android Studio & FCM */}
-        <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-950 via-slate-900 to-emerald-950 border border-indigo-500/40 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-xl">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shrink-0">
-              <Smartphone className="w-5 h-5 text-emerald-400 animate-pulse" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-extrabold text-white text-sm">📱 Konversi Android Studio &amp; Firebase FCM</span>
-                <span className="text-[10px] px-2 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">
-                  Resmi
-                </span>
+        {/* Banner Spesial: Konversi Android Studio & FCM (Khusus Admin) */}
+        {isAdmin && (
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-950 via-slate-900 to-emerald-950 border border-indigo-500/40 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-xl">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shrink-0">
+                <Smartphone className="w-5 h-5 text-emerald-400 animate-pulse" />
               </div>
-              <p className="text-slate-300 text-xs mt-0.5">
-                Target: <strong className="text-amber-300 font-mono">https://tntimbu.github.io/jesuskingdomchrist/</strong> &bull; Dapatkan file <code className="bg-slate-950 text-amber-300 px-1 py-0.2 rounded font-mono">google-services.json</code> &amp; kode Java lengkap.
-              </p>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-extrabold text-white text-sm">📱 Konversi Android Studio &amp; Firebase FCM</span>
+                  <span className="text-[10px] px-2 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">
+                    Resmi
+                  </span>
+                </div>
+                <p className="text-slate-300 text-xs mt-0.5">
+                  Target: <strong className="text-amber-300 font-mono">https://tntimbu.github.io/jesuskingdomchrist/</strong> &bull; Dapatkan file <code className="bg-slate-950 text-amber-300 px-1 py-0.2 rounded font-mono">google-services.json</code> &amp; kode Java lengkap.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  downloadGoogleServicesJsonFile(settings.firebase_package_name || 'com.jesuskingdomchrist.app', settings);
+                }}
+                className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs flex items-center gap-1.5 transition cursor-pointer shadow-md active:scale-95"
+                title="Download google-services.json"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>📥 Download .json</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  if (onOpenAndroidStudioModal) {
+                    onOpenAndroidStudioModal();
+                  } else {
+                    window.dispatchEvent(new CustomEvent('open_android_studio_modal'));
+                  }
+                }}
+                className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 transition cursor-pointer shadow-md active:scale-95"
+              >
+                <span>Buka Generator</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
             </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              type="button"
-              onClick={() => {
-                downloadGoogleServicesJsonFile(settings.firebase_package_name || 'com.jesuskingdomchrist.app', settings);
-              }}
-              className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs flex items-center gap-1.5 transition cursor-pointer shadow-md active:scale-95"
-              title="Download google-services.json"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>📥 Download .json</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                onClose();
-                if (onOpenAndroidStudioModal) {
-                  onOpenAndroidStudioModal();
-                } else {
-                  window.dispatchEvent(new CustomEvent('open_android_studio_modal'));
-                }
-              }}
-              className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 transition cursor-pointer shadow-md active:scale-95"
-            >
-              <span>Buka Generator</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
+        )}
 
         {/* Grid Kartu Menu Utama */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[60vh] overflow-y-auto pr-1">

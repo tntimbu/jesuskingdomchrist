@@ -370,22 +370,24 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
           </button>
         )}
 
-        {/* Tombol Akses Cepat Konversi Android Studio & Download google-services.json */}
-        <button
-          onClick={() => {
-            if (onOpenAndroidStudioModal) {
-              onOpenAndroidStudioModal();
-            } else {
-              window.dispatchEvent(new CustomEvent('open_android_studio_modal'));
-            }
-          }}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-emerald-500/20 border border-emerald-400/40 cursor-pointer active:scale-95 transition-all"
-          title="Konversi Android Studio & Download google-services.json"
-        >
-          <Smartphone className="w-3.5 h-3.5 text-amber-300" />
-          <span className="hidden md:inline">📱 Android Studio &amp; FCM</span>
-          <span className="md:hidden">Android</span>
-        </button>
+        {/* Tombol Akses Cepat Konversi Android Studio & Download google-services.json (Khusus Admin) */}
+        {isAdmin && (
+          <button
+            onClick={() => {
+              if (onOpenAndroidStudioModal) {
+                onOpenAndroidStudioModal();
+              } else {
+                window.dispatchEvent(new CustomEvent('open_android_studio_modal'));
+              }
+            }}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-emerald-500/20 border border-emerald-400/40 cursor-pointer active:scale-95 transition-all"
+            title="Konversi Android Studio & Download google-services.json"
+          >
+            <Smartphone className="w-3.5 h-3.5 text-amber-300" />
+            <span className="hidden md:inline">📱 Android Studio &amp; FCM</span>
+            <span className="md:hidden">Android</span>
+          </button>
+        )}
 
         {/* Quick Navbar Customizer Palette Button - ONLY FOR ADMIN */}
         {isAdmin && (
@@ -580,20 +582,22 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
                     </button>
                   )}
 
-                  <button
-                    onClick={() => {
-                      setShowUserDropdown(false);
-                      if (onOpenAndroidStudioModal) {
-                        onOpenAndroidStudioModal();
-                      } else {
-                        window.dispatchEvent(new CustomEvent('open_android_studio_modal'));
-                      }
-                    }}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-emerald-300 hover:bg-emerald-500/10 text-xs font-semibold transition-all text-left"
-                  >
-                    <Smartphone className="w-4 h-4 text-emerald-400" />
-                    <span>📱 Android Studio &amp; FCM Pro</span>
-                  </button>
+                  {isAdmin && (
+                    <button
+                      onClick={() => {
+                        setShowUserDropdown(false);
+                        if (onOpenAndroidStudioModal) {
+                          onOpenAndroidStudioModal();
+                        } else {
+                          window.dispatchEvent(new CustomEvent('open_android_studio_modal'));
+                        }
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-emerald-300 hover:bg-emerald-500/10 text-xs font-semibold transition-all text-left cursor-pointer"
+                    >
+                      <Smartphone className="w-4 h-4 text-emerald-400" />
+                      <span>📱 Android Studio &amp; FCM Pro</span>
+                    </button>
+                  )}
 
                   <button
                     onClick={() => {
