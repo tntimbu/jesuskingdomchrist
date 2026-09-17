@@ -708,17 +708,25 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
 
                   <div className="space-y-2.5 text-xs">
                     <div>
-                      <span className="text-slate-400 block mb-0.5">Firebase Project ID:</span>
-                      <div className="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl font-mono text-emerald-400">
-                        {config.projectId}
-                      </div>
+                      <span className="text-slate-400 block mb-0.5">Firebase Project ID (Dapat diganti untuk akun lain):</span>
+                      <input
+                        type="text"
+                        value={config.projectId}
+                        onChange={(e) => setConfig({ ...config, projectId: e.target.value.trim() })}
+                        className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 font-mono text-emerald-400 focus:border-indigo-500 focus:outline-none text-xs"
+                        placeholder="contoh-gereja-app"
+                      />
                     </div>
 
                     <div>
-                      <span className="text-slate-400 block mb-0.5">Messaging Sender ID:</span>
-                      <div className="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl font-mono text-indigo-300">
-                        {config.senderId}
-                      </div>
+                      <span className="text-slate-400 block mb-0.5">Messaging Sender ID / Project Number:</span>
+                      <input
+                        type="text"
+                        value={config.senderId}
+                        onChange={(e) => setConfig({ ...config, senderId: e.target.value.trim() })}
+                        className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 font-mono text-indigo-300 focus:border-indigo-500 focus:outline-none text-xs"
+                        placeholder="250034601366"
+                      />
                     </div>
 
                     <div>
