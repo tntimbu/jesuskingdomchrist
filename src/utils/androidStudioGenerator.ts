@@ -554,7 +554,71 @@ export function generateAndroidManifestXml(config: AndroidStudioConfig): string 
 }
 
 /**
- * Generates app/build.gradle
+ * Generates app/build.gradle.kts (Kotlin DSL - Modern Android Studio Default)
+ */
+export function generateAppBuildGradleKts(config: AndroidStudioConfig): string {
+  return `plugins {
+    id("com.android.application")
+    id("com.google.gms.google-services")
+}
+
+android {
+    namespace = "${config.packageName}"
+    compileSdk = 34
+
+    defaultConfig {
+        applicationId = "${config.packageName}"
+        minSdk = 24
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0.0"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation("com.google.android.material:material:1.12.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.2.0")
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+
+    // Firebase Cloud Messaging (FCM)
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    implementation("com.google.firebase:firebase-messaging")
+    implementation("com.google.firebase:firebase-analytics")
+}
+`;
+}
+
+/**
+ * Generates project-level build.gradle.kts (Kotlin DSL)
+ */
+export function generateProjectBuildGradleKts(): string {
+  return `// Top-level build file where you can add configuration options common to all sub-projects/modules.
+plugins {
+    id("com.android.application") version "8.4.1" apply false
+    id("com.google.gms.google-services") version "4.4.2" apply false
+}
+`;
+}
+
+/**
+ * Generates app/build.gradle (Groovy DSL - Classic)
  */
 export function generateAppBuildGradle(config: AndroidStudioConfig): string {
   return `plugins {

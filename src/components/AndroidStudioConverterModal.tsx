@@ -31,7 +31,9 @@ import {
   generateFirebaseMessagingServiceJava,
   generateAndroidManifestXml,
   generateAppBuildGradle,
+  generateAppBuildGradleKts,
   generateProjectBuildGradle,
+  generateProjectBuildGradleKts,
   generateActivityMainXml,
   generateColorsXml,
   generateStylesXml,
@@ -76,7 +78,7 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
   // Navigation tab
   const [activeTab, setActiveTab] = useState<'DISPLAY' | 'FIREBASE_FCM' | 'CODE_EXPORT' | 'GUIDE'>('DISPLAY');
   const [selectedCodeFile, setSelectedCodeFile] = useState<
-    'MAIN_ACTIVITY' | 'FCM_SERVICE' | 'MANIFEST' | 'APP_GRADLE' | 'PROJECT_GRADLE' | 'ACTIVITY_LAYOUT' | 'COLORS' | 'STYLES'
+    'MAIN_ACTIVITY' | 'FCM_SERVICE' | 'MANIFEST' | 'APP_GRADLE_KTS' | 'PROJECT_GRADLE_KTS' | 'APP_GRADLE' | 'PROJECT_GRADLE' | 'ACTIVITY_LAYOUT' | 'COLORS' | 'STYLES'
   >('MAIN_ACTIVITY');
 
   // Copy feedback state
@@ -184,10 +186,14 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
         return { filename: 'MyFirebaseMessagingService.java', code: generateFirebaseMessagingServiceJava(config) };
       case 'MANIFEST':
         return { filename: 'AndroidManifest.xml', code: generateAndroidManifestXml(config) };
+      case 'APP_GRADLE_KTS':
+        return { filename: 'build.gradle.kts (Module :app)', code: generateAppBuildGradleKts(config) };
+      case 'PROJECT_GRADLE_KTS':
+        return { filename: 'build.gradle.kts (Project)', code: generateProjectBuildGradleKts() };
       case 'APP_GRADLE':
-        return { filename: 'app_build.gradle', code: generateAppBuildGradle(config) };
+        return { filename: 'app/build.gradle (Groovy)', code: generateAppBuildGradle(config) };
       case 'PROJECT_GRADLE':
-        return { filename: 'project_build.gradle', code: generateProjectBuildGradle() };
+        return { filename: 'project/build.gradle (Groovy)', code: generateProjectBuildGradle() };
       case 'ACTIVITY_LAYOUT':
         return { filename: 'activity_main.xml', code: generateActivityMainXml() };
       case 'COLORS':
@@ -841,8 +847,10 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
                   { id: 'MAIN_ACTIVITY', label: 'MainActivity.java' },
                   { id: 'FCM_SERVICE', label: 'MyFirebaseMessagingService.java' },
                   { id: 'MANIFEST', label: 'AndroidManifest.xml' },
-                  { id: 'APP_GRADLE', label: 'app/build.gradle' },
-                  { id: 'PROJECT_GRADLE', label: 'project/build.gradle' },
+                  { id: 'APP_GRADLE_KTS', label: 'build.gradle.kts (:app) 🔥' },
+                  { id: 'PROJECT_GRADLE_KTS', label: 'build.gradle.kts (Project)' },
+                  { id: 'APP_GRADLE', label: 'app/build.gradle (Groovy)' },
+                  { id: 'PROJECT_GRADLE', label: 'project/build.gradle (Groovy)' },
                   { id: 'ACTIVITY_LAYOUT', label: 'activity_main.xml' },
                   { id: 'COLORS', label: 'colors.xml' },
                   { id: 'STYLES', label: 'styles.xml' }
@@ -861,6 +869,15 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
                   </button>
                 ))}
               </div>
+
+              {(selectedCodeFile === 'APP_GRADLE_KTS' || selectedCodeFile === 'PROJECT_GRADLE_KTS') && (
+                <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200 flex items-start gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                  <p>
+                    <strong>Format Kotlin DSL (.kts):</strong> Ini adalah format bawaan Android Studio terbaru (Hedgehog, Iguana, Koala, Ladybug). Gunakan kode ini jika file Anda berakhiran <code>.kts</code> agar bebas dari 21 error sintaks Groovy.
+                  </p>
+                </div>
+              )}
 
               {/* Code Viewer Box */}
               <div className="rounded-2xl border border-slate-800 bg-slate-950 overflow-hidden shadow-inner">
@@ -926,8 +943,15 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
                     <h5 className="font-bold text-white text-sm">Konfigurasi Gradle &amp; Sync</h5>
                   </div>
                   <ul className="list-disc list-inside text-slate-300 space-y-1 ml-8">
-                    <li>Buka file <code className="text-indigo-300">build.gradle</code> (Project Level), ganti isinya dengan kode dari Tab 3.</li>
-                    <li>Buka file <code className="text-indigo-300">app/build.gradle</code>, ganti isinya dengan kode dari Tab 3.</li>
+                    <li>
+                      <strong>Jika file Anda bernama <code className="text-amber-400">build.gradle.kts</code>:</strong> Salin dari tab <strong className="text-emerald-400">build.gradle.kts (:app) 🔥</strong> di Tab 3.
+                    </li>
+                    <li>
+                      <strong>Jika file Anda bernama <code className="text-slate-300">build.gradle</code> (Groovy lama):</strong> Salin dari tab <strong className="text-indigo-300">app/build.gradle (Groovy)</strong>.
+                    </li>
+                    <li>
+                      Buka juga <code className="text-indigo-300">build.gradle.kts (Project)</code> dan tambahkan plugin Google Services.
+                    </li>
                     <li>Klik tombol <strong>"Sync Now"</strong> yang muncul di bilah atas Android Studio.</li>
                   </ul>
                 </div>
@@ -939,7 +963,9 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
                     <h5 className="font-bold text-white text-sm">Salin Kode Java &amp; Layout XML</h5>
                   </div>
                   <ul className="list-disc list-inside text-slate-300 space-y-1 ml-8">
-                    <li>Buka <code className="text-emerald-400">MainActivity.java</code>, timpa isinya dengan kode Tab 3.</li>
+                    <li>
+                      Pastikan filenya bernama <code className="text-emerald-400">MainActivity.java</code> (bukan <code>MainActivity.kt</code>). Jika bernama <code>.kt</code>, klik kanan &gt; <strong>Refactor &gt; Rename</strong> menjadi <code className="text-emerald-400">MainActivity.java</code>, lalu timpa isinya dengan kode Tab 3.
+                    </li>
                     <li>Buat Java Class baru bernama <code className="text-emerald-400">MyFirebaseMessagingService.java</code> di folder yang sama, lalu salin kodenya.</li>
                     <li>Buka <code className="text-amber-400">AndroidManifest.xml</code>, salin isinya dari Tab 3.</li>
                     <li>Buka <code className="text-cyan-400">res/layout/activity_main.xml</code>, salin layout WebView &amp; SwipeRefresh.</li>
