@@ -537,6 +537,10 @@ export const StorageManager = {
     if (settings.video_url && settings.video_url.includes('5qap5aO4i9A')) {
       settings.video_url = 'https://www.youtube.com/watch?v=wX2S6AebnI8';
     }
+    // Auto upgrade legacy/deleted APK link to the new Google Drive APK file
+    if (!settings.apk_download_url || settings.apk_download_url.includes('1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s')) {
+      settings.apk_download_url = 'https://drive.google.com/file/d/1MnWPNmsDjO1clGqbixCgSHjNRcMaqx2h/view?usp=sharing';
+    }
     return settings;
   },
   saveSettings: (settings: AppSettings): void => {

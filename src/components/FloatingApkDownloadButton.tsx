@@ -3,7 +3,8 @@ import { Download, Smartphone, X, Sparkles, ShieldCheck } from 'lucide-react';
 import { StorageManager } from '../utils/storage';
 import { AppSettings } from '../types';
 
-export const APK_DOWNLOAD_URL = 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing';
+export const APK_DOWNLOAD_URL = 'https://drive.google.com/file/d/1MnWPNmsDjO1clGqbixCgSHjNRcMaqx2h/view?usp=sharing';
+export const OLD_APK_DOWNLOAD_URL = 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing';
 
 interface FloatingApkDownloadButtonProps {
   settings?: AppSettings;
@@ -59,7 +60,8 @@ export const FloatingApkDownloadButton: React.FC<FloatingApkDownloadButtonProps>
     return null;
   }
 
-  const downloadUrl = appSettings.apk_download_url || APK_DOWNLOAD_URL;
+  const rawUrl = appSettings.apk_download_url;
+  const downloadUrl = (rawUrl && rawUrl !== OLD_APK_DOWNLOAD_URL) ? rawUrl : APK_DOWNLOAD_URL;
 
   const handleDownload = () => {
     window.open(downloadUrl, '_blank', 'noopener,noreferrer');

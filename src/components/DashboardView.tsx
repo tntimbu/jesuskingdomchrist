@@ -1858,7 +1858,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
               <div className="flex flex-wrap items-center gap-2 shrink-0 sm:mr-8">
                 <a
-                  href={settings.apk_download_url || 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing'}
+                  href={(!settings.apk_download_url || settings.apk_download_url === 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing') ? 'https://drive.google.com/file/d/1MnWPNmsDjO1clGqbixCgSHjNRcMaqx2h/view?usp=sharing' : settings.apk_download_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-600/30 border border-emerald-400/40 flex items-center justify-center gap-2 transition-all active:scale-95 shrink-0"
@@ -3175,7 +3175,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
               <div className="flex flex-wrap items-center gap-2 shrink-0 sm:mr-8">
                 <a
-                  href={settings.apk_download_url || 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing'}
+                  href={(!settings.apk_download_url || settings.apk_download_url === 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing') ? 'https://drive.google.com/file/d/1MnWPNmsDjO1clGqbixCgSHjNRcMaqx2h/view?usp=sharing' : settings.apk_download_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-600/30 border border-emerald-400/40 flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer"
@@ -4100,13 +4100,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         <div className="flex flex-col sm:flex-row gap-2">
                           <input
                             type="url"
-                            value={customForm.apk_download_url || 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing'}
+                            value={(!customForm.apk_download_url || customForm.apk_download_url === 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing') ? 'https://drive.google.com/file/d/1MnWPNmsDjO1clGqbixCgSHjNRcMaqx2h/view?usp=sharing' : customForm.apk_download_url}
                             onChange={(e) => setCustomForm({ ...customForm, apk_download_url: e.target.value })}
                             placeholder="https://drive.google.com/file/d/..."
                             className="flex-1 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-xs focus:ring-1 focus:ring-emerald-500 min-w-0"
                           />
                           <a
-                            href={customForm.apk_download_url || 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing'}
+                            href={(!customForm.apk_download_url || customForm.apk_download_url === 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing') ? 'https://drive.google.com/file/d/1MnWPNmsDjO1clGqbixCgSHjNRcMaqx2h/view?usp=sharing' : customForm.apk_download_url}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="px-3.5 py-2 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center justify-center gap-1 shrink-0 transition-all cursor-pointer"

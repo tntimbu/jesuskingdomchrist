@@ -285,7 +285,8 @@ export default function App() {
   }, [currentUser, isLoginPageOpen]);
 
   const handleDownloadAPK = () => {
-    const downloadUrl = settings?.apk_download_url || APK_DOWNLOAD_URL;
+    const raw = settings?.apk_download_url;
+    const downloadUrl = (raw && raw !== 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing') ? raw : APK_DOWNLOAD_URL;
     window.open(downloadUrl, '_blank', 'noopener,noreferrer');
   };
 

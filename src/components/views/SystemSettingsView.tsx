@@ -2377,7 +2377,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                   <label className="block text-slate-300 font-semibold text-xs">Link Tautan Download File .APK (Google Drive / Direct URL):</label>
                   <input
                     type="url"
-                    value={metaForm.apk_download_url || 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing'}
+                    value={(!metaForm.apk_download_url || metaForm.apk_download_url === 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing') ? 'https://drive.google.com/file/d/1MnWPNmsDjO1clGqbixCgSHjNRcMaqx2h/view?usp=sharing' : metaForm.apk_download_url}
                     onChange={(e) => setMetaForm({ ...metaForm, apk_download_url: e.target.value })}
                     placeholder="https://drive.google.com/file/d/..."
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-xs"
