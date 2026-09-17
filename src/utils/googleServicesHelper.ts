@@ -6,10 +6,10 @@ import { AppSettings } from '../types';
  * specifically for native Firebase Cloud Messaging (FCM) background push notifications.
  */
 export function generateGoogleServicesJson(
-  packageName: string = 'com.gkfc',
+  packageName: string = 'com.jesuskingdomchrist.app',
   settings?: AppSettings
 ): any {
-  const cleanPackage = (packageName || 'com.gkfc').trim().toLowerCase();
+  const cleanPackage = (packageName || 'com.jesuskingdomchrist.app').trim().toLowerCase();
   const projectId = settings?.firebase_project_id || defaultFirebaseConfig.projectId || 'gen-lang-client-0499830391';
   const projectNumber = settings?.firebase_messaging_sender_id || defaultFirebaseConfig.messagingSenderId || '248780279971';
   const apiKey = settings?.firebase_api_key || defaultFirebaseConfig.apiKey || 'AIzaSyARxHT9QiZMBGMG0lF4AHLF1ZiQqLl_bHM';

@@ -381,13 +381,13 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
                           <label className="block text-xs font-semibold text-slate-300">
                             Package Name (Application ID):
                           </label>
-                          {config.packageName !== 'io.github.app' && (
+                          {config.packageName !== 'com.jesuskingdomchrist.app' && (
                             <button
                               type="button"
-                              onClick={() => setConfig({ ...config, packageName: 'io.github.app' })}
+                              onClick={() => setConfig({ ...config, packageName: 'com.jesuskingdomchrist.app' })}
                               className="text-[10px] text-amber-400 hover:text-amber-300 underline font-bold cursor-pointer"
                             >
-                              Gunakan io.github.app (Firebase)
+                              Pakai com.jesuskingdomchrist.app
                             </button>
                           )}
                         </div>
@@ -396,10 +396,10 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
                           value={config.packageName}
                           onChange={(e) => setConfig({ ...config, packageName: e.target.value })}
                           className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono focus:border-indigo-500 focus:outline-none"
-                          placeholder="io.github.app"
+                          placeholder="com.jesuskingdomchrist.app"
                         />
-                        <p className="text-[10px] text-amber-400/90 mt-1">
-                          ⚠️ <strong>Wajib Sama Persis:</strong> Harus identik dengan Package Name di Firebase Console (<strong>{config.packageName}</strong>) agar file <code>google-services.json</code> dan Push Notifikasi berfungsi tanpa error.
+                        <p className="text-[10px] text-emerald-400 mt-1">
+                          ✅ <strong>Package Name Resmi:</strong> <code>{config.packageName}</code> (Sudah disesuaikan dengan folder <code>java/com/jesuskingdomchrist/app/</code> di proyek Android Studio Anda).
                         </p>
                       </div>
                     </div>

@@ -25,7 +25,7 @@ export interface AndroidStudioConfig {
 export const DEFAULT_ANDROID_CONFIG: AndroidStudioConfig = {
   webUrl: 'https://tntimbu.github.io/jesuskingdomchrist/',
   appName: 'Jesus Kingdom Christ',
-  packageName: 'io.github.app',
+  packageName: 'com.jesuskingdomchrist.app',
   statusBarColor: '#0f172a',
   statusBarStyle: 'LIGHT_ICONS',
   navBarColor: '#0f172a',
