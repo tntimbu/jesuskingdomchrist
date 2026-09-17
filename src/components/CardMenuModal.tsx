@@ -210,7 +210,7 @@ export const CardMenuModal: React.FC<CardMenuModalProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  downloadGoogleServicesJsonFile(settings.firebase_package_name || 'com.jesuskingdomchrist.app', settings);
+                  downloadGoogleServicesJsonFile(settings.firebase_package_name || settings.android_package_name || 'io.github.app', settings);
                 }}
                 className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs flex items-center gap-1.5 transition cursor-pointer shadow-md active:scale-95"
                 title="Download google-services.json"

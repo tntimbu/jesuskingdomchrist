@@ -1496,7 +1496,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <button
               type="button"
               onClick={() => {
-                downloadGoogleServicesJsonFile(settings.firebase_package_name || 'com.jesuskingdomchrist.app', settings);
+                downloadGoogleServicesJsonFile(settings.firebase_package_name || settings.android_package_name || 'io.github.app', settings);
               }}
               className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-600 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/25 flex items-center gap-2 transition-all cursor-pointer active:scale-95 border border-amber-400/50"
               title="Klik untuk langsung mendownload file google-services.json ke komputer Anda"
