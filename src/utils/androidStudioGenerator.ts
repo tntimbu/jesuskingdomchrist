@@ -45,220 +45,151 @@ export const DEFAULT_ANDROID_CONFIG: AndroidStudioConfig = {
  * Generates MainActivity.java
  */
 export function generateMainActivityJava(config: AndroidStudioConfig): string {
-  const isLightStatusBar = config.statusBarStyle === 'DARK_ICONS';
   return `package ${config.packageName};
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
-import android.view.WindowManager;
-import android.webkit.ConsoleMessage;
-import android.webkit.CookieManager;
-import android.webkit.DownloadListener;
-import android.webkit.GeolocationPermissions;
-import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
-import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import androidx.activity.OnBackPressedCallback;
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.google.firebase.messaging.FirebaseMessaging;
-
-public class MainActivity extends AppCompatActivity {
+@SuppressWarnings("deprecation")
+public class MainActivity extends Activity {
 
     public static final String TARGET_URL = "${config.webUrl}";
     public static final String FCM_TOPIC = "${config.fcmTopic}";
     private static final int FILE_CHOOSER_REQUEST_CODE = 1001;
-    private static final int PERMISSION_REQUEST_CODE = 2002;
 
     private WebView mWebView;
-    private SwipeRefreshLayout mSwipeRefreshLayout;
     private ProgressBar mProgressBar;
     private ValueCallback<Uri[]> mFilePathCallback;
-    private boolean doubleBackToExitPressedOnce = false;
+    private long mLastBackPressTime = 0;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Configure Professional Window & Status Bar
-        setupProfessionalWindowAppearance();
-
-        setContentView(R.layout.activity_main);
-
-        mWebView = findViewById(R.id.webView);
-        mSwipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
-        mProgressBar = findViewById(R.id.progressBar);
-
-        // 1. Initialize Firebase Cloud Messaging Topic Subscription
-        setupFirebaseMessaging();
-
-        // 2. Configure Native WebView Settings
-        configureWebViewSettings();
-
-        // 3. Configure Clients (WebChromeClient & WebViewClient)
-        configureWebViewClients();
-
-        // 4. Configure Pull-To-Refresh
-        configureSwipeRefresh();
-
-        // 5. Handle Hardware Back Press
-        setupBackNavigation();
-
-        // 6. Request Notification Permission for Android 13+ (Tiramisu)
-        requestNotificationPermissionIfNeeded();
-
-        // 7. Load Target URL (or check Deep Link from FCM Notification)
-        handleIntentUrl(getIntent());
-    }
-
-    private void setupProfessionalWindowAppearance() {
+        // 1. Status Bar Styling
         Window window = getWindow();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            window.setStatusBarColor(Color.parseColor("${config.statusBarColor}"));
-            window.setNavigationBarColor(Color.parseColor("${config.navBarColor}"));
-        }
+        window.setStatusBarColor(Color.parseColor("${config.statusBarColor}"));
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            View decor = window.getDecorView();
-            int flags = decor.getSystemUiVisibility();
-            ${isLightStatusBar ? 'flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;' : 'flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;'}
-            decor.setSystemUiVisibility(flags);
-        }
-    }
+        // 2. Programmatic Layout (100% mandiri, bebas dari error R.layout/activity_main.xml)
+        FrameLayout rootLayout = new FrameLayout(this);
+        rootLayout.setLayoutParams(new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+        ));
+        rootLayout.setBackgroundColor(Color.parseColor("${config.statusBarColor}"));
 
-    private void setupFirebaseMessaging() {
-        // Subscribe this device to general church announcement topic
-        FirebaseMessaging.getInstance().subscribeToTopic(FCM_TOPIC)
-            .addOnCompleteListener(task -> {
-                if (task.isSuccessful()) {
-                    // Successfully subscribed to church push notifications
-                }
-            });
-    }
+        // 3. Inisialisasi WebView Layar Penuh
+        mWebView = new WebView(this);
+        mWebView.setLayoutParams(new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+        ));
+        rootLayout.addView(mWebView);
 
-    @SuppressLint("SetJavaScriptEnabled")
-    private void configureWebViewSettings() {
-        WebSettings settings = mWebView.getSettings();
-        settings.setJavaScriptEnabled(true);
-        settings.setDomStorageEnabled(true);
-        settings.setDatabaseEnabled(true);
-        settings.setAllowFileAccess(true);
-        settings.setAllowContentAccess(true);
-        settings.setUseWideViewPort(true);
-        settings.setLoadWithOverviewMode(true);
-        settings.setSupportZoom(false);
-        settings.setBuiltInZoomControls(false);
-        settings.setDisplayZoomControls(false);
-        settings.setGeolocationEnabled(true);
-        settings.setMediaPlaybackRequiresUserGesture(false);
-        settings.setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
+        // 4. Inisialisasi Loading Progress Bar di Bagian Atas
+        mProgressBar = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
+        int pbHeight = (int) (4 * getResources().getDisplayMetrics().density);
+        FrameLayout.LayoutParams pbParams = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                pbHeight
+        );
+        mProgressBar.setLayoutParams(pbParams);
+        mProgressBar.setMax(100);
+        mProgressBar.setVisibility(View.GONE);
+        rootLayout.addView(mProgressBar);
 
-        // Custom User Agent to detect Android App wrapper
-        String defaultUa = settings.getUserAgentString();
-        settings.setUserAgentString(defaultUa + " ${config.userAgentSuffix}");
+        setContentView(rootLayout);
 
-        // Enable Cookies
-        CookieManager.getInstance().setAcceptCookie(true);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            CookieManager.getInstance().setAcceptThirdPartyCookies(mWebView, true);
-        }
+        // 5. Konfigurasi WebSettings Modern
+        WebSettings webSettings = mWebView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        webSettings.setDomStorageEnabled(true);
+        webSettings.setDatabaseEnabled(true);
+        webSettings.setAllowFileAccess(true);
+        webSettings.setAllowContentAccess(true);
+        webSettings.setLoadWithOverviewMode(true);
+        webSettings.setUseWideViewPort(true);
 
-        // Download Listener
-        mWebView.setDownloadListener(new DownloadListener() {
-            @Override
-            public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimetype, long contentLength) {
-                Intent i = new Intent(Intent.ACTION_VIEW);
-                i.setData(Uri.parse(url));
-                startActivity(i);
-            }
-        });
-    }
+        // User-Agent khusus agar aplikasi gereja dapat terdeteksi
+        String defaultUa = webSettings.getUserAgentString();
+        webSettings.setUserAgentString(defaultUa + " ${config.userAgentSuffix}");
 
-    private void configureWebViewClients() {
+        // 6. Langganan Notifikasi Warta Gereja via FCM Topic
+        try {
+            com.google.firebase.messaging.FirebaseMessaging.getInstance().subscribeToTopic(FCM_TOPIC);
+        } catch (Exception ignored) {}
+
+        // 7. WebViewClient (Menangani navigasi & link eksternal seperti WhatsApp/Telepon/Maps)
         mWebView.setWebViewClient(new WebViewClient() {
-            @Override
-            public void onPageFinished(WebView view, String url) {
-                super.onPageFinished(view, url);
-                mProgressBar.setVisibility(View.GONE);
-                ${config.enablePullToRefresh ? 'mSwipeRefreshLayout.setRefreshing(false);' : ''}
-            }
-
-            @Override
-            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
-                super.onReceivedError(view, request, error);
-                if (request.isForMainFrame()) {
-                    mProgressBar.setVisibility(View.GONE);
-                    ${config.enablePullToRefresh ? 'mSwipeRefreshLayout.setRefreshing(false);' : ''}
-                }
-            }
-
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 String url = request.getUrl().toString();
-                // Open external links (WhatsApp, Phone, Maps, YouTube) in external apps
-                if (url.startsWith("tel:") || url.startsWith("whatsapp:") || url.startsWith("mailto:") || url.contains("maps.google") || url.contains("wa.me")) {
+                return handleExternalUrls(url);
+            }
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                return handleExternalUrls(url);
+            }
+
+            private boolean handleExternalUrls(String url) {
+                if (url.startsWith("tel:") || url.startsWith("mailto:") || url.startsWith("whatsapp:") || url.contains("wa.me") || url.contains("maps.google")) {
                     try {
                         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                         startActivity(intent);
                         return true;
                     } catch (Exception e) {
-                        return false;
+                        Toast.makeText(MainActivity.this, "Aplikasi tidak ditemukan", Toast.LENGTH_SHORT).show();
+                        return true;
                     }
                 }
                 return false;
             }
+
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                mProgressBar.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                mProgressBar.setVisibility(View.GONE);
+            }
         });
 
+        // 8. WebChromeClient (Loading bar & Upload Foto Bukti Persembahan / Dokumen)
         mWebView.setWebChromeClient(new WebChromeClient() {
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
-                if (newProgress < 100) {
-                    mProgressBar.setVisibility(View.VISIBLE);
-                    mProgressBar.setProgress(newProgress);
-                } else {
+                mProgressBar.setProgress(newProgress);
+                if (newProgress >= 100) {
                     mProgressBar.setVisibility(View.GONE);
+                } else {
+                    mProgressBar.setVisibility(View.VISIBLE);
                 }
             }
 
-            @Override
-            public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
-                callback.invoke(origin, true, false);
-            }
-
-            @Override
-            public void onPermissionRequest(final PermissionRequest request) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    request.grant(request.getResources());
-                }
-            }
-
-            // File Chooser for Photo, Camera, & Documents Upload (e.g. Bukti Persembahan)
             @Override
             public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
                 if (mFilePathCallback != null) {
@@ -266,70 +197,24 @@ public class MainActivity extends AppCompatActivity {
                 }
                 mFilePathCallback = filePathCallback;
 
-                Intent intent = fileChooserParams.createIntent();
-                try {
-                    startActivityForResult(intent, FILE_CHOOSER_REQUEST_CODE);
-                } catch (Exception e) {
-                    mFilePathCallback = null;
-                    return false;
-                }
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.setType("image/*");
+                startActivityForResult(Intent.createChooser(intent, "Pilih Foto Bukti"), FILE_CHOOSER_REQUEST_CODE);
                 return true;
             }
         });
-    }
 
-    private void configureSwipeRefresh() {
-        ${config.enablePullToRefresh ? `
-        mSwipeRefreshLayout.setColorSchemeColors(Color.parseColor("${config.statusBarColor}"), Color.parseColor("#4f46e5"), Color.parseColor("#10b981"));
-        mSwipeRefreshLayout.setOnRefreshListener(() -> mWebView.reload());
-        ` : `
-        mSwipeRefreshLayout.setEnabled(false);
-        `}
-    }
-
-    private void setupBackNavigation() {
-        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
-            @Override
-            public void handleOnBackPressed() {
-                if (mWebView.canGoBack()) {
-                    mWebView.goBack();
-                } else {
-                    if (doubleBackToExitPressedOnce) {
-                        finish();
-                        return;
-                    }
-                    doubleBackToExitPressedOnce = true;
-                    Toast.makeText(MainActivity.this, "Tekan sekali lagi untuk keluar", Toast.LENGTH_SHORT).show();
-                    new Handler(Looper.getMainLooper()).postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
-                }
-            }
-        });
-    }
-
-    private void requestNotificationPermissionIfNeeded() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, PERMISSION_REQUEST_CODE);
+        // 9. Cek apakah aplikasi dibuka melalui Klik Notifikasi Warta (Deep Link FCM)
+        String openUrl = TARGET_URL;
+        if (getIntent() != null && getIntent().hasExtra("target_url")) {
+            String notifUrl = getIntent().getStringExtra("target_url");
+            if (notifUrl != null && !notifUrl.trim().isEmpty()) {
+                openUrl = notifUrl;
             }
         }
-    }
 
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        setIntent(intent);
-        handleIntentUrl(intent);
-    }
-
-    private void handleIntentUrl(Intent intent) {
-        String targetUrl = TARGET_URL;
-        if (intent != null && intent.hasExtra("target_url")) {
-            String deepUrl = intent.getStringExtra("target_url");
-            if (deepUrl != null && !deepUrl.trim().isEmpty()) {
-                targetUrl = deepUrl;
-            }
-        }
-        mWebView.loadUrl(targetUrl);
+        mWebView.loadUrl(openUrl);
     }
 
     @Override
@@ -351,6 +236,20 @@ public class MainActivity extends AppCompatActivity {
                 }
                 mFilePathCallback.onReceiveValue(results);
                 mFilePathCallback = null;
+            }
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (mWebView != null && mWebView.canGoBack()) {
+            mWebView.goBack();
+        } else {
+            if (System.currentTimeMillis() - mLastBackPressTime < 2000) {
+                super.onBackPressed();
+            } else {
+                mLastBackPressTime = System.currentTimeMillis();
+                Toast.makeText(this, "Tekan sekali lagi untuk keluar", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -497,6 +396,7 @@ export function generateAndroidManifestXml(config: AndroidStudioConfig): string 
 
     <!-- File Upload, Media & Camera Permissions -->
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
@@ -510,7 +410,7 @@ export function generateAndroidManifestXml(config: AndroidStudioConfig): string 
         android:label="${config.appName}"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+        android:theme="@android:style/Theme.Material.Light.NoActionBar"
         android:usesCleartextTraffic="true"
         ${config.enableHardwareAcceleration ? 'android:hardwareAccelerated="true"' : ''}>
 
@@ -554,7 +454,7 @@ export function generateAndroidManifestXml(config: AndroidStudioConfig): string 
  */
 export function generateAppBuildGradleKts(config: AndroidStudioConfig): string {
   return `plugins {
-    id("com.android.application")
+    alias(libs.plugins.android.application)
     id("com.google.gms.google-services")
 }
 
@@ -582,8 +482,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }
 
@@ -607,9 +507,24 @@ dependencies {
 export function generateProjectBuildGradleKts(): string {
   return `// Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
-    id("com.android.application") version "8.4.1" apply false
+    alias(libs.plugins.android.application) apply false
     id("com.google.gms.google-services") version "4.4.2" apply false
 }
+`;
+}
+
+/**
+ * Generates gradle.properties (AndroidX enablement)
+ */
+export function generateGradleProperties(): string {
+  return `# Project-wide Gradle settings.
+# IDE and build settings
+android.useAndroidX=true
+android.enableJetifier=true
+
+# JVM Memory allocation
+org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+android.nonTransitiveRClass=true
 `;
 }
 

@@ -38,6 +38,7 @@ import {
   generateColorsXml,
   generateStylesXml,
   generateNotificationIconXml,
+  generateGradleProperties,
   downloadFile
 } from '../utils/androidStudioGenerator';
 import { downloadGoogleServicesJsonFile, sendFcmLegacyNotification } from '../utils/googleServicesHelper';
@@ -78,7 +79,7 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
   // Navigation tab
   const [activeTab, setActiveTab] = useState<'DISPLAY' | 'FIREBASE_FCM' | 'CODE_EXPORT' | 'GUIDE'>('DISPLAY');
   const [selectedCodeFile, setSelectedCodeFile] = useState<
-    'MAIN_ACTIVITY' | 'FCM_SERVICE' | 'MANIFEST' | 'APP_GRADLE_KTS' | 'PROJECT_GRADLE_KTS' | 'APP_GRADLE' | 'PROJECT_GRADLE' | 'ACTIVITY_LAYOUT' | 'COLORS' | 'STYLES'
+    'MAIN_ACTIVITY' | 'FCM_SERVICE' | 'MANIFEST' | 'APP_GRADLE_KTS' | 'PROJECT_GRADLE_KTS' | 'GRADLE_PROPERTIES' | 'APP_GRADLE' | 'PROJECT_GRADLE' | 'ACTIVITY_LAYOUT' | 'COLORS' | 'STYLES'
   >('MAIN_ACTIVITY');
 
   // Copy feedback state
@@ -190,6 +191,8 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
         return { filename: 'build.gradle.kts (Module :app)', code: generateAppBuildGradleKts(config) };
       case 'PROJECT_GRADLE_KTS':
         return { filename: 'build.gradle.kts (Project)', code: generateProjectBuildGradleKts() };
+      case 'GRADLE_PROPERTIES':
+        return { filename: 'gradle.properties', code: generateGradleProperties() };
       case 'APP_GRADLE':
         return { filename: 'app/build.gradle (Groovy)', code: generateAppBuildGradle(config) };
       case 'PROJECT_GRADLE':
@@ -844,16 +847,17 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
               {/* Code File Selector Tabs */}
               <div className="flex items-center gap-1.5 overflow-x-auto pb-2 border-b border-slate-800 text-xs">
                 {[
-                  { id: 'MAIN_ACTIVITY', label: 'MainActivity.java' },
-                  { id: 'FCM_SERVICE', label: 'MyFirebaseMessagingService.java' },
-                  { id: 'MANIFEST', label: 'AndroidManifest.xml' },
+                  { id: 'MAIN_ACTIVITY', label: 'MainActivity.java (Bebas Error) ⭐' },
+                  { id: 'MANIFEST', label: 'AndroidManifest.xml ⭐' },
                   { id: 'APP_GRADLE_KTS', label: 'build.gradle.kts (:app) 🔥' },
+                  { id: 'GRADLE_PROPERTIES', label: 'gradle.properties' },
+                  { id: 'FCM_SERVICE', label: 'MyFirebaseMessagingService.java' },
                   { id: 'PROJECT_GRADLE_KTS', label: 'build.gradle.kts (Project)' },
                   { id: 'APP_GRADLE', label: 'app/build.gradle (Groovy)' },
                   { id: 'PROJECT_GRADLE', label: 'project/build.gradle (Groovy)' },
-                  { id: 'ACTIVITY_LAYOUT', label: 'activity_main.xml' },
-                  { id: 'COLORS', label: 'colors.xml' },
-                  { id: 'STYLES', label: 'styles.xml' }
+                  { id: 'ACTIVITY_LAYOUT', label: 'activity_main.xml (Opsional)' },
+                  { id: 'COLORS', label: 'colors.xml (Opsional)' },
+                  { id: 'STYLES', label: 'styles.xml (Opsional)' }
                 ].map((f) => (
                   <button
                     key={f.id}
@@ -870,11 +874,38 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
                 ))}
               </div>
 
+              {selectedCodeFile === 'MAIN_ACTIVITY' && (
+                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-200 flex items-start gap-2">
+                  <Sparkles className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <p>
+                    <strong>Programmatic Layout (100% Mandiri):</strong> Kode MainActivity ini membangun UI langsung lewat kode Java tanpa bergantung pada file <code>activity_main.xml</code>. Hal ini menjamin <strong>bebas dari error 'Cannot resolve symbol R'</strong>, sudah mendukung upload foto bukti persembahan jemaat, deep link notifikasi warta, dan konfirmasi ganda keluar aplikasi.
+                  </p>
+                </div>
+              )}
+
+              {selectedCodeFile === 'MANIFEST' && (
+                <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/30 text-xs text-blue-200 flex items-start gap-2">
+                  <Sparkles className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+                  <p>
+                    <strong>Manifest Bersih &amp; Kompatibel:</strong> Menggunakan tema bawaan sistem <code>@android:style/Theme.Material.Light.NoActionBar</code> sehingga tidak akan error <em>theme not found</em>, dan izin kamera sudah dilengkapi <code>uses-feature required=false</code> agar tidak memunculkan peringatan hardware.
+                  </p>
+                </div>
+              )}
+
               {(selectedCodeFile === 'APP_GRADLE_KTS' || selectedCodeFile === 'PROJECT_GRADLE_KTS') && (
                 <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200 flex items-start gap-2">
                   <Sparkles className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
                   <p>
-                    <strong>Format Kotlin DSL (.kts):</strong> Ini adalah format bawaan Android Studio terbaru (Hedgehog, Iguana, Koala, Ladybug). Gunakan kode ini jika file Anda berakhiran <code>.kts</code> agar bebas dari 21 error sintaks Groovy.
+                    <strong>Format Kotlin DSL (.kts):</strong> Format resmi bawaan Android Studio terbaru. Menggunakan <code>JavaVersion.VERSION_17</code> untuk menghilangkan peringatan usang (deprecated) dan sinkronisasi plugin yang mulus.
+                  </p>
+                </div>
+              )}
+
+              {selectedCodeFile === 'GRADLE_PROPERTIES' && (
+                <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/30 text-xs text-purple-200 flex items-start gap-2">
+                  <Sparkles className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
+                  <p>
+                    <strong>Pengaturan Proyek:</strong> Pastikan baris <code>android.useAndroidX=true</code> dan <code>android.enableJetifier=true</code> ada di file <code>gradle.properties</code> proyek Anda agar dependensi pustaka AndroidX berjalan lancar tanpa bentrok.
                   </p>
                 </div>
               )}
@@ -960,29 +991,39 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
                 <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-2">
                   <div className="flex items-center gap-2">
                     <span className="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-xs">4</span>
-                    <h5 className="font-bold text-white text-sm">Salin Kode Java &amp; Layout XML</h5>
+                    <h5 className="font-bold text-white text-sm">Salin Kode Java &amp; AndroidManifest.xml</h5>
                   </div>
                   <ul className="list-disc list-inside text-slate-300 space-y-1 ml-8">
                     <li>
                       Pastikan filenya bernama <code className="text-emerald-400">MainActivity.java</code> (bukan <code>MainActivity.kt</code>). Jika bernama <code>.kt</code>, klik kanan &gt; <strong>Refactor &gt; Rename</strong> menjadi <code className="text-emerald-400">MainActivity.java</code>, lalu timpa isinya dengan kode Tab 3.
                     </li>
-                    <li>Buat Java Class baru bernama <code className="text-emerald-400">MyFirebaseMessagingService.java</code> di folder yang sama, lalu salin kodenya.</li>
-                    <li>Buka <code className="text-amber-400">AndroidManifest.xml</code>, salin isinya dari Tab 3.</li>
-                    <li>Buka <code className="text-cyan-400">res/layout/activity_main.xml</code>, salin layout WebView &amp; SwipeRefresh.</li>
-                    <li>Buka <code className="text-indigo-300">res/values/colors.xml</code> &amp; <code className="text-indigo-300">styles.xml</code>, sesuaikan temanya.</li>
+                    <li>
+                      <strong className="text-emerald-300">Layout Programmatic (Bebas Error R):</strong> Anda <em>TIDAK PERLU</em> lagi membuat file <code>activity_main.xml</code> karena tampilan sudah dibangun secara mandiri di dalam Java.
+                    </li>
+                    <li>Buka <code className="text-amber-400">AndroidManifest.xml</code>, salin isinya dari Tab 3 (sudah dilengkapi tema material sistem &amp; izin kamera).</li>
+                    <li>Buat Java Class baru bernama <code className="text-emerald-400">MyFirebaseMessagingService.java</code> di folder package yang sama, lalu salin kodenya untuk menerima notifikasi warta gereja.</li>
+                    <li>Periksa file <code className="text-purple-300">gradle.properties</code> dan pastikan baris <code>android.useAndroidX=true</code> sudah aktif.</li>
                   </ul>
                 </div>
 
                 {/* Step 5 */}
                 <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-2">
                   <div className="flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-xs">5</span>
-                    <h5 className="font-bold text-white text-sm">Uji Coba &amp; Build APK / AAB Play Store</h5>
+                    <span className="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-xs">5</span>
+                    <h5 className="font-bold text-white text-sm">Build APK Tanpa Kabel USB (Siap Pasang di HP)</h5>
                   </div>
                   <ul className="list-disc list-inside text-slate-300 space-y-1 ml-8">
-                    <li>Hubungkan HP Android Anda via kabel USB dan aktifkan <em>USB Debugging</em>, lalu klik tombol hijau <strong>Run 'app'</strong>.</li>
-                    <li>Aplikasi akan otomatis terinstall di HP, membuka <code className="text-amber-400">{config.webUrl}</code> secara penuh dengan status bar elegan!</li>
-                    <li>Untuk membuat file APK/AAB rilis: Klik menu <strong>Build &gt; Generate Signed Bundle / APK</strong>, pilih <em>Android App Bundle</em>, buat keystore, dan selesai!</li>
+                    <li>
+                      <strong>Membuat File APK Langsung:</strong> Di bilah menu atas Android Studio, klik <strong>Build &gt; Build Bundle(s) / APK(s) &gt; Build APK(s)</strong>.
+                    </li>
+                    <li>
+                      Android Studio akan mulai mengompilasi. Setelah selesai (beberapa detik), akan muncul notifikasi di pojok kanan bawah bertuliskan <em>"APK(s) generated successfully"</em>.
+                    </li>
+                    <li>
+                      Klik teks biru <strong>locate</strong> pada notifikasi tersebut untuk langsung membuka folder letak file <code className="text-emerald-400">app-debug.apk</code>.
+                    </li>
+                    <li>Kirim file APK tersebut ke HP Android Anda (melalui WhatsApp, Google Drive, atau Bluetooth) dan langsung install!</li>
+                    <li>Untuk rilis Google Play Store: Klik menu <strong>Build &gt; Generate Signed Bundle / APK</strong>, pilih <em>Android App Bundle (.aab)</em>.</li>
                   </ul>
                 </div>
               </div>
