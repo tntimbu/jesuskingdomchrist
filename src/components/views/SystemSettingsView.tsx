@@ -63,7 +63,9 @@ import {
   UserCheck,
   MoreHorizontal,
   Box,
-  ChevronRight
+  ChevronRight,
+  Building,
+  Church
 } from 'lucide-react';
 import { getNavbarTheme, getFooterTheme } from '../../utils/themeHelper';
 import { DashboardVisibilityManager } from '../dashboard/DashboardVisibilityManager';
@@ -170,6 +172,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
   const [searchUser, setSearchUser] = useState('');
   const [filterRole, setFilterRole] = useState<'ALL' | 'SUPER_ADMIN' | 'ADMIN' | 'JEMAAT'>('ALL');
   const [filterStatus, setFilterStatus] = useState<'ALL' | 'Aktif' | 'Nonaktif'>('ALL');
+  const [filterTenantScope, setFilterTenantScope] = useState<'CURRENT_CHURCH' | 'ALL_CHURCHES'>('CURRENT_CHURCH');
   const [showPasswordInTable, setShowPasswordInTable] = useState<Record<string, boolean>>({});
 
   // User Form State (Add New)
@@ -661,6 +664,14 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
       return;
     }
 
+    if (currentUser.role !== 'SUPER_ADMIN') {
+      const uTenant = u.tenant_id || 'CHURCH-001';
+      if (uTenant !== activeAdminTenantId) {
+        alert('Akses Ditolak: Anda hanya berhak mengelola akun milik gereja Anda sendiri.');
+        return;
+      }
+    }
+
     const newRandomPass = generateRandomPassword();
     if (
       window.confirm(
@@ -702,6 +713,14 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
       return;
     }
 
+    if (currentUser.role !== 'SUPER_ADMIN') {
+      const uTenant = u.tenant_id || 'CHURCH-001';
+      if (uTenant !== activeAdminTenantId) {
+        alert('Akses Ditolak: Anda hanya berhak menghapus akun milik gereja Anda sendiri.');
+        return;
+      }
+    }
+
     if (window.confirm(`Hapus permanen akun "${u.username}" (${u.nama}) dari sistem?`)) {
       StorageManager.deleteUser(u.user_id, u.username, u.jemaat_id, u.nama);
       const updatedGlobal = StorageManager.getUsers();
@@ -723,6 +742,14 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
     if (targetUser && targetUser.role === 'SUPER_ADMIN' && currentUser.role !== 'SUPER_ADMIN') {
       alert('Akses Terbatas: Hanya SuperAdmin yang berhak merubah status akun SuperAdmin.');
       return;
+    }
+
+    if (targetUser && currentUser.role !== 'SUPER_ADMIN') {
+      const uTenant = targetUser.tenant_id || 'CHURCH-001';
+      if (uTenant !== activeAdminTenantId) {
+        alert('Akses Ditolak: Anda hanya berhak merubah status akun milik gereja Anda sendiri.');
+        return;
+      }
     }
 
     const updatedGlobal = globalUsers.map((u) => {
@@ -752,21 +779,35 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
     }
   };
 
-  // Filtered Users List per Tenant Access Rights
-  const activeAdminTenantId = currentUser.tenant_id || StorageManager.getActiveTenantId() || 'CHURCH-001';
+  // Filtered Users List per Tenant Access Rights & Strict Multi-Tenant Isolation
+  const tenantsList = StorageManager.getTenants();
+  const currentActiveTenantId = StorageManager.getActiveTenantId() || 'CHURCH-001';
+  const activeAdminTenantId = (currentUser.role !== 'SUPER_ADMIN' && currentUser.tenant_id && currentUser.tenant_id !== 'ALL')
+    ? currentUser.tenant_id
+    : currentActiveTenantId;
+  const currentActiveTenant = tenantsList.find((t) => t.tenant_id === activeAdminTenantId) || null;
+  const activeChurchName = currentActiveTenant?.nama_gereja || settings?.nama_gereja || 'Gereja Ini';
 
   const tenantScopedUsers = usersList.filter((u) => {
-    if (currentUser.role === 'SUPER_ADMIN') {
-      return true; // SuperAdmin can see all accounts across all tenants
+    const userTenant = u.tenant_id || (u.role === 'SUPER_ADMIN' ? 'ALL' : 'CHURCH-001');
+
+    // 1. NON-SUPERADMIN (Admin, Jemaat) - STRICT MULTI-TENANT ISOLATION:
+    if (currentUser.role !== 'SUPER_ADMIN') {
+      // NEVER allow viewing SuperAdmin or global system accounts
+      if (u.role === 'SUPER_ADMIN' || u.username.toLowerCase() === 'superadmin' || userTenant === 'ALL') {
+        return false;
+      }
+      // MUST strictly belong to the current admin's church tenant only
+      return userTenant === activeAdminTenantId;
     }
-    // Admin MUST NOT see SuperAdmin accounts
-    if (u.role === 'SUPER_ADMIN' || u.username.toLowerCase() === 'superadmin') {
-      return false;
+
+    // 2. SUPERADMIN - DEFAULT TO CURRENT ACTIVE CHURCH ISOLATION:
+    // When SuperAdmin enters or switches to a church workspace, ONLY show accounts belonging to that church!
+    if (filterTenantScope === 'CURRENT_CHURCH') {
+      return userTenant === activeAdminTenantId;
     }
-    // Admin MUST ONLY see users belonging to their own church/tenant
-    if (u.tenant_id && u.tenant_id !== 'ALL' && u.tenant_id !== activeAdminTenantId) {
-      return false;
-    }
+
+    // Only if SuperAdmin explicitly switches the scope selector to 'ALL_CHURCHES' will all accounts be visible
     return true;
   });
 
@@ -3437,6 +3478,40 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
             </button>
           </div>
 
+          {/* Multi-Tenant Isolation Status Box */}
+          <div className="p-3.5 bg-indigo-950/40 border border-indigo-500/30 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-indigo-600/30 border border-indigo-500/40 flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-5 h-5 text-indigo-400" />
+              </div>
+              <div>
+                <div className="text-white font-bold flex items-center gap-2">
+                  <span>Isolasi Multi-Tenant Aktif</span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold">
+                    Data Terisolasi Mandiri
+                  </span>
+                </div>
+                <p className="text-slate-400 text-[11px] mt-0.5">
+                  Ruang Kerja Aktif: <strong className="text-indigo-200">{activeChurchName}</strong> ({activeAdminTenantId}). Setiap akun gereja terisolasi dan tidak dapat diakses gereja lain.
+                </p>
+              </div>
+            </div>
+
+            {currentUser.role === 'SUPER_ADMIN' && (
+              <div className="flex items-center gap-2 bg-slate-900/90 border border-slate-700/80 p-1.5 rounded-xl self-start sm:self-auto shrink-0">
+                <span className="text-slate-400 text-[11px] pl-1 font-medium">Lingkup SuperAdmin:</span>
+                <select
+                  value={filterTenantScope}
+                  onChange={(e) => setFilterTenantScope(e.target.value as any)}
+                  className="px-2.5 py-1 rounded-lg bg-slate-950 border border-indigo-500/50 text-indigo-200 text-xs font-bold focus:outline-none"
+                >
+                  <option value="CURRENT_CHURCH">Hanya Gereja Ini ({activeAdminTenantId})</option>
+                  <option value="ALL_CHURCHES">Semua Gereja (Global Super Admin)</option>
+                </select>
+              </div>
+            )}
+          </div>
+
           {/* Search & Filter Toolbar */}
           <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 bg-slate-900/90 border border-slate-800 p-3 rounded-2xl">
             <div className="sm:col-span-6 relative">
@@ -3486,6 +3561,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                   <tr className="bg-slate-950/80 border-b border-slate-800 text-slate-400 font-semibold uppercase tracking-wider">
                     <th className="p-3.5">Username & ID</th>
                     <th className="p-3.5">Nama Lengkap & Kontak</th>
+                    <th className="p-3.5">Gereja / Ruang Lingkup</th>
                     <th className="p-3.5">Password Kredensial</th>
                     <th className="p-3.5">Hak Akses Role</th>
                     <th className="p-3.5">Status Akun</th>
@@ -3495,14 +3571,16 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                 <tbody className="divide-y divide-slate-800/60">
                   {filteredUsers.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="p-6 text-center text-slate-500 text-xs">
-                        Tidak ada pengguna yang cocok dengan filter pencarian.
+                      <td colSpan={7} className="p-6 text-center text-slate-500 text-xs">
+                        Tidak ada pengguna yang cocok dengan filter pencarian untuk gereja ini.
                       </td>
                     </tr>
                   ) : (
                     filteredUsers.map((u) => {
                       const isPasswordShown = !!showPasswordInTable[u.user_id];
                       const displayPass = u.password_hash || (u.role === 'JEMAAT' ? 'jemaat123' : 'admin123');
+                      const userTenant = u.tenant_id || (u.role === 'SUPER_ADMIN' ? 'ALL' : 'CHURCH-001');
+                      const userChurch = tenantsList.find((t) => t.tenant_id === userTenant);
 
                       return (
                         <tr key={u.user_id} className="hover:bg-slate-800/40 transition-all">
@@ -3515,6 +3593,20 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                             <div className="font-bold text-white text-xs">{u.nama}</div>
                             <div className="text-[11px] text-slate-400">{u.email || '-'}</div>
                             {u.no_hp && <div className="text-[10px] text-slate-500">{u.no_hp}</div>}
+                          </td>
+
+                          <td className="p-3.5">
+                            <div className="flex flex-col gap-0.5">
+                              <span className="inline-flex items-center gap-1 font-mono font-bold text-[10px] text-indigo-300">
+                                <Building className="w-3 h-3 text-indigo-400" />
+                                {userTenant}
+                              </span>
+                              <span className="text-[11px] text-slate-400 max-w-[150px] truncate" title={userTenant === 'ALL' ? 'Global Super Admin' : (userChurch?.nama_gereja || userTenant)}>
+                                {userTenant === 'ALL'
+                                  ? 'Global (Semua Gereja)'
+                                  : (userChurch?.nama_gereja || 'GKFC Sunter')}
+                              </span>
+                            </div>
                           </td>
 
                           <td className="p-3.5">
@@ -3812,6 +3904,20 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                     <option value="Aktif">Aktif</option>
                     <option value="Nonaktif">Nonaktif</option>
                   </select>
+                </div>
+              </div>
+
+              {/* Church Scope Badge */}
+              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2 text-slate-400">
+                  <Building className="w-4 h-4 text-indigo-400" />
+                  <span>Ruang Lingkup Gereja:</span>
+                </div>
+                <div className="flex items-center gap-1.5 font-bold text-white">
+                  <span className="text-indigo-300">{activeChurchName}</span>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-800 text-slate-300 border border-slate-700">
+                    {userForm.role === 'SUPER_ADMIN' ? 'ALL (Global)' : activeAdminTenantId}
+                  </span>
                 </div>
               </div>
 

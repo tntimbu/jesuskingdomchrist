@@ -168,7 +168,15 @@ function getItem<T>(key: string, fallback: T): T {
   try {
     const scopedKey = getTenantScopedKey(key);
     const item = localStorage.getItem(scopedKey);
-    if (!item) return fallback;
+    if (!item) {
+      // CRITICAL MULTI-TENANT ISOLATION:
+      // If we are querying a tenant-scoped key for a non-default church (scopedKey !== key),
+      // NEVER fallback to the demo data of CHURCH-001! Return empty array [] for data collections.
+      if (scopedKey !== key && Array.isArray(fallback) && key !== KEYS.HYMN_SONGS) {
+        return (key === KEYS.KOMISI ? fallback : []) as unknown as T;
+      }
+      return fallback;
+    }
     try {
       return JSON.parse(item);
     } catch (parseErr) {
@@ -219,6 +227,73 @@ if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { key: e.key } }));
     }
   });
+}
+
+// Multi-Tenant Isolation Data Scrubber: runs on startup to guarantee 100% clean isolation
+function sanitizeTenantDataIsolation(): void {
+  if (typeof localStorage === 'undefined') return;
+  try {
+    const rawTenants = localStorage.getItem(KEYS.TENANTS);
+    if (!rawTenants) return;
+    const tenants: ChurchTenant[] = JSON.parse(rawTenants);
+
+    // Sanitize USERS: Ensure every user in cms_pro_users has a tenant_id
+    const rawUsers = localStorage.getItem(KEYS.USERS);
+    if (rawUsers) {
+      try {
+        const users: User[] = JSON.parse(rawUsers);
+        let usersChanged = false;
+        const sanitizedUsers = users.map((u) => {
+          if (!u.tenant_id || u.tenant_id.trim() === '') {
+            usersChanged = true;
+            return {
+              ...u,
+              tenant_id: (u.role === 'SUPER_ADMIN' || u.username?.toLowerCase() === 'superadmin') ? 'ALL' : 'CHURCH-001'
+            };
+          }
+          return u;
+        });
+        if (usersChanged) {
+          localStorage.setItem(KEYS.USERS, JSON.stringify(sanitizedUsers));
+        }
+      } catch (err) {
+        // ignore
+      }
+    }
+
+    // For any tenant other than CHURCH-001, purge any accidentally copied demo records
+    tenants.forEach((t) => {
+      if (t.tenant_id && t.tenant_id !== 'CHURCH-001') {
+        const jemaatKey = `cms_pro_${t.tenant_id}_jemaat`;
+        const rawJemaat = localStorage.getItem(jemaatKey);
+        if (rawJemaat) {
+          try {
+            const jList = JSON.parse(rawJemaat);
+            if (Array.isArray(jList) && jList.some((j) => j.nik === '3171011508850001' || j.nama_lengkap === 'Bpk. Yohanes Pratama')) {
+              localStorage.setItem(jemaatKey, JSON.stringify([]));
+            }
+          } catch (e) {}
+        }
+
+        const keuanganKey = `cms_pro_${t.tenant_id}_persembahan`;
+        const rawKeuangan = localStorage.getItem(keuanganKey);
+        if (rawKeuangan) {
+          try {
+            const kList = JSON.parse(rawKeuangan);
+            if (Array.isArray(kList) && kList.some((k) => k.kategori === 'Kolekte Umum' && k.keterangan?.includes('Ibadah Raya 1 Sunter'))) {
+              localStorage.setItem(keuanganKey, JSON.stringify([]));
+            }
+          } catch (e) {}
+        }
+      }
+    });
+  } catch (e) {
+    // ignore
+  }
+}
+
+if (typeof window !== 'undefined') {
+  sanitizeTenantDataIsolation();
 }
 
 function setItem<T>(key: string, value: T): void {
@@ -397,6 +472,7 @@ export const StorageManager = {
     StorageManager.saveTenants(updatedTenants);
 
     if (adminAccount) {
+      adminAccount.tenant_id = tenant.tenant_id;
       const currentUsers = getItem<User[]>(KEYS.USERS, initialUsers);
       const userExists = currentUsers.some((u) => u.username.toLowerCase() === adminAccount.username.toLowerCase());
       if (!userExists) {
@@ -407,12 +483,41 @@ export const StorageManager = {
     const newChurchSettings: AppSettings = {
       ...initialSettings,
       nama_gereja: tenant.nama_gereja,
-      email: tenant.admin_email,
-      telepon: tenant.admin_wa,
-      alamat: tenant.alamat
+      email: tenant.admin_email || '',
+      telepon: tenant.admin_wa || '',
+      alamat: tenant.alamat || ''
     };
     const tenantSettingsKey = getTenantScopedKey(KEYS.SETTINGS, tenant.tenant_id);
     localStorage.setItem(tenantSettingsKey, JSON.stringify(newChurchSettings));
+
+    // Explicitly initialize clean, empty arrays for this tenant's collections to guarantee 100% data isolation
+    const isolatedCollectionKeys = [
+      KEYS.JEMAAT,
+      KEYS.KELUARGA,
+      KEYS.WILAYAH,
+      KEYS.PELAYANAN,
+      KEYS.BAPTISAN,
+      KEYS.SIDI,
+      KEYS.PERNIKAHAN,
+      KEYS.PERSEMBAHAN,
+      KEYS.DONASI,
+      KEYS.KAS_PENGELUARAN,
+      KEYS.DOA,
+      KEYS.PENGUMUMAN,
+      KEYS.RENUNGAN,
+      KEYS.EVENTS,
+      KEYS.GALLERY,
+      KEYS.NOTIFICATIONS,
+      KEYS.ACTIVITY_LOGS,
+      KEYS.LOGIN_HISTORY,
+      KEYS.PRAYER_REQUESTS,
+      KEYS.EVENT_RESERVATIONS,
+      KEYS.CHAT_MESSAGES
+    ];
+    isolatedCollectionKeys.forEach((baseKey) => {
+      const tenantKey = getTenantScopedKey(baseKey, tenant.tenant_id);
+      localStorage.setItem(tenantKey, JSON.stringify([]));
+    });
 
     StorageManager.logActivity(
       'SUPER_ADMIN',
@@ -671,7 +776,37 @@ export const StorageManager = {
       return u;
     });
 
+    // CRITICAL MULTI-TENANT USER ISOLATION:
+    // Every single user account MUST have a valid tenant_id.
+    let usersNeedResave = false;
+    list = list.map((u) => {
+      if (!u) return u;
+      if (!u.tenant_id || u.tenant_id.trim() === '') {
+        usersNeedResave = true;
+        return {
+          ...u,
+          tenant_id: (u.role === 'SUPER_ADMIN' || u.username?.toLowerCase() === 'superadmin') ? 'ALL' : 'CHURCH-001'
+        };
+      }
+      return u;
+    });
+
+    if (usersNeedResave && typeof localStorage !== 'undefined') {
+      setItem(KEYS.USERS, list);
+    }
+
     return list;
+  },
+  getUsersByTenant: (targetTenantId?: string, includeGlobalSuperAdmin: boolean = false): User[] => {
+    const allUsers = StorageManager.getUsers();
+    if (includeGlobalSuperAdmin) {
+      return allUsers;
+    }
+    const activeTenantId = targetTenantId || StorageManager.getActiveTenantId() || 'CHURCH-001';
+    return allUsers.filter((u) => {
+      const uTenant = u.tenant_id || (u.role === 'SUPER_ADMIN' ? 'ALL' : 'CHURCH-001');
+      return uTenant === activeTenantId;
+    });
   },
   saveUsers: (users: User[]): void => {
     setItem(KEYS.USERS, users);

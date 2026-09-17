@@ -307,7 +307,8 @@ export const initialUsers: User[] = [
     status: 'Aktif',
     created_at: '2025-03-01 14:00',
     last_login: '2026-07-27 15:30',
-    jemaat_id: 'JMT-002'
+    jemaat_id: 'JMT-002',
+    tenant_id: 'CHURCH-001'
   }
 ];
 
