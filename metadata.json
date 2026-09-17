@@ -1,6 +1,6 @@
 {
-  "name": "CMS Pro - Enterprise Church Management System",
-  "description": "Sistem Informasi & Manajemen Gereja Enterprise dengan integrasi Pustaka Alkitab (66 Kitab), Kidung Jemaat (KJ), NKB, PKJ, Lagu Kontemporer berchord, Ruang Chat Komunitas, Manajemen Jemaat, Persembahan, dan Jadwal Ibadah.",
+  "name": "CMS App - Portal & Sistem Manajemen Gereja",
+  "description": "Aplikasi resmi sistem informasi manajemen gereja, warta jemaat, renungan harian, lagu puji-pujian berchord, dan unduh APK mobile.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
