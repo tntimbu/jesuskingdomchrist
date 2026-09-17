@@ -447,7 +447,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this, CHANNEL_ID)
-                        .setSmallIcon(R.drawable.ic_notification)
+                        .setSmallIcon(R.mipmap.ic_launcher)
                         .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher))
                         .setContentTitle(title)
                         .setContentText(messageBody)
@@ -486,8 +486,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
  */
 export function generateAndroidManifestXml(config: AndroidStudioConfig): string {
   return `<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="${config.packageName}">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- Network & Push Permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -511,7 +510,7 @@ export function generateAndroidManifestXml(config: AndroidStudioConfig): string 
         android:label="${config.appName}"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.JesusKingdomChrist"
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar"
         android:usesCleartextTraffic="true"
         ${config.enableHardwareAcceleration ? 'android:hardwareAccelerated="true"' : ''}>
 
@@ -536,13 +535,10 @@ export function generateAndroidManifestXml(config: AndroidStudioConfig): string 
             </intent-filter>
         </service>
 
-        <!-- Default Notification Icon & Color -->
+        <!-- Default Notification Icon (menggunakan icon aplikasi bawaan agar tidak error) -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
-            android:resource="@drawable/ic_notification" />
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_color"
-            android:resource="@color/statusBarColor" />
+            android:resource="@mipmap/ic_launcher" />
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="church_announcements_channel" />
