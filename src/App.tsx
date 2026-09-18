@@ -117,9 +117,14 @@ export default function App() {
     }
   }, [settings?.onesignal_app_id, settings?.onesignal_enabled]);
 
+  // Current Active Tenant Scope
+  const [activeTenantId, setActiveTenantId] = useState<string>(() => StorageManager.getActiveTenantId());
+
   useEffect(() => {
     // Listen for setting changes across components & tabs
     const handleSettingsSync = () => {
+      const currentTenantId = StorageManager.getActiveTenantId();
+      setActiveTenantId(currentTenantId);
       setSettings(StorageManager.getSettings());
       setTenantStatus(StorageManager.checkTenantStatus());
       const savedUser = StorageManager.getCurrentUser();
@@ -451,6 +456,7 @@ export default function App() {
 
           {activeTab === 'dashboard' && (
             <DashboardView
+              key={`${activeTenantId}_dashboard`}
               currentUser={effectiveUser}
               settings={settings}
               onNavigate={handleSelectTab}
@@ -460,50 +466,51 @@ export default function App() {
             />
           )}
 
-          {activeTab === 'jemaat' && <JemaatView currentUser={effectiveUser} />}
+          {activeTab === 'jemaat' && <JemaatView key={`${activeTenantId}_jemaat`} currentUser={effectiveUser} />}
 
-          {activeTab === 'wilayah' && <WilayahView currentUser={effectiveUser} />}
+          {activeTab === 'wilayah' && <WilayahView key={`${activeTenantId}_wilayah`} currentUser={effectiveUser} />}
 
-          {activeTab === 'administrasi' && <AdministrasiView currentUser={effectiveUser} />}
+          {activeTab === 'administrasi' && <AdministrasiView key={`${activeTenantId}_administrasi`} currentUser={effectiveUser} />}
 
-          {activeTab === 'keuangan' && <KeuanganView currentUser={effectiveUser} />}
+          {activeTab === 'keuangan' && <KeuanganView key={`${activeTenantId}_keuangan`} currentUser={effectiveUser} />}
 
           {activeTab === 'jadwal' && (
-            <AgendaView currentUser={effectiveUser} mode="JADWAL" />
+            <AgendaView key={`${activeTenantId}_jadwal`} currentUser={effectiveUser} mode="JADWAL" />
           )}
 
           {activeTab === 'agenda' && (
-            <AgendaView currentUser={effectiveUser} mode="AGENDA" />
+            <AgendaView key={`${activeTenantId}_agenda`} currentUser={effectiveUser} mode="AGENDA" />
           )}
 
           {activeTab === 'doa' && (
-            <AgendaView currentUser={effectiveUser} mode="DOA" />
+            <AgendaView key={`${activeTenantId}_doa`} currentUser={effectiveUser} mode="DOA" />
           )}
 
           {activeTab === 'pengumuman' && (
-            <MediaView currentUser={effectiveUser} mode="PENGUMUMAN" />
+            <MediaView key={`${activeTenantId}_pengumuman`} currentUser={effectiveUser} mode="PENGUMUMAN" />
           )}
 
           {activeTab === 'renungan' && (
-            <MediaView currentUser={effectiveUser} mode="RENUNGAN" />
+            <MediaView key={`${activeTenantId}_renungan`} currentUser={effectiveUser} mode="RENUNGAN" />
           )}
 
           {activeTab === 'galeri' && (
-            <GaleriView currentUser={effectiveUser} initialTab="GALLERY" />
+            <GaleriView key={`${activeTenantId}_galeri`} currentUser={effectiveUser} initialTab="GALLERY" />
           )}
 
           {activeTab === 'media' && (
-            <GaleriView currentUser={effectiveUser} initialTab="SOCIAL_VIDEOS" />
+            <GaleriView key={`${activeTenantId}_media`} currentUser={effectiveUser} initialTab="SOCIAL_VIDEOS" />
           )}
 
-          {activeTab === 'laporan' && <LaporanView currentUser={effectiveUser} />}
+          {activeTab === 'laporan' && <LaporanView key={`${activeTenantId}_laporan`} currentUser={effectiveUser} />}
 
-          {activeTab === 'jemaat_portal' && <JemaatPortalView currentUser={effectiveUser} settings={settings} />}
+          {activeTab === 'jemaat_portal' && <JemaatPortalView key={`${activeTenantId}_portal`} currentUser={effectiveUser} settings={settings} />}
 
-          {activeTab === 'chat' && <ChatView currentUser={effectiveUser} settings={settings} />}
+          {activeTab === 'chat' && <ChatView key={`${activeTenantId}_chat`} currentUser={effectiveUser} settings={settings} />}
 
           {activeTab === 'pustaka' && (
             <PustakaRohaniView
+              key={`${activeTenantId}_pustaka`}
               currentUser={effectiveUser}
               settings={settings}
               onNavigateToChat={() => handleSelectTab('chat')}
@@ -513,6 +520,7 @@ export default function App() {
           {activeTab === 'settings' && (
             isEffectiveAdmin ? (
               <SystemSettingsView
+                key={`${activeTenantId}_settings`}
                 currentUser={effectiveUser}
                 settings={settings}
                 onUpdateSettings={handleUpdateSettings}
@@ -527,6 +535,7 @@ export default function App() {
 
           {activeTab === 'lainnya' && (
             <LainnyaView
+              key={`${activeTenantId}_lainnya`}
               currentUser={effectiveUser}
               onNavigate={handleSelectTab}
               settings={settings}

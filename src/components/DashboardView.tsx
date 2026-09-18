@@ -1166,13 +1166,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const cardStyleClass = getCardStyleClass();
 
   // Chart Data: Financial trend
+  const hasKeuanganData = persembahanList.length > 0;
   const financialChartData = {
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Juli'],
     datasets: [
       {
         fill: true,
         label: 'Persembahan Minggu & Perpuluhan (Rp)',
-        data: [42000000, 48500000, 51000000, 62000000, 58000000, 71000000, totalPersembahan],
+        data: hasKeuanganData
+          ? [42000000, 48500000, 51000000, 62000000, 58000000, 71000000, totalPersembahan]
+          : [0, 0, 0, 0, 0, 0, 0],
         borderColor: '#6366f1',
         backgroundColor: 'rgba(99, 102, 241, 0.15)',
         tension: 0.4

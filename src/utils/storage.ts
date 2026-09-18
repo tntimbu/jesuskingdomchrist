@@ -142,6 +142,12 @@ const defaultDoa: Doa[] = [
   }
 ];
 
+export function normalizeTenantId(raw: any): string {
+  if (!raw || typeof raw !== 'string') return 'CHURCH-001';
+  const cleaned = raw.replace(/^[\\"'`]+|[\\"'`]+$/g, '').trim();
+  return cleaned || 'CHURCH-001';
+}
+
 function getTenantScopedKey(baseKey: string, specificTenantId?: string): string {
   if (
     baseKey === KEYS.TENANTS ||
@@ -155,8 +161,21 @@ function getTenantScopedKey(baseKey: string, specificTenantId?: string): string 
 
   let activeId = specificTenantId;
   if (!activeId && typeof localStorage !== 'undefined') {
-    activeId = localStorage.getItem(KEYS.ACTIVE_TENANT) || 'CHURCH-001';
+    try {
+      const raw = localStorage.getItem(KEYS.ACTIVE_TENANT);
+      if (raw) {
+        try {
+          activeId = JSON.parse(raw);
+        } catch {
+          activeId = raw;
+        }
+      }
+    } catch {
+      // ignore
+    }
   }
+  activeId = normalizeTenantId(activeId);
+
   if (!activeId || activeId === 'CHURCH-001' || activeId === 'ALL') {
     return baseKey;
   }
@@ -172,8 +191,27 @@ function getItem<T>(key: string, fallback: T): T {
       // CRITICAL MULTI-TENANT ISOLATION:
       // If we are querying a tenant-scoped key for a non-default church (scopedKey !== key),
       // NEVER fallback to the demo data of CHURCH-001! Return empty array [] for data collections.
-      if (scopedKey !== key && Array.isArray(fallback) && key !== KEYS.HYMN_SONGS) {
-        return (key === KEYS.KOMISI ? fallback : []) as unknown as T;
+      if (scopedKey !== key) {
+        if (key === KEYS.SETTINGS) {
+          const parts = scopedKey.split('_');
+          const tenantId = normalizeTenantId(parts[2] || 'CHURCH-001');
+          const tenants = getItem<ChurchTenant[]>(KEYS.TENANTS, initialTenants);
+          const matchedTenant = tenants.find((t) => t.tenant_id === tenantId);
+          return {
+            ...initialSettings,
+            nama_gereja: matchedTenant?.nama_gereja || 'Gereja Baru',
+            email: matchedTenant?.admin_email || '',
+            telepon: matchedTenant?.admin_wa || '',
+            alamat: matchedTenant?.alamat || '',
+            rekening_bank_nama: '',
+            rekening_bank_nomor: '',
+            rekening_bank_atas_nama: matchedTenant?.nama_gereja || '',
+            qris_image_url: ''
+          } as unknown as T;
+        }
+        if (Array.isArray(fallback) && key !== KEYS.HYMN_SONGS) {
+          return [] as unknown as T;
+        }
       }
       return fallback;
     }
@@ -233,11 +271,28 @@ if (typeof window !== 'undefined') {
 function sanitizeTenantDataIsolation(): void {
   if (typeof localStorage === 'undefined') return;
   try {
+    // 1. Purge corrupted keys containing quotes or invalid characters
+    const corruptedKeys: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && (k.includes('"') || k.includes('\\') || k.includes("'"))) {
+        corruptedKeys.push(k);
+      }
+    }
+    corruptedKeys.forEach((k) => localStorage.removeItem(k));
+
+    // 2. Sanitize ACTIVE_TENANT key
+    const rawActive = localStorage.getItem(KEYS.ACTIVE_TENANT);
+    if (rawActive) {
+      const cleanActive = normalizeTenantId(rawActive);
+      localStorage.setItem(KEYS.ACTIVE_TENANT, JSON.stringify(cleanActive));
+    }
+
     const rawTenants = localStorage.getItem(KEYS.TENANTS);
     if (!rawTenants) return;
     const tenants: ChurchTenant[] = JSON.parse(rawTenants);
 
-    // Sanitize USERS: Ensure every user in cms_pro_users has a tenant_id
+    // 3. Sanitize USERS: Ensure every user in cms_pro_users has a tenant_id
     const rawUsers = localStorage.getItem(KEYS.USERS);
     if (rawUsers) {
       try {
@@ -261,7 +316,7 @@ function sanitizeTenantDataIsolation(): void {
       }
     }
 
-    // For any tenant other than CHURCH-001, purge any accidentally copied demo records
+    // 4. For any tenant other than CHURCH-001, purge any accidentally copied demo records
     tenants.forEach((t) => {
       if (t.tenant_id && t.tenant_id !== 'CHURCH-001') {
         const jemaatKey = `cms_pro_${t.tenant_id}_jemaat`;
@@ -282,6 +337,22 @@ function sanitizeTenantDataIsolation(): void {
             const kList = JSON.parse(rawKeuangan);
             if (Array.isArray(kList) && kList.some((k) => k.kategori === 'Kolekte Umum' && k.keterangan?.includes('Ibadah Raya 1 Sunter'))) {
               localStorage.setItem(keuanganKey, JSON.stringify([]));
+            }
+          } catch (e) {}
+        }
+
+        // Clean settings banking info for new churches
+        const settingsKey = `cms_pro_${t.tenant_id}_settings`;
+        const rawSettings = localStorage.getItem(settingsKey);
+        if (rawSettings) {
+          try {
+            const s = JSON.parse(rawSettings);
+            if (s.rekening_bank_nomor === '527-089-1122' || s.rekening_bank_atas_nama === 'Gereja Kemenangan Faith Center') {
+              s.rekening_bank_nama = '';
+              s.rekening_bank_nomor = '';
+              s.rekening_bank_atas_nama = t.nama_gereja;
+              s.qris_image_url = '';
+              localStorage.setItem(settingsKey, JSON.stringify(s));
             }
           } catch (e) {}
         }
@@ -422,10 +493,10 @@ export const StorageManager = {
     const activeTenantId = StorageManager.getActiveTenantId();
     const currentSettings = StorageManager.getSettings();
 
-    if (currentSettings && currentSettings.nama_gereja) {
+    if (currentSettings && currentSettings.nama_gereja && activeTenantId === 'CHURCH-001') {
       let needsSync = false;
       const syncedTenants = tenants.map((t) => {
-        if (t.tenant_id === activeTenantId || (tenants.length === 1 && t.tenant_id === 'CHURCH-001')) {
+        if (t.tenant_id === 'CHURCH-001') {
           if (t.nama_gereja !== currentSettings.nama_gereja) {
             needsSync = true;
             return {
@@ -452,13 +523,15 @@ export const StorageManager = {
   saveTenants: (tenants: ChurchTenant[]): void => setItem(KEYS.TENANTS, tenants),
 
   getActiveTenantId: (): string => {
-    return getItem<string>(KEYS.ACTIVE_TENANT, 'CHURCH-001');
+    const raw = getItem<string>(KEYS.ACTIVE_TENANT, 'CHURCH-001');
+    return normalizeTenantId(raw);
   },
   setActiveTenantId: (tenantId: string): void => {
-    setItem(KEYS.ACTIVE_TENANT, tenantId);
+    const cleanId = normalizeTenantId(tenantId);
+    setItem(KEYS.ACTIVE_TENANT, cleanId);
     notifyStorageListeners();
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { key: KEYS.ACTIVE_TENANT, tenantId } }));
+      window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { key: KEYS.ACTIVE_TENANT, tenantId: cleanId } }));
     }
   },
   getActiveTenant: (): ChurchTenant | null => {
@@ -468,26 +541,40 @@ export const StorageManager = {
   },
   createChurchTenant: (tenant: ChurchTenant, adminAccount?: User): void => {
     const currentTenants = StorageManager.getTenants();
-    const updatedTenants = [tenant, ...currentTenants];
+    const cleanTenantId = normalizeTenantId(tenant.tenant_id);
+    const cleanTenant: ChurchTenant = {
+      ...tenant,
+      tenant_id: cleanTenantId
+    };
+    const updatedTenants = [cleanTenant, ...currentTenants.filter((t) => t.tenant_id !== cleanTenantId)];
     StorageManager.saveTenants(updatedTenants);
 
     if (adminAccount) {
-      adminAccount.tenant_id = tenant.tenant_id;
+      const cleanAdmin: User = {
+        ...adminAccount,
+        tenant_id: cleanTenantId,
+        role: 'ADMIN',
+        status: cleanTenant.status === 'DIBLOKIR' || cleanTenant.status === 'NONAKTIF' ? 'Nonaktif' : 'Aktif'
+      };
       const currentUsers = getItem<User[]>(KEYS.USERS, initialUsers);
-      const userExists = currentUsers.some((u) => u.username.toLowerCase() === adminAccount.username.toLowerCase());
-      if (!userExists) {
-        setItem(KEYS.USERS, [adminAccount, ...currentUsers]);
-      }
+      const filteredUsers = currentUsers.filter(
+        (u) => u.username.toLowerCase() !== cleanAdmin.username.toLowerCase() && !(u.tenant_id === cleanTenantId && u.role === 'ADMIN')
+      );
+      setItem(KEYS.USERS, [cleanAdmin, ...filteredUsers]);
     }
 
     const newChurchSettings: AppSettings = {
       ...initialSettings,
-      nama_gereja: tenant.nama_gereja,
-      email: tenant.admin_email || '',
-      telepon: tenant.admin_wa || '',
-      alamat: tenant.alamat || ''
+      nama_gereja: cleanTenant.nama_gereja,
+      email: cleanTenant.admin_email || '',
+      telepon: cleanTenant.admin_wa || '',
+      alamat: cleanTenant.alamat || '',
+      rekening_bank_nama: '',
+      rekening_bank_nomor: '',
+      rekening_bank_atas_nama: cleanTenant.nama_gereja,
+      qris_image_url: ''
     };
-    const tenantSettingsKey = getTenantScopedKey(KEYS.SETTINGS, tenant.tenant_id);
+    const tenantSettingsKey = getTenantScopedKey(KEYS.SETTINGS, cleanTenantId);
     localStorage.setItem(tenantSettingsKey, JSON.stringify(newChurchSettings));
 
     // Explicitly initialize clean, empty arrays for this tenant's collections to guarantee 100% data isolation
@@ -515,13 +602,13 @@ export const StorageManager = {
       KEYS.CHAT_MESSAGES
     ];
     isolatedCollectionKeys.forEach((baseKey) => {
-      const tenantKey = getTenantScopedKey(baseKey, tenant.tenant_id);
+      const tenantKey = getTenantScopedKey(baseKey, cleanTenantId);
       localStorage.setItem(tenantKey, JSON.stringify([]));
     });
 
     StorageManager.logActivity(
       'SUPER_ADMIN',
-      `Membuat Akun Gereja Baru: ${tenant.nama_gereja} (${tenant.kode_unik})`,
+      `Membuat Akun Gereja Baru: ${cleanTenant.nama_gereja} (${cleanTenant.kode_unik})`,
       'SaaS'
     );
   },
@@ -788,8 +875,64 @@ export const StorageManager = {
           tenant_id: (u.role === 'SUPER_ADMIN' || u.username?.toLowerCase() === 'superadmin') ? 'ALL' : 'CHURCH-001'
         };
       }
-      return u;
+      return {
+        ...u,
+        tenant_id: normalizeTenantId(u.tenant_id)
+      };
     });
+
+    // Synchronize Admin account for all active registered ChurchTenants
+    try {
+      const allTenants = getItem<ChurchTenant[]>(KEYS.TENANTS, initialTenants);
+      allTenants.forEach((t) => {
+        if (!t || !t.tenant_id || t.tenant_id === 'CHURCH-001') return;
+        const normalizedId = normalizeTenantId(t.tenant_id);
+        const adminIndex = list.findIndex(
+          (u) => u && normalizeTenantId(u.tenant_id) === normalizedId && u.role === 'ADMIN'
+        );
+        if (adminIndex === -1 && t.admin_username) {
+          usersNeedResave = true;
+          const newAdmin: User = {
+            user_id: `USR-ADM-${normalizedId.replace(/[^A-Z0-9]/gi, '')}-${Date.now().toString().slice(-4)}`,
+            username: t.admin_username,
+            password_hash: 'admin123',
+            nama: t.admin_nama || `Admin ${t.nama_gereja}`,
+            role: 'ADMIN',
+            email: t.admin_email || '',
+            no_hp: t.admin_wa || '',
+            status: t.status === 'DIBLOKIR' || t.status === 'NONAKTIF' ? 'Nonaktif' : 'Aktif',
+            created_at: new Date().toISOString(),
+            tenant_id: normalizedId
+          };
+          list.push(newAdmin);
+        } else if (adminIndex !== -1) {
+          const adm = list[adminIndex];
+          let updatedAdm = false;
+          if (t.admin_nama && adm.nama !== t.admin_nama) {
+            adm.nama = t.admin_nama;
+            updatedAdm = true;
+          }
+          if (t.admin_email && adm.email !== t.admin_email) {
+            adm.email = t.admin_email;
+            updatedAdm = true;
+          }
+          if (t.admin_wa && adm.no_hp !== t.admin_wa) {
+            adm.no_hp = t.admin_wa;
+            updatedAdm = true;
+          }
+          const expectedStatus = t.status === 'DIBLOKIR' || t.status === 'NONAKTIF' ? 'Nonaktif' : 'Aktif';
+          if (adm.status !== expectedStatus) {
+            adm.status = expectedStatus;
+            updatedAdm = true;
+          }
+          if (updatedAdm) {
+            usersNeedResave = true;
+          }
+        }
+      });
+    } catch (err) {
+      // ignore
+    }
 
     if (usersNeedResave && typeof localStorage !== 'undefined') {
       setItem(KEYS.USERS, list);
@@ -802,9 +945,10 @@ export const StorageManager = {
     if (includeGlobalSuperAdmin) {
       return allUsers;
     }
-    const activeTenantId = targetTenantId || StorageManager.getActiveTenantId() || 'CHURCH-001';
+    const rawActive = targetTenantId || StorageManager.getActiveTenantId() || 'CHURCH-001';
+    const activeTenantId = normalizeTenantId(rawActive);
     return allUsers.filter((u) => {
-      const uTenant = u.tenant_id || (u.role === 'SUPER_ADMIN' ? 'ALL' : 'CHURCH-001');
+      const uTenant = normalizeTenantId(u.tenant_id || (u.role === 'SUPER_ADMIN' ? 'ALL' : 'CHURCH-001'));
       return uTenant === activeTenantId;
     });
   },

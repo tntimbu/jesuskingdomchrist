@@ -486,10 +486,10 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
       return;
     }
 
-    const activeAdminTenantId = currentUser.tenant_id || StorageManager.getActiveTenantId() || 'CHURCH-001';
-    const assignedTenantId = currentUser.role === 'SUPER_ADMIN'
-      ? (userForm.role === 'SUPER_ADMIN' ? 'ALL' : activeAdminTenantId)
-      : activeAdminTenantId;
+    const activeAdminTenantId = (currentUser.role !== 'SUPER_ADMIN' && currentUser.tenant_id && currentUser.tenant_id !== 'ALL')
+      ? currentUser.tenant_id
+      : StorageManager.getActiveTenantId();
+    const assignedTenantId = userForm.role === 'SUPER_ADMIN' ? 'ALL' : activeAdminTenantId;
 
     let assignedJemaatId: string | undefined = undefined;
     if (userForm.role === 'JEMAAT') {

@@ -131,7 +131,7 @@ export const SuperAdminSaaSPanel: React.FC<SuperAdminSaaSPanelProps> = ({
       user_id: `USR-ADM-${Date.now().toString().slice(-4)}`,
       username: newTenantData.admin_username,
       password_hash: newTenantData.admin_password || 'admin123',
-      nama: `${newTenantData.admin_nama} (Admin ${newTenantData.nama_gereja})`,
+      nama: newTenantData.admin_nama || `Admin ${newTenantData.nama_gereja}`,
       role: 'ADMIN',
       email: newTenantData.admin_email,
       no_hp: newTenantData.admin_wa,
@@ -158,8 +158,8 @@ export const SuperAdminSaaSPanel: React.FC<SuperAdminSaaSPanelProps> = ({
       harga_sewa: 'Rp 2.500.000 / Tahun',
       catatan_admin: ''
     });
-    setSuccessMessage(`Akun Gereja Pembeli Baru "${newTenantObj.nama_gereja}" Berhasil Dibuat!`);
-    setTimeout(() => setSuccessMessage(''), 3000);
+    setSuccessMessage(`Akun Gereja Baru "${newTenantObj.nama_gereja}" berhasil didaftarkan! Akun admin "${newTenantObj.admin_username}" telah disinkronkan dan semua data gereja baru disiapkan kosong & bersih.`);
+    setTimeout(() => setSuccessMessage(''), 4000);
   };
 
   // Handler for Saving SuperAdmin Contact Settings

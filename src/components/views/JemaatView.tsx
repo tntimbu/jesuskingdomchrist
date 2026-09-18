@@ -158,7 +158,9 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
     e.preventDefault();
     if (!formData.nama_lengkap) return;
 
-    const activeTenantId = currentUser.tenant_id || StorageManager.getActiveTenantId() || 'CHURCH-001';
+    const activeTenantId = (currentUser.role !== 'SUPER_ADMIN' && currentUser.tenant_id && currentUser.tenant_id !== 'ALL')
+      ? currentUser.tenant_id
+      : StorageManager.getActiveTenantId();
 
     if (editingJemaat) {
       const updated = jemaatList.map((j) =>
