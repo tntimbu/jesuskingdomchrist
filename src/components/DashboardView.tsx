@@ -1156,9 +1156,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
 
     const density = settings.card_size || 'NORMAL';
-    let padding = 'p-5 sm:p-6';
-    if (density === 'COMPACT') padding = 'p-3.5 sm:p-4';
-    if (density === 'SPACIOUS') padding = 'p-6 sm:p-8';
+    let padding = 'p-3.5 sm:p-5 md:p-6';
+    if (density === 'COMPACT') padding = 'p-2.5 sm:p-3.5 md:p-4';
+    if (density === 'SPACIOUS') padding = 'p-4 sm:p-6 md:p-8';
 
     return `${base} ${padding}`;
   };
@@ -1247,13 +1247,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   }
 
   return (
-    <div className={`space-y-6 pb-2 sm:pb-4 transition-all duration-300 ${widthClass}`}>
+    <div className={`space-y-3 sm:space-y-4 md:space-y-6 pb-2 sm:pb-4 transition-all duration-300 ${widthClass}`}>
       {/* Welcome Card Banner with Dynamic Custom Header */}
       {settings.show_header_banner !== false ? (
-        <div className={`relative rounded-3xl ${bannerBgClass} ${cardStyleClass} overflow-hidden text-white transition-all duration-300`}>
+        <div className={`relative rounded-2xl sm:rounded-3xl ${bannerBgClass} ${cardStyleClass} overflow-hidden text-white transition-all duration-300`}>
           <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
             <div className="flex items-center gap-4">
               <div className="relative">
                 <img
@@ -1522,10 +1522,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       {/* BANNER DEDIKASI KHUSUS TAMU / PENGUNJUNG UNTUK PROPORSI PROMINEN & RESPONSIF */}
       {isGuestMode && (
-        <div className="p-4 sm:p-6 rounded-3xl bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 border-2 border-indigo-500/50 text-white shadow-2xl relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-start sm:items-center gap-4 min-w-0">
-            <div className="p-3.5 rounded-2xl bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 shrink-0 shadow-inner">
-              <LogIn className="w-7 h-7 text-indigo-400 animate-pulse" />
+        <div className="p-3.5 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 border-2 border-indigo-500/50 text-white shadow-2xl relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-start sm:items-center gap-3 sm:gap-4 min-w-0">
+            <div className="p-2.5 sm:p-3.5 rounded-2xl bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 shrink-0 shadow-inner">
+              <LogIn className="w-6 h-6 sm:w-7 sm:h-7 text-indigo-400 animate-pulse" />
             </div>
             <div className="space-y-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2">
@@ -1546,7 +1546,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             {onOpenLogin && (
               <button
                 onClick={onOpenLogin}
-                className="w-full md:w-auto py-3 px-6 rounded-2xl bg-gradient-to-r from-indigo-500 via-indigo-600 to-blue-600 hover:from-indigo-400 hover:to-blue-500 text-white font-extrabold text-xs shadow-xl shadow-indigo-500/30 border border-indigo-300/40 flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95"
+                className="w-full md:w-auto py-2.5 sm:py-3 px-5 sm:px-6 rounded-xl sm:rounded-2xl bg-gradient-to-r from-indigo-500 via-indigo-600 to-blue-600 hover:from-indigo-400 hover:to-blue-500 text-white font-extrabold text-xs shadow-xl shadow-indigo-500/30 border border-indigo-300/40 flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95"
               >
                 <LogIn className="w-4 h-4 text-indigo-200" />
                 <span className="whitespace-nowrap">Masuk / Login Sekarang</span>
@@ -1558,11 +1558,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       {/* MENU UTAMA & MODUL PELAYANAN (HANYA DITAMPILKAN UNTUK ADMIN DI DASHBOARD HOME, UNTUK JEMAAT DIALIKAN KE MENU LAINNYA) */}
       {isAdmin && settings.show_admin_quick_access !== false && (
-        <div className={`p-5 sm:p-6 rounded-3xl ${cardStyleClass} text-white space-y-4`}>
-          <div className="flex items-center justify-between pb-3 border-b border-white/10">
+        <div className={`p-3.5 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl ${cardStyleClass} text-white space-y-2.5 sm:space-y-4`}>
+          <div className="flex items-center justify-between pb-2.5 sm:pb-3 border-b border-white/10">
             <div className="flex items-center gap-2.5">
-              <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-600 to-pink-600 text-white shadow-lg shadow-indigo-500/20">
-                <Grid className="w-5 h-5" />
+              <div className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-600 to-pink-600 text-white shadow-lg shadow-indigo-500/20">
+                <Grid className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
               <div>
                 <h3 className="text-sm sm:text-base font-extrabold text-white tracking-wide">
@@ -1571,22 +1571,22 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <p className="text-[11px] text-slate-400">Akses cepat manajemen sistem &amp; modul pelayanan</p>
               </div>
             </div>
-            <span className="px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-extrabold border border-indigo-500/30 uppercase tracking-wider">
+            <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-[9px] sm:text-[10px] font-extrabold border border-indigo-500/30 uppercase tracking-wider">
               Admin Shortcuts
             </span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-2 sm:gap-3">
             {/* 1. Jemaat & KK */}
             <button
               onClick={() => onNavigate('jemaat')}
-              className="p-4 rounded-2xl bg-gradient-to-br from-indigo-950/90 via-slate-900 to-slate-950 hover:from-indigo-900/90 hover:to-indigo-950 border border-indigo-500/30 hover:border-indigo-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
+              className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br from-indigo-950/90 via-slate-900 to-slate-950 hover:from-indigo-900/90 hover:to-indigo-950 border border-indigo-500/30 hover:border-indigo-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-2 sm:space-y-3"
             >
               <div className="flex items-center justify-between">
-                <div className="p-2.5 rounded-xl bg-blue-600 text-white shadow-lg group-hover:scale-110 transition-transform">
-                  <Users className="w-5 h-5" />
+                <div className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-blue-600 text-white shadow-lg group-hover:scale-110 transition-transform">
+                  <Users className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                <span className="text-[9px] sm:text-[10px] font-extrabold px-1.5 sm:px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
                   {jemaatList.length} Jiwa
                 </span>
               </div>
@@ -1601,13 +1601,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             {/* 2. Keuangan & Kas */}
             <button
               onClick={() => onNavigate('keuangan')}
-              className="p-4 rounded-2xl bg-gradient-to-br from-emerald-950/90 via-slate-900 to-slate-950 hover:from-emerald-900/90 hover:to-emerald-950 border border-emerald-500/30 hover:border-emerald-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
+              className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br from-emerald-950/90 via-slate-900 to-slate-950 hover:from-emerald-900/90 hover:to-emerald-950 border border-emerald-500/30 hover:border-emerald-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-2 sm:space-y-3"
             >
               <div className="flex items-center justify-between">
-                <div className="p-2.5 rounded-xl bg-emerald-600 text-white shadow-lg group-hover:scale-110 transition-transform">
-                  <DollarSign className="w-5 h-5" />
+                <div className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-emerald-600 text-white shadow-lg group-hover:scale-110 transition-transform">
+                  <DollarSign className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                <span className="text-[9px] sm:text-[10px] font-extrabold px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                   Kas &amp; Transfer
                 </span>
               </div>
@@ -1622,13 +1622,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             {/* 3. Administrasi & Sakramen */}
             <button
               onClick={() => onNavigate('administrasi')}
-              className="p-4 rounded-2xl bg-gradient-to-br from-purple-950/90 via-slate-900 to-slate-950 hover:from-purple-900/90 hover:to-purple-950 border border-purple-500/30 hover:border-purple-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
+              className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br from-purple-950/90 via-slate-900 to-slate-950 hover:from-purple-900/90 hover:to-purple-950 border border-purple-500/30 hover:border-purple-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-2 sm:space-y-3"
             >
               <div className="flex items-center justify-between">
-                <div className="p-2.5 rounded-xl bg-purple-600 text-white shadow-lg group-hover:scale-110 transition-transform">
-                  <FileText className="w-5 h-5" />
+                <div className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-purple-600 text-white shadow-lg group-hover:scale-110 transition-transform">
+                  <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                <span className="text-[9px] sm:text-[10px] font-extrabold px-1.5 sm:px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
                   Surat Sakramen
                 </span>
               </div>
@@ -1643,13 +1643,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             {/* 4. Agenda & Reservasi */}
             <button
               onClick={() => onNavigate('agenda')}
-              className="p-4 rounded-2xl bg-gradient-to-br from-amber-950/90 via-slate-900 to-slate-950 hover:from-amber-900/90 hover:to-amber-950 border border-amber-500/30 hover:border-amber-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
+              className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br from-amber-950/90 via-slate-900 to-slate-950 hover:from-amber-900/90 hover:to-amber-950 border border-amber-500/30 hover:border-amber-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-2 sm:space-y-3"
             >
               <div className="flex items-center justify-between">
-                <div className="p-2.5 rounded-xl bg-amber-600 text-white shadow-lg group-hover:scale-110 transition-transform">
-                  <Calendar className="w-5 h-5" />
+                <div className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-amber-600 text-white shadow-lg group-hover:scale-110 transition-transform">
+                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                <span className="text-[9px] sm:text-[10px] font-extrabold px-1.5 sm:px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
                   {eventsList.length} Event
                 </span>
               </div>
@@ -1664,13 +1664,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             {/* 5. Ruang Chat Jemaat */}
             <button
               onClick={() => onNavigate('chat')}
-              className="p-4 rounded-2xl bg-gradient-to-br from-indigo-950/90 via-slate-900 to-slate-950 hover:from-indigo-900/90 hover:to-indigo-950 border border-indigo-500/30 hover:border-indigo-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
+              className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br from-indigo-950/90 via-slate-900 to-slate-950 hover:from-indigo-900/90 hover:to-indigo-950 border border-indigo-500/30 hover:border-indigo-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-2 sm:space-y-3"
             >
               <div className="flex items-center justify-between">
-                <div className="p-2.5 rounded-xl bg-indigo-600 text-white shadow-lg group-hover:scale-110 transition-transform">
-                  <MessageCircle className="w-5 h-5" />
+                <div className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-indigo-600 text-white shadow-lg group-hover:scale-110 transition-transform">
+                  <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                <span className="text-[9px] sm:text-[10px] font-extrabold px-1.5 sm:px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                   Live Chat
                 </span>
               </div>
@@ -1685,13 +1685,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             {/* 6. Alkitab & Pujian */}
             <button
               onClick={() => onNavigate('pustaka')}
-              className="p-4 rounded-2xl bg-gradient-to-br from-amber-950/90 via-slate-900 to-slate-950 hover:from-amber-900/90 hover:to-amber-950 border border-amber-500/30 hover:border-amber-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
+              className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br from-amber-950/90 via-slate-900 to-slate-950 hover:from-amber-900/90 hover:to-amber-950 border border-amber-500/30 hover:border-amber-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-2 sm:space-y-3"
             >
               <div className="flex items-center justify-between">
-                <div className="p-2.5 rounded-xl bg-amber-500 text-slate-950 shadow-lg group-hover:scale-110 transition-transform">
-                  <BookMarked className="w-5 h-5" />
+                <div className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-amber-500 text-slate-950 shadow-lg group-hover:scale-110 transition-transform">
+                  <BookMarked className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                <span className="text-[9px] sm:text-[10px] font-extrabold px-1.5 sm:px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
                   Alkitab &amp; Lagu
                 </span>
               </div>
@@ -1706,13 +1706,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             {/* 7. Menu Lainnya */}
             <button
               onClick={() => onNavigate('lainnya')}
-              className="p-4 rounded-2xl bg-gradient-to-br from-cyan-950/90 via-slate-900 to-slate-950 hover:from-cyan-900/90 hover:to-cyan-950 border border-cyan-500/30 hover:border-cyan-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-3"
+              className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br from-cyan-950/90 via-slate-900 to-slate-950 hover:from-cyan-900/90 hover:to-cyan-950 border border-cyan-500/30 hover:border-cyan-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-2 sm:space-y-3"
             >
               <div className="flex items-center justify-between">
-                <div className="p-2.5 rounded-xl bg-cyan-600 text-white shadow-lg group-hover:scale-110 transition-transform">
-                  <Grid className="w-5 h-5" />
+                <div className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-cyan-600 text-white shadow-lg group-hover:scale-110 transition-transform">
+                  <Grid className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                <span className="text-[9px] sm:text-[10px] font-extrabold px-1.5 sm:px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
                   All Modul
                 </span>
               </div>
@@ -1731,14 +1731,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       {/* JEMAAT FOCUS MODE: Single Latest Update Panel & Statistics Cards */}
       {isJemaat && (
-        <div className="space-y-6">
+        <div className="space-y-3 sm:space-y-4 md:space-y-6">
           {/* STATISTIK INFORMASI JEMAAT (STRICTLY 2 BARIS x 2 KARTU KOTAK) */}
           {settings.show_stat_cards !== false && (
-            <div className="space-y-3 sm:space-y-4">
+            <div className="space-y-2 sm:space-y-3 md:space-y-4">
             {/* Baris Pertama: Total Jemaat (Kotak 1) & Total KK (Kotak 2) */}
-            <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4">
               {/* Kartu 1: Total Jemaat */}
-              <div className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} border border-indigo-500/30 flex flex-col justify-between space-y-2`}>
+              <div className={`p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl md:rounded-3xl ${cardStyleClass} border border-indigo-500/30 flex flex-col justify-between space-y-1 sm:space-y-2`}>
                 <div className="flex items-center justify-between gap-1">
                   <span className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider truncate">Total Jemaat</span>
                   <div className="p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shadow-md shrink-0">
@@ -1749,7 +1749,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <span className="text-xl sm:text-3xl font-black text-white">{totalJemaat}</span>
                   <span className="text-[10px] sm:text-xs text-slate-400 font-medium">Jiwa</span>
                 </div>
-                <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[9px] sm:text-[11px] text-slate-300 gap-1">
+                <div className="pt-1.5 sm:pt-2 border-t border-white/10 flex items-center justify-between text-[9px] sm:text-[11px] text-slate-300 gap-1">
                   <span>L: <strong className="text-indigo-300 font-bold">{totalLaki}</strong></span>
                   <span>P: <strong className="text-pink-300 font-bold">{totalPerempuan}</strong></span>
                 </div>
@@ -1757,7 +1757,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
               {/* Kartu 2: Total Kepala Keluarga (KK) */}
               <div 
-                className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} border border-purple-500/30 flex flex-col justify-between space-y-2`}
+                className={`p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl md:rounded-3xl ${cardStyleClass} border border-purple-500/30 flex flex-col justify-between space-y-1 sm:space-y-2`}
                 title="Total Kartu Keluarga unik. Jemaat dengan Nomor KK yang sama dihitung sebagai satu keluarga."
               >
                 <div className="flex items-center justify-between gap-1">
@@ -1770,17 +1770,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <span className="text-xl sm:text-3xl font-black text-white">{totalKeluarga}</span>
                   <span className="text-[10px] sm:text-xs text-slate-400 font-medium">Keluarga</span>
                 </div>
-                <div className="pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 truncate">
+                <div className="pt-1.5 sm:pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 truncate">
                   <span>Kartu Keluarga (Unik)</span>
                 </div>
               </div>
             </div>
 
             {/* Baris Kedua: Kas Persembahan (Kotak 3) & Jadwal & Event (Kotak 4) */}
-            <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4">
               {/* Kartu 3: Kas Persembahan */}
               <div
-                className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} border border-emerald-500/30 flex flex-col justify-between space-y-2`}
+                className={`p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl md:rounded-3xl ${cardStyleClass} border border-emerald-500/30 flex flex-col justify-between space-y-1 sm:space-y-2`}
               >
                 <div className="flex items-center justify-between gap-1">
                   <span className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider truncate">Kas Persembahan</span>
@@ -1793,15 +1793,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     Rp {saldoKasBersih.toLocaleString('id-ID')}
                   </span>
                 </div>
-                <div className="pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 flex items-center justify-between">
-                  <span>Saldo Kas Bersih Realtime</span>
-                  <span className="text-emerald-300 font-semibold">Tersinkron</span>
+                <div className="pt-1.5 sm:pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 flex items-center justify-between">
+                  <span>Saldo Kas Bersih</span>
+                  <span className="text-emerald-300 font-semibold">Realtime</span>
                 </div>
               </div>
 
               {/* Kartu 4: Jadwal & Event */}
               <div
-                className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} border border-amber-500/30 flex flex-col justify-between space-y-2`}
+                className={`p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl md:rounded-3xl ${cardStyleClass} border border-amber-500/30 flex flex-col justify-between space-y-1 sm:space-y-2`}
               >
                 <div className="flex items-center justify-between gap-1">
                   <span className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider truncate">Jadwal & Event</span>
@@ -1813,7 +1813,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <span className="text-xl sm:text-3xl font-black text-white">{eventsList.length}</span>
                   <span className="text-[10px] sm:text-xs text-slate-400 font-medium">Agenda</span>
                 </div>
-                <div className="pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 truncate">
+                <div className="pt-1.5 sm:pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 truncate">
                   <span>Agenda Ibadah & Event</span>
                 </div>
               </div>
@@ -1823,7 +1823,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           {/* Banner Download Aplikasi Mobile Android (.APK) Khusus HP Android */}
           {settings.show_apk_banner !== false && settings.show_apk_download_button !== false && !isApkBannerDismissed && (
-            <div className="relative p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-emerald-950/90 via-slate-900/95 to-teal-950/90 border-2 border-emerald-500/50 shadow-xl backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-white animate-fade-in">
+            <div className="relative p-3.5 sm:p-5 rounded-xl sm:rounded-2xl md:rounded-3xl bg-gradient-to-r from-emerald-950/90 via-slate-900/95 to-teal-950/90 border-2 border-emerald-500/50 shadow-xl backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 text-white animate-fade-in">
               <button
                 type="button"
                 onClick={() => {
@@ -1930,12 +1930,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
             {/* 1. Latest Renungan Utama */}
             {settings.show_renungan_widget !== false && (
-              <div className={`rounded-3xl ${cardStyleClass} text-white space-y-3 flex flex-col justify-between transition-all duration-300 border border-indigo-500/30`}>
+              <div className={`rounded-2xl sm:rounded-3xl ${cardStyleClass} text-white space-y-2.5 sm:space-y-3 flex flex-col justify-between transition-all duration-300 border border-indigo-500/30`}>
                 <div>
-                  <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                  <div className="flex items-center justify-between pb-2.5 sm:pb-3 border-b border-white/10">
                     <span className="px-2.5 py-1 rounded-xl bg-indigo-500/20 text-indigo-300 font-bold text-[10px] border border-indigo-500/30 flex items-center gap-1.5">
                       <BookOpen className="w-3.5 h-3.5 text-indigo-400" />
                       <span>Renungan Utama Hari Ini</span>
@@ -1953,7 +1953,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </div>
 
                   {latestRenungan ? (
-                    <div className="mt-3 space-y-2">
+                    <div className="mt-2.5 sm:mt-3 space-y-2">
                       <h3
                         onClick={() => setSelectedRenunganForModal(latestRenungan)}
                         className="font-extrabold text-base text-white hover:text-indigo-300 transition-colors cursor-pointer"
@@ -1978,7 +1978,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   )}
                 </div>
 
-                <div className="pt-3 border-t border-white/10 space-y-2">
+                <div className="pt-2.5 sm:pt-3 border-t border-white/10 space-y-2">
                   <div className="flex items-center justify-between text-[11px] text-slate-400">
                     <span>Oleh: <strong className="text-slate-200 font-semibold">{latestRenungan?.penulis || 'Gembala Sidang'}</strong></span>
                     <span className="text-[10px] text-slate-400">{latestRenungan?.tanggal || 'Hari Ini'}</span>
@@ -2009,9 +2009,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
             {/* 2. Latest Pengumuman */}
             {settings.show_pengumuman_widget !== false && (
-              <div className={`rounded-3xl ${cardStyleClass} text-white space-y-3 flex flex-col justify-between transition-all duration-300`}>
+              <div className={`rounded-2xl sm:rounded-3xl ${cardStyleClass} text-white space-y-2.5 sm:space-y-3 flex flex-col justify-between transition-all duration-300`}>
                 <div>
-                  <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                  <div className="flex items-center justify-between pb-2.5 sm:pb-3 border-b border-white/10">
                     <span className="px-2.5 py-1 rounded-xl bg-emerald-500/20 text-emerald-300 font-bold text-[10px] border border-emerald-500/30 flex items-center gap-1">
                       <Megaphone className="w-3 h-3" />
                       Pengumuman Resmi Terbaru
@@ -2020,7 +2020,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </div>
 
                   {latestPengumuman ? (
-                    <div className="mt-3 space-y-2">
+                    <div className="mt-2.5 sm:mt-3 space-y-2">
                       <h3 className="font-extrabold text-base text-white text-left tracking-tight">{latestPengumuman.judul}</h3>
                       <p
                         lang="id"
@@ -2043,7 +2043,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   )}
                 </div>
 
-                <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs">
+                <div className="pt-2.5 sm:pt-3 border-t border-white/10 flex items-center justify-between text-xs">
                   <span className="text-[11px] text-slate-400">Sekretariat Gereja</span>
                   <button
                     onClick={() => onNavigate('pengumuman')}
@@ -2057,9 +2057,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
             {/* 3. Latest Upcoming Event */}
             {settings.show_event_widget !== false && (
-              <div className={`rounded-3xl ${cardStyleClass} text-white space-y-3 flex flex-col justify-between transition-all duration-300`}>
+              <div className={`rounded-2xl sm:rounded-3xl ${cardStyleClass} text-white space-y-2.5 sm:space-y-3 flex flex-col justify-between transition-all duration-300`}>
                 <div>
-                  <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                  <div className="flex items-center justify-between pb-2.5 sm:pb-3 border-b border-white/10">
                     <span className="px-2.5 py-1 rounded-xl bg-amber-500/20 text-amber-300 font-bold text-[10px] border border-amber-500/30 flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
                       Agenda / Event Terdekat
@@ -2068,7 +2068,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </div>
 
                   {latestEvent ? (
-                    <div className="mt-3 space-y-2">
+                    <div className="mt-2.5 sm:mt-3 space-y-2">
                       <h3 className="font-extrabold text-base text-white">{latestEvent.nama}</h3>
                       <div className="space-y-1 text-xs text-slate-300 bg-white/5 p-3 rounded-2xl border border-white/5">
                         <div className="flex items-center gap-2">
@@ -2109,7 +2109,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   )}
                 </div>
 
-                <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs">
+                <div className="pt-2.5 sm:pt-3 border-t border-white/10 flex items-center justify-between text-xs">
                   <span className="text-[11px] text-slate-400">Jadwal Minggu Ini</span>
                   <button
                     onClick={() => onNavigate('agenda')}
@@ -2125,8 +2125,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           {/* Direct Prayer Request Form for Jemaat */}
           {settings.show_prayer_widget !== false && (
-            <div className={`rounded-3xl ${cardStyleClass} text-white space-y-4 transition-all duration-300`}>
-              <div className="flex items-center gap-2 pb-3 border-b border-white/10">
+            <div className={`rounded-2xl sm:rounded-3xl ${cardStyleClass} text-white space-y-2.5 sm:space-y-4 transition-all duration-300`}>
+              <div className="flex items-center gap-2 pb-2.5 sm:pb-3 border-b border-white/10">
                 <HeartHandshake className="w-5 h-5 text-pink-400" />
                 <div>
                   <h3 className="font-bold text-base">Kirim Permohonan Doa Mandiri</h3>
@@ -2263,11 +2263,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           {/* Transfer Persembahan & Perpuluhan Digital Card for Jemaat & All Users */}
           {settings.show_digital_offering_widget !== false && (
-            <div className={`rounded-3xl ${cardStyleClass} p-5 sm:p-6 border border-emerald-500/30 shadow-2xl text-white space-y-6 relative overflow-hidden transition-all duration-300`}>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+            <div className={`rounded-2xl sm:rounded-3xl ${cardStyleClass} border border-emerald-500/30 shadow-2xl text-white space-y-3 sm:space-y-4 md:space-y-6 relative overflow-hidden transition-all duration-300`}>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-white/10 pb-3 sm:pb-4">
               <div className="flex items-center gap-3">
-                <div className="p-3 rounded-2xl bg-emerald-600 text-white shadow-lg shadow-emerald-600/30">
-                  <CreditCard className="w-6 h-6" />
+                <div className="p-2.5 sm:p-3 rounded-2xl bg-emerald-600 text-white shadow-lg shadow-emerald-600/30">
+                  <CreditCard className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
                 <div>
                   <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest block">
@@ -2279,16 +2279,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
               <button
                 onClick={() => setIsTransferModalOpen(true)}
-                className="px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 transition-all cursor-pointer shrink-0"
+                className="px-4 py-2.5 rounded-xl sm:rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 transition-all cursor-pointer shrink-0"
               >
                 <Send className="w-4 h-4" />
                 <span>Kirim / Konfirmasi Transfer</span>
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-center">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-5 items-center">
               {/* Bank Account Info Card */}
-              <div className="p-4 sm:p-5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
+              <div className="p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2.5 sm:space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Rekening Resmi Gereja</span>
                   <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
@@ -2298,13 +2298,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                 <div>
                   <span className="text-[10px] text-slate-400 block">Nomor Rekening:</span>
-                  <div className="flex items-center justify-between mt-1 bg-slate-900 p-2.5 rounded-xl border border-slate-800">
+                  <div className="flex items-center justify-between mt-1 bg-slate-900 p-2 sm:p-2.5 rounded-xl border border-slate-800">
                     <span className="font-mono text-base sm:text-lg font-black text-white tracking-wider">
                       {settings.rekening_bank_nomor || '527-089-1122'}
                     </span>
                     <button
                       onClick={handleCopyBank}
-                      className="px-3 py-1.5 rounded-lg bg-emerald-600/30 hover:bg-emerald-600/60 text-emerald-300 border border-emerald-500/40 text-xs font-bold flex items-center gap-1 cursor-pointer transition-all"
+                      className="px-2.5 sm:px-3 py-1.5 rounded-lg bg-emerald-600/30 hover:bg-emerald-600/60 text-emerald-300 border border-emerald-500/40 text-xs font-bold flex items-center gap-1 cursor-pointer transition-all"
                     >
                       {copiedBankNum ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                       <span>{copiedBankNum ? 'Tersalin!' : 'Salin'}</span>
@@ -2319,7 +2319,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
 
               {/* QRIS Code Large Display Card */}
-              <div className="p-5 sm:p-6 rounded-3xl bg-slate-950/90 border-2 border-emerald-500/40 shadow-2xl flex flex-col items-center justify-center text-center gap-4">
+              <div className="p-3.5 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl bg-slate-950/90 border-2 border-emerald-500/40 shadow-2xl flex flex-col items-center justify-center text-center gap-3 sm:gap-4">
                 <div className="flex items-center gap-2 text-emerald-400 font-extrabold text-sm tracking-wide uppercase">
                   <QrCode className="w-5 h-5 text-emerald-400 animate-pulse" />
                   <span>Barcode QRIS Persembahan Digital</span>
@@ -2334,12 +2334,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       <img
                         src={settings.qris_image_url}
                         alt="Barcode QRIS Gereja"
-                        className="w-56 h-56 sm:w-72 sm:h-72 md:w-80 md:h-80 object-contain rounded-xl"
+                        className="w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 object-contain rounded-xl"
                       />
                     </div>
                   ) : (
-                    <div className="w-56 h-56 sm:w-72 sm:h-72 rounded-2xl bg-white flex flex-col items-center justify-center text-center p-4 text-slate-800 border-4 border-emerald-500/50 shadow-2xl">
-                      <QrCode className="w-16 h-16 text-emerald-600 mb-2" />
+                    <div className="w-48 h-48 sm:w-64 sm:h-64 rounded-2xl bg-white flex flex-col items-center justify-center text-center p-4 text-slate-800 border-4 border-emerald-500/50 shadow-2xl">
+                      <QrCode className="w-14 h-14 sm:w-16 sm:h-16 text-emerald-600 mb-2" />
                       <span className="font-extrabold text-sm">QRIS Standar Nasional (QRIS)</span>
                       <span className="text-xs text-slate-500 mt-1">Gereja Kemenangan Faith Center</span>
                     </div>
@@ -2358,7 +2358,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <button
                     type="button"
                     onClick={() => setIsQrisZoomModalOpen(true)}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-lg transition-all cursor-pointer"
+                    className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-lg transition-all cursor-pointer"
                   >
                     <Maximize2 className="w-4 h-4" />
                     <span>Perbesar Layar Penuh (Zoom QRIS)</span>
@@ -2730,7 +2730,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
           )}
           {settings.show_video_widget !== false && settings.video_enabled !== false && (
-            <div className="rounded-3xl bg-slate-900/90 border border-slate-800 p-4 sm:p-5 overflow-hidden text-white space-y-3 transition-all duration-300 shadow-xl">
+            <div className="rounded-2xl sm:rounded-3xl bg-slate-900/90 border border-slate-800 p-3.5 sm:p-5 overflow-hidden text-white space-y-2.5 sm:space-y-3 transition-all duration-300 shadow-xl">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-white/10">
                 <div className="flex items-center gap-2.5">
                   <div className="p-2 rounded-xl bg-red-500/20 border border-red-500/30 text-red-400 animate-pulse shrink-0">
@@ -2882,12 +2882,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       {/* SUPERADMIN & ADMIN OPERATIONAL DASHBOARD */}
       {!isJemaat && (
-        <div className="space-y-6">
+        <div className="space-y-3 sm:space-y-4 md:space-y-6">
           {/* Quick Statistics Cards */}
           {settings.show_stat_cards !== false && (
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
               {/* Total Jemaat Card */}
-              <div className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} border border-indigo-500/30 flex flex-col justify-between space-y-2 text-white`}>
+              <div className={`p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl md:rounded-3xl ${cardStyleClass} border border-indigo-500/30 flex flex-col justify-between space-y-1 sm:space-y-2 text-white`}>
                 <div className="flex items-center justify-between gap-1">
                   <span className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider truncate">Total Jemaat</span>
                   <div className="p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shadow-md shrink-0">
@@ -2898,7 +2898,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <span className="text-xl sm:text-3xl font-black text-white">{totalJemaat}</span>
                   <span className="text-[10px] sm:text-xs text-slate-400 font-medium">Jiwa</span>
                 </div>
-                <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[9px] sm:text-[11px] text-slate-300 gap-1">
+                <div className="pt-1.5 sm:pt-2 border-t border-white/10 flex items-center justify-between text-[9px] sm:text-[11px] text-slate-300 gap-1">
                   <span>L: <strong className="text-indigo-300 font-bold">{totalLaki}</strong></span>
                   <span>P: <strong className="text-pink-300 font-bold">{totalPerempuan}</strong></span>
                 </div>
@@ -2906,7 +2906,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
               {/* Total Keluarga Card */}
               <div 
-                className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} border border-purple-500/30 flex flex-col justify-between space-y-2 text-white`}
+                className={`p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl md:rounded-3xl ${cardStyleClass} border border-purple-500/30 flex flex-col justify-between space-y-1 sm:space-y-2 text-white`}
                 title="Total Kartu Keluarga unik. Jemaat dengan Nomor KK yang sama dihitung sebagai satu keluarga."
               >
                 <div className="flex items-center justify-between gap-1">
@@ -2919,13 +2919,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <span className="text-xl sm:text-3xl font-black text-white">{totalKeluarga}</span>
                   <span className="text-[10px] sm:text-xs text-slate-400 font-medium">Keluarga</span>
                 </div>
-                <div className="pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 truncate">
+                <div className="pt-1.5 sm:pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 truncate">
                   <span>Kartu Keluarga (Unik)</span>
                 </div>
               </div>
 
               {/* Total Persembahan Card */}
-              <div className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} border border-emerald-500/30 flex flex-col justify-between space-y-2 text-white`}>
+              <div className={`p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl md:rounded-3xl ${cardStyleClass} border border-emerald-500/30 flex flex-col justify-between space-y-1 sm:space-y-2 text-white`}>
                 <div className="flex items-center justify-between gap-1">
                   <span className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider truncate">Kas Persembahan</span>
                   <div className="p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-md shrink-0">
@@ -2937,14 +2937,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     Rp {saldoKasBersih.toLocaleString('id-ID')}
                   </span>
                 </div>
-                <div className="pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 flex items-center justify-between">
-                  <span>Saldo Kas Bersih Realtime</span>
-                  <span className="text-emerald-300 font-semibold">Tersinkron</span>
+                <div className="pt-1.5 sm:pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 flex items-center justify-between">
+                  <span>Saldo Kas Bersih</span>
+                  <span className="text-emerald-300 font-semibold">Realtime</span>
                 </div>
               </div>
 
               {/* Event Mendatang Card */}
-              <div className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} border border-amber-500/30 flex flex-col justify-between space-y-2 text-white`}>
+              <div className={`p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl md:rounded-3xl ${cardStyleClass} border border-amber-500/30 flex flex-col justify-between space-y-1 sm:space-y-2 text-white`}>
                 <div className="flex items-center justify-between gap-1">
                   <span className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider truncate">Jadwal & Event</span>
                   <div className="p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shadow-md shrink-0">
@@ -2955,7 +2955,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <span className="text-xl sm:text-3xl font-black text-white">{eventsList.length}</span>
                   <span className="text-[10px] sm:text-xs text-slate-400 font-medium">Agenda</span>
                 </div>
-                <div className="pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 truncate">
+                <div className="pt-1.5 sm:pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 truncate">
                   <span>Ibadah & Agenda</span>
                 </div>
               </div>
@@ -2964,7 +2964,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           {/* KONFIRMASI TRANSFER PERSEMBAHAN JEMAAT REALTIME (ADMIN WIDGET) */}
           {pendingPersembahanList.length > 0 ? (
-            <div className="p-4 sm:p-6 rounded-3xl bg-gradient-to-r from-amber-950/70 via-slate-900/90 to-emerald-950/70 border-2 border-amber-500/50 shadow-2xl space-y-4 text-white animate-fade-in">
+            <div className="p-3.5 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-amber-950/70 via-slate-900/90 to-emerald-950/70 border-2 border-amber-500/50 shadow-2xl space-y-3 sm:space-y-4 text-white animate-fade-in">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
                 <div className="flex items-center gap-3">
                   <div className="p-2.5 sm:p-3 rounded-2xl bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-inner shrink-0">
@@ -3084,11 +3084,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           {/* Charts Section: Line & Doughnut Charts */}
           {(settings.show_finance_chart !== false || settings.show_wilayah_chart !== false) && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 md:gap-6">
               {/* Financial Growth Chart */}
               {settings.show_finance_chart !== false && (
-                <div className={`${settings.show_wilayah_chart !== false ? 'lg:col-span-8' : 'lg:col-span-12'} rounded-3xl ${cardStyleClass} p-6 text-white`}>
-                  <div className="flex items-center justify-between mb-4">
+                <div className={`${settings.show_wilayah_chart !== false ? 'lg:col-span-8' : 'lg:col-span-12'} rounded-2xl sm:rounded-3xl ${cardStyleClass} text-white`}>
+                  <div className="flex items-center justify-between mb-3 sm:mb-4">
                     <div>
                       <h3 className="text-base font-bold text-white">Grafik Tren Persembahan & Kas</h3>
                       <p className="text-xs text-slate-400">Statistik akumulasi penerimaan per bulan tahun 2026</p>
@@ -3101,7 +3101,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       <ArrowUpRight className="w-4 h-4" />
                     </button>
                   </div>
-                  <div className="h-64 w-full">
+                  <div className="h-56 sm:h-64 w-full">
                     <Line data={financialChartData} options={financialChartOptions} />
                   </div>
                 </div>
@@ -3109,11 +3109,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
               {/* Wilayah Distribution Chart */}
               {settings.show_wilayah_chart !== false && (
-                <div className={`${settings.show_finance_chart !== false ? 'lg:col-span-4' : 'lg:col-span-12'} rounded-3xl ${cardStyleClass} p-6 text-white flex flex-col justify-between`}>
+                <div className={`${settings.show_finance_chart !== false ? 'lg:col-span-4' : 'lg:col-span-12'} rounded-2xl sm:rounded-3xl ${cardStyleClass} text-white flex flex-col justify-between`}>
                   <div>
                     <h3 className="text-base font-bold text-white">Demografi Per Wilayah</h3>
-                    <p className="text-xs text-slate-400 mb-4">Sebaran lokasi tempat tinggal jemaat</p>
-                    <div className="h-48 w-full flex items-center justify-center">
+                    <p className="text-xs text-slate-400 mb-3 sm:mb-4">Sebaran lokasi tempat tinggal jemaat</p>
+                    <div className="h-44 sm:h-48 w-full flex items-center justify-center">
                       <Doughnut
                         data={wilayahChartData}
                         options={{
@@ -3124,7 +3124,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       />
                     </div>
                   </div>
-                  <div className="pt-4 border-t border-white/10 text-center">
+                  <div className="pt-3 sm:pt-4 border-t border-white/10 text-center">
                     <button
                       onClick={() => onNavigate('wilayah')}
                       className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold inline-flex items-center gap-1"
@@ -3140,7 +3140,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           {/* Banner Download Aplikasi Mobile Android (.APK) Khusus Pengurus & Admin */}
           {settings.show_apk_banner !== false && settings.show_apk_download_button !== false && !isApkBannerDismissed && (
-            <div className="relative p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-emerald-950/90 via-slate-900/95 to-teal-950/90 border-2 border-emerald-500/50 shadow-xl backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-white animate-fade-in">
+            <div className="relative p-3.5 sm:p-5 rounded-xl sm:rounded-2xl md:rounded-3xl bg-gradient-to-r from-emerald-950/90 via-slate-900/95 to-teal-950/90 border-2 border-emerald-500/50 shadow-xl backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 text-white animate-fade-in">
               <button
                 type="button"
                 onClick={() => {
@@ -3156,8 +3156,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <X className="w-3.5 h-3.5" />
               </button>
               <div className="flex items-center gap-3 pr-8 sm:pr-0">
-                <div className="p-3 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-inner shrink-0">
-                  <Smartphone className="w-6 h-6 text-emerald-400" />
+                <div className="p-2.5 sm:p-3 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-inner shrink-0">
+                  <Smartphone className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
@@ -3208,11 +3208,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           {/* Bottom Section: Today's Schedule & System Logs */}
           {(settings.show_upcoming_events_table !== false || settings.show_system_logs_widget !== false) && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 md:gap-6">
               {/* Today's Schedule */}
               {settings.show_upcoming_events_table !== false && (
-                <div className={`${settings.show_system_logs_widget !== false ? 'lg:col-span-6' : 'lg:col-span-12'} rounded-3xl ${cardStyleClass} p-6 text-white`}>
-                  <div className="flex items-center justify-between mb-4">
+                <div className={`${settings.show_system_logs_widget !== false ? 'lg:col-span-6' : 'lg:col-span-12'} rounded-2xl sm:rounded-3xl ${cardStyleClass} text-white`}>
+                  <div className="flex items-center justify-between mb-3 sm:mb-4">
                     <div className="flex items-center gap-2">
                       <div className="p-2 rounded-xl bg-indigo-500/20 border border-indigo-500/30 text-indigo-300">
                         <Clock className="w-4 h-4" />
@@ -3227,11 +3227,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     </button>
                   </div>
 
-                  <div className="space-y-3">
+                  <div className="space-y-2.5 sm:space-y-3">
                     {eventsList.slice(0, 3).map((evt) => (
                       <div
                         key={evt.event_id}
-                        className="p-3.5 rounded-2xl bg-white/5 border border-white/10 flex items-start justify-between gap-3 text-xs hover:border-indigo-500/30 transition-all"
+                        className="p-3 sm:p-3.5 rounded-2xl bg-white/5 border border-white/10 flex items-start justify-between gap-3 text-xs hover:border-indigo-500/30 transition-all"
                       >
                         <div>
                           <div className="flex items-center gap-2">
@@ -3254,8 +3254,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
               {/* Activity Logs & Audit Feed */}
               {settings.show_system_logs_widget !== false && (
-                <div className={`${settings.show_upcoming_events_table !== false ? 'lg:col-span-6' : 'lg:col-span-12'} rounded-3xl ${cardStyleClass} p-6 text-white`}>
-                  <div className="flex items-center justify-between mb-4">
+                <div className={`${settings.show_upcoming_events_table !== false ? 'lg:col-span-6' : 'lg:col-span-12'} rounded-2xl sm:rounded-3xl ${cardStyleClass} text-white`}>
+                  <div className="flex items-center justify-between mb-3 sm:mb-4">
                     <div className="flex items-center gap-2">
                       <div className="p-2 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-300">
                         <Activity className="w-4 h-4" />
@@ -3272,7 +3272,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     )}
                   </div>
 
-                  <div className="space-y-3">
+                  <div className="space-y-2.5 sm:space-y-3">
                     {activityLogs.slice(0, 4).map((log) => (
                       <div
                         key={log.log_id}
