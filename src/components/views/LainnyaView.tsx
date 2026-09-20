@@ -37,6 +37,66 @@ export const LainnyaView: React.FC<LainnyaViewProps> = ({
   const theme = getThemeClasses(settings);
   const isAdmin = currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN';
 
+  // Dynamic Theme Preset Style Classes matching Dashboard
+  const getCardStyleClass = () => {
+    const cardBg = settings.jemaat_cards_bg || 'DEFAULT_GLASS';
+    const cardStyle = settings.card_style || 'GLASS';
+
+    let base = 'bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl';
+
+    if (cardBg && cardBg !== 'DEFAULT_GLASS') {
+      switch (cardBg) {
+        case 'GRADIENT_INDIGO':
+          base = 'bg-gradient-to-br from-indigo-950/90 via-slate-900 to-indigo-950/90 border border-indigo-500/40 shadow-xl shadow-indigo-950/30 backdrop-blur-xl';
+          break;
+        case 'GRADIENT_PURPLE':
+          base = 'bg-gradient-to-br from-purple-950/90 via-slate-900 to-purple-950/90 border border-purple-500/40 shadow-xl shadow-purple-950/30 backdrop-blur-xl';
+          break;
+        case 'GRADIENT_GOLD':
+          base = 'bg-gradient-to-br from-amber-950/90 via-slate-900 to-amber-950/90 border border-amber-500/40 shadow-xl shadow-amber-950/30 backdrop-blur-xl';
+          break;
+        case 'GRADIENT_EMERALD':
+          base = 'bg-gradient-to-br from-emerald-950/90 via-slate-900 to-emerald-950/90 border border-emerald-500/40 shadow-xl shadow-emerald-950/30 backdrop-blur-xl';
+          break;
+        case 'OBSIDIAN_NIGHT':
+          base = 'bg-gradient-to-br from-slate-950 via-slate-900 to-zinc-950 border border-slate-700/80 shadow-2xl backdrop-blur-xl';
+          break;
+        case 'OCEAN_BLUE':
+          base = 'bg-gradient-to-br from-blue-950/90 via-slate-900 to-cyan-950/90 border border-cyan-500/40 shadow-xl shadow-cyan-950/30 backdrop-blur-xl';
+          break;
+        case 'SOLID_SLATE':
+          base = 'bg-slate-900 border border-slate-800 shadow-xl';
+          break;
+        case 'NEON_CYAN':
+          base = 'bg-cyan-950/50 border border-cyan-400/50 shadow-lg shadow-cyan-500/20 backdrop-blur-xl';
+          break;
+        default:
+          base = 'bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl';
+          break;
+      }
+    } else {
+      switch (cardStyle) {
+        case 'SOLID':
+          base = 'bg-slate-900 border border-slate-800 shadow-xl';
+          break;
+        case 'NEON':
+          base = 'bg-slate-900/90 border border-indigo-500/40 shadow-lg shadow-indigo-500/10 backdrop-blur-xl';
+          break;
+        case 'FLAT':
+          base = 'bg-slate-900/60 border border-slate-700/60 shadow-none';
+          break;
+        case 'GLASS':
+        default:
+          base = 'bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl';
+          break;
+      }
+    }
+
+    return base;
+  };
+
+  const cardStyleClass = getCardStyleClass();
+
   const menuModules = [
     {
       id: 'jemaat_portal' as NavTab,
@@ -44,7 +104,6 @@ export const LainnyaView: React.FC<LainnyaViewProps> = ({
       subtitle: 'KTA Digital, Sakramen, Doa & Persembahan Saya',
       category: 'PELAYANAN MANDIRI',
       icon: UserCheck,
-      gradient: 'from-teal-600 via-emerald-600 to-teal-800',
       badge: 'Jemaat Mandatory',
       roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
     },
@@ -54,7 +113,6 @@ export const LainnyaView: React.FC<LainnyaViewProps> = ({
       subtitle: 'Obrolan Komunitas, Berbagi Sapaan, Doa & Persekutuan Bersama',
       category: 'KOMUNITAS & CHAT',
       icon: MessageCircle,
-      gradient: 'from-blue-600 via-indigo-600 to-violet-800',
       badge: 'Live Chat',
       roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
     },
@@ -64,7 +122,6 @@ export const LainnyaView: React.FC<LainnyaViewProps> = ({
       subtitle: '66 Kitab Suci Alkitab, Kidung Jemaat, NKB, PKJ & Lagu Kontemporer Berchord',
       category: 'PUSTAKA ROHANI',
       icon: BookMarked,
-      gradient: 'from-amber-600 via-yellow-600 to-amber-800',
       badge: 'Alkitab & Lagu',
       roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
     },
@@ -74,7 +131,6 @@ export const LainnyaView: React.FC<LainnyaViewProps> = ({
       subtitle: 'Database Seluruh Anggota, Sektor & Kepala Keluarga',
       category: 'ADMINISTRASI JEMAAT',
       icon: Users,
-      gradient: 'from-blue-600 via-indigo-600 to-blue-800',
       badge: 'Database',
       roles: ['ADMIN', 'SUPER_ADMIN']
     },
@@ -84,7 +140,6 @@ export const LainnyaView: React.FC<LainnyaViewProps> = ({
       subtitle: 'Pencatatan Kas, Transfer Bank, QRIS & Laporan Kebendaharaan',
       category: 'KEUANGAN & BENDAHARA',
       icon: DollarSign,
-      gradient: 'from-emerald-600 via-teal-600 to-emerald-800',
       badge: 'Kas & QRIS',
       roles: ['ADMIN', 'SUPER_ADMIN', 'JEMAAT']
     },
@@ -94,7 +149,6 @@ export const LainnyaView: React.FC<LainnyaViewProps> = ({
       subtitle: 'Pengurusan Surat Baptis Kudus, Sidi, Pernikahan & Jemaat',
       category: 'SEKRETARIAT',
       icon: FileText,
-      gradient: 'from-purple-600 via-indigo-600 to-purple-800',
       badge: 'Arsip Surat',
       roles: ['ADMIN', 'SUPER_ADMIN', 'JEMAAT']
     },
@@ -104,7 +158,6 @@ export const LainnyaView: React.FC<LainnyaViewProps> = ({
       subtitle: 'Jadwal Kebaktian Minggu, Pelayan Ibadah & Pemusik',
       category: 'IBADAH & PELAYANAN',
       icon: Calendar,
-      gradient: 'from-amber-600 via-orange-600 to-amber-800',
       badge: 'Ibadah Minggu',
       roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
     },
@@ -114,7 +167,6 @@ export const LainnyaView: React.FC<LainnyaViewProps> = ({
       subtitle: 'Jadwal Acara Spesial & Booking Tempat Duduk Ibadah',
       category: 'EVENT & RESERVASI',
       icon: Sparkles,
-      gradient: 'from-orange-600 via-amber-600 to-rose-700',
       badge: 'Booking Seat',
       roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
     },
@@ -124,7 +176,6 @@ export const LainnyaView: React.FC<LainnyaViewProps> = ({
       subtitle: 'Kirim Pokok Doa Pribadi & Dukungan Komunitas Doa',
       category: 'PELAYANAN DOA',
       icon: Heart,
-      gradient: 'from-rose-600 via-pink-600 to-rose-800',
       badge: 'Syafaat',
       roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
     },
@@ -134,7 +185,6 @@ export const LainnyaView: React.FC<LainnyaViewProps> = ({
       subtitle: 'Artikel Firman Tuhan & Audio Podcast Renungan Pagi',
       category: 'ROHANI & MEDIA',
       icon: BookOpen,
-      gradient: 'from-cyan-600 via-blue-600 to-cyan-800',
       badge: 'Audio & Teks',
       roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
     },
@@ -144,7 +194,6 @@ export const LainnyaView: React.FC<LainnyaViewProps> = ({
       subtitle: 'Informasi Warta Minggu & Pengumuman Resmi Gembala',
       category: 'INFORMASI GEREJA',
       icon: Megaphone,
-      gradient: 'from-indigo-600 via-blue-600 to-indigo-800',
       badge: 'Warta Minggu',
       roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
     },
@@ -154,7 +203,6 @@ export const LainnyaView: React.FC<LainnyaViewProps> = ({
       subtitle: 'Dokumentasi Album Foto Ibadah, Youth & Diakonia',
       category: 'DOKUMENTASI',
       icon: ImageIcon,
-      gradient: 'from-fuchsia-600 via-purple-600 to-fuchsia-800',
       badge: 'Album Foto',
       roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
     },
@@ -164,7 +212,6 @@ export const LainnyaView: React.FC<LainnyaViewProps> = ({
       subtitle: 'Rekaman Khotbah, Live Broadcast & Video Youtube',
       category: 'MULTIMEDIA',
       icon: Video,
-      gradient: 'from-red-600 via-rose-600 to-red-800',
       badge: 'Live Streaming',
       roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
     },
@@ -174,7 +221,6 @@ export const LainnyaView: React.FC<LainnyaViewProps> = ({
       subtitle: 'Pemetaan Sektor Jemaat, Ketua Sektor & Lokasi Ibadah Rumah',
       category: 'ORGANISASI',
       icon: MapPin,
-      gradient: 'from-emerald-600 via-lime-600 to-emerald-800',
       badge: 'Sektor',
       roles: ['ADMIN', 'SUPER_ADMIN']
     },
@@ -184,7 +230,6 @@ export const LainnyaView: React.FC<LainnyaViewProps> = ({
       subtitle: 'Cetak Laporan Keuangan, Jemaat & Statistik Ibadah',
       category: 'LAPORAN SYSTEM',
       icon: FileSpreadsheet,
-      gradient: 'from-blue-700 via-indigo-700 to-slate-800',
       badge: 'Export PDF',
       roles: ['ADMIN', 'SUPER_ADMIN']
     },
@@ -194,7 +239,6 @@ export const LainnyaView: React.FC<LainnyaViewProps> = ({
       subtitle: 'Kustomisasi Tema, Logo Gereja, Banner & Hak Akses User',
       category: 'SYSTEM ADMIN',
       icon: Settings,
-      gradient: 'from-slate-700 via-slate-800 to-slate-900',
       badge: 'SuperAdmin',
       roles: ['ADMIN', 'SUPER_ADMIN']
     }
@@ -203,21 +247,21 @@ export const LainnyaView: React.FC<LainnyaViewProps> = ({
   const filteredModules = menuModules.filter((m) => m.roles.includes(currentUser.role));
 
   return (
-    <div className="space-y-6 pb-6 max-w-7xl mx-auto px-1 sm:px-3 animate-fade-in">
+    <div className="space-y-3 sm:space-y-4 md:space-y-6 pb-6 max-w-7xl mx-auto px-1 sm:px-3 animate-fade-in">
       {/* Header Banner */}
-      <div className={`p-6 sm:p-8 rounded-3xl ${theme.cardClass} text-white border border-white/10 shadow-2xl relative overflow-hidden space-y-3`}>
+      <div className={`p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl ${cardStyleClass} text-white border border-white/10 shadow-2xl relative overflow-hidden space-y-3`}>
         <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
         
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
-          <div className="flex items-center gap-3.5">
-            <div className="p-3.5 rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-600 to-pink-600 text-white shadow-xl shadow-indigo-500/20">
-              <Grid className="w-7 h-7" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 relative z-10">
+          <div className="flex items-center gap-3 sm:gap-3.5">
+            <div className="p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shadow-xl shadow-indigo-500/10 shrink-0">
+              <Grid className="w-6 h-6 sm:w-7 sm:h-7" />
             </div>
             <div>
-              <span className="text-xs font-bold text-indigo-300 uppercase tracking-widest block">
+              <span className="text-[10px] sm:text-xs font-bold text-indigo-400 uppercase tracking-widest block">
                 Pusat Navigasi Terpadu
               </span>
-              <h2 className="text-xl sm:text-3xl font-extrabold text-white tracking-tight">
+              <h2 className="text-lg sm:text-2xl md:text-3xl font-extrabold text-white tracking-tight">
                 Menu Utama &amp; Seluruh Modul Pelayanan
               </h2>
               <p className="text-xs text-slate-300 mt-1">
@@ -226,43 +270,41 @@ export const LainnyaView: React.FC<LainnyaViewProps> = ({
             </div>
           </div>
 
-          <div className="shrink-0 px-4 py-2 rounded-2xl bg-white/5 border border-white/10 text-xs font-bold text-slate-300 flex items-center gap-2">
+          <div className="shrink-0 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-white/5 border border-white/10 text-xs font-bold text-slate-300 flex items-center gap-2 self-start sm:self-auto">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span>{filteredModules.length} Fitur Siap Digunakan</span>
           </div>
         </div>
       </div>
 
-      {/* Grid Menu Utama Wajah Baru (Colorful Quick Grid) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {/* Grid Menu Utama - Selaras dengan Tema Dashboard */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5">
         {filteredModules.map((item) => {
           const Icon = item.icon;
           return (
             <button
               key={item.id}
               onClick={() => onNavigate(item.id)}
-              className={`p-6 rounded-3xl bg-gradient-to-br ${item.gradient} hover:scale-[1.02] border border-white/20 text-left transition-all duration-300 group cursor-pointer shadow-2xl relative overflow-hidden flex flex-col justify-between space-y-5 min-h-[160px]`}
+              className={`p-4 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl ${cardStyleClass} hover:border-indigo-500/50 hover:bg-white/10 text-left transition-all duration-200 group cursor-pointer shadow-xl relative overflow-hidden flex flex-col justify-between space-y-3 sm:space-y-4 min-h-[140px] sm:min-h-[160px]`}
             >
-              <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-white/10 rounded-full blur-xl pointer-events-none group-hover:bg-white/20 transition-all" />
-
               <div className="flex items-center justify-between relative z-10">
-                <div className="p-3 rounded-2xl bg-white/20 backdrop-blur-md text-white shadow-xl group-hover:scale-110 transition-transform">
-                  <Icon className="w-6 h-6" />
+                <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 group-hover:bg-indigo-500/30 group-hover:text-indigo-300 group-hover:border-indigo-400/50 shadow-md group-hover:scale-105 transition-all">
+                  <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
-                <span className="px-3 py-1 rounded-full bg-black/30 backdrop-blur-md text-white text-[10px] font-extrabold border border-white/20 uppercase tracking-wider">
+                <span className="px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full bg-indigo-500/15 text-indigo-300 text-[10px] font-extrabold border border-indigo-500/30 uppercase tracking-wider">
                   {item.badge}
                 </span>
               </div>
 
               <div className="relative z-10 space-y-1">
-                <span className="text-[10px] font-extrabold text-white/80 uppercase tracking-widest block">
+                <span className="text-[10px] font-extrabold text-indigo-400 uppercase tracking-widest block">
                   {item.category}
                 </span>
-                <h3 className="text-base sm:text-lg font-extrabold text-white leading-snug group-hover:text-indigo-100 transition-colors flex items-center justify-between">
+                <h3 className="text-sm sm:text-base md:text-lg font-extrabold text-white leading-snug group-hover:text-indigo-300 transition-colors flex items-center justify-between">
                   <span>{item.title}</span>
-                  <ArrowRight className="w-4 h-4 text-white/60 group-hover:translate-x-1 group-hover:text-white transition-all" />
+                  <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-indigo-400 transition-all shrink-0 ml-1.5" />
                 </h3>
-                <p className="text-xs text-white/80 font-medium leading-relaxed">
+                <p className="text-xs text-slate-400 group-hover:text-slate-300 font-normal leading-relaxed line-clamp-2">
                   {item.subtitle}
                 </p>
               </div>
