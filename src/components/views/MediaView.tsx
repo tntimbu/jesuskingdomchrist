@@ -509,20 +509,20 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
 
       {/* Modal Pengumuman */}
       {isPengumumanModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="w-full max-w-md rounded-3xl bg-slate-900 border border-slate-800 p-5 sm:p-6 text-white space-y-4 shadow-2xl my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
               <div className="flex items-center space-x-2">
                 <Megaphone className="w-5 h-5 text-indigo-400" />
                 <h3 className="text-base font-bold text-white">
                   {editingPengumumanId ? 'Edit Warta & Pengumuman' : 'Terbitkan Pengumuman Baru'}
                 </h3>
               </div>
-              <button onClick={() => setIsPengumumanModal(false)} className="text-slate-400 hover:text-white cursor-pointer">
+              <button onClick={() => setIsPengumumanModal(false)} className="text-slate-400 hover:text-white cursor-pointer p-1 rounded-lg">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <form onSubmit={handleSavePengumuman} className="space-y-3.5 text-xs">
+            <form onSubmit={handleSavePengumuman} className="space-y-3.5 text-xs overflow-y-auto pr-1 flex-1">
               <div>
                 <label className="block text-slate-300 mb-1 font-semibold">Judul Pengumuman *</label>
                 <input
@@ -553,7 +553,7 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white leading-relaxed focus:outline-none focus:border-indigo-500"
                 />
               </div>
-              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-800 shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsPengumumanModal(false)}
@@ -576,18 +576,18 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
 
       {/* Modal Renungan (Tulis / Edit) */}
       {isRenunganModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-lg rounded-3xl bg-slate-900 border border-slate-800 p-5 sm:p-6 text-white space-y-4 shadow-2xl my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
               <h3 className="text-base font-bold flex items-center gap-2">
                 <BookOpen className="w-5 h-5 text-indigo-400" />
                 <span>{editingRenunganId ? 'Edit Renungan Harian' : 'Tulis Renungan Harian Baru'}</span>
               </h3>
-              <button onClick={() => setIsRenunganModal(false)} className="text-slate-400 hover:text-white cursor-pointer">
+              <button onClick={() => setIsRenunganModal(false)} className="text-slate-400 hover:text-white cursor-pointer p-1 rounded-lg">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <form onSubmit={handleSaveRenungan} className="space-y-3.5 text-xs">
+            <form onSubmit={handleSaveRenungan} className="space-y-3.5 text-xs overflow-y-auto pr-1 flex-1">
               <div>
                 <label className="block text-slate-300 font-semibold mb-1">Judul Renungan *</label>
                 <input
@@ -649,7 +649,7 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800 shrink-0">
                 <button type="button" onClick={() => setIsRenunganModal(false)} className="px-4 py-2 text-slate-300 hover:text-white cursor-pointer font-medium">
                   Batal
                 </button>

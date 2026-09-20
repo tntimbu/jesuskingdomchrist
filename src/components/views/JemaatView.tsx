@@ -486,9 +486,9 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
 
       {/* View Detail Modal */}
       {viewingJemaat && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-xl rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-xl rounded-3xl bg-slate-900 border border-slate-800 p-5 sm:p-6 text-white space-y-4 shadow-2xl my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
               <h3 className="text-lg font-bold flex items-center gap-2">
                 <UserCheck className="w-5 h-5 text-indigo-400" />
                 <span>Kartu Detail Jemaat</span>
@@ -498,62 +498,64 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
               </button>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 items-center sm:items-start">
-              <img
-                src={viewingJemaat.foto}
-                alt={viewingJemaat.nama_lengkap}
-                className="w-24 h-24 rounded-2xl object-cover border-2 border-indigo-500/50 shadow-md"
-              />
-              <div className="space-y-1 text-center sm:text-left">
-                <h4 className="text-xl font-bold">{viewingJemaat.nama_lengkap}</h4>
-                <p className="text-xs text-indigo-400 font-semibold">{viewingJemaat.jemaat_id} • Status: {viewingJemaat.status}</p>
-                <p className="text-xs text-slate-300">{viewingJemaat.komisi} • {viewingJemaat.wilayah}</p>
+            <div className="overflow-y-auto pr-1 flex-1 space-y-4">
+              <div className="flex flex-col sm:flex-row gap-4 items-center sm:items-start">
+                <img
+                  src={viewingJemaat.foto}
+                  alt={viewingJemaat.nama_lengkap}
+                  className="w-24 h-24 rounded-2xl object-cover border-2 border-indigo-500/50 shadow-md"
+                />
+                <div className="space-y-1 text-center sm:text-left">
+                  <h4 className="text-xl font-bold">{viewingJemaat.nama_lengkap}</h4>
+                  <p className="text-xs text-indigo-400 font-semibold">{viewingJemaat.jemaat_id} • Status: {viewingJemaat.status}</p>
+                  <p className="text-xs text-slate-300">{viewingJemaat.komisi} • {viewingJemaat.wilayah}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 text-xs bg-slate-950/80 p-4 rounded-2xl border border-slate-800">
+                <div>
+                  <span className="text-slate-500 block">NIK:</span>
+                  <span className="font-mono text-slate-200">{viewingJemaat.nik}</span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block">No. KK:</span>
+                  <span className="font-mono text-slate-200">{viewingJemaat.no_kk}</span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block">Jenis Kelamin:</span>
+                  <span>{viewingJemaat.jenis_kelamin}</span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block">TTL:</span>
+                  <span>{viewingJemaat.tempat_lahir}, {viewingJemaat.tanggal_lahir}</span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block">Status Baptis:</span>
+                  <span className="text-emerald-400 font-bold">{viewingJemaat.status_baptis}</span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block">Status Sidi:</span>
+                  <span className="text-blue-400 font-bold">{viewingJemaat.status_sidi}</span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block">Pekerjaan:</span>
+                  <span>{viewingJemaat.pekerjaan}</span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block">No. HP:</span>
+                  <span>{viewingJemaat.nomor_hp}</span>
+                </div>
+                <div className="col-span-2">
+                  <span className="text-slate-500 block">Alamat Domisili:</span>
+                  <span className="text-slate-200">{viewingJemaat.alamat}</span>
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 text-xs bg-slate-950/80 p-4 rounded-2xl border border-slate-800">
-              <div>
-                <span className="text-slate-500 block">NIK:</span>
-                <span className="font-mono text-slate-200">{viewingJemaat.nik}</span>
-              </div>
-              <div>
-                <span className="text-slate-500 block">No. KK:</span>
-                <span className="font-mono text-slate-200">{viewingJemaat.no_kk}</span>
-              </div>
-              <div>
-                <span className="text-slate-500 block">Jenis Kelamin:</span>
-                <span>{viewingJemaat.jenis_kelamin}</span>
-              </div>
-              <div>
-                <span className="text-slate-500 block">TTL:</span>
-                <span>{viewingJemaat.tempat_lahir}, {viewingJemaat.tanggal_lahir}</span>
-              </div>
-              <div>
-                <span className="text-slate-500 block">Status Baptis:</span>
-                <span className="text-emerald-400 font-bold">{viewingJemaat.status_baptis}</span>
-              </div>
-              <div>
-                <span className="text-slate-500 block">Status Sidi:</span>
-                <span className="text-blue-400 font-bold">{viewingJemaat.status_sidi}</span>
-              </div>
-              <div>
-                <span className="text-slate-500 block">Pekerjaan:</span>
-                <span>{viewingJemaat.pekerjaan}</span>
-              </div>
-              <div>
-                <span className="text-slate-500 block">No. HP:</span>
-                <span>{viewingJemaat.nomor_hp}</span>
-              </div>
-              <div className="col-span-2">
-                <span className="text-slate-500 block">Alamat Domisili:</span>
-                <span className="text-slate-200">{viewingJemaat.alamat}</span>
-              </div>
-            </div>
-
-            <div className="flex justify-end pt-2">
+            <div className="flex justify-end pt-3 border-t border-slate-800 shrink-0">
               <button
                 onClick={() => setViewingJemaat(null)}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold"
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold cursor-pointer"
               >
                 Tutup
               </button>
@@ -564,9 +566,9 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
 
       {/* Add / Edit Form Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
-          <div className="w-full max-w-2xl rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl my-8">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-2xl rounded-3xl bg-slate-900 border border-slate-800 p-5 sm:p-6 text-white space-y-4 shadow-2xl my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
               <h3 className="text-lg font-bold">
                 {editingJemaat ? 'Edit Data Jemaat' : 'Tambah Jemaat Baru'}
               </h3>
@@ -575,7 +577,7 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="space-y-4 text-xs">
+            <form onSubmit={handleSave} className="space-y-4 text-xs overflow-y-auto pr-1 flex-1">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-slate-400 mb-1">Nama Lengkap *</label>
@@ -795,17 +797,17 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800 shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-slate-300 hover:bg-slate-800 font-semibold"
+                  className="px-4 py-2 rounded-xl text-slate-300 hover:bg-slate-800 font-semibold cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow-md shadow-indigo-600/30"
+                  className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow-md shadow-indigo-600/30 cursor-pointer"
                 >
                   Simpan Data
                 </button>
@@ -816,9 +818,9 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
       )}
       {/* Quick Add Wilayah Modal */}
       {showAddWilayahModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-sm rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="w-full max-w-sm rounded-3xl bg-slate-900 border border-slate-800 p-5 sm:p-6 text-white space-y-4 shadow-2xl my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
               <h3 className="text-sm font-bold flex items-center gap-2">
                 <Plus className="w-4 h-4 text-indigo-400" />
                 <span>Tambah Wilayah Sektor Baru</span>
@@ -830,7 +832,7 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <form onSubmit={handleQuickAddWilayah} className="space-y-3 text-xs">
+            <form onSubmit={handleQuickAddWilayah} className="space-y-3 text-xs overflow-y-auto pr-1 flex-1">
               <div>
                 <label className="block text-slate-400 mb-1">Nama Wilayah / Sektor *</label>
                 <input
@@ -843,7 +845,7 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
                   autoFocus
                 />
               </div>
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800 shrink-0">
                 <button
                   type="button"
                   onClick={() => setShowAddWilayahModal(false)}
@@ -865,9 +867,9 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
 
       {/* Quick Add Komisi Modal */}
       {showAddKomisiModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-sm rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="w-full max-w-sm rounded-3xl bg-slate-900 border border-slate-800 p-5 sm:p-6 text-white space-y-4 shadow-2xl my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
               <h3 className="text-sm font-bold flex items-center gap-2">
                 <Plus className="w-4 h-4 text-indigo-400" />
                 <span>Tambah Komisi Baru</span>
@@ -879,7 +881,7 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <form onSubmit={handleQuickAddKomisi} className="space-y-3 text-xs">
+            <form onSubmit={handleQuickAddKomisi} className="space-y-3 text-xs overflow-y-auto pr-1 flex-1">
               <div>
                 <label className="block text-slate-400 mb-1">Nama Komisi Baru *</label>
                 <input
@@ -892,7 +894,7 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
                   autoFocus
                 />
               </div>
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800 shrink-0">
                 <button
                   type="button"
                   onClick={() => setShowAddKomisiModal(false)}

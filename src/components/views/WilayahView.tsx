@@ -530,9 +530,9 @@ export const WilayahView: React.FC<WilayahViewProps> = ({ currentUser }) => {
 
       {/* Add / Edit Wilayah Modal */}
       {isWilayahModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="w-full max-w-md rounded-3xl bg-slate-900 border border-slate-800 p-5 sm:p-6 text-white space-y-4 shadow-2xl my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
               <h3 className="text-base font-bold">
                 {editingWilayah ? 'Edit Wilayah Sektor' : 'Tambah Wilayah Sektor Baru'}
               </h3>
@@ -543,7 +543,7 @@ export const WilayahView: React.FC<WilayahViewProps> = ({ currentUser }) => {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <form onSubmit={handleSaveWilayah} className="space-y-3 text-xs">
+            <form onSubmit={handleSaveWilayah} className="space-y-3 text-xs overflow-y-auto pr-1 flex-1">
               <div>
                 <label className="block text-slate-400 mb-1">Nama Wilayah / Sektor *</label>
                 <input
@@ -574,7 +574,7 @@ export const WilayahView: React.FC<WilayahViewProps> = ({ currentUser }) => {
                   className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-indigo-500"
                 />
               </div>
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800 shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsWilayahModal(false)}
@@ -596,9 +596,9 @@ export const WilayahView: React.FC<WilayahViewProps> = ({ currentUser }) => {
 
       {/* Add Komisi Modal */}
       {isKomisiModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-sm rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="w-full max-w-sm rounded-3xl bg-slate-900 border border-slate-800 p-5 sm:p-6 text-white space-y-4 shadow-2xl my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
               <h3 className="text-base font-bold flex items-center gap-2">
                 <Plus className="w-4 h-4 text-purple-400" />
                 <span>Tambah Komisi Baru</span>
@@ -610,7 +610,7 @@ export const WilayahView: React.FC<WilayahViewProps> = ({ currentUser }) => {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <form onSubmit={handleSaveKomisi} className="space-y-3 text-xs">
+            <form onSubmit={handleSaveKomisi} className="space-y-3 text-xs overflow-y-auto pr-1 flex-1">
               <div>
                 <label className="block text-slate-400 mb-1">Nama Komisi Baru *</label>
                 <input
@@ -623,7 +623,7 @@ export const WilayahView: React.FC<WilayahViewProps> = ({ currentUser }) => {
                   autoFocus
                 />
               </div>
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800 shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsKomisiModal(false)}
@@ -645,9 +645,9 @@ export const WilayahView: React.FC<WilayahViewProps> = ({ currentUser }) => {
 
       {/* Add / Edit Pelayanan Modal */}
       {isPelayananModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-md rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="w-full max-w-md rounded-3xl bg-slate-900 border border-slate-800 p-5 sm:p-6 text-white space-y-4 shadow-2xl my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
               <h3 className="text-base font-bold">
                 {editingPelayanan ? 'Edit Tim Pelayanan' : 'Tambah Tim Pelayanan Ibadah'}
               </h3>
@@ -658,7 +658,7 @@ export const WilayahView: React.FC<WilayahViewProps> = ({ currentUser }) => {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <form onSubmit={handleSavePelayanan} className="space-y-3 text-xs">
+            <form onSubmit={handleSavePelayanan} className="space-y-3 text-xs overflow-y-auto pr-1 flex-1">
               <div>
                 <label className="block text-slate-400 mb-1">Nama Tim / Pelayanan *</label>
                 <input
@@ -698,7 +698,7 @@ export const WilayahView: React.FC<WilayahViewProps> = ({ currentUser }) => {
                   className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white focus:outline-none focus:border-indigo-500"
                 />
               </div>
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800 shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsPelayananModal(false)}

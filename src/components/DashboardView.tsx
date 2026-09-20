@@ -1156,9 +1156,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     }
 
     const density = settings.card_size || 'NORMAL';
-    let padding = 'p-3.5 sm:p-5 md:p-6';
-    if (density === 'COMPACT') padding = 'p-2.5 sm:p-3.5 md:p-4';
-    if (density === 'SPACIOUS') padding = 'p-4 sm:p-6 md:p-8';
+    let padding = 'p-3 sm:p-5 md:p-6';
+    if (density === 'COMPACT') padding = 'p-2 sm:p-3.5 md:p-4';
+    if (density === 'SPACIOUS') padding = 'p-3.5 sm:p-6 md:p-8';
 
     return `${base} ${padding}`;
   };
@@ -1247,7 +1247,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   }
 
   return (
-    <div className={`space-y-3 sm:space-y-4 md:space-y-6 pb-2 sm:pb-4 transition-all duration-300 ${widthClass}`}>
+    <div className={`space-y-2 sm:space-y-4 md:space-y-6 pb-2 sm:pb-4 transition-all duration-300 ${widthClass}`}>
       {/* Welcome Card Banner with Dynamic Custom Header */}
       {settings.show_header_banner !== false ? (
         <div className={`relative rounded-2xl sm:rounded-3xl ${bannerBgClass} ${cardStyleClass} overflow-hidden text-white transition-all duration-300`}>
@@ -1731,12 +1731,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       {/* JEMAAT FOCUS MODE: Single Latest Update Panel & Statistics Cards */}
       {isJemaat && (
-        <div className="space-y-3 sm:space-y-4 md:space-y-6">
+        <div className="space-y-2 sm:space-y-3 md:space-y-5">
           {/* STATISTIK INFORMASI JEMAAT (STRICTLY 2 BARIS x 2 KARTU KOTAK) */}
           {settings.show_stat_cards !== false && (
-            <div className="space-y-2 sm:space-y-3 md:space-y-4">
+            <div className="space-y-1.5 sm:space-y-2.5 md:space-y-4">
             {/* Baris Pertama: Total Jemaat (Kotak 1) & Total KK (Kotak 2) */}
-            <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4">
+            <div className="grid grid-cols-2 gap-1.5 sm:gap-2.5 md:gap-4">
               {/* Kartu 1: Total Jemaat */}
               <div className={`p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl md:rounded-3xl ${cardStyleClass} border border-indigo-500/30 flex flex-col justify-between space-y-1 sm:space-y-2`}>
                 <div className="flex items-center justify-between gap-1">
@@ -1777,7 +1777,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
 
             {/* Baris Kedua: Kas Persembahan (Kotak 3) & Jadwal & Event (Kotak 4) */}
-            <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4">
+            <div className="grid grid-cols-2 gap-1.5 sm:gap-2.5 md:gap-4">
               {/* Kartu 3: Kas Persembahan */}
               <div
                 className={`p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl md:rounded-3xl ${cardStyleClass} border border-emerald-500/30 flex flex-col justify-between space-y-1 sm:space-y-2`}
@@ -1823,7 +1823,47 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           {/* Banner Download Aplikasi Mobile Android (.APK) Khusus HP Android */}
           {settings.show_apk_banner !== false && settings.show_apk_download_button !== false && !isApkBannerDismissed && (
-            <div className="relative p-3.5 sm:p-5 rounded-xl sm:rounded-2xl md:rounded-3xl bg-gradient-to-r from-emerald-950/90 via-slate-900/95 to-teal-950/90 border-2 border-emerald-500/50 shadow-xl backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 text-white animate-fade-in">
+            <div className="relative p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-emerald-950/90 via-slate-900/95 to-teal-950/90 border-2 border-emerald-500/50 shadow-xl backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 text-white animate-fade-in">
+              <div className="flex items-start gap-3 min-w-0 flex-1">
+                <div className="p-2 sm:p-2.5 md:p-3 rounded-xl sm:rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-inner shrink-0 mt-0.5">
+                  <Smartphone className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400" />
+                </div>
+                <div className="min-w-0 flex-1 space-y-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[9px] sm:text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 whitespace-nowrap">
+                        Khusus HP Android
+                      </span>
+                      <span className="text-[9px] sm:text-[10px] text-amber-300 font-bold flex items-center gap-1 whitespace-nowrap">
+                        <ShieldCheck className="w-3 h-3" /> File Aman &amp; Resmi
+                      </span>
+                    </div>
+                    {/* Tombol tutup banner mobile yang rapi dan sejajar */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsApkBannerDismissed(true);
+                        try {
+                          localStorage.setItem('cms_apk_banner_hidden', 'true');
+                        } catch (e) {}
+                      }}
+                      className="p-1 rounded-lg bg-slate-800/80 hover:bg-rose-600 text-slate-400 hover:text-white border border-slate-700/80 transition-all cursor-pointer shadow-md shrink-0 sm:hidden"
+                      title="Sembunyikan Banner APK"
+                      aria-label="Tutup banner"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <h4 className="font-extrabold text-sm sm:text-base text-white leading-snug">
+                    Download Aplikasi Mobile Android (.APK)
+                  </h4>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Instal di ponsel Android untuk akses cepat renungan, warta, pengumuman &amp; notifikasi ibadah otomatis.
+                  </p>
+                </div>
+              </div>
+
+              {/* Tombol tutup banner desktop */}
               <button
                 type="button"
                 onClick={() => {
@@ -1832,41 +1872,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     localStorage.setItem('cms_apk_banner_hidden', 'true');
                   } catch (e) {}
                 }}
-                className="absolute top-2.5 right-2.5 sm:top-3.5 sm:right-3.5 p-1.5 rounded-xl bg-slate-900/80 hover:bg-rose-600 text-slate-400 hover:text-white border border-slate-700/80 transition-all cursor-pointer shadow-lg"
+                className="hidden sm:block absolute top-3.5 right-3.5 p-1.5 rounded-xl bg-slate-900/80 hover:bg-rose-600 text-slate-400 hover:text-white border border-slate-700/80 transition-all cursor-pointer shadow-lg z-10"
                 title="Sembunyikan Banner APK dari Dashboard (x)"
                 aria-label="Tutup banner"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
-              <div className="flex items-center gap-3 pr-8 sm:pr-0">
-                <div className="p-3 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-inner shrink-0">
-                  <Smartphone className="w-6 h-6 text-emerald-400" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                      Khusus HP Android
-                    </span>
-                    <span className="text-[10px] text-amber-300 font-bold flex items-center gap-1">
-                      <ShieldCheck className="w-3 h-3" /> File Aman &amp; Resmi
-                    </span>
-                  </div>
-                  <h4 className="font-extrabold text-sm sm:text-base text-white mt-0.5">
-                    Download Aplikasi Mobile Android Gereja (.APK)
-                  </h4>
-                  <p className="text-xs text-slate-300">
-                    Instal di ponsel Android Anda untuk akses langsung renungan, pengumuman &amp; notifikasi ibadah otomatis.
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-wrap items-center gap-2 shrink-0 sm:mr-8">
+
+              <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 sm:mr-8 pt-0.5 sm:pt-0">
                 <a
                   href={(!settings.apk_download_url || settings.apk_download_url === 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing') ? 'https://drive.google.com/file/d/1MnWPNmsDjO1clGqbixCgSHjNRcMaqx2h/view?usp=sharing' : settings.apk_download_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-600/30 border border-emerald-400/40 flex items-center justify-center gap-2 transition-all active:scale-95 shrink-0"
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-600/30 border border-emerald-400/40 flex items-center justify-center gap-2 transition-all active:scale-95 text-center"
                 >
-                  <Download className="w-4 h-4 animate-pulse" />
+                  <Download className="w-4 h-4 animate-pulse shrink-0" />
                   <span>Unduh File .APK</span>
                 </a>
 
@@ -1878,10 +1898,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       setRefreshToast('📥 File google-services.json berhasil didownload!');
                       setTimeout(() => setRefreshToast(''), 3500);
                     }}
-                    className="px-3.5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shadow-lg border border-indigo-400/40 flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0"
+                    className="w-full sm:w-auto px-3.5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shadow-lg border border-indigo-400/40 flex items-center justify-center gap-1.5 transition-all cursor-pointer text-center"
                     title="Download google-services.json untuk Website 2 APK Builder Pro v5.0"
                   >
-                    <FileJson className="w-4 h-4 text-amber-300" />
+                    <FileJson className="w-4 h-4 text-amber-300 shrink-0" />
                     <span>Download google-services.json</span>
                   </button>
                 )}
@@ -1930,7 +1950,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-3.5 md:gap-6">
             {/* 1. Latest Renungan Utama */}
             {settings.show_renungan_widget !== false && (
               <div className={`rounded-2xl sm:rounded-3xl ${cardStyleClass} text-white space-y-2.5 sm:space-y-3 flex flex-col justify-between transition-all duration-300 border border-indigo-500/30`}>
@@ -2488,9 +2508,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           {/* Modal Submit Konfirmasi Transfer */}
           {isTransferModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
-              <div className="w-full max-w-lg rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl overflow-hidden">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
+              <div className="w-full max-w-lg rounded-3xl bg-slate-900 border border-slate-800 p-5 sm:p-6 text-white space-y-4 shadow-2xl my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
                   <div className="flex items-center gap-2">
                     <Send className="w-5 h-5 text-emerald-400" />
                     <h3 className="text-base font-bold">Konfirmasi Transfer Persembahan</h3>
@@ -2500,7 +2520,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       setIsTransferModalOpen(false);
                       setTransferMsg(null);
                     }}
-                    className="text-slate-400 hover:text-white cursor-pointer"
+                    className="text-slate-400 hover:text-white cursor-pointer p-1 rounded-lg"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -2508,7 +2528,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                 {transferMsg && (
                   <div
-                    className={`p-3.5 rounded-2xl text-xs font-bold border ${
+                    className={`p-3.5 rounded-2xl text-xs font-bold border shrink-0 ${
                       transferMsg.type === 'success'
                         ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
                         : 'bg-rose-500/20 text-rose-300 border-rose-500/40'
@@ -2518,7 +2538,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </div>
                 )}
 
-                <form onSubmit={handleSubmitTransfer} className="space-y-3 text-xs">
+                <form onSubmit={handleSubmitTransfer} className="space-y-3 text-xs overflow-y-auto pr-1 flex-1">
                   <div>
                     <label className="block text-slate-400 mb-1 font-semibold">Jenis / Kategori Persembahan *</label>
                     <select
@@ -2615,7 +2635,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     />
                   </div>
 
-                  <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+                  <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800 shrink-0">
                     <button
                       type="button"
                       onClick={() => setIsTransferModalOpen(false)}
@@ -2638,9 +2658,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           {/* Modal Preview Bukti Transfer */}
           {previewReceiptItem && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-              <div className="w-full max-w-xl rounded-3xl bg-slate-900 border border-slate-700 p-6 text-white space-y-4 shadow-2xl">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/90 backdrop-blur-md overflow-y-auto">
+              <div className="w-full max-w-xl rounded-3xl bg-slate-900 border border-slate-700 p-5 sm:p-6 text-white space-y-4 shadow-2xl my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
                   <div className="flex items-center gap-2">
                     <Eye className="w-5 h-5 text-indigo-400" />
                     <h3 className="text-base font-bold">Bukti Transfer Persembahan</h3>
@@ -2654,43 +2674,45 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </button>
                 </div>
 
-                <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-1 text-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-400">Pengirim:</span>
-                    <strong className="text-white">{previewReceiptItem.nama_pengirim}</strong>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-400">Jenis Persembahan:</span>
-                    <strong className="text-indigo-300">{previewReceiptItem.jenis}</strong>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-400">Nominal:</span>
-                    <strong className="text-emerald-400 text-sm font-mono">Rp {previewReceiptItem.jumlah.toLocaleString('id-ID')}</strong>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-400">Tanggal:</span>
-                    <span className="text-slate-300 font-mono">{previewReceiptItem.tanggal}</span>
-                  </div>
-                  {previewReceiptItem.keterangan && (
-                    <div className="pt-1 border-t border-slate-800 text-slate-400 text-[11px]">
-                      Catatan: {previewReceiptItem.keterangan}
+                <div className="space-y-4 overflow-y-auto pr-1 flex-1">
+                  <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-1 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-400">Pengirim:</span>
+                      <strong className="text-white">{previewReceiptItem.nama_pengirim}</strong>
                     </div>
-                  )}
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-400">Jenis Persembahan:</span>
+                      <strong className="text-indigo-300">{previewReceiptItem.jenis}</strong>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-400">Nominal:</span>
+                      <strong className="text-emerald-400 text-sm font-mono">Rp {previewReceiptItem.jumlah.toLocaleString('id-ID')}</strong>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-400">Tanggal:</span>
+                      <span className="text-slate-300 font-mono">{previewReceiptItem.tanggal}</span>
+                    </div>
+                    {previewReceiptItem.keterangan && (
+                      <div className="pt-1 border-t border-slate-800 text-slate-400 text-[11px]">
+                        Catatan: {previewReceiptItem.keterangan}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="rounded-2xl overflow-hidden bg-black border border-slate-800 max-h-[50vh] flex items-center justify-center p-2">
+                    {previewReceiptItem.bukti_transfer ? (
+                      <img
+                        src={previewReceiptItem.bukti_transfer}
+                        alt="Bukti Transfer"
+                        className="max-h-[45vh] w-auto max-w-full object-contain rounded-lg"
+                      />
+                    ) : (
+                      <p className="text-xs text-slate-400 py-10">Tidak ada lampiran foto bukti transfer.</p>
+                    )}
+                  </div>
                 </div>
 
-                <div className="rounded-2xl overflow-hidden bg-black border border-slate-800 max-h-[60vh] flex items-center justify-center p-2">
-                  {previewReceiptItem.bukti_transfer ? (
-                    <img
-                      src={previewReceiptItem.bukti_transfer}
-                      alt="Bukti Transfer"
-                      className="max-h-[55vh] w-auto max-w-full object-contain rounded-lg"
-                    />
-                  ) : (
-                    <p className="text-xs text-slate-400 py-10">Tidak ada lampiran foto bukti transfer.</p>
-                  )}
-                </div>
-
-                <div className="flex items-center justify-between gap-3 pt-2">
+                <div className="flex items-center justify-between gap-3 pt-3 border-t border-slate-800 shrink-0">
                   <button
                     type="button"
                     onClick={() => setPreviewReceiptItem(null)}
@@ -2882,10 +2904,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       {/* SUPERADMIN & ADMIN OPERATIONAL DASHBOARD */}
       {!isJemaat && (
-        <div className="space-y-3 sm:space-y-4 md:space-y-6">
+        <div className="space-y-2 sm:space-y-3.5 md:space-y-6">
           {/* Quick Statistics Cards */}
           {settings.show_stat_cards !== false && (
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-1.5 sm:gap-2.5 md:gap-4">
               {/* Total Jemaat Card */}
               <div className={`p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl md:rounded-3xl ${cardStyleClass} border border-indigo-500/30 flex flex-col justify-between space-y-1 sm:space-y-2 text-white`}>
                 <div className="flex items-center justify-between gap-1">
@@ -3140,7 +3162,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           {/* Banner Download Aplikasi Mobile Android (.APK) Khusus Pengurus & Admin */}
           {settings.show_apk_banner !== false && settings.show_apk_download_button !== false && !isApkBannerDismissed && (
-            <div className="relative p-3.5 sm:p-5 rounded-xl sm:rounded-2xl md:rounded-3xl bg-gradient-to-r from-emerald-950/90 via-slate-900/95 to-teal-950/90 border-2 border-emerald-500/50 shadow-xl backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 text-white animate-fade-in">
+            <div className="relative p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-emerald-950/90 via-slate-900/95 to-teal-950/90 border-2 border-emerald-500/50 shadow-xl backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 sm:gap-4 text-white animate-fade-in">
               <button
                 type="button"
                 onClick={() => {
@@ -3149,41 +3171,41 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     localStorage.setItem('cms_apk_banner_hidden', 'true');
                   } catch (e) {}
                 }}
-                className="absolute top-2.5 right-2.5 sm:top-3.5 sm:right-3.5 p-1.5 rounded-xl bg-slate-900/80 hover:bg-rose-600 text-slate-400 hover:text-white border border-slate-700/80 transition-all cursor-pointer shadow-lg"
+                className="absolute top-3 right-3 sm:top-3.5 sm:right-3.5 p-1.5 rounded-xl bg-slate-900/80 hover:bg-rose-600 text-slate-400 hover:text-white border border-slate-700/80 transition-all cursor-pointer shadow-lg z-10"
                 title="Sembunyikan Banner APK dari Dashboard (x)"
                 aria-label="Tutup banner"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
-              <div className="flex items-center gap-3 pr-8 sm:pr-0">
-                <div className="p-2.5 sm:p-3 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-inner shrink-0">
+              <div className="flex items-start gap-3 pr-8 sm:pr-0">
+                <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-inner shrink-0 mt-0.5">
                   <Smartphone className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400" />
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                <div className="min-w-0 flex-1 space-y-1">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="text-[10px] uppercase font-black tracking-wider px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 whitespace-nowrap">
                       App Android (.APK)
                     </span>
-                    <span className="text-[10px] text-amber-300 font-bold flex items-center gap-1">
+                    <span className="text-[10px] text-amber-300 font-bold flex items-center gap-1 whitespace-nowrap">
                       <ShieldCheck className="w-3 h-3" /> File Aman &amp; Resmi
                     </span>
                   </div>
-                  <h4 className="font-extrabold text-sm sm:text-base text-white mt-0.5">
+                  <h4 className="font-extrabold text-sm sm:text-base text-white leading-snug">
                     Download Aplikasi Mobile Android Gereja (.APK)
                   </h4>
-                  <p className="text-xs text-slate-300">
+                  <p className="text-xs text-slate-300 leading-relaxed">
                     Unduh file APK resmi untuk instalasi di smartphone Android pengurus &amp; jemaat untuk akses praktis &amp; cepat.
                   </p>
                 </div>
               </div>
-              <div className="flex flex-wrap items-center gap-2 shrink-0 sm:mr-8">
+              <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 sm:mr-8 pt-1 sm:pt-0">
                 <a
                   href={(!settings.apk_download_url || settings.apk_download_url === 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing') ? 'https://drive.google.com/file/d/1MnWPNmsDjO1clGqbixCgSHjNRcMaqx2h/view?usp=sharing' : settings.apk_download_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-600/30 border border-emerald-400/40 flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer"
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-600/30 border border-emerald-400/40 flex items-center justify-center gap-2 transition-all active:scale-95 text-center"
                 >
-                  <Download className="w-4 h-4 animate-pulse" />
+                  <Download className="w-4 h-4 animate-pulse shrink-0" />
                   <span>Download File .APK</span>
                 </a>
 
@@ -3195,10 +3217,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       setRefreshToast('📥 File google-services.json berhasil didownload!');
                       setTimeout(() => setRefreshToast(''), 3500);
                     }}
-                    className="px-3.5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shadow-lg border border-indigo-400/40 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                    className="w-full sm:w-auto px-3.5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shadow-lg border border-indigo-400/40 flex items-center justify-center gap-1.5 transition-all cursor-pointer text-center"
                     title="Download google-services.json untuk Website 2 APK Builder Pro v5.0"
                   >
-                    <FileJson className="w-4 h-4 text-amber-300" />
+                    <FileJson className="w-4 h-4 text-amber-300 shrink-0" />
                     <span>Download google-services.json</span>
                   </button>
                 )}
@@ -3298,9 +3320,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       {/* QUICK MODAL EDIT WARTA & PENGUMUMAN DENGAN ICON TOA */}
       {isEditWartaModalOpen && isAdmin && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-          <div className="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-5 sm:p-6 text-white space-y-4 animate-scale-up">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto">
+          <div className="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-5 sm:p-6 text-white space-y-4 animate-scale-up my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
                   <Megaphone className="w-5 h-5 animate-pulse" />
@@ -3320,13 +3342,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
 
             {wartaSuccessMsg && (
-              <div className="p-3 bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 rounded-2xl text-xs font-bold flex items-center gap-2">
+              <div className="p-3 bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 rounded-2xl text-xs font-bold flex items-center gap-2 shrink-0">
                 <Check className="w-4 h-4" />
                 <span>Warta &amp; Pengumuman berhasil disimpan dan langsung tampil di Dashboard!</span>
               </div>
             )}
 
-            <form onSubmit={handleSaveQuickWarta} className="space-y-4 text-xs">
+            <form onSubmit={handleSaveQuickWarta} className="space-y-4 text-xs overflow-y-auto pr-1 flex-1">
               {/* Live Preview Box */}
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold text-amber-400 uppercase tracking-wider block">
@@ -3463,7 +3485,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </button>
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800 shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsEditWartaModalOpen(false)}
@@ -4148,9 +4170,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       {/* MODAL BUAT NOTIFIKASI / PERINGATAN (ADMIN & SUPERADMIN) */}
       {isCreateNotifModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 max-w-lg w-full space-y-4 shadow-2xl relative overflow-hidden text-white">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 max-w-lg w-full space-y-4 shadow-2xl relative my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden text-white">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3 shrink-0">
               <div className="flex items-center gap-2.5">
                 <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
                   <BellRing className="w-5 h-5" />
@@ -4172,7 +4194,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </button>
             </div>
 
-            <form onSubmit={handleSaveNotification} className="space-y-4">
+            <form onSubmit={handleSaveNotification} className="space-y-4 overflow-y-auto pr-1 flex-1">
               <div>
                 <label className="block text-xs font-bold text-slate-300 mb-1">
                   Judul Informasi / Peringatan
@@ -4240,7 +4262,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </span>
               </div>
 
-              <div className="pt-2 flex justify-end gap-2 border-t border-slate-800">
+              <div className="pt-3 flex justify-end gap-2 border-t border-slate-800 shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsCreateNotifModalOpen(false)}
@@ -4263,8 +4285,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       {/* MODAL REKAP RESERVASI KURSI JEMAAT UNTUK ADMIN */}
       {isAdminResModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
-          <div className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl p-6 text-white space-y-4 shadow-2xl relative overflow-hidden max-h-[85vh] flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in overflow-y-auto">
+          <div className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 text-white space-y-4 shadow-2xl relative my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
               <div className="flex items-center gap-2.5">
                 <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
@@ -4286,7 +4308,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
 
             {adminResToast && (
-              <div className={`p-3 rounded-2xl border text-xs font-bold flex items-center gap-2 ${
+              <div className={`p-3 rounded-2xl border text-xs font-bold flex items-center gap-2 shrink-0 ${
                 adminResToast.type === 'success'
                   ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
                   : adminResToast.type === 'error'
@@ -4412,9 +4434,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       {/* MODAL RESERVASI KURSI / EVENT UNTUK JEMAAT */}
       {isEventResModalOpen && selectedEventForRes && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 text-white space-y-4 shadow-2xl relative overflow-hidden">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in overflow-y-auto">
+          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 text-white space-y-4 shadow-2xl relative my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
               <div className="flex items-center gap-2.5">
                 <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
                   <Ticket className="w-5 h-5" />
@@ -4436,7 +4458,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
             {eventResMsg && (
               <div
-                className={`p-3.5 rounded-2xl text-xs font-bold border ${
+                className={`p-3.5 rounded-2xl text-xs font-bold border shrink-0 ${
                   eventResMsg.type === 'success'
                     ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
                     : 'bg-rose-500/20 text-rose-300 border-rose-500/40'
@@ -4446,7 +4468,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
             )}
 
-            <form onSubmit={handleSaveEventReservation} className="space-y-3 text-xs">
+            <form onSubmit={handleSaveEventReservation} className="space-y-3 text-xs overflow-y-auto pr-1 flex-1">
               <div>
                 <label className="block text-slate-400 mb-1 font-semibold">Nama Lengkap Jemaat *</label>
                 <input
@@ -4495,7 +4517,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 />
               </div>
 
-              <div className="pt-3 border-t border-slate-800 flex items-center justify-end gap-2">
+              <div className="pt-3 border-t border-slate-800 flex items-center justify-end gap-2 shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsEventResModalOpen(false)}
@@ -4534,8 +4556,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       {/* Fullscreen QRIS Zoom Modal */}
       {isQrisZoomModalOpen && (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-md">
-          <div className="w-full max-w-lg bg-slate-900 border-2 border-emerald-500/50 rounded-3xl p-6 sm:p-8 text-white space-y-5 text-center shadow-2xl relative">
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 bg-slate-950/95 backdrop-blur-md overflow-y-auto">
+          <div className="w-full max-w-lg bg-slate-900 border-2 border-emerald-500/50 rounded-3xl p-5 sm:p-8 text-white space-y-5 text-center shadow-2xl relative my-auto max-h-[calc(100dvh-2rem)] overflow-y-auto">
             <button
               onClick={() => setIsQrisZoomModalOpen(false)}
               className="absolute top-4 right-4 p-2 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"

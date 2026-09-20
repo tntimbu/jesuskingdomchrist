@@ -913,9 +913,9 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
 
       {/* MODAL 1: RESERVASI KURSI JEMAAT */}
       {selectedEventForReservation && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-          <div className="w-full max-w-lg bg-slate-900 border-2 border-amber-500/50 rounded-3xl shadow-2xl p-6 text-white space-y-5">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto">
+          <div className="w-full max-w-lg bg-slate-900 border-2 border-amber-500/50 rounded-3xl shadow-2xl p-5 sm:p-6 text-white space-y-4 my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3 shrink-0">
               <div className="flex items-center gap-2">
                 <Ticket className="w-5 h-5 text-amber-400" />
                 <h3 className="text-base font-extrabold text-white">Formulir Reservasi Kursi / Kehadiran Event</h3>
@@ -928,87 +928,90 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
               </button>
             </div>
 
-            <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-1 text-xs">
-              <h4 className="font-extrabold text-amber-300 text-sm">{selectedEventForReservation.nama}</h4>
-              <p className="text-slate-300">Waktu: {selectedEventForReservation.tanggal} &bull; {selectedEventForReservation.jam}</p>
-              <p className="text-slate-300">Lokasi: {selectedEventForReservation.lokasi}</p>
-            </div>
-
-            {resSuccess && (
-              <div className="p-3 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-2">
-                <span>{resSuccess}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleSaveReservation} className="space-y-4 text-xs">
-              <div className="space-y-1.5">
-                <label className="font-bold text-slate-300 block">Nama Pemesan / Jemaat:</label>
-                <input
-                  type="text"
-                  required
-                  value={resName}
-                  onChange={(e) => setResName(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold"
-                />
+            <div className="overflow-y-auto pr-1 flex-1 space-y-4 text-xs">
+              <div className="p-3 bg-slate-950 rounded-2xl border border-slate-800 space-y-1 text-xs">
+                <h4 className="font-extrabold text-amber-300 text-sm">{selectedEventForReservation.nama}</h4>
+                <p className="text-slate-300">Waktu: {selectedEventForReservation.tanggal} &bull; {selectedEventForReservation.jam}</p>
+                <p className="text-slate-300">Lokasi: {selectedEventForReservation.lokasi}</p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {resSuccess && (
+                <div className="p-3 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-2">
+                  <span>{resSuccess}</span>
+                </div>
+              )}
+
+              <form id="reservation-form" onSubmit={handleSaveReservation} className="space-y-4 text-xs">
                 <div className="space-y-1.5">
-                  <label className="font-bold text-slate-300 block">Nomor WhatsApp / HP Active:</label>
+                  <label className="font-bold text-slate-300 block">Nama Pemesan / Jemaat:</label>
                   <input
                     type="text"
                     required
-                    value={resWa}
-                    onChange={(e) => setResWa(e.target.value)}
-                    placeholder="08123456789"
-                    className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                    value={resName}
+                    onChange={(e) => setResName(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold"
                   />
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="font-bold text-slate-300 block">Jumlah Tempat / Kursi:</label>
-                  <select
-                    value={resSeats}
-                    onChange={(e) => setResSeats(Number(e.target.value))}
-                    className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold"
-                  >
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-                      <option key={num} value={num}>
-                        {num} Kursi / Orang
-                      </option>
-                    ))}
-                  </select>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="font-bold text-slate-300 block">Nomor WhatsApp / HP Active:</label>
+                    <input
+                      type="text"
+                      required
+                      value={resWa}
+                      onChange={(e) => setResWa(e.target.value)}
+                      placeholder="08123456789"
+                      className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="font-bold text-slate-300 block">Jumlah Tempat / Kursi:</label>
+                    <select
+                      value={resSeats}
+                      onChange={(e) => setResSeats(Number(e.target.value))}
+                      className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold"
+                    >
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                        <option key={num} value={num}>
+                          {num} Kursi / Orang
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-              </div>
 
-              <div className="space-y-1.5">
-                <label className="font-bold text-slate-300 block">Catatan Tambahan (Opsional):</label>
-                <input
-                  type="text"
-                  value={resNotes}
-                  onChange={(e) => setResNotes(e.target.value)}
-                  placeholder="Contoh: Membawa anak-anak / lansia / rombongan komsel"
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
-                />
-              </div>
+                <div className="space-y-1.5">
+                  <label className="font-bold text-slate-300 block">Catatan Tambahan (Opsional):</label>
+                  <input
+                    type="text"
+                    value={resNotes}
+                    onChange={(e) => setResNotes(e.target.value)}
+                    placeholder="Contoh: Membawa anak-anak / lansia / rombongan komsel"
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                  />
+                </div>
+              </form>
+            </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setSelectedEventForReservation(null)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-bold cursor-pointer"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold shadow-lg shadow-amber-600/30 flex items-center gap-2 cursor-pointer"
-                >
-                  <Ticket className="w-4 h-4" />
-                  <span>Konfirmasi Reservasi Kursi</span>
-                </button>
-              </div>
-            </form>
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800 shrink-0">
+              <button
+                type="button"
+                onClick={() => setSelectedEventForReservation(null)}
+                className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-bold cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                form="reservation-form"
+                className="px-6 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold shadow-lg shadow-amber-600/30 flex items-center gap-2 cursor-pointer"
+              >
+                <Ticket className="w-4 h-4" />
+                <span>Konfirmasi Reservasi Kursi</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -1299,9 +1302,9 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
 
       {/* MODAL 3: TAMBAH EVENT BARU */}
       {isEventModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-          <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-6 text-white space-y-4">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto">
+          <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-5 sm:p-6 text-white space-y-4 my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3 shrink-0">
               <h3 className="text-base font-bold text-white">
                 {editingEventId ? 'Edit Jadwal Ibadah / Event' : 'Tambah Jadwal Ibadah / Event Baru'}
               </h3>
@@ -1316,7 +1319,7 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
               </button>
             </div>
 
-            <form onSubmit={handleSaveEvent} className="space-y-3 text-xs">
+            <form onSubmit={handleSaveEvent} className="space-y-3 text-xs overflow-y-auto pr-1 flex-1">
               <div>
                 <label className="block text-slate-300 font-semibold mb-1">Nama Acara / Event:</label>
                 <input
@@ -1412,7 +1415,7 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-3">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800 shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsEventModal(false)}
@@ -1434,9 +1437,9 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
 
       {/* MODAL 4: KIRIM DOA */}
       {isDoaModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-6 text-white space-y-4">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto">
+          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl p-5 sm:p-6 text-white space-y-4 my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3 shrink-0">
               <h3 className="text-base font-bold text-white flex items-center gap-2">
                 <Heart className="w-5 h-5 text-rose-400" />
                 <span>Kirim Permohonan Doa Jemaat</span>
@@ -1446,7 +1449,7 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
               </button>
             </div>
 
-            <form onSubmit={handleSaveDoa} className="space-y-3 text-xs">
+            <form onSubmit={handleSaveDoa} className="space-y-3 text-xs overflow-y-auto pr-1 flex-1">
               <div>
                 <label className="block text-slate-300 font-semibold mb-1">Nama Pemohon Doa:</label>
                 <input
@@ -1485,7 +1488,7 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800 shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsDoaModal(false)}

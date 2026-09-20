@@ -727,9 +727,9 @@ export const KeuanganView: React.FC<KeuanganViewProps> = ({ currentUser }) => {
 
       {/* Modal View Bukti Transfer */}
       {selectedReceipt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
-          <div className="w-full max-w-lg rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl overflow-hidden">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
+          <div className="w-full max-w-lg rounded-3xl bg-slate-900 border border-slate-800 p-5 sm:p-6 text-white space-y-4 shadow-2xl my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
               <div className="flex items-center gap-2">
                 <CreditCard className="w-5 h-5 text-indigo-400" />
                 <h3 className="text-base font-bold">Bukti Transfer Persembahan</h3>
@@ -739,7 +739,7 @@ export const KeuanganView: React.FC<KeuanganViewProps> = ({ currentUser }) => {
               </button>
             </div>
 
-            <div className="space-y-3 text-xs">
+            <div className="space-y-3 text-xs overflow-y-auto pr-1 flex-1">
               <div className="grid grid-cols-2 gap-2 bg-slate-950 p-3 rounded-xl border border-slate-800">
                 <div>
                   <span className="text-[10px] text-slate-400 block">Nama Pengirim</span>
@@ -780,7 +780,7 @@ export const KeuanganView: React.FC<KeuanganViewProps> = ({ currentUser }) => {
               )}
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800 shrink-0">
               {selectedReceipt.status === 'PENDING' && (
                 <>
                   <button
@@ -811,15 +811,15 @@ export const KeuanganView: React.FC<KeuanganViewProps> = ({ currentUser }) => {
 
       {/* Modal Input Persembahan Manual */}
       {isPersembahanModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-md rounded-3xl bg-slate-900 border border-slate-800 p-5 sm:p-6 text-white space-y-4 shadow-2xl my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
               <h3 className="text-base font-bold">Catat Persembahan Tunai / Manual</h3>
               <button onClick={() => setIsPersembahanModal(false)} className="text-slate-400 hover:text-white cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <form onSubmit={handleSavePersembahan} className="space-y-3 text-xs">
+            <form onSubmit={handleSavePersembahan} className="space-y-3 text-xs overflow-y-auto pr-1 flex-1">
               <div>
                 <label className="block text-slate-400 mb-1">Tanggal *</label>
                 <input
@@ -885,7 +885,7 @@ export const KeuanganView: React.FC<KeuanganViewProps> = ({ currentUser }) => {
                   className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white"
                 />
               </div>
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800 shrink-0">
                 <button type="button" onClick={() => setIsPersembahanModal(false)} className="px-4 py-2 text-slate-300 cursor-pointer">
                   Batal
                 </button>
@@ -900,15 +900,15 @@ export const KeuanganView: React.FC<KeuanganViewProps> = ({ currentUser }) => {
 
       {/* Modal Kas */}
       {isKasModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-md rounded-3xl bg-slate-900 border border-slate-800 p-5 sm:p-6 text-white space-y-4 shadow-2xl my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
               <h3 className="text-base font-bold">Catat Transaksi Kas & Operasional</h3>
               <button onClick={() => setIsKasModal(false)} className="text-slate-400 hover:text-white cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <form onSubmit={handleSaveKas} className="space-y-3 text-xs">
+            <form onSubmit={handleSaveKas} className="space-y-3 text-xs overflow-y-auto pr-1 flex-1">
               <div>
                 <label className="block text-slate-400 mb-1">Tipe Transaksi</label>
                 <select
@@ -948,7 +948,7 @@ export const KeuanganView: React.FC<KeuanganViewProps> = ({ currentUser }) => {
                   className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white"
                 />
               </div>
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800 shrink-0">
                 <button type="button" onClick={() => setIsKasModal(false)} className="px-4 py-2 text-slate-300 cursor-pointer">
                   Batal
                 </button>

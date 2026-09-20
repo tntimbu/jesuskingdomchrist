@@ -247,30 +247,30 @@ export const LainnyaView: React.FC<LainnyaViewProps> = ({
   const filteredModules = menuModules.filter((m) => m.roles.includes(currentUser.role));
 
   return (
-    <div className="space-y-3 sm:space-y-4 md:space-y-6 pb-6 max-w-7xl mx-auto px-1 sm:px-3 animate-fade-in">
+    <div className="space-y-2.5 sm:space-y-4 md:space-y-6 pb-6 max-w-7xl mx-auto px-1 sm:px-3 animate-fade-in">
       {/* Header Banner */}
-      <div className={`p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl ${cardStyleClass} text-white border border-white/10 shadow-2xl relative overflow-hidden space-y-3`}>
+      <div className={`p-3.5 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl ${cardStyleClass} text-white border border-white/10 shadow-2xl relative overflow-hidden space-y-3`}>
         <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
         
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 relative z-10">
           <div className="flex items-center gap-3 sm:gap-3.5">
-            <div className="p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shadow-xl shadow-indigo-500/10 shrink-0">
-              <Grid className="w-6 h-6 sm:w-7 sm:h-7" />
+            <div className="p-2 sm:p-3.5 rounded-xl sm:rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shadow-xl shadow-indigo-500/10 shrink-0">
+              <Grid className="w-5 h-5 sm:w-7 sm:h-7" />
             </div>
             <div>
               <span className="text-[10px] sm:text-xs font-bold text-indigo-400 uppercase tracking-widest block">
                 Pusat Navigasi Terpadu
               </span>
-              <h2 className="text-lg sm:text-2xl md:text-3xl font-extrabold text-white tracking-tight">
+              <h2 className="text-base sm:text-2xl md:text-3xl font-extrabold text-white tracking-tight">
                 Menu Utama &amp; Seluruh Modul Pelayanan
               </h2>
-              <p className="text-xs text-slate-300 mt-1">
+              <p className="text-xs text-slate-300 mt-0.5 sm:mt-1">
                 Akses cepat ke semua fitur sistem, portal jemaat, jadwal, keuangan &amp; dokumentasi
               </p>
             </div>
           </div>
 
-          <div className="shrink-0 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-white/5 border border-white/10 text-xs font-bold text-slate-300 flex items-center gap-2 self-start sm:self-auto">
+          <div className="shrink-0 px-3 py-1 sm:px-4 sm:py-2 rounded-xl sm:rounded-2xl bg-white/5 border border-white/10 text-xs font-bold text-slate-300 flex items-center gap-2 self-start sm:self-auto">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span>{filteredModules.length} Fitur Siap Digunakan</span>
           </div>
@@ -278,14 +278,14 @@ export const LainnyaView: React.FC<LainnyaViewProps> = ({
       </div>
 
       {/* Grid Menu Utama - Selaras dengan Tema Dashboard */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4 md:gap-5">
         {filteredModules.map((item) => {
           const Icon = item.icon;
           return (
             <button
               key={item.id}
               onClick={() => onNavigate(item.id)}
-              className={`p-4 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl ${cardStyleClass} hover:border-indigo-500/50 hover:bg-white/10 text-left transition-all duration-200 group cursor-pointer shadow-xl relative overflow-hidden flex flex-col justify-between space-y-3 sm:space-y-4 min-h-[140px] sm:min-h-[160px]`}
+              className={`p-3.5 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl ${cardStyleClass} hover:border-indigo-500/50 hover:bg-white/10 text-left transition-all duration-200 group cursor-pointer shadow-xl relative overflow-hidden flex flex-col justify-between space-y-2.5 sm:space-y-4 min-h-[130px] sm:min-h-[160px]`}
             >
               <div className="flex items-center justify-between relative z-10">
                 <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 group-hover:bg-indigo-500/30 group-hover:text-indigo-300 group-hover:border-indigo-400/50 shadow-md group-hover:scale-105 transition-all">

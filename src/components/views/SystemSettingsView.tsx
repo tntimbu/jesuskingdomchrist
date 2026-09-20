@@ -3755,26 +3755,26 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
 
       {/* Modal Add User */}
       {isUserModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-lg rounded-3xl bg-slate-900 border border-slate-800 p-5 sm:p-6 text-white space-y-4 shadow-2xl my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800 shrink-0">
               <h3 className="text-base font-bold flex items-center gap-2">
                 <Plus className="w-5 h-5 text-indigo-400" />
                 <span>Tambah Akun Pengguna Baru</span>
               </h3>
-              <button onClick={() => setIsUserModal(false)} className="text-slate-400 hover:text-white font-bold">
+              <button onClick={() => setIsUserModal(false)} className="text-slate-400 hover:text-white font-bold cursor-pointer">
                 ✕
               </button>
             </div>
 
             {userError && (
-              <div className="p-3 bg-rose-500/20 border border-rose-500/30 text-rose-300 rounded-xl text-xs flex items-center gap-2">
+              <div className="p-3 bg-rose-500/20 border border-rose-500/30 text-rose-300 rounded-xl text-xs flex items-center gap-2 shrink-0">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{userError}</span>
               </div>
             )}
 
-            <form onSubmit={handleSaveUser} className="space-y-3 text-xs">
+            <form onSubmit={handleSaveUser} className="space-y-3 text-xs overflow-y-auto pr-1 flex-1">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-slate-400 mb-1">Username *</label>
@@ -3921,15 +3921,15 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800 shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsUserModal(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold"
+                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold cursor-pointer"
                 >
                   Batal
                 </button>
-                <button type="submit" className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-bold shadow-lg shadow-indigo-600/30">
+                <button type="submit" className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-bold shadow-lg shadow-indigo-600/30 cursor-pointer">
                   Simpan User Baru
                 </button>
               </div>
@@ -3940,26 +3940,26 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
 
       {/* Modal Edit Username & Password */}
       {editingUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-lg rounded-3xl bg-slate-900 border border-slate-800 p-5 sm:p-6 text-white space-y-4 shadow-2xl my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800 shrink-0">
               <h3 className="text-base font-bold flex items-center gap-2">
                 <Edit className="w-5 h-5 text-indigo-400" />
                 <span>Ubah Username & Password ({editingUser.user_id})</span>
               </h3>
-              <button onClick={() => setEditingUser(null)} className="text-slate-400 hover:text-white font-bold">
+              <button onClick={() => setEditingUser(null)} className="text-slate-400 hover:text-white font-bold cursor-pointer">
                 ✕
               </button>
             </div>
 
             {userError && (
-              <div className="p-3 bg-rose-500/20 border border-rose-500/30 text-rose-300 rounded-xl text-xs flex items-center gap-2">
+              <div className="p-3 bg-rose-500/20 border border-rose-500/30 text-rose-300 rounded-xl text-xs flex items-center gap-2 shrink-0">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{userError}</span>
               </div>
             )}
 
-            <form onSubmit={handleSaveEditUser} className="space-y-3 text-xs">
+            <form onSubmit={handleSaveEditUser} className="space-y-3 text-xs overflow-y-auto pr-1 flex-1">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-slate-400 mb-1">Username Login *</label>
@@ -4090,15 +4090,15 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800 shrink-0">
                 <button
                   type="button"
                   onClick={() => setEditingUser(null)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold"
+                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold cursor-pointer"
                 >
                   Batal
                 </button>
-                <button type="submit" className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-bold shadow-lg shadow-indigo-600/30">
+                <button type="submit" className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl font-bold shadow-lg shadow-indigo-600/30 cursor-pointer">
                   Simpan Perubahan Akun
                 </button>
               </div>
@@ -4108,9 +4108,9 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
       )}
       {/* Modal Generator Code Payload FCM */}
       {showFcmModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
-          <div className="w-full max-w-3xl my-8 rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-3xl my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden rounded-3xl bg-slate-900 border border-slate-800 p-5 sm:p-6 text-white space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
               <div>
                 <h3 className="text-base font-bold text-indigo-300 flex items-center gap-2">
                   <Code className="w-5 h-5 text-purple-400" />
@@ -4120,10 +4120,12 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                   Format JSON, Node.js Admin SDK, cURL, dan Android Channel Setup agar notifikasi muncul diatas layar dan berbunyi meskipun aplikasi ditutup.
                 </p>
               </div>
-              <button onClick={() => setShowFcmModal(false)} className="text-slate-400 hover:text-white font-bold text-lg px-2">
+              <button onClick={() => setShowFcmModal(false)} className="text-slate-400 hover:text-white font-bold text-lg px-2 cursor-pointer">
                 ✕
               </button>
             </div>
+
+            <div className="overflow-y-auto pr-1 flex-1 space-y-4">
 
             {/* Config Input Form */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs p-4 bg-slate-950 rounded-2xl border border-slate-800">
@@ -4404,10 +4406,12 @@ fun createHighImportanceChannel(context: Context) {
               </ul>
             </div>
 
-            <div className="flex justify-end pt-2">
+            </div>
+
+            <div className="flex justify-end pt-3 border-t border-slate-800 shrink-0">
               <button
                 onClick={() => setShowFcmModal(false)}
-                className="px-5 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold text-slate-200"
+                className="px-5 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold text-slate-200 cursor-pointer"
               >
                 Tutup
               </button>

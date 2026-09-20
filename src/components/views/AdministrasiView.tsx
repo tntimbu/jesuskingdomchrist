@@ -562,34 +562,34 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
 
       {/* Modal Upload Surat Jadi Resmi (Baptisan / Sidi / Pernikahan) */}
       {uploadTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
-          <div className="w-full max-w-md rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
+          <div className="w-full max-w-md rounded-3xl bg-slate-900 border border-slate-800 p-5 sm:p-6 text-white space-y-4 shadow-2xl my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
               <div className="flex items-center gap-2">
                 <Upload className="w-5 h-5 text-emerald-400" />
                 <h3 className="text-base font-bold">
                   Upload Surat {uploadTarget.type === 'BAPTISAN' ? 'Baptisan' : uploadTarget.type === 'SIDI' ? 'Peneguhan Sidi' : 'Pemberkatan Nikah'} Resmi
                 </h3>
               </div>
-              <button onClick={() => setUploadTarget(null)} className="text-slate-400 hover:text-white cursor-pointer">
+              <button onClick={() => setUploadTarget(null)} className="text-slate-400 hover:text-white cursor-pointer p-1 rounded-lg">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="bg-slate-950 p-3 rounded-2xl border border-slate-800 space-y-1">
-              <p className="text-[11px] text-slate-400">
-                Nama Record: <span className="text-white font-bold">{uploadTarget.name}</span>
-              </p>
-              <p className="text-[11px] text-slate-400">
-                ID Dokumen: <span className="text-indigo-400 font-mono font-bold">{uploadTarget.id}</span>
-              </p>
-            </div>
+            <div className="space-y-3 overflow-y-auto pr-1 flex-1 text-xs">
+              <div className="bg-slate-950 p-3 rounded-2xl border border-slate-800 space-y-1">
+                <p className="text-[11px] text-slate-400">
+                  Nama Record: <span className="text-white font-bold">{uploadTarget.name}</span>
+                </p>
+                <p className="text-[11px] text-slate-400">
+                  ID Dokumen: <span className="text-indigo-400 font-mono font-bold">{uploadTarget.id}</span>
+                </p>
+              </div>
 
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Unggah file Surat {uploadTarget.type === 'BAPTISAN' ? 'Baptisan' : uploadTarget.type === 'SIDI' ? 'Sidi' : 'Pernikahan'} yang telah selesai ditandatangani gereja (PDF/Foto) agar jemaat dapat langsung mengunduhnya dari portal gereja.
-            </p>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Unggah file Surat {uploadTarget.type === 'BAPTISAN' ? 'Baptisan' : uploadTarget.type === 'SIDI' ? 'Sidi' : 'Pernikahan'} yang telah selesai ditandatangani gereja (PDF/Foto) agar jemaat dapat langsung mengunduhnya dari portal gereja.
+              </p>
 
-            <div className="space-y-3 text-xs">
               <div>
                 <label className="block text-slate-300 mb-1 font-semibold">Pilih File Surat dari Komputer (Foto/PDF)</label>
                 <input
@@ -623,26 +623,26 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                   className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-[11px]"
                 />
               </div>
+            </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
-                <button
-                  onClick={() => setUploadTarget(null)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-bold cursor-pointer"
-                >
-                  Batal
-                </button>
-                <button
-                  onClick={() => {
-                    if (uploadUrlInput) {
-                      handleUploadSuratFile(uploadTarget.type, uploadTarget.id, uploadUrlInput);
-                    }
-                  }}
-                  disabled={!uploadUrlInput}
-                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold cursor-pointer"
-                >
-                  Simpan File Surat
-                </button>
-              </div>
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800 shrink-0">
+              <button
+                onClick={() => setUploadTarget(null)}
+                className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-bold cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => {
+                  if (uploadUrlInput) {
+                    handleUploadSuratFile(uploadTarget.type, uploadTarget.id, uploadUrlInput);
+                  }
+                }}
+                disabled={!uploadUrlInput}
+                className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold cursor-pointer"
+              >
+                Simpan File Surat
+              </button>
             </div>
           </div>
         </div>
@@ -910,15 +910,15 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
 
       {/* Modal Input Baptis */}
       {isBaptisModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-md rounded-3xl bg-slate-900 border border-slate-800 p-5 sm:p-6 text-white space-y-4 shadow-2xl my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
               <h3 className="text-base font-bold">Input Data Baptisan Kudus</h3>
-              <button onClick={() => setIsBaptisModal(false)} className="text-slate-400 hover:text-white cursor-pointer">
+              <button onClick={() => setIsBaptisModal(false)} className="text-slate-400 hover:text-white cursor-pointer p-1 rounded-lg">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <form onSubmit={handleSaveBaptis} className="space-y-3 text-xs">
+            <form onSubmit={handleSaveBaptis} className="space-y-3 text-xs overflow-y-auto pr-1 flex-1">
               <div>
                 <label className="block text-slate-400 mb-1 font-semibold">Nama Jemaat Dibaptis *</label>
                 <input
@@ -978,7 +978,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800 shrink-0">
                 <button type="button" onClick={() => setIsBaptisModal(false)} className="px-4 py-2 text-slate-300 font-bold cursor-pointer">
                   Batal
                 </button>
@@ -993,15 +993,15 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
 
       {/* Modal Input Sidi */}
       {isSidiModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-md rounded-3xl bg-slate-900 border border-slate-800 p-5 sm:p-6 text-white space-y-4 shadow-2xl my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
               <h3 className="text-base font-bold">Input Data Peneguhan Sidi</h3>
-              <button onClick={() => setIsSidiModal(false)} className="text-slate-400 hover:text-white cursor-pointer">
+              <button onClick={() => setIsSidiModal(false)} className="text-slate-400 hover:text-white cursor-pointer p-1 rounded-lg">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <form onSubmit={handleSaveSidi} className="space-y-3 text-xs">
+            <form onSubmit={handleSaveSidi} className="space-y-3 text-xs overflow-y-auto pr-1 flex-1">
               <div>
                 <label className="block text-slate-400 mb-1 font-semibold">Nama Peserta Sidi *</label>
                 <input
@@ -1051,7 +1051,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                   }}
                 />
               </div>
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800 shrink-0">
                 <button type="button" onClick={() => setIsSidiModal(false)} className="px-4 py-2 text-slate-300 font-bold cursor-pointer">
                   Batal
                 </button>
@@ -1066,15 +1066,15 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
 
       {/* Modal Input Nikah */}
       {isNikahModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-md rounded-3xl bg-slate-900 border border-slate-800 p-5 sm:p-6 text-white space-y-4 shadow-2xl my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
               <h3 className="text-base font-bold">Input Pemberkatan Pernikahan</h3>
-              <button onClick={() => setIsNikahModal(false)} className="text-slate-400 hover:text-white cursor-pointer">
+              <button onClick={() => setIsNikahModal(false)} className="text-slate-400 hover:text-white cursor-pointer p-1 rounded-lg">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <form onSubmit={handleSaveNikah} className="space-y-3 text-xs">
+            <form onSubmit={handleSaveNikah} className="space-y-3 text-xs overflow-y-auto pr-1 flex-1">
               <div>
                 <label className="block text-slate-400 mb-1 font-semibold">Nama Mempelai Pria (Suami) *</label>
                 <input
@@ -1135,7 +1135,7 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                   }}
                 />
               </div>
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-800 shrink-0">
                 <button type="button" onClick={() => setIsNikahModal(false)} className="px-4 py-2 text-slate-300 font-bold cursor-pointer">
                   Batal
                 </button>
