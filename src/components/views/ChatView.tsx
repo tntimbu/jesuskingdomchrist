@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { User, AppSettings, ChatMessage, ChatTag } from '../../types';
 import { StorageManager } from '../../utils/storage';
 import { playNotificationChime } from '../../utils/soundHelper';
+import { confirmDialog } from '../../utils/confirmDialog';
 import {
   MessageCircle,
   Send,
@@ -246,25 +247,28 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUser, settings }) => 
   };
 
   // Delete message
-  const handleDeleteMessage = (id: string) => {
+  const handleDeleteMessage = async (id: string) => {
     const msg = messages.find((m) => m.id === id);
     const isPinned = msg?.is_pinned;
-    if (
-      window.confirm(
-        isPinned
-          ? 'Pesan ini sedang DI-SEMATKAN (Pinned). Anda yakin ingin menghapus pesan ini?'
-          : 'Hapus pesan ini dari ruang chat?'
-      )
-    ) {
-      StorageManager.deleteChatMessage(id);
-      setMessages(StorageManager.getChatMessages());
-      if (isAdmin) {
-        StorageManager.logActivity(
-          currentUser.username,
-          `Menghapus pesan chat: ${msg?.message.slice(0, 35) || id}`,
-          'Ruang Chat'
-        );
-      }
+    const ok = await confirmDialog({
+      title: isPinned ? 'Hapus Pesan Disematkan' : 'Hapus Pesan Chat',
+      message: isPinned
+        ? 'Pesan ini sedang DI-SEMATKAN (Pinned). Anda yakin ingin menghapus pesan ini?'
+        : 'Hapus pesan ini dari ruang chat?',
+      confirmText: 'Ya, Hapus',
+      cancelText: 'Batal',
+      isDanger: true,
+    });
+    if (!ok) return;
+
+    StorageManager.deleteChatMessage(id);
+    setMessages(StorageManager.getChatMessages());
+    if (isAdmin) {
+      StorageManager.logActivity(
+        currentUser.username,
+        `Menghapus pesan chat: ${msg?.message.slice(0, 35) || id}`,
+        'Ruang Chat'
+      );
     }
   };
 

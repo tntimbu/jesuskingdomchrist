@@ -3,6 +3,7 @@ import { Baptisan, Sidi, Pernikahan, User, Jemaat } from '../../types';
 import { StorageManager } from '../../utils/storage';
 import { exportToPDF, printDocument, SignatureBlock } from '../../utils/exportTools';
 import { FileText, Plus, Award, Heart, Scroll, Printer, Download, X, Trash2, Upload, CheckCircle, ExternalLink, Eye, Check } from 'lucide-react';
+import { confirmDialog } from '../../utils/confirmDialog';
 
 interface AdministrasiViewProps {
   currentUser: User;
@@ -231,31 +232,61 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
     });
   };
 
-  const handleDeleteBaptis = (id: string, nama: string) => {
-    if (window.confirm(`Hapus record baptisan untuk ${nama}?`)) {
-      const updated = baptisanList.filter((b) => b.baptisan_id !== id);
-      setBaptisanList(updated);
-      StorageManager.saveBaptisan(updated);
-      StorageManager.logActivity(currentUser.username, `Menghapus record baptis: ${nama}`, 'Administrasi Sacraments');
-    }
+  const handleDeleteSuratFile = async (type: 'BAPTISAN' | 'SIDI' | 'PERNIKAHAN', targetId: string) => {
+    const ok = await confirmDialog({
+      title: 'Hapus File Surat',
+      message: 'Apakah anda yakin akan menghapus file ini?',
+      confirmText: 'Ya, Hapus File',
+      cancelText: 'Batal',
+      isDanger: true,
+    });
+    if (!ok) return;
+    handleUploadSuratFile(type, targetId, '');
   };
 
-  const handleDeleteSidi = (id: string, nama: string) => {
-    if (window.confirm(`Hapus record sidi untuk ${nama}?`)) {
-      const updated = sidiList.filter((s) => s.sidi_id !== id);
-      setSidiList(updated);
-      StorageManager.saveSidi(updated);
-      StorageManager.logActivity(currentUser.username, `Menghapus record sidi: ${nama}`, 'Administrasi Sacraments');
-    }
+  const handleDeleteBaptis = async (id: string, nama: string) => {
+    const ok = await confirmDialog({
+      title: 'Hapus Record Baptisan',
+      message: `Apakah Anda yakin akan menghapus data baptisan untuk ${nama}?`,
+      confirmText: 'Ya, Hapus',
+      cancelText: 'Batal',
+      isDanger: true,
+    });
+    if (!ok) return;
+    const updated = baptisanList.filter((b) => b.baptisan_id !== id);
+    setBaptisanList(updated);
+    StorageManager.saveBaptisan(updated);
+    StorageManager.logActivity(currentUser.username, `Menghapus record baptis: ${nama}`, 'Administrasi Sacraments');
   };
 
-  const handleDeleteNikah = (id: string, nama: string) => {
-    if (window.confirm(`Hapus record pernikahan untuk ${nama}?`)) {
-      const updated = pernikahanList.filter((n) => n.nikah_id !== id);
-      setPernikahanList(updated);
-      StorageManager.savePernikahan(updated);
-      StorageManager.logActivity(currentUser.username, `Menghapus record pernikahan: ${nama}`, 'Administrasi Sacraments');
-    }
+  const handleDeleteSidi = async (id: string, nama: string) => {
+    const ok = await confirmDialog({
+      title: 'Hapus Record Sidi',
+      message: `Apakah Anda yakin akan menghapus data peneguhan sidi untuk ${nama}?`,
+      confirmText: 'Ya, Hapus',
+      cancelText: 'Batal',
+      isDanger: true,
+    });
+    if (!ok) return;
+    const updated = sidiList.filter((s) => s.sidi_id !== id);
+    setSidiList(updated);
+    StorageManager.saveSidi(updated);
+    StorageManager.logActivity(currentUser.username, `Menghapus record sidi: ${nama}`, 'Administrasi Sacraments');
+  };
+
+  const handleDeleteNikah = async (id: string, nama: string) => {
+    const ok = await confirmDialog({
+      title: 'Hapus Record Pernikahan',
+      message: `Apakah Anda yakin akan menghapus data pernikahan untuk ${nama}?`,
+      confirmText: 'Ya, Hapus',
+      cancelText: 'Batal',
+      isDanger: true,
+    });
+    if (!ok) return;
+    const updated = pernikahanList.filter((n) => n.nikah_id !== id);
+    setPernikahanList(updated);
+    StorageManager.savePernikahan(updated);
+    StorageManager.logActivity(currentUser.username, `Menghapus record pernikahan: ${nama}`, 'Administrasi Sacraments');
   };
 
   // Helper Signatures Builder
@@ -498,12 +529,21 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                               <span>Buka / Unduh</span>
                             </a>
                             {isAdmin && (
-                              <button
-                                onClick={() => setUploadTarget({ type: 'BAPTISAN', id: b.baptisan_id, name: b.nama_jemaat || b.jemaat_id })}
-                                className="text-[10px] text-slate-400 hover:text-white underline cursor-pointer"
-                              >
-                                Ganti
-                              </button>
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  onClick={() => setUploadTarget({ type: 'BAPTISAN', id: b.baptisan_id, name: b.nama_jemaat || b.jemaat_id })}
+                                  className="text-[10px] text-slate-400 hover:text-white underline cursor-pointer"
+                                >
+                                  Ganti
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteSuratFile('BAPTISAN', b.baptisan_id)}
+                                  className="text-[10px] text-rose-400 hover:text-rose-300 underline cursor-pointer"
+                                  title="Hapus file surat ini"
+                                >
+                                  Hapus File
+                                </button>
+                              </div>
                             )}
                           </div>
                         ) : isAdmin ? (
@@ -703,18 +743,27 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                               <span>Buka / Unduh</span>
                             </a>
                             {isAdmin && (
-                              <button
-                                onClick={() =>
-                                  setUploadTarget({
-                                    type: 'SIDI',
-                                    id: s.sidi_id,
-                                    name: s.nama_jemaat || s.jemaat_id
-                                  })
-                                }
-                                className="text-[10px] text-slate-400 hover:text-white underline cursor-pointer"
-                              >
-                                Ganti
-                              </button>
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  onClick={() =>
+                                    setUploadTarget({
+                                      type: 'SIDI',
+                                      id: s.sidi_id,
+                                      name: s.nama_jemaat || s.jemaat_id
+                                    })
+                                  }
+                                  className="text-[10px] text-slate-400 hover:text-white underline cursor-pointer"
+                                >
+                                  Ganti
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteSuratFile('SIDI', s.sidi_id)}
+                                  className="text-[10px] text-rose-400 hover:text-rose-300 underline cursor-pointer"
+                                  title="Hapus file surat ini"
+                                >
+                                  Hapus File
+                                </button>
+                              </div>
                             )}
                           </div>
                         ) : isAdmin ? (
@@ -834,18 +883,27 @@ export const AdministrasiView: React.FC<AdministrasiViewProps> = ({ currentUser 
                               <span>Buka / Unduh</span>
                             </a>
                             {isAdmin && (
-                              <button
-                                onClick={() =>
-                                  setUploadTarget({
-                                    type: 'PERNIKAHAN',
-                                    id: n.nikah_id,
-                                    name: `${n.suami} & ${n.istri}`
-                                  })
-                                }
-                                className="text-[10px] text-slate-400 hover:text-white underline cursor-pointer"
-                              >
-                                Ganti
-                              </button>
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  onClick={() =>
+                                    setUploadTarget({
+                                      type: 'PERNIKAHAN',
+                                      id: n.nikah_id,
+                                      name: `${n.suami} & ${n.istri}`
+                                    })
+                                  }
+                                  className="text-[10px] text-slate-400 hover:text-white underline cursor-pointer"
+                                >
+                                  Ganti
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteSuratFile('PERNIKAHAN', n.nikah_id)}
+                                  className="text-[10px] text-rose-400 hover:text-rose-300 underline cursor-pointer"
+                                  title="Hapus file surat ini"
+                                >
+                                  Hapus File
+                                </button>
+                              </div>
                             )}
                           </div>
                         ) : isAdmin ? (

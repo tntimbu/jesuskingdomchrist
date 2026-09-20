@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Pengumuman, Renungan, User } from '../../types';
 import { StorageManager } from '../../utils/storage';
 import { broadcastContentNotification } from '../../utils/notificationBroadcast';
+import { confirmDialog } from '../../utils/confirmDialog';
 import { Megaphone, BookOpen, Plus, Heart, Share2, Sparkles, X, Trash2, Volume2, Maximize2, Edit3, Check } from 'lucide-react';
 import { RenunganFullscreenModal } from '../RenunganFullscreenModal';
 import { RenunganAudioPlayer } from '../RenunganAudioPlayer';
@@ -236,24 +237,38 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
     setEditingRenunganId(null);
   };
 
-  const handleDeletePengumuman = (id: string, e: React.MouseEvent) => {
+  const handleDeletePengumuman = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (window.confirm('Apakah Anda yakin ingin menghapus pengumuman ini?')) {
-      const updated = pengumumanList.filter((p) => p.pengumuman_id !== id);
-      setPengumumanList(updated);
-      StorageManager.savePengumuman(updated);
-      StorageManager.logActivity(currentUser.username, `Menghapus pengumuman ID ${id}`, 'Media & Renungan');
-    }
+    const ok = await confirmDialog({
+      title: 'Hapus Pengumuman',
+      message: 'Apakah Anda yakin ingin menghapus pengumuman ini?',
+      confirmText: 'Ya, Hapus',
+      cancelText: 'Batal',
+      isDanger: true,
+    });
+    if (!ok) return;
+
+    const updated = pengumumanList.filter((p) => p.pengumuman_id !== id);
+    setPengumumanList(updated);
+    StorageManager.savePengumuman(updated);
+    StorageManager.logActivity(currentUser.username, `Menghapus pengumuman ID ${id}`, 'Media & Renungan');
   };
 
-  const handleDeleteRenungan = (id: string, e: React.MouseEvent) => {
+  const handleDeleteRenungan = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (window.confirm('Apakah Anda yakin ingin menghapus renungan harian ini?')) {
-      const updated = renunganList.filter((r) => r.renungan_id !== id);
-      setRenunganList(updated);
-      StorageManager.saveRenungan(updated);
-      StorageManager.logActivity(currentUser.username, `Menghapus renungan ID ${id}`, 'Media & Renungan');
-    }
+    const ok = await confirmDialog({
+      title: 'Hapus Renungan Harian',
+      message: 'Apakah Anda yakin ingin menghapus renungan harian ini?',
+      confirmText: 'Ya, Hapus',
+      cancelText: 'Batal',
+      isDanger: true,
+    });
+    if (!ok) return;
+
+    const updated = renunganList.filter((r) => r.renungan_id !== id);
+    setRenunganList(updated);
+    StorageManager.saveRenungan(updated);
+    StorageManager.logActivity(currentUser.username, `Menghapus renungan ID ${id}`, 'Media & Renungan');
   };
 
   return (

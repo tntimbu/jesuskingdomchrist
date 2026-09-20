@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { ChurchTenant, ChurchStatus, User, SuperAdminContact } from '../types';
 import { StorageManager } from '../utils/storage';
+import { confirmDialog } from '../utils/confirmDialog';
 
 interface SuperAdminSaaSPanelProps {
   isOpen: boolean;
@@ -444,8 +445,15 @@ export const SuperAdminSaaSPanel: React.FC<SuperAdminSaaSPanelProps> = ({
 
                             {/* Delete Button */}
                             <button
-                              onClick={() => {
-                                if (confirm(`Hapus akun gereja "${item.nama_gereja}"?`)) {
+                              onClick={async () => {
+                                const ok = await confirmDialog({
+                                  title: 'Hapus Akun Gereja',
+                                  message: `Hapus akun gereja "${item.nama_gereja}"?`,
+                                  confirmText: 'Ya, Hapus',
+                                  cancelText: 'Batal',
+                                  isDanger: true,
+                                });
+                                if (ok) {
                                   StorageManager.deleteChurchTenant(item.tenant_id);
                                   loadData();
                                 }

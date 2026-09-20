@@ -3,6 +3,7 @@ import { GalleryItem, User, FeaturedVideo } from '../../types';
 import { StorageManager } from '../../utils/storage';
 import { parseSocialVideoUrl } from '../../utils/videoHelper';
 import { broadcastContentNotification } from '../../utils/notificationBroadcast';
+import { confirmDialog } from '../../utils/confirmDialog';
 import {
   Image as ImageIcon,
   Video,
@@ -293,8 +294,15 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser, initialTab 
     }
   };
 
-  const handleDeleteSocialVideo = (id: string) => {
-    if (!window.confirm('Apakah Anda yakin ingin menghapus video media sosial ini?')) return;
+  const handleDeleteSocialVideo = async (id: string) => {
+    const ok = await confirmDialog({
+      title: 'Hapus Video Media Sosial',
+      message: 'Apakah anda yakin akan menghapus file ini?',
+      confirmText: 'Ya, Hapus',
+      cancelText: 'Batal',
+      isDanger: true,
+    });
+    if (!ok) return;
     const updated = featuredVideos.filter((v) => v.video_id !== id);
     if (updated.length > 0 && !updated.some((v) => v.is_active)) {
       updated[0].is_active = true;
@@ -304,9 +312,16 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser, initialTab 
     StorageManager.logActivity(currentUser.username, `Menghapus video media sosial ID ${id}`, 'Galeri');
   };
 
-  const handleDeleteMedia = (id: string, e: React.MouseEvent) => {
+  const handleDeleteMedia = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!window.confirm('Apakah Anda yakin ingin menghapus media ini dari galeri?')) return;
+    const ok = await confirmDialog({
+      title: 'Hapus File Media Galeri',
+      message: 'Apakah anda yakin akan menghapus file ini?',
+      confirmText: 'Ya, Hapus File',
+      cancelText: 'Batal',
+      isDanger: true,
+    });
+    if (!ok) return;
 
     const updated = galleryList.filter((g) => g.gallery_id !== id);
     setGalleryList(updated);
@@ -1215,12 +1230,19 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser, initialTab 
                     <img src={mediaForm.foto} alt="Preview Offline" className="h-28 object-cover rounded-lg" />
                     <button
                       type="button"
-                      onClick={() => {
-                        setMediaForm((prev) => ({ ...prev, foto: '' }));
-                        setOfflineFileName('');
+                      onClick={async () => {
+                        const ok = await confirmDialog({
+                          title: 'Hapus File Foto',
+                          message: 'Apakah anda yakin akan menghapus file ini?',
+                          confirmText: 'Ya, Hapus File',
+                        });
+                        if (ok) {
+                          setMediaForm((prev) => ({ ...prev, foto: '' }));
+                          setOfflineFileName('');
+                        }
                       }}
-                      className="absolute top-2 right-2 p-1.5 rounded-full bg-rose-600 text-white hover:bg-rose-500 shadow cursor-pointer"
-                      title="Hapus foto ini"
+                      className="absolute top-2 right-2 p-1.5 rounded-full bg-rose-600 text-white hover:bg-rose-500 shadow cursor-pointer transition-all"
+                      title="Hapus file foto ini"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>

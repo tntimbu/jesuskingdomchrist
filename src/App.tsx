@@ -35,6 +35,7 @@ import { TenantLockedScreen } from './components/TenantLockedScreen';
 import { NavbarCustomizerModal } from './components/NavbarCustomizerModal';
 import { AndroidStudioConverterModal } from './components/AndroidStudioConverterModal';
 import { FloatingNotificationBanner } from './components/FloatingNotificationBanner';
+import { ConfirmModal } from './components/ConfirmModal';
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -713,6 +714,9 @@ export default function App() {
         settings={settings}
         onUpdateSettings={handleUpdateSettings}
       />
+
+      {/* Global Custom Confirmation Dialog (Replaces native window.confirm) */}
+      <ConfirmModal />
     </div>
   );
 }

@@ -96,6 +96,7 @@ import { broadcastChurchAnnouncement } from '../utils/pushNotificationService';
 import { Website2ApkNotificationGuideModal } from './Website2ApkNotificationGuideModal';
 import { AndroidStudioConverterModal } from './AndroidStudioConverterModal';
 import { downloadGoogleServicesJsonFile } from '../utils/googleServicesHelper';
+import { confirmDialog } from '../utils/confirmDialog';
 
 import {
   Chart as ChartJS,
@@ -803,8 +804,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     window.dispatchEvent(new Event('cms_data_changed'));
   };
 
-  const handleDeleteNotification = (id: string) => {
-    if (!window.confirm('Hapus notifikasi ini dari sistem?')) return;
+  const handleDeleteNotification = async (id: string) => {
+    const ok = await confirmDialog({
+      title: 'Hapus Notifikasi',
+      message: 'Apakah Anda yakin ingin menghapus notifikasi ini dari sistem?',
+      confirmText: 'Ya, Hapus',
+      cancelText: 'Batal',
+      isDanger: true,
+    });
+    if (!ok) return;
+
     const updated = notificationsList.filter((n) => n.notif_id !== id);
     setNotificationsList(updated);
     StorageManager.saveNotifications(updated);
@@ -4391,8 +4400,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           </button>
                         )}
                         <button
-                          onClick={() => {
-                            if (confirm(`Hapus reservasi atas nama ${res.nama_jemaat}?`)) {
+                          onClick={async () => {
+                            const ok = await confirmDialog({
+                              title: 'Hapus Reservasi',
+                              message: `Hapus reservasi atas nama ${res.nama_jemaat}?`,
+                              confirmText: 'Ya, Hapus',
+                              cancelText: 'Batal',
+                              isDanger: true,
+                            });
+                            if (ok) {
                               const updated = reservationsList.filter((r) => r.reservation_id !== res.reservation_id);
                               StorageManager.saveEventReservations(updated);
                               setReservationsList(updated);

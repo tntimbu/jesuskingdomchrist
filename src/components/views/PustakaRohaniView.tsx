@@ -29,6 +29,7 @@ import {
 import { User, AppSettings, HymnSong, HymnSongCategory, BibleBook, BibleVerse } from '../../types';
 import { BIBLE_BOOKS, OFFLINE_VERSES, GOLDEN_VERSES } from '../../data/bibleData';
 import { StorageManager } from '../../utils/storage';
+import { confirmDialog } from '../../utils/confirmDialog';
 
 interface PustakaRohaniViewProps {
   currentUser: User;
@@ -1300,8 +1301,15 @@ export const PustakaRohaniView: React.FC<PustakaRohaniViewProps> = ({
 
                 {isAdmin && selectedSong.category === 'KONTEMPORER' && (
                   <button
-                    onClick={() => {
-                      if (window.confirm(`Hapus lagu "${selectedSong.title}" dari perpustakaan?`)) {
+                    onClick={async () => {
+                      const ok = await confirmDialog({
+                        title: 'Hapus Lagu Rohani',
+                        message: `Hapus lagu "${selectedSong.title}" dari perpustakaan?`,
+                        confirmText: 'Ya, Hapus',
+                        cancelText: 'Batal',
+                        isDanger: true,
+                      });
+                      if (ok) {
                         StorageManager.deleteHymnSong(selectedSong.id);
                         loadData();
                         setSelectedSong(null);

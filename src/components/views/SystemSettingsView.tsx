@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, AppSettings, ActivityLog, LoginHistory, Jemaat } from '../../types';
 import { StorageManager } from '../../utils/storage';
+import { confirmDialog } from '../../utils/confirmDialog';
 import { generateGASScriptCode } from '../../utils/googleSheetsGAS';
 import {
   testFirestoreConnection,
@@ -658,7 +659,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
     setTimeout(() => setUserSuccess(''), 3000);
   };
 
-  const handleQuickResetPassword = (u: User) => {
+  const handleQuickResetPassword = async (u: User) => {
     if (u.role === 'SUPER_ADMIN' && currentUser.role !== 'SUPER_ADMIN') {
       alert('Akses Terbatas: Hanya SuperAdmin yang berhak mereset password SuperAdmin.');
       return;
@@ -673,11 +674,14 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
     }
 
     const newRandomPass = generateRandomPassword();
-    if (
-      window.confirm(
-        `Reset password untuk user "${u.username}" (${u.nama})?\n\nPassword baru yang akan dibuat: ${newRandomPass}`
-      )
-    ) {
+    const ok = await confirmDialog({
+      title: 'Reset Password User',
+      message: `Reset password untuk user "${u.username}" (${u.nama})?\n\nPassword baru yang akan dibuat: ${newRandomPass}`,
+      confirmText: 'Ya, Reset Password',
+      cancelText: 'Batal',
+      isDanger: false,
+    });
+    if (ok) {
       const globalUsers = StorageManager.getUsers();
       const updatedGlobal = globalUsers.map((item) => {
         if (item.user_id === u.user_id) {
@@ -697,7 +701,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
     }
   };
 
-  const handleDeleteUser = (u: User) => {
+  const handleDeleteUser = async (u: User) => {
     if (u.user_id === currentUser.user_id) {
       alert('Anda tidak dapat menghapus akun Anda sendiri yang sedang aktif digunakan.');
       return;
@@ -721,18 +725,25 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
       }
     }
 
-    if (window.confirm(`Hapus permanen akun "${u.username}" (${u.nama}) dari sistem?`)) {
-      StorageManager.deleteUser(u.user_id, u.username, u.jemaat_id, u.nama);
-      const updatedGlobal = StorageManager.getUsers();
-      setUsersList(updatedGlobal);
-      StorageManager.logActivity(
-        currentUser.username,
-        `Menghapus akun pengguna: ${u.username}`,
-        'User Management'
-      );
-      setUserSuccess(`Akun "${u.username}" telah berhasil dihapus secara permanen.`);
-      setTimeout(() => setUserSuccess(''), 3000);
-    }
+    const ok = await confirmDialog({
+      title: 'Hapus Permanen Akun',
+      message: `Hapus permanen akun "${u.username}" (${u.nama}) dari sistem?`,
+      confirmText: 'Ya, Hapus',
+      cancelText: 'Batal',
+      isDanger: true,
+    });
+    if (!ok) return;
+
+    StorageManager.deleteUser(u.user_id, u.username, u.jemaat_id, u.nama);
+    const updatedGlobal = StorageManager.getUsers();
+    setUsersList(updatedGlobal);
+    StorageManager.logActivity(
+      currentUser.username,
+      `Menghapus akun pengguna: ${u.username}`,
+      'User Management'
+    );
+    setUserSuccess(`Akun "${u.username}" telah berhasil dihapus secara permanen.`);
+    setTimeout(() => setUserSuccess(''), 3000);
   };
 
   const handleToggleUserStatus = (userId: string) => {
@@ -771,8 +782,15 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
     }));
   };
 
-  const handleResetDataToDefaults = () => {
-    if (window.confirm('APAKAH ANDA YAKIN? Semua data di-reset kembali ke data default 18 sheets.')) {
+  const handleResetDataToDefaults = async () => {
+    const ok = await confirmDialog({
+      title: 'Reset Data Sistem ke Default',
+      message: 'APAKAH ANDA YAKIN? Semua data akan di-reset kembali ke data default 18 sheets.',
+      confirmText: 'Ya, Reset Semua Data',
+      cancelText: 'Batal',
+      isDanger: true,
+    });
+    if (ok) {
       StorageManager.resetAllDataToDefaults();
       loadData();
       alert('Data sistem telah berhasil di-reset ke kondisi awal.');

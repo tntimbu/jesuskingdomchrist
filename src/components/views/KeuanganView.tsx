@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Persembahan, Donasi, KasPengeluaran, User } from '../../types';
 import { StorageManager } from '../../utils/storage';
 import { exportToExcel, exportToPDF } from '../../utils/exportTools';
+import { confirmDialog } from '../../utils/confirmDialog';
 import {
   DollarSign,
   Plus,
@@ -232,42 +233,63 @@ export const KeuanganView: React.FC<KeuanganViewProps> = ({ currentUser }) => {
   };
 
   // Action: Hapus Persembahan
-  const handleDeletePersembahan = (id: string) => {
+  const handleDeletePersembahan = async (id: string) => {
     const target = persembahanList.find((p) => p.persembahan_id === id);
     if (!target) return;
 
-    if (confirm(`Apakah Anda yakin ingin menghapus data persembahan ${id} (Rp ${target.jumlah.toLocaleString('id-ID')}) dari riwayat?`)) {
-      const updated = persembahanList.filter((p) => p.persembahan_id !== id);
-      setPersembahanList(updated);
-      StorageManager.savePersembahan(updated);
-      StorageManager.logActivity(currentUser.username, `Menghapus riwayat persembahan ID ${id}`, 'Keuangan & Kas');
-    }
+    const ok = await confirmDialog({
+      title: 'Hapus Riwayat Persembahan',
+      message: `Apakah Anda yakin ingin menghapus data persembahan ${id} (Rp ${target.jumlah.toLocaleString('id-ID')}) dari riwayat?`,
+      confirmText: 'Ya, Hapus',
+      cancelText: 'Batal',
+      isDanger: true,
+    });
+    if (!ok) return;
+
+    const updated = persembahanList.filter((p) => p.persembahan_id !== id);
+    setPersembahanList(updated);
+    StorageManager.savePersembahan(updated);
+    StorageManager.logActivity(currentUser.username, `Menghapus riwayat persembahan ID ${id}`, 'Keuangan & Kas');
   };
 
   // Action: Hapus Kas / Pengeluaran
-  const handleDeleteKas = (id: string) => {
+  const handleDeleteKas = async (id: string) => {
     const target = kasList.find((k) => k.kas_id === id);
     if (!target) return;
 
-    if (confirm(`Apakah Anda yakin ingin menghapus riwayat transaksi kas ${id} (${target.kategori})?`)) {
-      const updated = kasList.filter((k) => k.kas_id !== id);
-      setKasList(updated);
-      StorageManager.saveKasPengeluaran(updated);
-      StorageManager.logActivity(currentUser.username, `Menghapus transaksi kas ID ${id}`, 'Keuangan & Kas');
-    }
+    const ok = await confirmDialog({
+      title: 'Hapus Transaksi Kas',
+      message: `Apakah Anda yakin ingin menghapus riwayat transaksi kas ${id} (${target.kategori})?`,
+      confirmText: 'Ya, Hapus',
+      cancelText: 'Batal',
+      isDanger: true,
+    });
+    if (!ok) return;
+
+    const updated = kasList.filter((k) => k.kas_id !== id);
+    setKasList(updated);
+    StorageManager.saveKasPengeluaran(updated);
+    StorageManager.logActivity(currentUser.username, `Menghapus transaksi kas ID ${id}`, 'Keuangan & Kas');
   };
 
   // Action: Hapus Donasi
-  const handleDeleteDonasi = (id: string) => {
+  const handleDeleteDonasi = async (id: string) => {
     const target = donasiList.find((d) => d.donasi_id === id);
     if (!target) return;
 
-    if (confirm(`Apakah Anda yakin ingin menghapus data donasi dari ${target.nama}?`)) {
-      const updated = donasiList.filter((d) => d.donasi_id !== id);
-      setDonasiList(updated);
-      StorageManager.saveDonasi(updated);
-      StorageManager.logActivity(currentUser.username, `Menghapus riwayat donasi ID ${id}`, 'Keuangan & Kas');
-    }
+    const ok = await confirmDialog({
+      title: 'Hapus Data Donasi',
+      message: `Apakah Anda yakin ingin menghapus data donasi dari ${target.nama}?`,
+      confirmText: 'Ya, Hapus',
+      cancelText: 'Batal',
+      isDanger: true,
+    });
+    if (!ok) return;
+
+    const updated = donasiList.filter((d) => d.donasi_id !== id);
+    setDonasiList(updated);
+    StorageManager.saveDonasi(updated);
+    StorageManager.logActivity(currentUser.username, `Menghapus riwayat donasi ID ${id}`, 'Keuangan & Kas');
   };
 
   const handleExportExcel = () => {

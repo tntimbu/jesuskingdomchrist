@@ -3,6 +3,7 @@ import { EventSchedule, EventReservation, Doa, User, NotificationItem } from '..
 import { StorageManager } from '../../utils/storage';
 import { playNotificationChime } from '../../utils/soundHelper';
 import { broadcastContentNotification } from '../../utils/notificationBroadcast';
+import { confirmDialog } from '../../utils/confirmDialog';
 import {
   CalendarDays,
   Plus,
@@ -331,18 +332,25 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
     }, 4000);
   };
 
-  const handleDeleteReservation = (id: string) => {
-    if (window.confirm('Hapus data reservasi ini?')) {
-      const updated = reservationsList.filter((r) => r.reservation_id !== id);
-      setReservationsList(updated);
-      StorageManager.saveEventReservations(updated);
-      window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { action: 'reservation_deleted' } }));
-      setAdminToast({
-        type: 'info',
-        message: 'Data reservasi berhasil dihapus.'
-      });
-      setTimeout(() => setAdminToast(null), 3000);
-    }
+  const handleDeleteReservation = async (id: string) => {
+    const ok = await confirmDialog({
+      title: 'Hapus Reservasi',
+      message: 'Apakah Anda yakin akan menghapus data reservasi ini?',
+      confirmText: 'Ya, Hapus',
+      cancelText: 'Batal',
+      isDanger: true,
+    });
+    if (!ok) return;
+
+    const updated = reservationsList.filter((r) => r.reservation_id !== id);
+    setReservationsList(updated);
+    StorageManager.saveEventReservations(updated);
+    window.dispatchEvent(new CustomEvent('cms_data_changed', { detail: { action: 'reservation_deleted' } }));
+    setAdminToast({
+      type: 'info',
+      message: 'Data reservasi berhasil dihapus.'
+    });
+    setTimeout(() => setAdminToast(null), 3000);
   };
 
   const handleSaveDoa = (e: React.FormEvent) => {
@@ -439,22 +447,36 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ currentUser, mode = 'BOT
     window.dispatchEvent(new Event('cms_data_changed'));
   };
 
-  const handleDeleteEvent = (id: string, nama: string) => {
-    if (window.confirm(`Hapus event "${nama}"?`)) {
-      const updated = eventsList.filter((e) => e.event_id !== id);
-      setEventsList(updated);
-      StorageManager.saveEvents(updated);
-      StorageManager.logActivity(currentUser.username, `Menghapus event: ${nama}`, 'Jadwal & Event');
-    }
+  const handleDeleteEvent = async (id: string, nama: string) => {
+    const ok = await confirmDialog({
+      title: 'Hapus Event',
+      message: `Apakah Anda yakin ingin menghapus event "${nama}"?`,
+      confirmText: 'Ya, Hapus',
+      cancelText: 'Batal',
+      isDanger: true,
+    });
+    if (!ok) return;
+
+    const updated = eventsList.filter((e) => e.event_id !== id);
+    setEventsList(updated);
+    StorageManager.saveEvents(updated);
+    StorageManager.logActivity(currentUser.username, `Menghapus event: ${nama}`, 'Jadwal & Event');
   };
 
-  const handleDeleteDoa = (id: string) => {
-    if (window.confirm('Hapus permohonan doa ini?')) {
-      const updated = doaList.filter((d) => d.doa_id !== id);
-      setDoaList(updated);
-      StorageManager.saveDoa(updated);
-      StorageManager.logActivity(currentUser.username, `Menghapus doa ID: ${id}`, 'Permohonan Doa');
-    }
+  const handleDeleteDoa = async (id: string) => {
+    const ok = await confirmDialog({
+      title: 'Hapus Permohonan Doa',
+      message: 'Apakah Anda yakin ingin menghapus permohonan doa ini?',
+      confirmText: 'Ya, Hapus',
+      cancelText: 'Batal',
+      isDanger: true,
+    });
+    if (!ok) return;
+
+    const updated = doaList.filter((d) => d.doa_id !== id);
+    setDoaList(updated);
+    StorageManager.saveDoa(updated);
+    StorageManager.logActivity(currentUser.username, `Menghapus doa ID: ${id}`, 'Permohonan Doa');
   };
 
   // Separate lists

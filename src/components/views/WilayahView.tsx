@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Wilayah, Pelayanan, User } from '../../types';
 import { StorageManager } from '../../utils/storage';
+import { confirmDialog } from '../../utils/confirmDialog';
 import {
   MapPin,
   Users,
@@ -89,10 +90,16 @@ export const WilayahView: React.FC<WilayahViewProps> = ({ currentUser }) => {
     setIsWilayahModal(true);
   };
 
-  const handleDeleteWilayah = (w: Wilayah) => {
-    if (!window.confirm(`Hapus wilayah sektor "${w.nama_wilayah}"? Jemaat yang berada di wilayah ini tidak akan dihapus, namun sektor akan dihapus dari daftar.`)) {
-      return;
-    }
+  const handleDeleteWilayah = async (w: Wilayah) => {
+    const ok = await confirmDialog({
+      title: 'Hapus Wilayah Sektor',
+      message: `Hapus wilayah sektor "${w.nama_wilayah}"? Jemaat yang berada di wilayah ini tidak akan dihapus, namun sektor akan dihapus dari daftar.`,
+      confirmText: 'Ya, Hapus',
+      cancelText: 'Batal',
+      isDanger: true,
+    });
+    if (!ok) return;
+
     StorageManager.deleteWilayah(w.wilayah_id);
     setWilayahList((prev) => prev.filter((item) => item.wilayah_id !== w.wilayah_id));
     StorageManager.logActivity(currentUser.username, `Menghapus wilayah sektor: ${w.nama_wilayah}`, 'Wilayah');
@@ -137,10 +144,16 @@ export const WilayahView: React.FC<WilayahViewProps> = ({ currentUser }) => {
     setIsKomisiModal(true);
   };
 
-  const handleDeleteKomisi = (komisiName: string) => {
-    if (!window.confirm(`Hapus komisi "${komisiName}" dari daftar pilihan gereja?`)) {
-      return;
-    }
+  const handleDeleteKomisi = async (komisiName: string) => {
+    const ok = await confirmDialog({
+      title: 'Hapus Komisi Gereja',
+      message: `Hapus komisi "${komisiName}" dari daftar pilihan gereja?`,
+      confirmText: 'Ya, Hapus',
+      cancelText: 'Batal',
+      isDanger: true,
+    });
+    if (!ok) return;
+
     StorageManager.deleteKomisi(komisiName);
     setKomisiList((prev) => prev.filter((k) => k !== komisiName));
     StorageManager.logActivity(currentUser.username, `Menghapus komisi gereja: ${komisiName}`, 'Komisi');
@@ -175,10 +188,16 @@ export const WilayahView: React.FC<WilayahViewProps> = ({ currentUser }) => {
     setIsPelayananModal(true);
   };
 
-  const handleDeletePelayanan = (p: Pelayanan) => {
-    if (!window.confirm(`Hapus tim pelayanan "${p.nama}"?`)) {
-      return;
-    }
+  const handleDeletePelayanan = async (p: Pelayanan) => {
+    const ok = await confirmDialog({
+      title: 'Hapus Tim Pelayanan',
+      message: `Hapus tim pelayanan "${p.nama}"?`,
+      confirmText: 'Ya, Hapus',
+      cancelText: 'Batal',
+      isDanger: true,
+    });
+    if (!ok) return;
+
     StorageManager.deletePelayanan(p.pelayanan_id);
     setPelayananList((prev) => prev.filter((item) => item.pelayanan_id !== p.pelayanan_id));
     StorageManager.logActivity(currentUser.username, `Menghapus tim pelayanan: ${p.nama}`, 'Pelayanan');

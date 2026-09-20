@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Jemaat, Keluarga, User, Wilayah } from '../../types';
 import { StorageManager } from '../../utils/storage';
 import { exportToExcel, exportToPDF } from '../../utils/exportTools';
+import { confirmDialog } from '../../utils/confirmDialog';
 import {
   Users,
   Search,
@@ -145,13 +146,20 @@ export const JemaatView: React.FC<JemaatViewProps> = ({ currentUser }) => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id: string, nama: string) => {
-    if (window.confirm(`Hapus data jemaat ${nama} beserta akun login terkait?`)) {
-      StorageManager.deleteJemaat(id, nama);
-      const updated = StorageManager.getJemaat();
-      setJemaatList(updated);
-      StorageManager.logActivity(currentUser.username, `Menghapus data jemaat & akun login: ${nama}`, 'Master Jemaat');
-    }
+  const handleDelete = async (id: string, nama: string) => {
+    const ok = await confirmDialog({
+      title: 'Hapus Data Jemaat',
+      message: `Hapus data jemaat ${nama} beserta akun login terkait?`,
+      confirmText: 'Ya, Hapus',
+      cancelText: 'Batal',
+      isDanger: true,
+    });
+    if (!ok) return;
+
+    StorageManager.deleteJemaat(id, nama);
+    const updated = StorageManager.getJemaat();
+    setJemaatList(updated);
+    StorageManager.logActivity(currentUser.username, `Menghapus data jemaat & akun login: ${nama}`, 'Master Jemaat');
   };
 
   const handleSave = (e: React.FormEvent) => {
