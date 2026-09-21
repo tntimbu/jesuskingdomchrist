@@ -42,10 +42,27 @@ export const SecurityAlertBannerModal: React.FC<SecurityAlertBannerModalProps> =
     };
   }, []);
 
+  // Check if current user is the sender (SuperAdmin who sent the alert should not get attacked by their own alert)
+  const isSender = Boolean(
+    currentUser &&
+      alert &&
+      ((alert.sender_user_id && currentUser.user_id === alert.sender_user_id) ||
+        (alert.sender_username &&
+          currentUser.username &&
+          currentUser.username.toLowerCase() === alert.sender_username.toLowerCase()) ||
+        (alert.sender &&
+          currentUser.username &&
+          currentUser.username.toLowerCase() === alert.sender.toLowerCase()) ||
+        (alert.sender &&
+          currentUser.nama &&
+          currentUser.nama.toLowerCase() === alert.sender.toLowerCase()))
+  );
+
   // Determine if this alert applies to current user
   const isTargetMatch = Boolean(
     alert &&
       alert.active &&
+      !isSender &&
       (!alert.target_user_id ||
         alert.target_user_id === 'ALL' ||
         (currentUser && currentUser.user_id === alert.target_user_id) ||

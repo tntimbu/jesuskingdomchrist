@@ -19,13 +19,15 @@ interface SuperAdminSecurityAlertModalProps {
   onClose: () => void;
   currentUser: User;
   usersList: User[];
+  initialTargetUserId?: string;
 }
 
 export const SuperAdminSecurityAlertModal: React.FC<SuperAdminSecurityAlertModalProps> = ({
   isOpen,
   onClose,
   currentUser,
-  usersList
+  usersList,
+  initialTargetUserId
 }) => {
   const [activeAlert, setActiveAlert] = useState<SecurityAlert | null>(null);
   const [targetScope, setTargetScope] = useState<'ALL' | 'SPECIFIC'>('ALL');
@@ -41,8 +43,12 @@ export const SuperAdminSecurityAlertModal: React.FC<SuperAdminSecurityAlertModal
     if (isOpen) {
       setActiveAlert(StorageManager.getSecurityAlert());
       setFeedback('');
+      if (initialTargetUserId) {
+        setTargetScope('SPECIFIC');
+        setSelectedUser(initialTargetUserId);
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, initialTargetUserId]);
 
   if (!isOpen) return null;
 
@@ -74,6 +80,8 @@ export const SuperAdminSecurityAlertModal: React.FC<SuperAdminSecurityAlertModal
       title: title.trim(),
       message: message.trim(),
       sender: currentUser.nama || currentUser.username || 'SuperAdmin',
+      sender_user_id: currentUser.user_id,
+      sender_username: currentUser.username,
       created_at: new Date().toLocaleString('id-ID'),
       severity,
       target_user_id: targetUserId,

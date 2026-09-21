@@ -398,6 +398,8 @@ export interface SecurityAlert {
   title: string;
   message: string;
   sender: string;
+  sender_user_id?: string;
+  sender_username?: string;
   created_at: string;
   severity: 'CRITICAL' | 'WARNING';
   target_user_id?: string; // Empty or 'ALL' for everyone, or specific user_id

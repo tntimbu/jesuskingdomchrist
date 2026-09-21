@@ -107,6 +107,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
   const [pushTestResult, setPushTestResult] = useState<{ success: boolean; message: string } | null>(null);
   const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
   const [isSecurityAlertModalOpen, setIsSecurityAlertModalOpen] = useState(false);
+  const [targetedSecurityAlertUserId, setTargetedSecurityAlertUserId] = useState<string | undefined>(undefined);
   const [copiedKeyLabel, setCopiedKeyLabel] = useState<string | null>(null);
   const [apkPackageName, setApkPackageName] = useState(metaForm.firebase_package_name || 'com.gkfc');
   const [downloadSuccess, setDownloadSuccess] = useState(false);
@@ -3736,7 +3737,10 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                                 {/* SuperAdmin Direct Warning Action */}
                                 {currentUser.role === 'SUPER_ADMIN' && u.user_id !== currentUser.user_id && (
                                   <button
-                                    onClick={() => setIsSecurityAlertModalOpen(true)}
+                                    onClick={() => {
+                                      setTargetedSecurityAlertUserId(u.user_id);
+                                      setIsSecurityAlertModalOpen(true);
+                                    }}
                                     className="p-1.5 rounded-lg bg-rose-600/20 hover:bg-rose-600/40 text-rose-400 border border-rose-500/40 transition-all cursor-pointer"
                                     title={`Kirim Peringatan Keamanan Merah ke ${u.username}`}
                                   >
@@ -4485,9 +4489,13 @@ fun createHighImportanceChannel(context: Context) {
       {/* Modal Kirim Peringatan Keamanan Merah & Alarm Darurat (SuperAdmin) */}
       <SuperAdminSecurityAlertModal
         isOpen={isSecurityAlertModalOpen}
-        onClose={() => setIsSecurityAlertModalOpen(false)}
+        onClose={() => {
+          setIsSecurityAlertModalOpen(false);
+          setTargetedSecurityAlertUserId(undefined);
+        }}
         currentUser={currentUser}
         usersList={usersList}
+        initialTargetUserId={targetedSecurityAlertUserId}
       />
     </div>
   );
