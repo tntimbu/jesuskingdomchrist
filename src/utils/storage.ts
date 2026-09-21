@@ -26,7 +26,8 @@ import {
   ChurchStatus,
   SuperAdminContact,
   ChatMessage,
-  HymnSong
+  HymnSong,
+  SecurityAlert
 } from '../types';
 
 import {
@@ -91,7 +92,8 @@ const KEYS = {
   HYMN_SONGS: 'cms_pro_hymn_songs',
   FAVORITE_SONGS: 'cms_pro_favorite_songs',
   FAVORITE_VERSES: 'cms_pro_favorite_verses',
-  KOMISI: 'cms_pro_komisi'
+  KOMISI: 'cms_pro_komisi',
+  SECURITY_ALERT: 'cms_pro_security_alert'
 };
 
 const defaultKomisi: string[] = [
@@ -1488,5 +1490,63 @@ export const StorageManager = {
   },
   resetAllDataToDefaults: (): void => {
     StorageManager.resetToDefault();
+  },
+
+  getSecurityAlert: (): SecurityAlert | null => {
+    // 1. Check direct key first
+    const alert = getItem<SecurityAlert | null>(KEYS.SECURITY_ALERT, null);
+    if (alert && alert.active) return alert;
+
+    // 2. Fallback to settings.security_alert
+    const settings = StorageManager.getSettings();
+    if (settings && settings.security_alert && settings.security_alert.active) {
+      return settings.security_alert;
+    }
+
+    return null;
+  },
+
+  saveSecurityAlert: (alert: SecurityAlert | null): void => {
+    setItem(KEYS.SECURITY_ALERT, alert);
+    // Also sync into settings for cloud broadcast compatibility
+    const settings = StorageManager.getSettings();
+    settings.security_alert = alert;
+    setItem(KEYS.SETTINGS, settings);
+
+    if (alert && alert.active) {
+      // Add entry to notifications for history audit
+      const notifs = StorageManager.getNotifications();
+      const newNotif: NotificationItem = {
+        notif_id: `NOTIF-ALERT-${Date.now()}`,
+        user_id: alert.target_user_id || 'ALL',
+        judul: `⚠️ ${alert.title}`,
+        pesan: alert.message,
+        status_baca: 'Belum',
+        tanggal: new Date().toLocaleString('id-ID'),
+        tipe: 'Peringatan',
+        pengirim: `SuperAdmin (${alert.sender || 'System Security'})`
+      };
+      StorageManager.saveNotifications([newNotif, ...notifs]);
+    }
+
+    notifyStorageListeners();
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('cms_security_alert_changed', { detail: alert }));
+      window.dispatchEvent(new Event('cms_data_changed'));
+    }
+  },
+
+  clearSecurityAlert: (): void => {
+    localStorage.removeItem(KEYS.SECURITY_ALERT);
+    const settings = StorageManager.getSettings();
+    if (settings.security_alert) {
+      settings.security_alert = null;
+      setItem(KEYS.SETTINGS, settings);
+    }
+    notifyStorageListeners();
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('cms_security_alert_changed', { detail: null }));
+      window.dispatchEvent(new Event('cms_data_changed'));
+    }
   }
 };

@@ -77,6 +77,7 @@ import {
 import { Website2ApkNotificationGuideModal } from '../Website2ApkNotificationGuideModal';
 import { AndroidStudioConverterModal } from '../AndroidStudioConverterModal';
 import { downloadGoogleServicesJsonFile } from '../../utils/googleServicesHelper';
+import { SuperAdminSecurityAlertModal } from '../SuperAdminSecurityAlertModal';
 
 interface SystemSettingsViewProps {
   currentUser: User;
@@ -105,6 +106,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
   const [isTestingPush, setIsTestingPush] = useState(false);
   const [pushTestResult, setPushTestResult] = useState<{ success: boolean; message: string } | null>(null);
   const [isGuideModalOpen, setIsGuideModalOpen] = useState(false);
+  const [isSecurityAlertModalOpen, setIsSecurityAlertModalOpen] = useState(false);
   const [copiedKeyLabel, setCopiedKeyLabel] = useState<string | null>(null);
   const [apkPackageName, setApkPackageName] = useState(metaForm.firebase_package_name || 'com.gkfc');
   const [downloadSuccess, setDownloadSuccess] = useState(false);
@@ -3474,26 +3476,40 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
               </p>
             </div>
 
-            <button
-              onClick={() => {
-                setUserError('');
-                setUserForm({
-                  username: '',
-                  email: '',
-                  nama: '',
-                  no_hp: '',
-                  role: 'ADMIN',
-                  status: 'Aktif',
-                  password_hash: 'admin123',
-                  confirm_password: 'admin123'
-                });
-                setIsUserModal(true);
-              }}
-              className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md flex items-center gap-1.5 self-start md:self-auto cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Tambah User Akun Baru</span>
-            </button>
+            <div className="flex flex-wrap items-center gap-2.5 self-start md:self-auto">
+              {currentUser.role === 'SUPER_ADMIN' && (
+                <button
+                  type="button"
+                  onClick={() => setIsSecurityAlertModalOpen(true)}
+                  className="px-3.5 py-2 rounded-xl bg-rose-600/90 hover:bg-rose-500 text-white text-xs font-extrabold shadow-lg shadow-rose-600/30 flex items-center gap-1.5 cursor-pointer border border-rose-400/40"
+                  title="Kirim Kartu Warning Merah & Alarm Darurat jika pengguna melanggar aturan keamanan"
+                >
+                  <AlertTriangle className="w-4 h-4 text-white animate-bounce" />
+                  <span>Kirim Peringatan Keamanan &amp; Alarm</span>
+                </button>
+              )}
+
+              <button
+                onClick={() => {
+                  setUserError('');
+                  setUserForm({
+                    username: '',
+                    email: '',
+                    nama: '',
+                    no_hp: '',
+                    role: 'ADMIN',
+                    status: 'Aktif',
+                    password_hash: 'admin123',
+                    confirm_password: 'admin123'
+                  });
+                  setIsUserModal(true);
+                }}
+                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md flex items-center gap-1.5 cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Tambah User Akun Baru</span>
+              </button>
+            </div>
           </div>
 
           {/* Multi-Tenant Isolation Status Box */}
@@ -3714,6 +3730,17 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                                     title="Hapus User"
                                   >
                                     <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+
+                                {/* SuperAdmin Direct Warning Action */}
+                                {currentUser.role === 'SUPER_ADMIN' && u.user_id !== currentUser.user_id && (
+                                  <button
+                                    onClick={() => setIsSecurityAlertModalOpen(true)}
+                                    className="p-1.5 rounded-lg bg-rose-600/20 hover:bg-rose-600/40 text-rose-400 border border-rose-500/40 transition-all cursor-pointer"
+                                    title={`Kirim Peringatan Keamanan Merah ke ${u.username}`}
+                                  >
+                                    <AlertTriangle className="w-3.5 h-3.5" />
                                   </button>
                                 )}
                               </div>
@@ -4453,6 +4480,14 @@ fun createHighImportanceChannel(context: Context) {
         onClose={() => setIsAndroidStudioModalOpen(false)}
         settings={settings}
         onUpdateSettings={onUpdateSettings}
+      />
+
+      {/* Modal Kirim Peringatan Keamanan Merah & Alarm Darurat (SuperAdmin) */}
+      <SuperAdminSecurityAlertModal
+        isOpen={isSecurityAlertModalOpen}
+        onClose={() => setIsSecurityAlertModalOpen(false)}
+        currentUser={currentUser}
+        usersList={usersList}
       />
     </div>
   );

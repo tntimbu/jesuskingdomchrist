@@ -36,6 +36,7 @@ import { NavbarCustomizerModal } from './components/NavbarCustomizerModal';
 import { AndroidStudioConverterModal } from './components/AndroidStudioConverterModal';
 import { FloatingNotificationBanner } from './components/FloatingNotificationBanner';
 import { ConfirmModal } from './components/ConfirmModal';
+import { SecurityAlertBannerModal } from './components/SecurityAlertBannerModal';
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -717,6 +718,9 @@ export default function App() {
 
       {/* Global Custom Confirmation Dialog (Replaces native window.confirm) */}
       <ConfirmModal />
+
+      {/* Global Security Warning Alarm & Red Card Overlay */}
+      <SecurityAlertBannerModal currentUser={currentUser} />
     </div>
   );
 }

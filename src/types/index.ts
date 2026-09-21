@@ -386,8 +386,22 @@ export interface AppSettings {
   onesignal_rest_api_key?: string;
   onesignal_google_project_number?: string;
   onesignal_auto_push_announcement?: boolean;
+  // Security Warning / Alarm Broadcast from SuperAdmin
+  security_alert?: SecurityAlert | null;
   timezone?: string;
   bahasa?: string;
+}
+
+export interface SecurityAlert {
+  id: string;
+  active: boolean;
+  title: string;
+  message: string;
+  sender: string;
+  created_at: string;
+  severity: 'CRITICAL' | 'WARNING';
+  target_user_id?: string; // Empty or 'ALL' for everyone, or specific user_id
+  target_username?: string; // Empty or 'ALL' or specific username
 }
 
 export interface ActivityLog {

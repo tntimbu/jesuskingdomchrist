@@ -27,6 +27,7 @@ import {
 import { ChurchTenant, ChurchStatus, User, SuperAdminContact } from '../types';
 import { StorageManager } from '../utils/storage';
 import { confirmDialog } from '../utils/confirmDialog';
+import { SuperAdminSecurityAlertModal } from './SuperAdminSecurityAlertModal';
 
 interface SuperAdminSaaSPanelProps {
   isOpen: boolean;
@@ -53,6 +54,7 @@ export const SuperAdminSaaSPanel: React.FC<SuperAdminSaaSPanelProps> = ({
 
   // Modal / Form States
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isSecurityAlertModalOpen, setIsSecurityAlertModalOpen] = useState(false);
   const [editingTenant, setEditingTenant] = useState<ChurchTenant | null>(null);
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -281,13 +283,24 @@ export const SuperAdminSaaSPanel: React.FC<SuperAdminSaaSPanelProps> = ({
             </select>
           </div>
 
-          <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 via-indigo-600 to-purple-600 hover:from-amber-400 hover:to-purple-500 text-white font-extrabold text-xs shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95 shrink-0"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Buat Akun Gereja Baru</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsSecurityAlertModalOpen(true)}
+              className="py-2.5 px-3.5 rounded-xl bg-rose-600/90 hover:bg-rose-500 text-white font-extrabold text-xs shadow-lg shadow-rose-600/30 flex items-center justify-center gap-1.5 transition-all cursor-pointer border border-rose-400/40 shrink-0"
+              title="Kirim Kartu Warning Merah & Alarm Darurat kepada Pengguna yang Melanggar Aturan Keamanan"
+            >
+              <AlertTriangle className="w-4 h-4 text-white animate-bounce" />
+              <span>Kirim Warning Merah &amp; Alarm</span>
+            </button>
+
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 via-indigo-600 to-purple-600 hover:from-amber-400 hover:to-purple-500 text-white font-extrabold text-xs shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95 shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Buat Akun Gereja Baru</span>
+            </button>
+          </div>
         </div>
 
         {/* Buyer Church Tenants Table */}
@@ -861,6 +874,20 @@ export const SuperAdminSaaSPanel: React.FC<SuperAdminSaaSPanelProps> = ({
           </div>
         </div>
       )}
+      {/* Modal Kirim Warning Merah & Alarm Darurat */}
+      <SuperAdminSecurityAlertModal
+        isOpen={isSecurityAlertModalOpen}
+        onClose={() => setIsSecurityAlertModalOpen(false)}
+        currentUser={
+          StorageManager.getCurrentUser() || {
+            user_id: 'USR-SUPERADMIN',
+            username: 'superadmin',
+            role: 'SUPER_ADMIN',
+            nama: 'Super Administrator'
+          }
+        }
+        usersList={StorageManager.getUsers()}
+      />
     </div>
   );
 };
