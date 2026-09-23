@@ -46,7 +46,8 @@ import {
   generateStylesXml,
   generateNotificationIconXml,
   generateGradleProperties,
-  downloadFile
+  downloadFile,
+  downloadAndroidStudioProjectZip
 } from '../utils/androidStudioGenerator';
 import { downloadGoogleServicesJsonFile, sendFcmLegacyNotification } from '../utils/googleServicesHelper';
 
@@ -313,21 +314,21 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
 
   const currentCode = getSelectedCodeContent();
 
-  const handleDownloadAllFiles = () => {
+  const handleDownloadAllFiles = async () => {
     setIsDownloadingAll(true);
     try {
+      await downloadAndroidStudioProjectZip(config, settings);
+    } catch (err) {
+      console.error('Failed to download project zip, fallback to individual files:', err);
       downloadFile('MainActivity.java', generateMainActivityJava(config));
-      setTimeout(() => downloadFile('MainActivity.kt', generateMainActivityKotlin(config)), 200);
-      setTimeout(() => downloadFile('MyFirebaseMessagingService.java', generateFirebaseMessagingServiceJava(config)), 400);
-      setTimeout(() => downloadFile('AndroidManifest.xml', generateAndroidManifestXml(config)), 600);
-      setTimeout(() => downloadFile('build.gradle.kts', generateAppBuildGradleKts(config)), 800);
-      setTimeout(() => downloadFile('project-build.gradle.kts', generateProjectBuildGradleKts()), 1000);
-      setTimeout(() => downloadFile('settings.gradle.kts', generateSettingsGradleKts(config)), 1200);
-      setTimeout(() => downloadFile('libs.versions.toml', generateLibsVersionsToml()), 1400);
-      setTimeout(() => downloadFile('gradle.properties', generateGradleProperties()), 1600);
-      setTimeout(() => downloadGoogleServicesJsonFile(config.packageName, settings), 1800);
+      downloadFile('MainActivity.kt', generateMainActivityKotlin(config));
+      downloadFile('MyFirebaseMessagingService.java', generateFirebaseMessagingServiceJava(config));
+      downloadFile('AndroidManifest.xml', generateAndroidManifestXml(config));
+      downloadFile('build.gradle.kts', generateAppBuildGradleKts(config));
+      downloadFile('gradle.properties', generateGradleProperties());
+      downloadGoogleServicesJsonFile(config.packageName, settings);
     } finally {
-      setTimeout(() => setIsDownloadingAll(false), 2200);
+      setIsDownloadingAll(false);
     }
   };
 

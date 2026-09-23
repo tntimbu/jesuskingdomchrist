@@ -93,7 +93,8 @@ import {
   generateAppBuildGradle,
   generateProjectBuildGradle,
   generateGradleProperties,
-  downloadFile
+  downloadFile,
+  downloadAndroidStudioProjectZip
 } from '../../utils/androidStudioGenerator';
 
 interface SystemSettingsViewProps {
@@ -3541,21 +3542,21 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
 
         const currentEmbed = getEmbedCode();
 
-        const handleDownloadAllEmbed = () => {
+        const handleDownloadAllEmbed = async () => {
           setIsDownloadingAllEmbed(true);
           try {
+            await downloadAndroidStudioProjectZip(androidConfig, settings);
+          } catch (err) {
+            console.error('Error generating zip:', err);
             downloadFile('MainActivity.java', generateMainActivityJava(androidConfig));
-            setTimeout(() => downloadFile('MainActivity.kt', generateMainActivityKotlin(androidConfig)), 200);
-            setTimeout(() => downloadFile('MyFirebaseMessagingService.java', generateFirebaseMessagingServiceJava(androidConfig)), 400);
-            setTimeout(() => downloadFile('AndroidManifest.xml', generateAndroidManifestXml(androidConfig)), 600);
-            setTimeout(() => downloadFile('build.gradle.kts', generateAppBuildGradleKts(androidConfig)), 800);
-            setTimeout(() => downloadFile('project-build.gradle.kts', generateProjectBuildGradleKts()), 1000);
-            setTimeout(() => downloadFile('settings.gradle.kts', generateSettingsGradleKts(androidConfig)), 1200);
-            setTimeout(() => downloadFile('libs.versions.toml', generateLibsVersionsToml()), 1400);
-            setTimeout(() => downloadFile('gradle.properties', generateGradleProperties()), 1600);
-            setTimeout(() => downloadGoogleServicesJsonFile(androidConfig.packageName, settings), 1800);
+            downloadFile('MainActivity.kt', generateMainActivityKotlin(androidConfig));
+            downloadFile('MyFirebaseMessagingService.java', generateFirebaseMessagingServiceJava(androidConfig));
+            downloadFile('AndroidManifest.xml', generateAndroidManifestXml(androidConfig));
+            downloadFile('build.gradle.kts', generateAppBuildGradleKts(androidConfig));
+            downloadFile('gradle.properties', generateGradleProperties());
+            downloadGoogleServicesJsonFile(androidConfig.packageName, settings);
           } finally {
-            setTimeout(() => setIsDownloadingAllEmbed(false), 2200);
+            setIsDownloadingAllEmbed(false);
           }
         };
 
@@ -3628,80 +3629,155 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
             </div>
 
             {/* Build Error Resolution Callout */}
-            <div className="p-4 sm:p-5 rounded-3xl bg-slate-900 border-2 border-amber-500/50 text-xs text-slate-300 space-y-4 shadow-2xl">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-center gap-2 text-amber-400 font-extrabold text-sm sm:text-base">
-                  <AlertTriangle className="w-5 h-5 shrink-0 text-rose-400 animate-pulse" />
-                  <span>Solusi Mengatasi Error: &quot;Set &apos;android.useAndroidX=true&apos; in gradle.properties&quot;</span>
+            <div className="p-4 sm:p-6 rounded-3xl bg-slate-900 border-2 border-rose-500/50 text-xs text-slate-300 space-y-5 shadow-2xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+                <div className="flex items-center gap-2.5 text-rose-400 font-extrabold text-sm sm:text-base">
+                  <AlertTriangle className="w-6 h-6 shrink-0 text-rose-400 animate-pulse" />
+                  <span>Solusi Error Gambar Terbaru: &quot;Package name does not correspond to file path&quot;</span>
                 </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    navigator.clipboard.writeText(generateGradleProperties());
-                    setCopiedEmbedFile('gradle.properties');
-                    setTimeout(() => setCopiedEmbedFile(null), 2500);
-                  }}
-                  className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs shadow transition flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+                  disabled={isDownloadingAllEmbed}
+                  onClick={handleDownloadAllEmbed}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-lg transition flex items-center gap-2 cursor-pointer self-start sm:self-auto"
                 >
-                  <Copy className="w-3.5 h-3.5" />
-                  <span>{copiedEmbedFile === 'gradle.properties' ? 'Tersalin!' : 'Salin Isi gradle.properties'}</span>
+                  {isDownloadingAllEmbed ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                  <span>Unduh ZIP Proyek Utuh (Langsung Jadi)</span>
                 </button>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-rose-950/40 border border-rose-500/40 text-rose-200 text-xs space-y-2">
-                <p className="font-bold flex items-center gap-1.5 text-white">
-                  <span>🚨 Penyebab Gagal Build pada Gambar Anda:</span>
+              {/* Detail Penyebab Error dari Screenshot User */}
+              <div className="p-4 rounded-2xl bg-rose-950/40 border border-rose-500/40 text-rose-200 text-xs space-y-3">
+                <p className="font-extrabold flex items-center gap-2 text-white text-sm">
+                  <span>🚨 Mengapa Muncul Error pada Gambar Anda?</span>
                 </p>
-                <p className="leading-relaxed">
-                  Android Studio menampilkan pesan: <code className="bg-slate-950 px-2 py-0.5 rounded text-amber-300 font-mono">Configuration &apos;:app:debugRuntimeClasspath&apos; contains AndroidX dependencies, but the &apos;android.useAndroidX&apos; property is not enabled. Set &apos;android.useAndroidX=true&apos; in gradle.properties</code>.
+                <p className="leading-relaxed text-slate-200">
+                  Pada screenshot Anda, di panel kiri folder <code className="bg-slate-950 px-2 py-0.5 rounded text-amber-300 font-mono">app/src/main/java/</code>: file <strong className="text-rose-300">MyFirebaseMessagingService.java</strong> ditaruh <strong>di luar</strong> folder paket! File tersebut berada sejajar dengan folder <code className="bg-slate-950 px-2 py-0.5 rounded text-emerald-400 font-mono">com.managementschool.app</code>, bukan di dalamnya.
                 </p>
-                <div className="bg-slate-950/90 p-3 rounded-xl border border-slate-800 text-[11px] text-slate-300 space-y-1.5 font-mono">
-                  <p className="text-emerald-400 font-sans font-bold">Langkah Cepat Memperbaikinya (10 Detik):</p>
-                  <p>1. Di Android Studio sebelah kiri, klik ganda file <span className="text-amber-400 font-bold">gradle.properties</span> (di bawah build.gradle.kts).</p>
-                  <p>2. Tempelkan (paste) kode berikut:</p>
-                  <div className="p-2 bg-slate-900 rounded border border-slate-700 text-emerald-300 select-all">
-                    android.useAndroidX=true<br />
-                    android.enableJetifier=true<br />
-                    org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+                <div className="bg-slate-950/90 p-4 rounded-xl border border-slate-800 space-y-2">
+                  <p className="text-emerald-400 font-sans font-bold text-xs">Cara Cepat Memperbaikinya (Pilih Salah Satu):</p>
+                  <div className="space-y-2 text-slate-300 text-[12px]">
+                    <div className="p-2.5 rounded-lg bg-emerald-950/40 border border-emerald-500/40 text-emerald-200">
+                      <strong>✅ CARA 1 (Paling Mudah &amp; Anti-Gagal):</strong>
+                      <p className="mt-1">
+                        Klik tombol hijau <strong>&quot;Unduh ZIP Proyek Utuh&quot;</strong> di atas. Ekstrak filenya, lalu di Android Studio buka via menu <strong>File &gt; Open</strong>. Semua file &amp; foldernya sudah tersusun 100% sempurna di tempatnya masing-masing, Anda tinggal klik <strong>Build APK</strong>!
+                      </p>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300">
+                      <strong>🖱️ CARA 2 (Perbaiki di Android Studio Anda sekarang):</strong>
+                      <p className="mt-1">
+                        Di panel pohon file sebelah kiri Android Studio, klik dan tahan (drag) file <span className="text-amber-400 font-bold">MyFirebaseMessagingService</span> lalu geser/jatuhkan (drop) masuk ke dalam folder <span className="text-cyan-400 font-bold">com.managementschool.app</span>. Bila muncul kotak konfirmasi dialog, klik <strong>&quot;Refactor&quot;</strong>. Error merah langsung hilang!
+                      </p>
+                    </div>
                   </div>
-                  <p>3. Klik tombol gajah/ikon <span className="text-cyan-400 font-bold">&quot;Sync Project with Gradle Files&quot;</span> atau menu <span className="text-white font-bold">Build &gt; Make Project</span>.</p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <p className="font-bold text-amber-300">1. Error Baris 24: Theme.JesusKingdomChrist</p>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        navigator.clipboard.writeText('android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"');
-                        setCopiedEmbedFile('manifest_theme_line');
-                        setTimeout(() => setCopiedEmbedFile(null), 2500);
-                      }}
-                      className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-emerald-400 font-bold flex items-center gap-1 cursor-pointer"
-                    >
-                      <Copy className="w-3 h-3" />
-                      <span>{copiedEmbedFile === 'manifest_theme_line' ? 'Tersalin!' : 'Salin Baris Tema'}</span>
-                    </button>
-                  </div>
-                  <p className="text-slate-300 text-[11px] leading-relaxed">
-                    Di <code>AndroidManifest.xml</code> baris 24, ganti:
-                  </p>
-                  <div className="p-2 rounded bg-slate-900 border border-slate-700 font-mono text-[11px] space-y-1">
-                    <p className="text-rose-400 line-through">android:theme=&quot;@style/Theme.JesusKingdomChrist&quot;</p>
-                    <p className="text-emerald-400 font-bold">android:theme=&quot;@style/Theme.AppCompat.DayNight.NoActionBar&quot;</p>
-                  </div>
+              {/* PETA LOKASI FILE & STRUKTUR FOLDER ANDROID STUDIO */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
+                <div className="flex items-center gap-2 text-white font-extrabold text-sm">
+                  <Code className="w-4 h-4 text-cyan-400" />
+                  <span>PETA STRUKTUR FOLDER LENGKAP: Kemana Setiap File Harus Ditempel</span>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
-                  <p className="font-bold text-amber-300">2. Menghilangkan Warning Kuning Android 14:</p>
-                  <p className="text-slate-300 text-[11px] leading-relaxed">
-                    Warning baris 16 tentang <em>broad access to photos/videos</em> telah dihilangkan dari kode tab ini. Izin storage lawas tidak lagi diperlukan karena Android modern menggunakan Photo Picker bawaan yang aman.
-                  </p>
-                  <p className="text-emerald-400 text-[11px]">
-                    Atau cukup klik tab <strong>&quot;AndroidManifest.xml (Diperbarui)&quot;</strong> di bawah dan salin seluruh kodenya.
-                  </p>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {/* Pohon Direktori Visual */}
+                  <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 font-mono text-[11px] leading-relaxed text-slate-300 select-all overflow-x-auto">
+                    <p className="text-amber-400 font-bold pb-2 border-b border-slate-800">📁 ManagementSchool (Root Proyek)</p>
+                    <div className="pl-2 pt-2 space-y-1">
+                      <p className="text-slate-400">├── 📄 <span className="text-rose-400 font-bold">gradle.properties</span> <span className="text-emerald-400 font-sans text-[10px]">&lt;-- Tempel android.useAndroidX=true disini</span></p>
+                      <p className="text-slate-400">├── 📄 <span className="text-cyan-300 font-bold">build.gradle.kts</span> (Project)</p>
+                      <p className="text-slate-400">├── 📄 <span className="text-cyan-300 font-bold">settings.gradle.kts</span></p>
+                      <p className="text-amber-400 font-bold pt-2">└── 📁 app (Modul Aplikasi)</p>
+                      <div className="pl-4 space-y-1">
+                        <p className="text-slate-400">├── 📄 <span className="text-cyan-300 font-bold">build.gradle.kts</span> (:app)</p>
+                        <p className="text-slate-400">├── 📄 <span className="text-amber-300 font-bold">google-services.json</span> <span className="text-emerald-400 font-sans text-[10px]">&lt;-- Tempel di dalam folder app</span></p>
+                        <p className="text-amber-400 font-bold pt-1">└── 📁 src / main</p>
+                        <div className="pl-4 space-y-1">
+                          <p className="text-slate-400">├── 📄 <span className="text-emerald-300 font-bold">AndroidManifest.xml</span> <span className="text-cyan-400 font-sans text-[10px]">&lt;-- Tema DayNight.NoActionBar</span></p>
+                          <p className="text-amber-400 font-bold pt-1">└── 📁 java</p>
+                          <div className="pl-4 space-y-1">
+                            <p className="text-emerald-400 font-bold">└── 📁 com.managementschool.app <span className="text-rose-400 font-sans text-[10px]">&lt;-- KEDUA FILE HARUS DI SINI!</span></p>
+                            <div className="pl-4 space-y-0.5">
+                              <p className="text-white font-bold">├── 📄 MainActivity.kt (atau .java)</p>
+                              <p className="text-white font-bold">└── 📄 MyFirebaseMessagingService.java</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tabel Panduan Cepat Salin & Tempel */}
+                  <div className="space-y-2 text-xs">
+                    <p className="text-slate-400 font-bold">Daftar File dan Lokasi Persisnya:</p>
+                    <div className="space-y-2">
+                      <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 flex items-start justify-between gap-2">
+                        <div>
+                          <p className="font-bold text-white flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                            gradle.properties
+                          </p>
+                          <p className="text-[11px] text-slate-400">Lokasi: Root paling luar project (sejajar dengan build.gradle.kts root).</p>
+                        </div>
+                        <span className="px-2 py-0.5 bg-rose-500/20 text-rose-300 rounded text-[10px] shrink-0 font-bold">Wajib AndroidX</span>
+                      </div>
+
+                      <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 flex items-start justify-between gap-2">
+                        <div>
+                          <p className="font-bold text-white flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                            google-services.json
+                          </p>
+                          <p className="text-[11px] text-slate-400">Lokasi: Di dalam folder <code>app/</code> (sejajar dengan <code>app/build.gradle.kts</code>).</p>
+                        </div>
+                        <span className="px-2 py-0.5 bg-amber-500/20 text-amber-300 rounded text-[10px] shrink-0 font-bold">Firebase FCM</span>
+                      </div>
+
+                      <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 flex items-start justify-between gap-2">
+                        <div>
+                          <p className="font-bold text-white flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-cyan-500"></span>
+                            AndroidManifest.xml
+                          </p>
+                          <p className="text-[11px] text-slate-400">Lokasi: Di dalam folder <code>app/src/main/AndroidManifest.xml</code>.</p>
+                        </div>
+                        <span className="px-2 py-0.5 bg-cyan-500/20 text-cyan-300 rounded text-[10px] shrink-0 font-bold">Manifest XML</span>
+                      </div>
+
+                      <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 flex items-start justify-between gap-2">
+                        <div>
+                          <p className="font-bold text-white flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            MainActivity &amp; MyFirebaseMessagingService
+                          </p>
+                          <p className="text-[11px] text-slate-400">Lokasi: Di dalam package <code>app/src/main/java/{androidConfig.packageName.replace(/\./g, '/')}/</code>.</p>
+                        </div>
+                        <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 rounded text-[10px] shrink-0 font-bold">Kode Java/KT</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 3 Langkah Eksekusi Akhir */}
+              <div className="p-4 rounded-2xl bg-emerald-950/30 border border-emerald-500/40 text-emerald-200 text-xs space-y-2">
+                <p className="font-bold text-emerald-300 flex items-center gap-2">
+                  <span>🚀 3 Langkah Terakhir untuk Menghasilkan APK:</span>
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1 text-slate-300">
+                  <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800">
+                    <p className="font-bold text-white text-[11px]">1. Sync Gradle</p>
+                    <p className="text-[11px] text-slate-400 mt-1">Klik ikon gajah di kanan atas atau menu <strong>File &gt; Sync Project with Gradle Files</strong>.</p>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800">
+                    <p className="font-bold text-white text-[11px]">2. Build APK</p>
+                    <p className="text-[11px] text-slate-400 mt-1">Klik menu atas: <strong>Build &gt; Build Bundle(s) / APK(s) &gt; Build APK(s)</strong>.</p>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800">
+                    <p className="font-bold text-white text-[11px]">3. Ambil File APK</p>
+                    <p className="text-[11px] text-slate-400 mt-1">Klik tulisan biru <strong>&quot;locate&quot;</strong> di pop-up kanan bawah. File APK siap dikirim ke HP!</p>
+                  </div>
                 </div>
               </div>
             </div>
