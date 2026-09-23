@@ -55,15 +55,22 @@ export function generateMainActivityJava(config: AndroidStudioConfig): string {
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.DownloadManager;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.util.Base64;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.webkit.DownloadListener;
+import android.webkit.JavascriptInterface;
+import android.webkit.URLUtil;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
@@ -79,6 +86,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import java.io.File;
+import java.io.FileOutputStream;
 
 @SuppressWarnings("deprecation")
 public class MainActivity extends AppCompatActivity {
@@ -173,6 +183,41 @@ public class MainActivity extends AppCompatActivity {
         String defaultUa = webSettings.getUserAgentString();
         webSettings.setUserAgentString(defaultUa + " ${config.userAgentSuffix}");
 
+        // JavaScript Interface untuk Ekspor & Unduh File (Excel, PDF, Backup JSON, Foto)
+        mWebView.addJavascriptInterface(new AndroidDownloaderInterface(), "AndroidDownloader");
+
+        // DownloadListener untuk link file langsung (HTTP / HTTPS)
+        mWebView.setDownloadListener(new DownloadListener() {
+            @Override
+            public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimeType, long contentLength) {
+                if (url.startsWith("blob:") || url.startsWith("data:")) {
+                    return; // Ditangani oleh AndroidDownloaderInterface
+                }
+                try {
+                    DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+                    request.setMimeType(mimeType);
+                    String cookies = android.webkit.CookieManager.getInstance().getCookie(url);
+                    request.addRequestHeader("cookie", cookies);
+                    request.addRequestHeader("User-Agent", userAgent);
+                    request.setDescription("Mengunduh berkas...");
+                    String filename = URLUtil.guessFileName(url, contentDisposition, mimeType);
+                    request.setTitle(filename);
+                    request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+                    request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, filename);
+                    DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+                    if (dm != null) {
+                        dm.enqueue(request);
+                        Toast.makeText(MainActivity.this, "Mengunduh " + filename + "...", Toast.LENGTH_SHORT).show();
+                    }
+                } catch (Exception e) {
+                    try {
+                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                        startActivity(intent);
+                    } catch (Exception ignored) {}
+                }
+            }
+        });
+
         // 4. Izin Push Notifikasi untuk Android 13+ (API 33 Tiramisu / API 34 UpsideDownCake)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
@@ -240,10 +285,40 @@ public class MainActivity extends AppCompatActivity {
             public void onPageFinished(WebView view, String url) {
                 mProgressBar.setVisibility(View.GONE);
                 ${config.enablePullToRefresh ? `if (mSwipeRefreshLayout != null) { mSwipeRefreshLayout.setRefreshing(false); }` : ''}
+
+                // Injeksi otomatis penangkap download Blob / Base64 (Ekspor Excel, Cetak PDF, dll)
+                String blobScript = "javascript:(function() {" +
+                        "if (window.__blob_interceptor_installed) return;" +
+                        "window.__blob_interceptor_installed = true;" +
+                        "var origClick = HTMLAnchorElement.prototype.click;" +
+                        "HTMLAnchorElement.prototype.click = function() {" +
+                        "  if (this.download && this.href && (this.href.indexOf('blob:') === 0 || this.href.indexOf('data:') === 0)) {" +
+                        "    var filename = this.download || 'unduhan_dokumen';" +
+                        "    var href = this.href;" +
+                        "    if (href.indexOf('data:') === 0) {" +
+                        "      var parts = href.split(',');" +
+                        "      var mime = (parts[0].split(':')[1] || '').split(';')[0];" +
+                        "      if (window.AndroidDownloader) window.AndroidDownloader.downloadBlob(parts[1], filename, mime);" +
+                        "      return;" +
+                        "    }" +
+                        "    fetch(href).then(function(r){return r.blob();}).then(function(b){" +
+                        "      var reader = new FileReader();" +
+                        "      reader.onloadend = function(){" +
+                        "        var b64 = (reader.result || '').split(',')[1];" +
+                        "        if (window.AndroidDownloader) window.AndroidDownloader.downloadBlob(b64, filename, b.type || 'application/octet-stream');" +
+                        "      };" +
+                        "      reader.readAsDataURL(b);" +
+                        "    });" +
+                        "    return;" +
+                        "  }" +
+                        "  origClick.apply(this, arguments);" +
+                        "};" +
+                        "})();";
+                mWebView.evaluateJavascript(blobScript, null);
             }
         });
 
-        // 8. WebChromeClient (Loading bar & Upload Foto Bukti Persembahan / Dokumen)
+        // 8. WebChromeClient (Loading bar & Upload Dokumen / Excel / PDF / Foto Bukti)
         mWebView.setWebChromeClient(new WebChromeClient() {
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
@@ -263,8 +338,24 @@ public class MainActivity extends AppCompatActivity {
                 mFilePathCallback = filePathCallback;
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
-                intent.setType("image/*");
-                startActivityForResult(Intent.createChooser(intent, "Pilih Foto Bukti"), FILE_CHOOSER_REQUEST_CODE);
+                if (fileChooserParams != null && fileChooserParams.getAcceptTypes() != null && fileChooserParams.getAcceptTypes().length > 0 && !fileChooserParams.getAcceptTypes()[0].isEmpty()) {
+                    intent.setType(fileChooserParams.getAcceptTypes()[0]);
+                    if (fileChooserParams.getAcceptTypes().length > 1) {
+                        intent.putExtra(Intent.EXTRA_MIME_TYPES, fileChooserParams.getAcceptTypes());
+                    }
+                } else {
+                    intent.setType("*/*");
+                    intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{
+                            "image/*",
+                            "application/pdf",
+                            "application/vnd.ms-excel",
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            "text/csv",
+                            "text/plain",
+                            "application/json"
+                    });
+                }
+                startActivityForResult(Intent.createChooser(intent, "Pilih Berkas (Dokumen / Foto)"), FILE_CHOOSER_REQUEST_CODE);
                 return true;
             }
         });
@@ -278,6 +369,46 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         mWebView.loadUrl(openUrl);
+    }
+
+    // Bridge JavaScript ke Native Android untuk Download Blob / Base64 (Excel & PDF)
+    public class AndroidDownloaderInterface {
+        @JavascriptInterface
+        public void downloadBlob(String base64Data, String fileName, String mimeType) {
+            saveBase64ToFile(base64Data, fileName, mimeType);
+        }
+    }
+
+    private void saveBase64ToFile(String base64Data, String fileName, String mimeType) {
+        try {
+            byte[] fileBytes = Base64.decode(base64Data, Base64.DEFAULT);
+            File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            if (!downloadsDir.exists()) {
+                downloadsDir.mkdirs();
+            }
+            File destFile = new File(downloadsDir, fileName);
+            FileOutputStream fos = new FileOutputStream(destFile);
+            fos.write(fileBytes);
+            fos.flush();
+            fos.close();
+
+            // Pindai agar file langsung terlihat di File Manager HP
+            sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(destFile)));
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(MainActivity.this, "Berhasil diunduh: " + fileName + "\nTersimpan di folder Download", Toast.LENGTH_LONG).show();
+                }
+            });
+        } catch (Exception e) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(MainActivity.this, "Gagal mengunduh: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 
     @Override
@@ -328,12 +459,16 @@ export function generateMainActivityKotlin(config: AndroidStudioConfig): string 
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.DownloadManager
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.util.Base64
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.*
@@ -343,6 +478,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import java.io.File
+import java.io.FileOutputStream
 
 class MainActivity : AppCompatActivity() {
 
@@ -423,6 +560,36 @@ class MainActivity : AppCompatActivity() {
             userAgentString = "$userAgentString ${config.userAgentSuffix}"
         }
 
+        // Bridge JavaScript ke Native Android untuk Download Blob / Base64 (Excel & PDF)
+        webView.addJavascriptInterface(AndroidDownloaderInterface(), "AndroidDownloader")
+
+        // DownloadListener untuk link file langsung (HTTP / HTTPS)
+        webView.setDownloadListener { url, userAgent, contentDisposition, mimeType, _ ->
+            if (url.startsWith("blob:") || url.startsWith("data:")) {
+                return@setDownloadListener
+            }
+            try {
+                val request = DownloadManager.Request(Uri.parse(url)).apply {
+                    setMimeType(mimeType)
+                    val cookies = CookieManager.getInstance().getCookie(url)
+                    addRequestHeader("cookie", cookies)
+                    addRequestHeader("User-Agent", userAgent)
+                    setDescription("Mengunduh berkas...")
+                    val filename = URLUtil.guessFileName(url, contentDisposition, mimeType)
+                    setTitle(filename)
+                    setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                    setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, filename)
+                }
+                val dm = getSystemService(Context.DOWNLOAD_SERVICE) as? DownloadManager
+                dm?.enqueue(request)
+                Toast.makeText(this, "Mengunduh berkas...", Toast.LENGTH_SHORT).show()
+            } catch (_: Exception) {
+                try {
+                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                } catch (_: Exception) {}
+            }
+        }
+
         // 4. Notification Permission (Android 13+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
@@ -477,10 +644,42 @@ class MainActivity : AppCompatActivity() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 progressBar.visibility = View.GONE
                 swipeRefreshLayout?.isRefreshing = false
+
+                // Injeksi otomatis penangkap download Blob / Base64 (Ekspor Excel & PDF)
+                val blobScript = """
+                    javascript:(function() {
+                        if (window.__blob_interceptor_installed) return;
+                        window.__blob_interceptor_installed = true;
+                        var origClick = HTMLAnchorElement.prototype.click;
+                        HTMLAnchorElement.prototype.click = function() {
+                            if (this.download && this.href && (this.href.indexOf('blob:') === 0 || this.href.indexOf('data:') === 0)) {
+                                var filename = this.download || 'unduhan_dokumen';
+                                var href = this.href;
+                                if (href.indexOf('data:') === 0) {
+                                    var parts = href.split(',');
+                                    var mime = (parts[0].split(':')[1] || '').split(';')[0];
+                                    if (window.AndroidDownloader) window.AndroidDownloader.downloadBlob(parts[1], filename, mime);
+                                    return;
+                                }
+                                fetch(href).then(function(r){return r.blob();}).then(function(b){
+                                    var reader = new FileReader();
+                                    reader.onloadend = function(){
+                                        var b64 = (reader.result || '').split(',')[1];
+                                        if (window.AndroidDownloader) window.AndroidDownloader.downloadBlob(b64, filename, b.type || 'application/octet-stream');
+                                    };
+                                    reader.readAsDataURL(b);
+                                });
+                                return;
+                            }
+                            origClick.apply(this, arguments);
+                        };
+                    })();
+                """.trimIndent()
+                webView.evaluateJavascript(blobScript, null)
             }
         }
 
-        // 8. WebChromeClient (File Upload)
+        // 8. WebChromeClient (File Upload Dokumen & Foto)
         webView.webChromeClient = object : WebChromeClient() {
             override fun onProgressChanged(view: WebView?, newProgress: Int) {
                 progressBar.progress = newProgress
@@ -496,15 +695,64 @@ class MainActivity : AppCompatActivity() {
                 this@MainActivity.filePathCallback = filePathCallback
                 val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
                     addCategory(Intent.CATEGORY_OPENABLE)
-                    type = "image/*"
+                    val acceptTypes = fileChooserParams?.acceptTypes
+                    if (acceptTypes != null && acceptTypes.isNotEmpty() && acceptTypes[0].isNotBlank()) {
+                        type = acceptTypes[0]
+                        if (acceptTypes.size > 1) {
+                            putExtra(Intent.EXTRA_MIME_TYPES, acceptTypes)
+                        }
+                    } else {
+                        type = "*/*"
+                        putExtra(Intent.EXTRA_MIME_TYPES, arrayOf(
+                            "image/*",
+                            "application/pdf",
+                            "application/vnd.ms-excel",
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            "text/csv",
+                            "text/plain",
+                            "application/json"
+                        ))
+                    }
                 }
-                startActivityForResult(Intent.createChooser(intent, "Pilih Foto Bukti"), FILE_CHOOSER_REQUEST_CODE)
+                startActivityForResult(Intent.createChooser(intent, "Pilih Berkas (Dokumen / Foto)"), FILE_CHOOSER_REQUEST_CODE)
                 return true
             }
         }
 
         val openUrl = intent?.getStringExtra("target_url")?.takeIf { it.isNotBlank() } ?: TARGET_URL
         webView.loadUrl(openUrl)
+    }
+
+    inner class AndroidDownloaderInterface {
+        @JavascriptInterface
+        fun downloadBlob(base64Data: String, fileName: String, mimeType: String) {
+            saveBase64ToFile(base64Data, fileName, mimeType)
+        }
+    }
+
+    private fun saveBase64ToFile(base64Data: String, fileName: String, mimeType: String) {
+        try {
+            val fileBytes = Base64.decode(base64Data, Base64.DEFAULT)
+            val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+            if (!downloadsDir.exists()) {
+                downloadsDir.mkdirs()
+            }
+            val destFile = File(downloadsDir, fileName)
+            val fos = FileOutputStream(destFile)
+            fos.write(fileBytes)
+            fos.flush()
+            fos.close()
+
+            sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(destFile)))
+
+            runOnUiThread {
+                Toast.makeText(this, "Berhasil diunduh: $fileName\\nTersimpan di folder Download", Toast.LENGTH_LONG).show()
+            }
+        } catch (e: Exception) {
+            runOnUiThread {
+                Toast.makeText(this, "Gagal mengunduh: \${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -672,6 +920,9 @@ export function generateAndroidManifestXml(config: AndroidStudioConfig): string 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <!-- Izin Unduh Berkas untuk Android lawas (Android 10+ otomatis menggunakan Scoped Storage) -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
 
     <!-- Izin Akses Foto Bukti & Kamera (Opsional) -->
     <uses-permission android:name="android.permission.CAMERA" />
