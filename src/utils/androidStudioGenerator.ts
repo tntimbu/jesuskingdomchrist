@@ -398,7 +398,7 @@ public class MainActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Toast.makeText(MainActivity.this, "Berhasil diunduh: " + fileName + "\nTersimpan di folder Download", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "Berhasil diunduh: " + fileName + " (Tersimpan di folder Download)", Toast.LENGTH_LONG).show();
                 }
             });
         } catch (Exception e) {
@@ -746,7 +746,7 @@ class MainActivity : AppCompatActivity() {
             sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(destFile)))
 
             runOnUiThread {
-                Toast.makeText(this, "Berhasil diunduh: $fileName\\nTersimpan di folder Download", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Berhasil diunduh: $fileName (Tersimpan di folder Download)", Toast.LENGTH_LONG).show()
             }
         } catch (e: Exception) {
             runOnUiThread {
