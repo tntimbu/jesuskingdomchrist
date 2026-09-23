@@ -116,7 +116,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
   const [metaForm, setMetaForm] = useState<AppSettings>(settings);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [isAndroidStudioModalOpen, setIsAndroidStudioModalOpen] = useState(false);
-  const [selectedEmbedCodeFile, setSelectedEmbedCodeFile] = useState<string>('MAIN_ACTIVITY');
+  const [selectedEmbedCodeFile, setSelectedEmbedCodeFile] = useState<string>('GRADLE_PROPERTIES');
   const [copiedEmbedFile, setCopiedEmbedFile] = useState<string | null>(null);
   const [isDownloadingAllEmbed, setIsDownloadingAllEmbed] = useState(false);
 
@@ -3432,32 +3432,110 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
 
         const getEmbedCode = () => {
           switch (selectedEmbedCodeFile) {
-            case 'MAIN_ACTIVITY':
-              return { filename: 'MainActivity.java', code: generateMainActivityJava(androidConfig), tag: 'Java Utama' };
-            case 'MAIN_ACTIVITY_KT':
-              return { filename: 'MainActivity.kt', code: generateMainActivityKotlin(androidConfig), tag: 'Kotlin Modern' };
-            case 'MANIFEST':
-              return { filename: 'AndroidManifest.xml', code: generateAndroidManifestXml(androidConfig), tag: 'Manifest' };
-            case 'APP_GRADLE_KTS':
-              return { filename: 'build.gradle.kts (:app)', code: generateAppBuildGradleKts(androidConfig), tag: 'Kotlin DSL' };
-            case 'PROJECT_GRADLE_KTS':
-              return { filename: 'build.gradle.kts (Project)', code: generateProjectBuildGradleKts(), tag: 'Root Kotlin DSL' };
-            case 'SETTINGS_GRADLE_KTS':
-              return { filename: 'settings.gradle.kts', code: generateSettingsGradleKts(androidConfig), tag: 'Settings' };
-            case 'LIBS_VERSIONS_TOML':
-              return { filename: 'gradle/libs.versions.toml', code: generateLibsVersionsToml(), tag: 'Version Catalog' };
-            case 'APP_GRADLE':
-              return { filename: 'app/build.gradle', code: generateAppBuildGradle(androidConfig), tag: 'Groovy App' };
-            case 'PROJECT_GRADLE':
-              return { filename: 'project/build.gradle', code: generateProjectBuildGradle(), tag: 'Groovy Root' };
-            case 'SETTINGS_GRADLE':
-              return { filename: 'settings.gradle', code: generateSettingsGradle(androidConfig), tag: 'Groovy Settings' };
             case 'GRADLE_PROPERTIES':
-              return { filename: 'gradle.properties', code: generateGradleProperties(), tag: 'Properties' };
+              return {
+                filename: 'gradle.properties',
+                path: 'Root Project / gradle.properties',
+                desc: 'Wajib untuk mengatasi error AndroidX. Berisi android.useAndroidX=true & android.enableJetifier=true.',
+                code: generateGradleProperties(),
+                tag: 'Wajib AndroidX 🚨'
+              };
+            case 'MANIFEST':
+              return {
+                filename: 'AndroidManifest.xml',
+                path: 'app / src / main / AndroidManifest.xml',
+                desc: 'Manifest Android 14 bebas error, menggunakan Theme.AppCompat.DayNight.NoActionBar bawaan tanpa error missing style.',
+                code: generateAndroidManifestXml(androidConfig),
+                tag: 'Manifest Diperbarui ⭐'
+              };
+            case 'MAIN_ACTIVITY_KT':
+              return {
+                filename: 'MainActivity.kt',
+                path: `app / src / main / java / ${androidConfig.packageName.replace(/\./g, '/')} / MainActivity.kt`,
+                desc: 'Activity Utama Kotlin modern - WebView responsif dengan pull-to-refresh, status bar serasi, & upload foto bukti.',
+                code: generateMainActivityKotlin(androidConfig),
+                tag: 'Kotlin Modern 🚀'
+              };
+            case 'APP_GRADLE_KTS':
+              return {
+                filename: 'build.gradle.kts (:app)',
+                path: 'app / build.gradle.kts',
+                desc: 'Modul App Kotlin DSL - Menggunakan id plugin standar bebas error libs.plugins unresolved.',
+                code: generateAppBuildGradleKts(androidConfig),
+                tag: 'Kotlin DSL 🔥'
+              };
+            case 'PROJECT_GRADLE_KTS':
+              return {
+                filename: 'build.gradle.kts (Project)',
+                path: 'Root Project / build.gradle.kts',
+                desc: 'Root Project Kotlin DSL - Bebas bentrok repository dengan settings.gradle.kts.',
+                code: generateProjectBuildGradleKts(),
+                tag: 'Root Kotlin DSL'
+              };
+            case 'SETTINGS_GRADLE_KTS':
+              return {
+                filename: 'settings.gradle.kts',
+                path: 'Root Project / settings.gradle.kts',
+                desc: 'Settings Kotlin DSL - Konfigurasi resmi dependency resolution Google Maven & MavenCentral.',
+                code: generateSettingsGradleKts(androidConfig),
+                tag: 'Settings DSL'
+              };
             case 'FCM_SERVICE':
-              return { filename: 'MyFirebaseMessagingService.java', code: generateFirebaseMessagingServiceJava(androidConfig), tag: 'Firebase FCM' };
+              return {
+                filename: 'MyFirebaseMessagingService.java',
+                path: `app / src / main / java / ${androidConfig.packageName.replace(/\./g, '/')} / MyFirebaseMessagingService.java`,
+                desc: 'Service FCM background penerima warta & notifikasi suara alarm Android 13/14.',
+                code: generateFirebaseMessagingServiceJava(androidConfig),
+                tag: 'FCM Push Notif'
+              };
+            case 'MAIN_ACTIVITY':
+              return {
+                filename: 'MainActivity.java',
+                path: `app / src / main / java / ${androidConfig.packageName.replace(/\./g, '/')} / MainActivity.java`,
+                desc: 'Activity Utama Java murni bagi pengguna yang menggunakan Java bukannya Kotlin.',
+                code: generateMainActivityJava(androidConfig),
+                tag: 'Java Alternatif'
+              };
+            case 'LIBS_VERSIONS_TOML':
+              return {
+                filename: 'gradle/libs.versions.toml',
+                path: 'gradle / libs.versions.toml',
+                desc: 'Version Catalog untuk proyek Android Studio modern versi Giraffe / Hedgehog / Koala.',
+                code: generateLibsVersionsToml(),
+                tag: 'Version Catalog'
+              };
+            case 'APP_GRADLE':
+              return {
+                filename: 'app/build.gradle',
+                path: 'app / build.gradle (Groovy)',
+                desc: 'Versi Groovy build.gradle modul app.',
+                code: generateAppBuildGradle(androidConfig),
+                tag: 'Groovy App'
+              };
+            case 'PROJECT_GRADLE':
+              return {
+                filename: 'project/build.gradle',
+                path: 'Root Project / build.gradle (Groovy)',
+                desc: 'Versi Groovy build.gradle tingkat root project.',
+                code: generateProjectBuildGradle(),
+                tag: 'Groovy Root'
+              };
+            case 'SETTINGS_GRADLE':
+              return {
+                filename: 'settings.gradle',
+                path: 'Root Project / settings.gradle (Groovy)',
+                desc: 'Versi Groovy settings.gradle.',
+                code: generateSettingsGradle(androidConfig),
+                tag: 'Groovy Settings'
+              };
             default:
-              return { filename: 'MainActivity.java', code: generateMainActivityJava(androidConfig), tag: 'Java' };
+              return {
+                filename: 'gradle.properties',
+                path: 'Root Project / gradle.properties',
+                desc: 'Wajib untuk mengatasi error AndroidX.',
+                code: generateGradleProperties(),
+                tag: 'Properties'
+              };
           }
         };
 
@@ -3647,18 +3725,18 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
               {/* File Selector Tabs */}
               <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-thin text-xs">
                 {[
-                  { id: 'MAIN_ACTIVITY', label: 'MainActivity.java (Utama) ⭐' },
-                  { id: 'MAIN_ACTIVITY_KT', label: 'MainActivity.kt (Kotlin)' },
-                  { id: 'MANIFEST', label: 'AndroidManifest.xml ⭐' },
+                  { id: 'GRADLE_PROPERTIES', label: 'gradle.properties (Wajib AndroidX) 🚨' },
+                  { id: 'MANIFEST', label: 'AndroidManifest.xml (Diperbarui) ⭐' },
+                  { id: 'MAIN_ACTIVITY_KT', label: 'MainActivity.kt (Kotlin Modern) 🚀' },
                   { id: 'APP_GRADLE_KTS', label: 'build.gradle.kts (:app) 🔥' },
                   { id: 'PROJECT_GRADLE_KTS', label: 'build.gradle.kts (Project)' },
                   { id: 'SETTINGS_GRADLE_KTS', label: 'settings.gradle.kts' },
+                  { id: 'FCM_SERVICE', label: 'MyFirebaseMessagingService.java' },
+                  { id: 'MAIN_ACTIVITY', label: 'MainActivity.java' },
                   { id: 'LIBS_VERSIONS_TOML', label: 'libs.versions.toml' },
                   { id: 'APP_GRADLE', label: 'app/build.gradle (Groovy)' },
                   { id: 'PROJECT_GRADLE', label: 'project/build.gradle (Groovy)' },
-                  { id: 'SETTINGS_GRADLE', label: 'settings.gradle (Groovy)' },
-                  { id: 'GRADLE_PROPERTIES', label: 'gradle.properties' },
-                  { id: 'FCM_SERVICE', label: 'MyFirebaseMessagingService.java' }
+                  { id: 'SETTINGS_GRADLE', label: 'settings.gradle (Groovy)' }
                 ].map((f) => (
                   <button
                     key={f.id}
@@ -3677,13 +3755,26 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
 
               {/* Code Pre Box */}
               <div className="rounded-2xl border border-slate-800 bg-slate-950 overflow-hidden shadow-inner">
-                <div className="px-4 py-2.5 bg-slate-900 border-b border-slate-800 flex items-center justify-between text-xs text-slate-300 font-mono">
-                  <span className="font-bold text-white flex items-center gap-2">
-                    <Code className="w-3.5 h-3.5 text-emerald-400" />
-                    {currentEmbed.filename}
-                  </span>
-                  <span className="text-[11px] text-slate-400">Android SDK 34 • Java 17 / Kotlin 1.9+</span>
+                <div className="px-4 py-2.5 bg-slate-900 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-300 font-mono">
+                  <div>
+                    <span className="font-bold text-white flex items-center gap-2">
+                      <Code className="w-3.5 h-3.5 text-emerald-400" />
+                      {currentEmbed.filename}
+                      <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-sans">
+                        {currentEmbed.tag}
+                      </span>
+                    </span>
+                    <p className="text-[11px] text-cyan-400 font-sans mt-0.5">
+                      📁 Letak File di Android Studio: <span className="font-mono font-bold bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">{currentEmbed.path}</span>
+                    </p>
+                  </div>
+                  <span className="text-[11px] text-slate-400 shrink-0">Android SDK 34 • Java 17 / Kotlin 1.9+</span>
                 </div>
+                {currentEmbed.desc && (
+                  <div className="px-4 py-2 bg-slate-950/80 border-b border-slate-900 text-slate-400 text-[11px]">
+                    💡 {currentEmbed.desc}
+                  </div>
+                )}
                 <pre className="p-4 text-xs font-mono text-emerald-300/90 overflow-x-auto max-h-[440px] leading-relaxed select-all">
                   {currentEmbed.code}
                 </pre>

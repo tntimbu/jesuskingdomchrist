@@ -954,18 +954,18 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
 
                 <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-thin text-xs">
                   {[
-                    { id: 'MAIN_ACTIVITY', label: 'MainActivity.java (Utama) ⭐', tag: 'Java' },
-                    { id: 'MAIN_ACTIVITY_KT', label: 'MainActivity.kt (Kotlin)', tag: 'Kotlin' },
-                    { id: 'MANIFEST', label: 'AndroidManifest.xml ⭐', tag: 'XML' },
+                    { id: 'GRADLE_PROPERTIES', label: 'gradle.properties (Wajib AndroidX) 🚨', tag: 'Config' },
+                    { id: 'MANIFEST', label: 'AndroidManifest.xml (Diperbarui) ⭐', tag: 'XML' },
+                    { id: 'MAIN_ACTIVITY_KT', label: 'MainActivity.kt (Kotlin Modern) 🚀', tag: 'Kotlin' },
                     { id: 'APP_GRADLE_KTS', label: 'build.gradle.kts (:app) 🔥', tag: 'Kotlin DSL' },
                     { id: 'PROJECT_GRADLE_KTS', label: 'build.gradle.kts (Project)', tag: 'Kotlin DSL' },
                     { id: 'SETTINGS_GRADLE_KTS', label: 'settings.gradle.kts', tag: 'Kotlin DSL' },
+                    { id: 'FCM_SERVICE', label: 'MyFirebaseMessagingService.java', tag: 'FCM' },
+                    { id: 'MAIN_ACTIVITY', label: 'MainActivity.java', tag: 'Java' },
                     { id: 'LIBS_VERSIONS_TOML', label: 'libs.versions.toml', tag: 'TOML' },
                     { id: 'APP_GRADLE', label: 'app/build.gradle', tag: 'Groovy' },
                     { id: 'PROJECT_GRADLE', label: 'project/build.gradle', tag: 'Groovy' },
                     { id: 'SETTINGS_GRADLE', label: 'settings.gradle', tag: 'Groovy' },
-                    { id: 'GRADLE_PROPERTIES', label: 'gradle.properties', tag: 'Config' },
-                    { id: 'FCM_SERVICE', label: 'MyFirebaseMessagingService.java', tag: 'FCM' },
                     { id: 'ACTIVITY_LAYOUT', label: 'activity_main.xml', tag: 'Layout' },
                     { id: 'NOTIFICATION_ICON', label: 'ic_notification.xml', tag: 'Drawable' },
                     { id: 'COLORS', label: 'colors.xml', tag: 'Values' },
