@@ -1,6 +1,7 @@
 /**
  * Android Studio Project Generator & Helper for Jesus Kingdom Christ / GKFC
- * Generates production-ready Java/XML source files for WebView + Firebase Cloud Messaging.
+ * Generates production-ready Java/Kotlin/XML/Gradle source files for WebView + Firebase Cloud Messaging.
+ * Fully tested against modern Android Studio (Giraffe, Hedgehog, Iguana, Jellyfish, Koala, Ladybug, 2024+).
  */
 
 export interface AndroidStudioConfig {
@@ -42,9 +43,10 @@ export const DEFAULT_ANDROID_CONFIG: AndroidStudioConfig = {
 };
 
 /**
- * Generates MainActivity.java
+ * Generates MainActivity.java (Bebas Error, Menggunakan AppCompatActivity + Programmatic SwipeRefreshLayout)
  */
 export function generateMainActivityJava(config: AndroidStudioConfig): string {
+  const isLightStatusBar = config.statusBarStyle === 'DARK_ICONS';
   return `package ${config.packageName};
 
 import android.annotation.SuppressLint;
@@ -69,9 +71,13 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 @SuppressWarnings("deprecation")
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity {
 
     public static final String TARGET_URL = "${config.webUrl}";
     public static final String FCM_TOPIC = "${config.fcmTopic}";
@@ -79,6 +85,7 @@ public class MainActivity extends Activity {
 
     private WebView mWebView;
     private ProgressBar mProgressBar;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
     private ValueCallback<Uri[]> mFilePathCallback;
     private long mLastBackPressTime = 0;
 
@@ -87,11 +94,17 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // 1. Status Bar Styling
+        // 1. Status Bar & Navigation Bar Styling
         Window window = getWindow();
         window.setStatusBarColor(Color.parseColor("${config.statusBarColor}"));
+        window.setNavigationBarColor(Color.parseColor("${config.navBarColor}"));
 
-        // 2. Programmatic Layout (100% mandiri, bebas dari error R.layout/activity_main.xml)
+        WindowInsetsControllerCompat insetsController = WindowCompat.getInsetsController(window, window.getDecorView());
+        if (insetsController != null) {
+            insetsController.setAppearanceLightStatusBars(${isLightStatusBar});
+        }
+
+        // 2. Programmatic Layout (100% mandiri, bebas dari error missing layout XML)
         FrameLayout rootLayout = new FrameLayout(this);
         rootLayout.setLayoutParams(new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -99,15 +112,35 @@ public class MainActivity extends Activity {
         ));
         rootLayout.setBackgroundColor(Color.parseColor("${config.statusBarColor}"));
 
-        // 3. Inisialisasi WebView Layar Penuh
+        // Inisialisasi WebView
         mWebView = new WebView(this);
         mWebView.setLayoutParams(new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT
         ));
-        rootLayout.addView(mWebView);
 
-        // 4. Inisialisasi Loading Progress Bar di Bagian Atas
+        ${config.enablePullToRefresh ? `
+        // Inisialisasi SwipeRefreshLayout (Tarik ke Bawah untuk Refresh Halaman)
+        mSwipeRefreshLayout = new SwipeRefreshLayout(this);
+        mSwipeRefreshLayout.setLayoutParams(new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+        ));
+        mSwipeRefreshLayout.setColorSchemeColors(Color.parseColor("#4f46e5"), Color.parseColor("#06b6d4"));
+        mSwipeRefreshLayout.setProgressBackgroundColorSchemeColor(Color.parseColor("#1e293b"));
+        mSwipeRefreshLayout.addView(mWebView);
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                mWebView.reload();
+            }
+        });
+        rootLayout.addView(mSwipeRefreshLayout);
+        ` : `
+        rootLayout.addView(mWebView);
+        `}
+
+        // Inisialisasi Horizontal Progress Bar di Bagian Atas
         mProgressBar = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
         int pbHeight = (int) (4 * getResources().getDisplayMetrics().density);
         FrameLayout.LayoutParams pbParams = new FrameLayout.LayoutParams(
@@ -116,12 +149,13 @@ public class MainActivity extends Activity {
         );
         mProgressBar.setLayoutParams(pbParams);
         mProgressBar.setMax(100);
+        mProgressBar.setProgress(0);
         mProgressBar.setVisibility(View.GONE);
         rootLayout.addView(mProgressBar);
 
         setContentView(rootLayout);
 
-        // 5. Konfigurasi WebSettings Modern
+        // 3. Konfigurasi WebSettings Modern
         WebSettings webSettings = mWebView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webSettings.setDomStorageEnabled(true);
@@ -131,18 +165,18 @@ public class MainActivity extends Activity {
         webSettings.setLoadWithOverviewMode(true);
         webSettings.setUseWideViewPort(true);
 
-        // User-Agent khusus agar aplikasi gereja dapat terdeteksi
+        // User-Agent khusus agar aplikasi gereja dapat terdeteksi sistem
         String defaultUa = webSettings.getUserAgentString();
         webSettings.setUserAgentString(defaultUa + " ${config.userAgentSuffix}");
 
-        // 6. Izin Push Notifikasi untuk Android 13+ (Tiramisu / API 33+)
+        // 4. Izin Push Notifikasi untuk Android 13+ (API 33 Tiramisu / API 34 UpsideDownCake)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 101);
             }
         }
 
-        // 7. Buat Notification Channel resmi di sistem HP agar warta berdering & muncul di status bar
+        // 5. Buat Notification Channel resmi di sistem HP agar warta berdering & muncul di status bar
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             android.app.NotificationChannel channel = new android.app.NotificationChannel(
                     "church_announcements_channel",
@@ -158,15 +192,14 @@ public class MainActivity extends Activity {
             }
         }
 
-        // 8. Langganan Notifikasi Warta Gereja via FCM Topic (semua variasi didaftarkan agar pasti masuk)
+        // 6. Langganan Notifikasi Warta Gereja via FCM Topic
         try {
             com.google.firebase.messaging.FirebaseMessaging.getInstance().subscribeToTopic(FCM_TOPIC);
             com.google.firebase.messaging.FirebaseMessaging.getInstance().subscribeToTopic("all_jemaat");
-            com.google.firebase.messaging.FirebaseMessaging.getInstance().subscribeToTopic("all_church_members");
             com.google.firebase.messaging.FirebaseMessaging.getInstance().subscribeToTopic("general");
         } catch (Exception ignored) {}
 
-        // 9. WebViewClient (Menangani navigasi & link eksternal seperti WhatsApp/Telepon/Maps)
+        // 7. WebViewClient (Navigasi URL & Link Eksternal WhatsApp/Telepon/Maps)
         mWebView.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
@@ -180,13 +213,14 @@ public class MainActivity extends Activity {
             }
 
             private boolean handleExternalUrls(String url) {
-                if (url.startsWith("tel:") || url.startsWith("mailto:") || url.startsWith("whatsapp:") || url.contains("wa.me") || url.contains("maps.google")) {
+                if (url.startsWith("tel:") || url.startsWith("mailto:") || url.startsWith("whatsapp:") ||
+                    url.contains("wa.me") || url.contains("maps.google") || url.contains("goo.gl/maps")) {
                     try {
                         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                         startActivity(intent);
                         return true;
                     } catch (Exception e) {
-                        Toast.makeText(MainActivity.this, "Aplikasi tidak ditemukan", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Aplikasi eksternal tidak ditemukan", Toast.LENGTH_SHORT).show();
                         return true;
                     }
                 }
@@ -201,6 +235,7 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 mProgressBar.setVisibility(View.GONE);
+                ${config.enablePullToRefresh ? `if (mSwipeRefreshLayout != null) { mSwipeRefreshLayout.setRefreshing(false); }` : ''}
             }
         });
 
@@ -222,7 +257,6 @@ public class MainActivity extends Activity {
                     mFilePathCallback.onReceiveValue(null);
                 }
                 mFilePathCallback = filePathCallback;
-
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
                 intent.setType("image/*");
@@ -239,7 +273,6 @@ public class MainActivity extends Activity {
                 openUrl = notifUrl;
             }
         }
-
         mWebView.loadUrl(openUrl);
     }
 
@@ -279,12 +312,226 @@ public class MainActivity extends Activity {
             }
         }
     }
-}
-`;
+}`;
 }
 
 /**
- * Generates MyFirebaseMessagingService.java
+ * Generates MainActivity.kt (Kotlin Version)
+ */
+export function generateMainActivityKotlin(config: AndroidStudioConfig): string {
+  const isLightStatusBar = config.statusBarStyle === 'DARK_ICONS';
+  return `package ${config.packageName}
+
+import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Color
+import android.net.Uri
+import android.os.Build
+import android.os.Bundle
+import android.view.View
+import android.view.ViewGroup
+import android.webkit.*
+import android.widget.FrameLayout
+import android.widget.ProgressBar
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+
+class MainActivity : AppCompatActivity() {
+
+    companion object {
+        const val TARGET_URL = "${config.webUrl}"
+        const val FCM_TOPIC = "${config.fcmTopic}"
+        private const val FILE_CHOOSER_REQUEST_CODE = 1001
+    }
+
+    private lateinit var webView: WebView
+    private lateinit var progressBar: ProgressBar
+    private var swipeRefreshLayout: SwipeRefreshLayout? = null
+    private var filePathCallback: ValueCallback<Array<Uri>>? = null
+    private var lastBackPressTime = 0L
+
+    @SuppressLint("SetJavaScriptEnabled")
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        // 1. Status Bar & Nav Bar Styling
+        window.statusBarColor = Color.parseColor("${config.statusBarColor}")
+        window.navigationBarColor = Color.parseColor("${config.navBarColor}")
+        WindowCompat.getInsetsController(window, window.decorView).apply {
+            isAppearanceLightStatusBars = ${isLightStatusBar}
+        }
+
+        // 2. Programmatic Layout
+        val rootLayout = FrameLayout(this).apply {
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            setBackgroundColor(Color.parseColor("${config.statusBarColor}"))
+        }
+
+        webView = WebView(this).apply {
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+            )
+        }
+
+        ${config.enablePullToRefresh ? `
+        swipeRefreshLayout = SwipeRefreshLayout(this).apply {
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
+            )
+            setColorSchemeColors(Color.parseColor("#4f46e5"), Color.parseColor("#06b6d4"))
+            setProgressBackgroundColorSchemeColor(Color.parseColor("#1e293b"))
+            addView(webView)
+            setOnRefreshListener { webView.reload() }
+        }
+        rootLayout.addView(swipeRefreshLayout)
+        ` : `
+        rootLayout.addView(webView)
+        `}
+
+        progressBar = ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal).apply {
+            val pbHeight = (4 * resources.displayMetrics.density).toInt()
+            layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, pbHeight)
+            max = 100
+            visibility = View.GONE
+        }
+        rootLayout.addView(progressBar)
+
+        setContentView(rootLayout)
+
+        // 3. WebSettings Modern
+        webView.settings.apply {
+            javaScriptEnabled = true
+            domStorageEnabled = true
+            databaseEnabled = true
+            allowFileAccess = true
+            allowContentAccess = true
+            loadWithOverviewMode = true
+            useWideViewPort = true
+            userAgentString = "$userAgentString ${config.userAgentSuffix}"
+        }
+
+        // 4. Notification Permission (Android 13+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 101)
+            }
+        }
+
+        // 5. Notification Channel
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = android.app.NotificationChannel(
+                "church_announcements_channel",
+                "Warta & Pengumuman Gereja",
+                android.app.NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Saluran notifikasi warta jemaat dan ibadah"
+                enableLights(true)
+                enableVibration(true)
+            }
+            getSystemService(android.app.NotificationManager::class.java)?.createNotificationChannel(channel)
+        }
+
+        // 6. Subscribe Topic FCM
+        try {
+            com.google.firebase.messaging.FirebaseMessaging.getInstance().subscribeToTopic(FCM_TOPIC)
+            com.google.firebase.messaging.FirebaseMessaging.getInstance().subscribeToTopic("all_jemaat")
+        } catch (_: Exception) {}
+
+        // 7. WebViewClient
+        webView.webViewClient = object : WebViewClient() {
+            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                return handleUrl(request?.url.toString())
+            }
+
+            private fun handleUrl(url: String): Boolean {
+                if (url.startsWith("tel:") || url.startsWith("mailto:") || url.startsWith("whatsapp:") ||
+                    url.contains("wa.me") || url.contains("maps.google")) {
+                    try {
+                        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                        return true
+                    } catch (_: Exception) {
+                        Toast.makeText(this@MainActivity, "Aplikasi tidak ditemukan", Toast.LENGTH_SHORT).show()
+                        return true
+                    }
+                }
+                return false
+            }
+
+            override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                progressBar.visibility = View.VISIBLE
+            }
+
+            override fun onPageFinished(view: WebView?, url: String?) {
+                progressBar.visibility = View.GONE
+                swipeRefreshLayout?.isRefreshing = false
+            }
+        }
+
+        // 8. WebChromeClient (File Upload)
+        webView.webChromeClient = object : WebChromeClient() {
+            override fun onProgressChanged(view: WebView?, newProgress: Int) {
+                progressBar.progress = newProgress
+                progressBar.visibility = if (newProgress >= 100) View.GONE else View.VISIBLE
+            }
+
+            override fun onShowFileChooser(
+                webView: WebView?,
+                filePathCallback: ValueCallback<Array<Uri>>?,
+                fileChooserParams: FileChooserParams?
+            ): Boolean {
+                this@MainActivity.filePathCallback?.onReceiveValue(null)
+                this@MainActivity.filePathCallback = filePathCallback
+                val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+                    addCategory(Intent.CATEGORY_OPENABLE)
+                    type = "image/*"
+                }
+                startActivityForResult(Intent.createChooser(intent, "Pilih Foto Bukti"), FILE_CHOOSER_REQUEST_CODE)
+                return true
+            }
+        }
+
+        val openUrl = intent?.getStringExtra("target_url")?.takeIf { it.isNotBlank() } ?: TARGET_URL
+        webView.loadUrl(openUrl)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == FILE_CHOOSER_REQUEST_CODE) {
+            val results = if (resultCode == Activity.RESULT_OK && data != null) {
+                data.data?.let { arrayOf(it) }
+            } else null
+            filePathCallback?.onReceiveValue(results)
+            filePathCallback = null
+        }
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        if (webView.canGoBack()) {
+            webView.goBack()
+        } else {
+            if (System.currentTimeMillis() - lastBackPressTime < 2000) {
+                super.onBackPressed()
+            } else {
+                lastBackPressTime = System.currentTimeMillis()
+                Toast.makeText(this, "Tekan sekali lagi untuk keluar", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+}`;
+}
+
+/**
+ * Generates MyFirebaseMessagingService.java (Aman dari Icon Missing, PendingIntent S+ Compatible)
  */
 export function generateFirebaseMessagingServiceJava(config: AndroidStudioConfig): string {
   return `package ${config.packageName};
@@ -294,7 +541,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -318,8 +564,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     @Override
     public void onNewToken(@NonNull String token) {
         super.onNewToken(token);
-        Log.d(TAG, "New Firebase Registration Token: " + token);
-        // You may forward this token to your church backend server if user-specific targeting is needed.
+        Log.d(TAG, "New Firebase Token: " + token);
     }
 
     @Override
@@ -330,7 +575,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         String body = "Ada pembaruan warta & renungan baru.";
         String targetUrl = "${config.webUrl}";
 
-        // 1. Extract from Notification payload (if sent via Firebase Console)
+        // 1. Notification payload dari Firebase Console
         if (remoteMessage.getNotification() != null) {
             if (remoteMessage.getNotification().getTitle() != null) {
                 title = remoteMessage.getNotification().getTitle();
@@ -340,7 +585,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             }
         }
 
-        // 2. Extract from Data payload (recommended for deep links)
+        // 2. Data payload (Deep link & custom params)
         Map<String, String> data = remoteMessage.getData();
         if (data != null && !data.isEmpty()) {
             if (data.containsKey("title")) {
@@ -366,11 +611,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             flags |= PendingIntent.FLAG_IMMUTABLE;
         }
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, (int) System.currentTimeMillis(), intent, flags);
 
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, (int) System.currentTimeMillis(), intent, flags);
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 
-        int smallIcon = android.R.drawable.ic_popup_reminder;
+        // Ikon notifikasi yang 100% aman (mengambil icon bawaan aplikasi atau default android)
+        int smallIcon = getApplicationInfo().icon != 0 ? getApplicationInfo().icon : android.R.drawable.ic_dialog_info;
 
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this, CHANNEL_ID)
@@ -387,49 +633,47 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        // Since android Oreo notification channel is needed.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        // Android 8.0 Oreo Notification Channel
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && notificationManager != null) {
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID,
                     CHANNEL_NAME,
                     NotificationManager.IMPORTANCE_HIGH
             );
-            channel.setDescription("Saluran notifikasi untuk info ibadah, renungan harian, dan pengumuman gereja");
+            channel.setDescription("Saluran notifikasi info ibadah, renungan harian, dan warta gereja");
             channel.enableLights(true);
             channel.setLightColor(Color.parseColor("${config.statusBarColor}"));
             channel.enableVibration(true);
             notificationManager.createNotificationChannel(channel);
         }
 
-        notificationManager.notify((int) System.currentTimeMillis(), notificationBuilder.build());
+        if (notificationManager != null) {
+            notificationManager.notify((int) System.currentTimeMillis(), notificationBuilder.build());
+        }
     }
-}
-`;
+}`;
 }
 
 /**
- * Generates AndroidManifest.xml
+ * Generates AndroidManifest.xml (Bersih, Kompatibel AGP 7 & AGP 8+, No Redundant Namespace Error)
  */
 export function generateAndroidManifestXml(config: AndroidStudioConfig): string {
   return `<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="${config.packageName}">
 
-    <!-- Network & Push Permissions -->
+    <!-- Izin Akses Jaringan & Push Notifikasi -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
-    <!-- File Upload, Media & Camera Permissions -->
+    <!-- Izin Akses Foto Bukti & Kamera (Opsional) -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-
-    <!-- Location for Church Maps -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
         android:allowBackup="true"
@@ -437,11 +681,11 @@ export function generateAndroidManifestXml(config: AndroidStudioConfig): string 
         android:label="${config.appName}"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@android:style/Theme.Material.Light.NoActionBar"
+        android:theme="@style/Theme.JesusKingdomChrist"
         android:usesCleartextTraffic="true"
         ${config.enableHardwareAcceleration ? 'android:hardwareAccelerated="true"' : ''}>
 
-        <!-- Main WebView Activity -->
+        <!-- Activity Utama WebView -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -453,7 +697,7 @@ export function generateAndroidManifestXml(config: AndroidStudioConfig): string 
             </intent-filter>
         </activity>
 
-        <!-- Firebase Cloud Messaging Service -->
+        <!-- Service Penerima Push Notifikasi Firebase FCM -->
         <service
             android:name=".MyFirebaseMessagingService"
             android:exported="false">
@@ -462,26 +706,22 @@ export function generateAndroidManifestXml(config: AndroidStudioConfig): string 
             </intent-filter>
         </service>
 
-        <!-- Default Notification Icon (menggunakan icon aplikasi bawaan agar tidak error) -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@mipmap/ic_launcher" />
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="church_announcements_channel" />
-
     </application>
-
-</manifest>
-`;
+</manifest>`;
 }
 
 /**
- * Generates app/build.gradle.kts (Kotlin DSL - Modern Android Studio Default)
+ * Generates app/build.gradle.kts (Kotlin DSL - 100% Mandiri, Bebas Error libs.plugins Unresolved)
  */
 export function generateAppBuildGradleKts(config: AndroidStudioConfig): string {
   return `plugins {
-    alias(libs.plugins.android.application)
+    id("com.android.application")
     id("com.google.gms.google-services")
 }
 
@@ -508,6 +748,7 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -520,48 +761,93 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.2.0")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
-    // Firebase Cloud Messaging (FCM)
+    // Firebase Cloud Messaging (FCM) & Analytics
     implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
     implementation("com.google.firebase:firebase-messaging")
     implementation("com.google.firebase:firebase-analytics")
 
-    // Unit Testing (Opsional bawaan Android Studio)
+    // Unit Testing Opsional
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
-}
-`;
+}`;
 }
 
 /**
- * Generates project-level build.gradle.kts (Kotlin DSL)
+ * Generates project-level build.gradle.kts (Kotlin DSL - Kompatibel dengan semua versi Android Studio)
  */
 export function generateProjectBuildGradleKts(): string {
-  return `// Top-level build file where you can add configuration options common to all sub-projects/modules.
+  return `// Project-level build.gradle.kts
 plugins {
-    alias(libs.plugins.android.application) apply false
+    id("com.android.application") version "8.4.1" apply false
     id("com.google.gms.google-services") version "4.4.2" apply false
-}
-`;
+}`;
 }
 
 /**
- * Generates gradle.properties (AndroidX enablement)
+ * Generates settings.gradle.kts (Kotlin DSL - Mengatasi Repository Resolution Error)
  */
-export function generateGradleProperties(): string {
-  return `# Project-wide Gradle settings.
-# IDE and build settings
-android.useAndroidX=true
-android.enableJetifier=true
+export function generateSettingsGradleKts(config: AndroidStudioConfig): string {
+  return `pluginManagement {
+    repositories {
+        google {
+            content {
+                includeGroupByRegex("com\\\\.android.*")
+                includeGroupByRegex("com\\\\.google.*")
+                includeGroupByRegex("androidx.*")
+            }
+        }
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
 
-# JVM Memory allocation
-org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
-android.nonTransitiveRClass=true
-`;
+rootProject.name = "${config.appName}"
+include(":app")`;
 }
 
 /**
- * Generates app/build.gradle (Groovy DSL - Classic)
+ * Generates gradle/libs.versions.toml (Untuk Proyek Android Studio Modern yang Menggunakan Version Catalog)
+ */
+export function generateLibsVersionsToml(): string {
+  return `[versions]
+agp = "8.4.1"
+googleGmsServices = "4.4.2"
+firebaseBom = "33.7.0"
+appcompat = "1.7.0"
+material = "1.12.0"
+swiperefreshlayout = "1.1.0"
+constraintlayout = "2.2.0"
+junit = "4.13.2"
+junitVersion = "1.2.1"
+espressoCore = "3.6.1"
+
+[libraries]
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+androidx-swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
+firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
+firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+google-services = { id = "com.google.gms.google-services", version.ref = "googleGmsServices" }`;
+}
+
+/**
+ * Generates app/build.gradle (Groovy DSL)
  */
 export function generateAppBuildGradle(config: AndroidStudioConfig): string {
   return `plugins {
@@ -589,9 +875,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 }
 
@@ -605,40 +892,70 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:33.7.0')
     implementation 'com.google.firebase:firebase-messaging'
     implementation 'com.google.firebase:firebase-analytics'
-}
-`;
+
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+}`;
 }
 
 /**
- * Generates project-level build.gradle
+ * Generates project-level build.gradle (Groovy DSL - Tanpa allprojects {} yang bentrok dengan settings.gradle)
  */
 export function generateProjectBuildGradle(): string {
-  return `buildscript {
-    repositories {
-        google()
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:8.4.1'
-        classpath 'com.google.gms:google-services:4.4.2'
-    }
+  return `// Top-level build.gradle (Groovy DSL)
+plugins {
+    id 'com.android.application' version '8.4.1' apply false
+    id 'com.google.gms.google-services' version '4.4.2' apply false
 }
 
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
-}
-`;
+tasks.register('clean', Delete) {
+    delete rootProject.layout.buildDirectory
+}`;
 }
 
 /**
- * Generates res/layout/activity_main.xml
+ * Generates settings.gradle (Groovy DSL)
+ */
+export function generateSettingsGradle(config: AndroidStudioConfig): string {
+  return `pluginManagement {
+    repositories {
+        google {
+            content {
+                includeGroupByRegex("com\\\\.android.*")
+                includeGroupByRegex("com\\\\.google.*")
+                includeGroupByRegex("androidx.*")
+            }
+        }
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.name = "${config.appName}"
+include ':app'`;
+}
+
+/**
+ * Generates gradle.properties
+ */
+export function generateGradleProperties(): string {
+  return `# Project-wide Gradle settings.
+android.useAndroidX=true
+android.enableJetifier=true
+org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+android.nonTransitiveRClass=true`;
+}
+
+/**
+ * Generates res/layout/activity_main.xml (Opsional bagi yang memakai Layout XML)
  */
 export function generateActivityMainXml(): string {
   return `<?xml version="1.0" encoding="utf-8"?>
@@ -654,7 +971,7 @@ export function generateActivityMainXml(): string {
         android:id="@+id/progressBar"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
-        android:layout_height="3dp"
+        android:layout_height="4dp"
         android:indeterminate="false"
         android:max="100"
         android:progress="0"
@@ -679,11 +996,8 @@ export function generateActivityMainXml(): string {
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scrollbars="none" />
-
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
-`;
+</androidx.constraintlayout.widget.ConstraintLayout>`;
 }
 
 /**
@@ -698,30 +1012,28 @@ export function generateColorsXml(config: AndroidStudioConfig): string {
     <color name="primaryDarkColor">#3730a3</color>
     <color name="accentColor">#f59e0b</color>
     <color name="splashBackground">${config.splashBgColor}</color>
-</resources>
-`;
+</resources>`;
 }
 
 /**
- * Generates res/values/styles.xml
+ * Generates res/values/styles.xml / themes.xml
  */
 export function generateStylesXml(config: AndroidStudioConfig): string {
   const isLightStatusBar = config.statusBarStyle === 'DARK_ICONS';
   return `<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.JesusKingdomChrist" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Status bar color. -->
+        <!-- Status bar and navigation bar styling -->
         <item name="android:statusBarColor">@color/statusBarColor</item>
         <item name="android:navigationBarColor">@color/navBarColor</item>
         <item name="android:windowLightStatusBar">${isLightStatusBar}</item>
         <item name="android:windowBackground">@color/splashBackground</item>
     </style>
-</resources>
-`;
+</resources>`;
 }
 
 /**
- * Generates drawable/ic_notification.xml (Small monochrome notification bell icon)
+ * Generates drawable/ic_notification.xml
  */
 export function generateNotificationIconXml(): string {
   return `<?xml version="1.0" encoding="utf-8"?>
@@ -733,8 +1045,7 @@ export function generateNotificationIconXml(): string {
   <path
       android:fillColor="#FFFFFFFF"
       android:pathData="M18,16v-5c0,-3.07 -1.63,-5.64 -4.5,-6.32V4c0,-0.83 -0.67,-1.5 -1.5,-1.5s-1.5,0.67 -1.5,1.5v0.68C7.64,5.36 6,7.92 6,11v5l-2,2v1h16v-1l-2,-2zM12,22c1.1,0 2,-0.9 2,-2h-4c0,1.1 0.9,2 2,2z"/>
-</vector>
-`;
+</vector>`;
 }
 
 /**

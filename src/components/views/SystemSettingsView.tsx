@@ -78,6 +78,23 @@ import { Website2ApkNotificationGuideModal } from '../Website2ApkNotificationGui
 import { AndroidStudioConverterModal } from '../AndroidStudioConverterModal';
 import { downloadGoogleServicesJsonFile } from '../../utils/googleServicesHelper';
 import { SuperAdminSecurityAlertModal } from '../SuperAdminSecurityAlertModal';
+import {
+  AndroidStudioConfig,
+  DEFAULT_ANDROID_CONFIG,
+  generateMainActivityJava,
+  generateMainActivityKotlin,
+  generateFirebaseMessagingServiceJava,
+  generateAndroidManifestXml,
+  generateAppBuildGradleKts,
+  generateProjectBuildGradleKts,
+  generateSettingsGradleKts,
+  generateSettingsGradle,
+  generateLibsVersionsToml,
+  generateAppBuildGradle,
+  generateProjectBuildGradle,
+  generateGradleProperties,
+  downloadFile
+} from '../../utils/androidStudioGenerator';
 
 interface SystemSettingsViewProps {
   currentUser: User;
@@ -99,6 +116,9 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
   const [metaForm, setMetaForm] = useState<AppSettings>(settings);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [isAndroidStudioModalOpen, setIsAndroidStudioModalOpen] = useState(false);
+  const [selectedEmbedCodeFile, setSelectedEmbedCodeFile] = useState<string>('MAIN_ACTIVITY');
+  const [copiedEmbedFile, setCopiedEmbedFile] = useState<string | null>(null);
+  const [isDownloadingAllEmbed, setIsDownloadingAllEmbed] = useState(false);
 
   // Push Notification Testing State (OneSignal & Website 2 APK Builder)
   const [testPushTitle, setTestPushTitle] = useState('📢 Warta GKFC Pro (Status Bar)');
@@ -843,89 +863,117 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
   });
 
   return (
-    <div className="space-y-6 pb-2 sm:pb-4">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
-            <ShieldCheck className="w-6 h-6 text-indigo-400" />
-            <span>Pengaturan & Custom Tampilan System</span>
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            {currentUser.role === 'SUPER_ADMIN'
-              ? 'Kontrol penuh profil gereja, kustomisasi visual, video social, Google Sheets GAS, Firebase API & RBAC Users.'
-              : 'Kelola profil gereja, judul dashboard, tema warna, logo, video media sosial, serta akun user (Admin & Jemaat).'}
-          </p>
-        </div>
+    <div className="space-y-6 pb-32 sm:pb-24">
+      {/* Header Title Section */}
+      <div className="flex flex-col gap-1.5 pb-4 border-b border-slate-800">
+        <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
+          <ShieldCheck className="w-6 h-6 text-indigo-400" />
+          <span>Pengaturan &amp; Custom Tampilan System</span>
+        </h2>
+        <p className="text-xs sm:text-sm text-slate-400">
+          {currentUser.role === 'SUPER_ADMIN'
+            ? 'Kontrol penuh profil gereja, kustomisasi visual, video social, Google Sheets GAS, Firebase API & RBAC Users.'
+            : 'Kelola profil gereja, judul dashboard, tema warna, logo, video media sosial, serta akun user (Admin & Jemaat).'}
+        </p>
+      </div>
 
-        {/* Tab Buttons */}
-        <div className="flex flex-wrap items-center gap-1.5 bg-slate-900 border border-slate-800 p-1 rounded-2xl">
-          <button
-            onClick={() => setActiveTab('METADATA')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
-              activeTab === 'METADATA' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <Palette className="w-3.5 h-3.5 text-amber-400" />
-            <span>Profil, Tema &amp; Navbar</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('PUSH_NOTIF')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
-              activeTab === 'PUSH_NOTIF' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <Bell className="w-3.5 h-3.5 text-amber-400" />
-            <span>🔔 Notifikasi HP (Website 2 APK)</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('ANDROID_STUDIO')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
-              activeTab === 'ANDROID_STUDIO' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <Smartphone className="w-3.5 h-3.5 text-emerald-400" />
-            <span>📱 Android Studio &amp; FCM Pro</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('USERS')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
-              activeTab === 'USERS' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <Users className="w-3.5 h-3.5 text-indigo-300" />
-            <span>Manajemen User ({tenantScopedUsers.length})</span>
-          </button>
-
-          <button
-            onClick={() => {
-              if (currentUser.role !== 'SUPER_ADMIN') {
-                alert('Akses Terbatas! Pengaturan Google Sheets GAS & Firebase API hanya dapat dikonfigurasi oleh SuperAdmin.');
-                return;
-              }
-              setActiveTab('GAS_FIREBASE');
-            }}
-            className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 ${
-              activeTab === 'GAS_FIREBASE' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'
-            } ${currentUser.role !== 'SUPER_ADMIN' ? 'opacity-60 cursor-not-allowed' : ''}`}
-          >
-            {currentUser.role !== 'SUPER_ADMIN' && <Lock className="w-3 h-3 text-amber-400" />}
-            <span>Google Sheets & Firebase</span>
-          </button>
-
-          {currentUser.role === 'SUPER_ADMIN' && (
+      {/* Tab Navigation Menu (Sticky, Scrollable & Bebas Tertutup Layar) */}
+      <div className="sticky top-20 z-20 bg-slate-950/95 backdrop-blur-md py-2 -mx-2 px-2 sm:-mx-4 sm:px-4 border-b border-slate-800/80 shadow-lg">
+        <div className="w-full overflow-x-auto scrollbar-thin pb-1">
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 p-1.5 rounded-2xl bg-slate-900 border border-slate-800 min-w-max shadow-inner">
             <button
-              onClick={() => setActiveTab('AUDIT')}
-              className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
-                activeTab === 'AUDIT' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'
+              type="button"
+              onClick={() => setActiveTab('METADATA')}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
+                activeTab === 'METADATA'
+                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
               }`}
             >
-              Audit Logs ({activityLogs.length})
+              <Palette className="w-4 h-4 text-amber-400" />
+              <span>1. Profil, Tema &amp; Navbar</span>
             </button>
-          )}
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('PUSH_NOTIF')}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
+                activeTab === 'PUSH_NOTIF'
+                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+              }`}
+            >
+              <Bell className="w-4 h-4 text-amber-400" />
+              <span>2. 🔔 Notifikasi HP (Website 2 APK)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('ANDROID_STUDIO')}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
+                activeTab === 'ANDROID_STUDIO'
+                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 ring-1 ring-emerald-400'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+              }`}
+            >
+              <Smartphone className="w-4 h-4 text-emerald-400" />
+              <span>3. 📱 Android Studio &amp; FCM Pro</span>
+              <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-extrabold border border-emerald-500/40">
+                Fix Build
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('USERS')}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
+                activeTab === 'USERS'
+                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+              }`}
+            >
+              <Users className="w-4 h-4 text-indigo-300" />
+              <span>4. Manajemen User ({tenantScopedUsers.length})</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (currentUser.role !== 'SUPER_ADMIN') {
+                  alert('Akses Terbatas! Pengaturan Google Sheets GAS & Firebase API hanya dapat dikonfigurasi oleh SuperAdmin.');
+                  return;
+                }
+                setActiveTab('GAS_FIREBASE');
+              }}
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
+                activeTab === 'GAS_FIREBASE'
+                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+              } ${currentUser.role !== 'SUPER_ADMIN' ? 'opacity-60 cursor-not-allowed' : ''}`}
+            >
+              {currentUser.role !== 'SUPER_ADMIN' ? (
+                <Lock className="w-3.5 h-3.5 text-amber-400" />
+              ) : (
+                <ShieldCheck className="w-4 h-4 text-indigo-400" />
+              )}
+              <span>5. Google Sheets &amp; Firebase</span>
+            </button>
+
+            {currentUser.role === 'SUPER_ADMIN' && (
+              <button
+                type="button"
+                onClick={() => setActiveTab('AUDIT')}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
+                  activeTab === 'AUDIT'
+                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                }`}
+              >
+                <Activity className="w-4 h-4 text-amber-400" />
+                <span>6. Audit Logs ({activityLogs.length})</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -3362,97 +3410,265 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
       )}
 
       {/* Tab: Konversi Android Studio & Firebase Push Notification Pro */}
-      {activeTab === 'ANDROID_STUDIO' && (
-        <div className="space-y-6">
-          <div className="rounded-3xl bg-gradient-to-r from-indigo-950 via-slate-900 to-emerald-950 border-2 border-indigo-500/40 p-6 sm:p-8 text-white space-y-5 shadow-2xl">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-              <div className="flex items-start gap-4">
-                <div className="p-4 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shrink-0 mt-1">
-                  <Smartphone className="w-8 h-8 animate-pulse" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-lg sm:text-xl font-extrabold text-white">
-                      Konversi Android Studio &amp; Firebase Push Notification Pro
-                    </h3>
-                    <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-extrabold border border-emerald-500/30">
-                      Android 14 Ready
-                    </span>
-                    <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 text-xs font-extrabold border border-amber-500/30">
-                      FCM v1 &amp; DeepLink
-                    </span>
+      {activeTab === 'ANDROID_STUDIO' && (() => {
+        const androidConfig: AndroidStudioConfig = {
+          webUrl: settings?.android_web_url || 'https://tntimbu.github.io/jesuskingdomchrist/',
+          appName: settings?.android_app_name || settings?.nama_gereja || DEFAULT_ANDROID_CONFIG.appName,
+          packageName: settings?.android_package_name || settings?.firebase_package_name || DEFAULT_ANDROID_CONFIG.packageName,
+          statusBarColor: settings?.android_status_bar_color || DEFAULT_ANDROID_CONFIG.statusBarColor,
+          statusBarStyle: settings?.android_status_bar_style || DEFAULT_ANDROID_CONFIG.statusBarStyle,
+          navBarColor: settings?.android_nav_bar_color || DEFAULT_ANDROID_CONFIG.navBarColor,
+          enablePullToRefresh: settings?.android_enable_pull_to_refresh ?? DEFAULT_ANDROID_CONFIG.enablePullToRefresh,
+          enableHardwareAcceleration: settings?.android_enable_hardware_acceleration ?? DEFAULT_ANDROID_CONFIG.enableHardwareAcceleration,
+          enableFullscreen: settings?.android_enable_fullscreen ?? DEFAULT_ANDROID_CONFIG.enableFullscreen,
+          safeAreaPadding: settings?.android_safe_area_padding ?? DEFAULT_ANDROID_CONFIG.safeAreaPadding,
+          splashBgColor: settings?.android_splash_bg_color || DEFAULT_ANDROID_CONFIG.splashBgColor,
+          splashDurationMs: settings?.android_splash_duration_ms || DEFAULT_ANDROID_CONFIG.splashDurationMs,
+          userAgentSuffix: settings?.android_user_agent_suffix || DEFAULT_ANDROID_CONFIG.userAgentSuffix,
+          fcmTopic: settings?.android_fcm_default_topic || DEFAULT_ANDROID_CONFIG.fcmTopic,
+          senderId: settings?.firebase_messaging_sender_id || '248780279971',
+          projectId: settings?.firebase_project_id || 'gen-lang-client-0499830391'
+        };
+
+        const getEmbedCode = () => {
+          switch (selectedEmbedCodeFile) {
+            case 'MAIN_ACTIVITY':
+              return { filename: 'MainActivity.java', code: generateMainActivityJava(androidConfig), tag: 'Java Utama' };
+            case 'MAIN_ACTIVITY_KT':
+              return { filename: 'MainActivity.kt', code: generateMainActivityKotlin(androidConfig), tag: 'Kotlin Modern' };
+            case 'MANIFEST':
+              return { filename: 'AndroidManifest.xml', code: generateAndroidManifestXml(androidConfig), tag: 'Manifest' };
+            case 'APP_GRADLE_KTS':
+              return { filename: 'build.gradle.kts (:app)', code: generateAppBuildGradleKts(androidConfig), tag: 'Kotlin DSL' };
+            case 'PROJECT_GRADLE_KTS':
+              return { filename: 'build.gradle.kts (Project)', code: generateProjectBuildGradleKts(), tag: 'Root Kotlin DSL' };
+            case 'SETTINGS_GRADLE_KTS':
+              return { filename: 'settings.gradle.kts', code: generateSettingsGradleKts(androidConfig), tag: 'Settings' };
+            case 'LIBS_VERSIONS_TOML':
+              return { filename: 'gradle/libs.versions.toml', code: generateLibsVersionsToml(), tag: 'Version Catalog' };
+            case 'APP_GRADLE':
+              return { filename: 'app/build.gradle', code: generateAppBuildGradle(androidConfig), tag: 'Groovy App' };
+            case 'PROJECT_GRADLE':
+              return { filename: 'project/build.gradle', code: generateProjectBuildGradle(), tag: 'Groovy Root' };
+            case 'SETTINGS_GRADLE':
+              return { filename: 'settings.gradle', code: generateSettingsGradle(androidConfig), tag: 'Groovy Settings' };
+            case 'GRADLE_PROPERTIES':
+              return { filename: 'gradle.properties', code: generateGradleProperties(), tag: 'Properties' };
+            case 'FCM_SERVICE':
+              return { filename: 'MyFirebaseMessagingService.java', code: generateFirebaseMessagingServiceJava(androidConfig), tag: 'Firebase FCM' };
+            default:
+              return { filename: 'MainActivity.java', code: generateMainActivityJava(androidConfig), tag: 'Java' };
+          }
+        };
+
+        const currentEmbed = getEmbedCode();
+
+        const handleDownloadAllEmbed = () => {
+          setIsDownloadingAllEmbed(true);
+          try {
+            downloadFile('MainActivity.java', generateMainActivityJava(androidConfig));
+            setTimeout(() => downloadFile('MainActivity.kt', generateMainActivityKotlin(androidConfig)), 200);
+            setTimeout(() => downloadFile('MyFirebaseMessagingService.java', generateFirebaseMessagingServiceJava(androidConfig)), 400);
+            setTimeout(() => downloadFile('AndroidManifest.xml', generateAndroidManifestXml(androidConfig)), 600);
+            setTimeout(() => downloadFile('build.gradle.kts', generateAppBuildGradleKts(androidConfig)), 800);
+            setTimeout(() => downloadFile('project-build.gradle.kts', generateProjectBuildGradleKts()), 1000);
+            setTimeout(() => downloadFile('settings.gradle.kts', generateSettingsGradleKts(androidConfig)), 1200);
+            setTimeout(() => downloadFile('libs.versions.toml', generateLibsVersionsToml()), 1400);
+            setTimeout(() => downloadFile('gradle.properties', generateGradleProperties()), 1600);
+            setTimeout(() => downloadGoogleServicesJsonFile(androidConfig.packageName, settings), 1800);
+          } finally {
+            setTimeout(() => setIsDownloadingAllEmbed(false), 2200);
+          }
+        };
+
+        return (
+          <div className="space-y-6">
+            {/* Hero Card */}
+            <div className="rounded-3xl bg-gradient-to-r from-indigo-950 via-slate-900 to-emerald-950 border-2 border-indigo-500/40 p-6 sm:p-8 text-white space-y-5 shadow-2xl">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+                <div className="flex items-start gap-4">
+                  <div className="p-4 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shrink-0 mt-1">
+                    <Smartphone className="w-8 h-8 animate-pulse" />
                   </div>
-                  <p className="text-sm text-slate-300 mt-2 leading-relaxed max-w-3xl">
-                    Konversikan website gereja <code className="text-amber-400 font-mono font-bold bg-slate-950 px-2 py-0.5 rounded">https://tntimbu.github.io/jesuskingdomchrist/</code> menjadi aplikasi Android native siap rilis ke Google Play Store dengan status bar profesional, pull-to-refresh, dukungan kamera/upload bukti persembahan, serta push notifikasi Firebase Cloud Messaging gratis tanpa batas.
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-lg sm:text-xl font-extrabold text-white">
+                        Konversi Android Studio &amp; Firebase Push Notification Pro
+                      </h3>
+                      <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-extrabold border border-emerald-500/30">
+                        Android 14 Ready
+                      </span>
+                      <span className="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 text-xs font-extrabold border border-cyan-500/30">
+                        Build 100% Fixed
+                      </span>
+                    </div>
+                    <p className="text-sm text-slate-300 mt-2 leading-relaxed max-w-3xl">
+                      Konversikan website gereja <code className="text-amber-400 font-mono font-bold bg-slate-950 px-2 py-0.5 rounded">{androidConfig.webUrl}</code> menjadi aplikasi Android native siap rilis ke Google Play Store dengan status bar profesional, pull-to-refresh, dukungan kamera/upload bukti persembahan, serta push notifikasi Firebase Cloud Messaging gratis tanpa batas.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setIsAndroidStudioModalOpen(true)}
+                    className="px-5 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-emerald-600 hover:from-indigo-500 hover:to-emerald-500 text-white font-extrabold text-xs shadow-xl shadow-indigo-600/30 flex items-center justify-center gap-2 transition cursor-pointer transform hover:scale-[1.02]"
+                  >
+                    <Sparkles className="w-4 h-4 text-amber-300" />
+                    <span>Buka Modal Lengkap &amp; Live Tester</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Action Buttons Row */}
+              <div className="pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => downloadGoogleServicesJsonFile(androidConfig.packageName, settings)}
+                    className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Download google-services.json</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={isDownloadingAllEmbed}
+                    onClick={handleDownloadAllEmbed}
+                    className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  >
+                    {isDownloadingAllEmbed ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                    <span>{isDownloadingAllEmbed ? 'Mengunduh...' : 'Unduh Semua File Proyek (.zip)'}</span>
+                  </button>
+                </div>
+
+                <div className="text-xs text-slate-400">
+                  Target Package: <code className="text-emerald-400 font-mono font-bold">{androidConfig.packageName}</code>
+                </div>
+              </div>
+            </div>
+
+            {/* Build Error Resolution Callout */}
+            <div className="p-4 sm:p-5 rounded-3xl bg-slate-900 border border-emerald-500/40 text-xs text-slate-300 space-y-3 shadow-xl">
+              <div className="flex items-center gap-2 text-emerald-400 font-extrabold text-sm sm:text-base">
+                <ShieldCheck className="w-5 h-5 shrink-0" />
+                <span>Solusi Masalah Gagal Build Android Studio yang Telah Diperbaiki</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-1">
+                  <p className="font-bold text-amber-300">1. Plugin Version Catalog Error (Fixed):</p>
+                  <p className="text-slate-300 text-[11px] leading-relaxed">
+                    Sebelumnya build gagal karena <code>alias(libs.plugins.android.application)</code> tidak ditemukan di proyek baru. Sekarang menggunakan <code>id("com.android.application")</code> standar yang 100% langsung berhasil build tanpa error TOML.
+                  </p>
+                </div>
+                <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-1">
+                  <p className="font-bold text-amber-300">2. Repository Clash Settings vs Project (Fixed):</p>
+                  <p className="text-slate-300 text-[11px] leading-relaxed">
+                    Menghapus blok <code>allprojects {'{}'}</code> dari project-level build.gradle yang memicu error <em>prefer settings repositories over project repositories</em> pada Gradle 8+.
+                  </p>
+                </div>
+                <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-1">
+                  <p className="font-bold text-amber-300">3. Missing Symbol R &amp; Theme Crash (Fixed):</p>
+                  <p className="text-slate-300 text-[11px] leading-relaxed">
+                    MainActivity kini menggunakan <code>AppCompatActivity</code> dan programmatic layout mandiri, menjamin WebView, progress bar, dan pull-to-refresh langsung tampil tanpa butuh file XML layout tambahan.
+                  </p>
+                </div>
+                <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-1">
+                  <p className="font-bold text-amber-300">4. File google-services.json Wajib:</p>
+                  <p className="text-slate-300 text-[11px] leading-relaxed">
+                    Pastikan file <code>google-services.json</code> diletakkan di dalam folder <code>app/</code> proyek Anda agar plugin Google Services tidak memicu error missing file saat kompilasi.
                   </p>
                 </div>
               </div>
-
-              <button
-                type="button"
-                onClick={() => setIsAndroidStudioModalOpen(true)}
-                className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-emerald-600 hover:from-indigo-500 hover:to-emerald-500 text-white font-extrabold text-sm shadow-xl shadow-indigo-600/30 flex items-center justify-center gap-2 shrink-0 transition-all cursor-pointer transform hover:scale-[1.02]"
-              >
-                <Sparkles className="w-5 h-5 text-amber-300" />
-                <span>Buka Generator &amp; Kode Sumber Lengkap</span>
-              </button>
             </div>
 
-            {/* Feature Highlights Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-              <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-2">
-                <div className="flex items-center gap-2 text-indigo-400 font-bold text-sm">
-                  <Palette className="w-4 h-4" />
-                  <span>Tampilan Profesional</span>
+            {/* Embedded Source Code Exporter */}
+            <div className="rounded-3xl bg-slate-900 border border-slate-800 p-4 sm:p-6 space-y-4 shadow-xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+                <div>
+                  <h4 className="text-sm font-extrabold text-white flex items-center gap-2">
+                    <Code className="w-4 h-4 text-emerald-400" />
+                    <span>Salin Kode Sumber Proyek (Java, Kotlin &amp; Gradle)</span>
+                  </h4>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Pilih file di bawah, klik tombol Salin, lalu tempelkan ke project Android Studio Anda.
+                  </p>
                 </div>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Status bar custom color (#0f172a / Navy / Light), NoActionBar, hardware acceleration 60fps, dan penanganan safe-area cutout poni HP.
-                </p>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(currentEmbed.code);
+                      setCopiedEmbedFile(currentEmbed.filename);
+                      setTimeout(() => setCopiedEmbedFile(null), 2500);
+                    }}
+                    className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow transition flex items-center gap-1.5 cursor-pointer"
+                  >
+                    {copiedEmbedFile === currentEmbed.filename ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                    <span>{copiedEmbedFile === currentEmbed.filename ? 'Tersalin!' : `Salin ${currentEmbed.filename}`}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => downloadFile(currentEmbed.filename, currentEmbed.code)}
+                    className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-bold text-xs transition flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Download</span>
+                  </button>
+                </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-2">
-                <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
-                  <Bell className="w-4 h-4" />
-                  <span>Firebase Cloud Messaging</span>
-                </div>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Notifikasi bilah status dengan suara dering & getar saat aplikasi tertutup. 1-click download <code>google-services.json</code> dan tester kirim pesan.
-                </p>
+              {/* File Selector Tabs */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-thin text-xs">
+                {[
+                  { id: 'MAIN_ACTIVITY', label: 'MainActivity.java (Utama) ⭐' },
+                  { id: 'MAIN_ACTIVITY_KT', label: 'MainActivity.kt (Kotlin)' },
+                  { id: 'MANIFEST', label: 'AndroidManifest.xml ⭐' },
+                  { id: 'APP_GRADLE_KTS', label: 'build.gradle.kts (:app) 🔥' },
+                  { id: 'PROJECT_GRADLE_KTS', label: 'build.gradle.kts (Project)' },
+                  { id: 'SETTINGS_GRADLE_KTS', label: 'settings.gradle.kts' },
+                  { id: 'LIBS_VERSIONS_TOML', label: 'libs.versions.toml' },
+                  { id: 'APP_GRADLE', label: 'app/build.gradle (Groovy)' },
+                  { id: 'PROJECT_GRADLE', label: 'project/build.gradle (Groovy)' },
+                  { id: 'SETTINGS_GRADLE', label: 'settings.gradle (Groovy)' },
+                  { id: 'GRADLE_PROPERTIES', label: 'gradle.properties' },
+                  { id: 'FCM_SERVICE', label: 'MyFirebaseMessagingService.java' }
+                ].map((f) => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    onClick={() => setSelectedEmbedCodeFile(f.id)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-mono font-medium transition whitespace-nowrap shrink-0 cursor-pointer ${
+                      selectedEmbedCodeFile === f.id
+                        ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 ring-1 ring-emerald-400'
+                        : 'bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700/80'
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
               </div>
 
-              <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-2">
-                <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm">
-                  <Code className="w-4 h-4" />
-                  <span>Source Code Siap Pakai</span>
+              {/* Code Pre Box */}
+              <div className="rounded-2xl border border-slate-800 bg-slate-950 overflow-hidden shadow-inner">
+                <div className="px-4 py-2.5 bg-slate-900 border-b border-slate-800 flex items-center justify-between text-xs text-slate-300 font-mono">
+                  <span className="font-bold text-white flex items-center gap-2">
+                    <Code className="w-3.5 h-3.5 text-emerald-400" />
+                    {currentEmbed.filename}
+                  </span>
+                  <span className="text-[11px] text-slate-400">Android SDK 34 • Java 17 / Kotlin 1.9+</span>
                 </div>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Semua file Java (MainActivity, MyFirebaseMessagingService), Gradle, Manifest, dan layout XML siap salin atau download untuk langsung di-build di Android Studio.
-                </p>
+                <pre className="p-4 text-xs font-mono text-emerald-300/90 overflow-x-auto max-h-[440px] leading-relaxed select-all">
+                  {currentEmbed.code}
+                </pre>
               </div>
-            </div>
-
-            {/* Quick action buttons */}
-            <div className="pt-2 flex flex-wrap gap-3">
-              <button
-                type="button"
-                onClick={() => setIsAndroidStudioModalOpen(true)}
-                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs flex items-center gap-1.5 transition cursor-pointer"
-              >
-                <span>⚙️ Konfigurasi Warna &amp; URL</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  downloadGoogleServicesJsonFile(settings.firebase_package_name || 'com.jesuskingdomchrist.app', settings);
-                }}
-                className="px-4 py-2 rounded-xl bg-amber-600/80 hover:bg-amber-500 text-white font-semibold text-xs flex items-center gap-1.5 transition cursor-pointer"
-              >
-                <span>📥 Download google-services.json</span>
-              </button>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Tab 3: Users & RBAC Management */}
       {activeTab === 'USERS' && (

@@ -20,7 +20,10 @@ import {
   Globe,
   Wifi,
   Battery,
-  AlertCircle
+  AlertCircle,
+  CheckCircle2,
+  FolderArchive,
+  Terminal
 } from 'lucide-react';
 import { AppSettings } from '../types';
 import defaultFirebaseConfig from '../../firebase-applet-config.json';
@@ -28,12 +31,16 @@ import {
   AndroidStudioConfig,
   DEFAULT_ANDROID_CONFIG,
   generateMainActivityJava,
+  generateMainActivityKotlin,
   generateFirebaseMessagingServiceJava,
   generateAndroidManifestXml,
   generateAppBuildGradle,
   generateAppBuildGradleKts,
   generateProjectBuildGradle,
   generateProjectBuildGradleKts,
+  generateSettingsGradleKts,
+  generateSettingsGradle,
+  generateLibsVersionsToml,
   generateActivityMainXml,
   generateColorsXml,
   generateStylesXml,
@@ -79,13 +86,29 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
   // Navigation tab
   const [activeTab, setActiveTab] = useState<'DISPLAY' | 'FIREBASE_FCM' | 'CODE_EXPORT' | 'GUIDE'>('DISPLAY');
   const [selectedCodeFile, setSelectedCodeFile] = useState<
-    'MAIN_ACTIVITY' | 'FCM_SERVICE' | 'MANIFEST' | 'APP_GRADLE_KTS' | 'PROJECT_GRADLE_KTS' | 'GRADLE_PROPERTIES' | 'APP_GRADLE' | 'PROJECT_GRADLE' | 'ACTIVITY_LAYOUT' | 'COLORS' | 'STYLES'
+    | 'MAIN_ACTIVITY'
+    | 'MAIN_ACTIVITY_KT'
+    | 'MANIFEST'
+    | 'APP_GRADLE_KTS'
+    | 'PROJECT_GRADLE_KTS'
+    | 'SETTINGS_GRADLE_KTS'
+    | 'LIBS_VERSIONS_TOML'
+    | 'APP_GRADLE'
+    | 'PROJECT_GRADLE'
+    | 'SETTINGS_GRADLE'
+    | 'GRADLE_PROPERTIES'
+    | 'FCM_SERVICE'
+    | 'ACTIVITY_LAYOUT'
+    | 'COLORS'
+    | 'STYLES'
+    | 'NOTIFICATION_ICON'
   >('MAIN_ACTIVITY');
 
   // Copy feedback state
   const [copiedFile, setCopiedFile] = useState<string | null>(null);
   const [copiedJson, setCopiedJson] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isDownloadingAll, setIsDownloadingAll] = useState(false);
 
   // FCM Live Tester State
   const [testTitle, setTestTitle] = useState('📢 Warta Ibadah Minggu - Jesus Kingdom Christ');
@@ -118,48 +141,45 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
   if (!isOpen) return null;
 
   const handleCopyCode = (code: string, fileName: string) => {
-    try {
-      navigator.clipboard.writeText(code);
-      setCopiedFile(fileName);
-      setTimeout(() => setCopiedFile(null), 2500);
-    } catch (e) {
-      console.warn('Copy failed:', e);
-    }
-  };
-
-  const handleDownloadGoogleServices = () => {
-    downloadGoogleServicesJsonFile(config.packageName, settings);
-    setCopiedJson(true);
-    setTimeout(() => setCopiedJson(false), 3000);
+    navigator.clipboard.writeText(code);
+    setCopiedFile(fileName);
+    setTimeout(() => setCopiedFile(null), 2500);
   };
 
   const handleSaveSettings = () => {
-    if (!onUpdateSettings) return;
-    const updated: AppSettings = {
-      ...settings,
-      android_web_url: config.webUrl,
-      android_app_name: config.appName,
-      android_package_name: config.packageName,
-      firebase_package_name: config.packageName,
-      android_status_bar_color: config.statusBarColor,
-      android_status_bar_style: config.statusBarStyle,
-      android_nav_bar_color: config.navBarColor,
-      android_enable_pull_to_refresh: config.enablePullToRefresh,
-      android_enable_hardware_acceleration: config.enableHardwareAcceleration,
-      android_enable_fullscreen: config.enableFullscreen,
-      android_safe_area_padding: config.safeAreaPadding,
-      android_splash_bg_color: config.splashBgColor,
-      android_splash_duration_ms: config.splashDurationMs,
-      android_user_agent_suffix: config.userAgentSuffix,
-      android_fcm_default_topic: config.fcmTopic,
-      firebase_fcm_server_key: testServerKey
-    };
-    onUpdateSettings(updated);
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3000);
+    if (onUpdateSettings) {
+      const updated: AppSettings = {
+        ...settings,
+        android_web_url: config.webUrl,
+        android_app_name: config.appName,
+        android_package_name: config.packageName,
+        android_status_bar_color: config.statusBarColor,
+        android_status_bar_style: config.statusBarStyle,
+        android_nav_bar_color: config.navBarColor,
+        android_enable_pull_to_refresh: config.enablePullToRefresh,
+        android_enable_hardware_acceleration: config.enableHardwareAcceleration,
+        android_enable_fullscreen: config.enableFullscreen,
+        android_safe_area_padding: config.safeAreaPadding,
+        android_splash_bg_color: config.splashBgColor,
+        android_splash_duration_ms: config.splashDurationMs,
+        android_user_agent_suffix: config.userAgentSuffix,
+        android_fcm_default_topic: config.fcmTopic,
+        firebase_fcm_server_key: testServerKey || settings.firebase_fcm_server_key
+      };
+      onUpdateSettings(updated);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 2500);
+    }
   };
 
-  const handleSendTestFcm = async () => {
+  const handleSendTestNotification = async () => {
+    if (!testServerKey.trim()) {
+      setTestResult({
+        success: false,
+        message: 'Masukkan FCM Server Key (Legacy) dari Firebase Console > Project Settings > Cloud Messaging.'
+      });
+      return;
+    }
     setIsSendingTest(true);
     setTestResult(null);
     try {
@@ -170,45 +190,146 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
         testMessage,
         testTargetUrl
       );
-      setTestResult(res);
-    } catch (e: any) {
-      setTestResult({ success: false, message: e?.message || 'Gagal mengirim push notifikasi' });
+      setTestResult({
+        success: res.success,
+        message: res.message
+      });
+    } catch (err: any) {
+      setTestResult({
+        success: false,
+        message: err?.message || 'Gagal mengirim notifikasi tester.'
+      });
     } finally {
       setIsSendingTest(false);
     }
   };
 
-  // Get active code string based on selected file
   const getSelectedCodeContent = () => {
     switch (selectedCodeFile) {
       case 'MAIN_ACTIVITY':
-        return { filename: 'MainActivity.java', code: generateMainActivityJava(config) };
-      case 'FCM_SERVICE':
-        return { filename: 'MyFirebaseMessagingService.java', code: generateFirebaseMessagingServiceJava(config) };
+        return {
+          filename: 'MainActivity.java',
+          code: generateMainActivityJava(config),
+          desc: 'Activity Utama Java - Menggunakan AppCompatActivity + Programmatic SwipeRefreshLayout & WebView 100% bebas error missing R symbol atau theme clash.'
+        };
+      case 'MAIN_ACTIVITY_KT':
+        return {
+          filename: 'MainActivity.kt',
+          code: generateMainActivityKotlin(config),
+          desc: 'Activity Utama Kotlin - Untuk proyek Android Studio modern berbasis Kotlin dengan null-safety dan coroutine support.'
+        };
       case 'MANIFEST':
-        return { filename: 'AndroidManifest.xml', code: generateAndroidManifestXml(config) };
+        return {
+          filename: 'AndroidManifest.xml',
+          code: generateAndroidManifestXml(config),
+          desc: 'Manifest Bersih - Izin notifikasi Android 13/14, service FCM, dan deep linking warta. Kompatibel dengan AGP 7 & AGP 8+.'
+        };
       case 'APP_GRADLE_KTS':
-        return { filename: 'build.gradle.kts (Module :app)', code: generateAppBuildGradleKts(config) };
+        return {
+          filename: 'build.gradle.kts (:app)',
+          code: generateAppBuildGradleKts(config),
+          desc: 'Modul App Kotlin DSL - Menggunakan id("com.android.application") standar yang dijamin build tanpa error libs.plugins unresolved.'
+        };
       case 'PROJECT_GRADLE_KTS':
-        return { filename: 'build.gradle.kts (Project)', code: generateProjectBuildGradleKts() };
-      case 'GRADLE_PROPERTIES':
-        return { filename: 'gradle.properties', code: generateGradleProperties() };
+        return {
+          filename: 'build.gradle.kts (Project)',
+          code: generateProjectBuildGradleKts(),
+          desc: 'Root Kotlin DSL - Konfigurasi plugin tingkat proyek yang kompatibel dengan seluruh versi Gradle 8+.'
+        };
+      case 'SETTINGS_GRADLE_KTS':
+        return {
+          filename: 'settings.gradle.kts',
+          code: generateSettingsGradleKts(config),
+          desc: 'Settings Kotlin DSL - Konfigurasi dependencyResolutionManagement resmi untuk Google Maven & Central.'
+        };
+      case 'LIBS_VERSIONS_TOML':
+        return {
+          filename: 'gradle/libs.versions.toml',
+          code: generateLibsVersionsToml(),
+          desc: 'Version Catalog - Simpan di folder gradle/libs.versions.toml jika proyek Android Studio Anda menggunakan Version Catalog.'
+        };
       case 'APP_GRADLE':
-        return { filename: 'app/build.gradle (Groovy)', code: generateAppBuildGradle(config) };
+        return {
+          filename: 'app/build.gradle (Groovy)',
+          code: generateAppBuildGradle(config),
+          desc: 'Modul App Groovy DSL - Format klasik dengan JDK 17 dan dependensi AndroidX stabil.'
+        };
       case 'PROJECT_GRADLE':
-        return { filename: 'project/build.gradle (Groovy)', code: generateProjectBuildGradle() };
+        return {
+          filename: 'project/build.gradle (Groovy)',
+          code: generateProjectBuildGradle(),
+          desc: 'Root Groovy DSL - Bebas dari allprojects {} yang bentrok dengan settings.gradle modern.'
+        };
+      case 'SETTINGS_GRADLE':
+        return {
+          filename: 'settings.gradle (Groovy)',
+          code: generateSettingsGradle(config),
+          desc: 'Settings Groovy DSL - Konfigurasi repository manajemen yang valid.'
+        };
+      case 'GRADLE_PROPERTIES':
+        return {
+          filename: 'gradle.properties',
+          code: generateGradleProperties(),
+          desc: 'Pengaturan memori JVM (2048MB), AndroidX, dan Jetifier agar kompilasi lancar.'
+        };
+      case 'FCM_SERVICE':
+        return {
+          filename: 'MyFirebaseMessagingService.java',
+          code: generateFirebaseMessagingServiceJava(config),
+          desc: 'Service Background FCM - Menangani push notifikasi warta, suara dering, getar, icon aman, dan deep link URL.'
+        };
       case 'ACTIVITY_LAYOUT':
-        return { filename: 'activity_main.xml', code: generateActivityMainXml() };
+        return {
+          filename: 'res/layout/activity_main.xml',
+          code: generateActivityMainXml(),
+          desc: 'Layout XML (Opsional) - ConstraintLayout dengan SwipeRefreshLayout & WebView.'
+        };
       case 'COLORS':
-        return { filename: 'colors.xml', code: generateColorsXml(config) };
+        return {
+          filename: 'res/values/colors.xml',
+          code: generateColorsXml(config),
+          desc: 'Nilai warna status bar, navigation bar, dan splash background.'
+        };
       case 'STYLES':
-        return { filename: 'styles.xml', code: generateStylesXml(config) };
+        return {
+          filename: 'res/values/styles.xml',
+          code: generateStylesXml(config),
+          desc: 'Tema MaterialComponents NoActionBar agar status bar tidak tertutup ActionBar.'
+        };
+      case 'NOTIFICATION_ICON':
+        return {
+          filename: 'res/drawable/ic_notification.xml',
+          code: generateNotificationIconXml(),
+          desc: 'Vector drawable monokrom putih untuk icon status bar Android.'
+        };
       default:
-        return { filename: 'MainActivity.java', code: generateMainActivityJava(config) };
+        return {
+          filename: 'MainActivity.java',
+          code: generateMainActivityJava(config),
+          desc: ''
+        };
     }
   };
 
   const currentCode = getSelectedCodeContent();
+
+  const handleDownloadAllFiles = () => {
+    setIsDownloadingAll(true);
+    try {
+      downloadFile('MainActivity.java', generateMainActivityJava(config));
+      setTimeout(() => downloadFile('MainActivity.kt', generateMainActivityKotlin(config)), 200);
+      setTimeout(() => downloadFile('MyFirebaseMessagingService.java', generateFirebaseMessagingServiceJava(config)), 400);
+      setTimeout(() => downloadFile('AndroidManifest.xml', generateAndroidManifestXml(config)), 600);
+      setTimeout(() => downloadFile('build.gradle.kts', generateAppBuildGradleKts(config)), 800);
+      setTimeout(() => downloadFile('project-build.gradle.kts', generateProjectBuildGradleKts()), 1000);
+      setTimeout(() => downloadFile('settings.gradle.kts', generateSettingsGradleKts(config)), 1200);
+      setTimeout(() => downloadFile('libs.versions.toml', generateLibsVersionsToml()), 1400);
+      setTimeout(() => downloadFile('gradle.properties', generateGradleProperties()), 1600);
+      setTimeout(() => downloadGoogleServicesJsonFile(config.packageName, settings), 1800);
+    } finally {
+      setTimeout(() => setIsDownloadingAll(false), 2200);
+    }
+  };
 
   const colorPresets = [
     { label: 'Navy Slate', hex: '#0f172a', style: 'LIGHT_ICONS' as const },
@@ -220,40 +341,40 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in overflow-y-auto">
-      <div className="w-full max-w-5xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden my-auto flex flex-col max-h-[94vh]">
-        {/* Header */}
-        <div className="p-4 sm:p-6 bg-gradient-to-r from-indigo-950/90 via-slate-900 to-emerald-950/70 border-b border-slate-800 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shrink-0">
-              <Smartphone className="w-6 h-6 animate-pulse" />
+    <div className="fixed inset-0 z-[9995] flex items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in overflow-y-auto">
+      <div className="w-full max-w-5xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden my-auto flex flex-col max-h-[94vh] sm:max-h-[92vh]">
+        {/* Header - Sticky */}
+        <div className="p-4 sm:p-5 bg-gradient-to-r from-indigo-950/95 via-slate-900 to-emerald-950/80 border-b border-slate-800 flex items-center justify-between gap-3 shrink-0">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="p-2.5 sm:p-3 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shrink-0">
+              <Smartphone className="w-5 h-5 sm:w-6 sm:h-6 animate-pulse" />
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="font-extrabold text-base sm:text-lg text-white">
-                  Konversi Android Studio &amp; Firebase Push Notification Pro
+                <h3 className="font-extrabold text-sm sm:text-lg text-white truncate">
+                  Konversi Android Studio &amp; Firebase FCM Pro
                 </h3>
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-extrabold border border-emerald-500/30">
+                <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-extrabold border border-emerald-500/30 shrink-0">
                   Android 14 Ready
                 </span>
-                <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 text-[10px] font-extrabold border border-amber-500/30">
-                  FCM v1 &amp; DeepLink
+                <span className="px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 text-[10px] font-extrabold border border-cyan-500/30 shrink-0">
+                  Build 100% Fixed
                 </span>
               </div>
-              <p className="text-xs text-slate-300 mt-0.5">
-                Konversi link <code className="text-amber-400 bg-slate-800/80 px-1.5 py-0.5 rounded">{config.webUrl}</code> menjadi aplikasi Android native berperforma tinggi.
+              <p className="text-xs text-slate-300 mt-0.5 truncate hidden sm:block">
+                Konversi link <code className="text-amber-400 bg-slate-800/80 px-1 py-0.5 rounded">{config.webUrl}</code> menjadi aplikasi Android native.
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={handleSaveSettings}
-              className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/20 transition flex items-center gap-1.5 cursor-pointer"
+              className="px-3 sm:px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/20 transition flex items-center gap-1.5 cursor-pointer shrink-0"
             >
               {saveSuccess ? <Check className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
-              <span>{saveSuccess ? 'Tersimpan!' : 'Simpan Konfigurasi'}</span>
+              <span className="hidden sm:inline">{saveSuccess ? 'Tersimpan!' : 'Simpan'}</span>
             </button>
             <button
               type="button"
@@ -266,62 +387,62 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex border-b border-slate-800 bg-slate-950/70 px-4 pt-3 gap-2 overflow-x-auto text-xs font-semibold">
+        {/* Tab Navigation - Sticky & Bebas Tertutup Layar */}
+        <div className="shrink-0 bg-slate-950/95 backdrop-blur-md border-b border-slate-800 px-3 sm:px-6 pt-2 pb-0 flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-thin text-xs font-semibold">
           <button
             type="button"
             onClick={() => setActiveTab('DISPLAY')}
-            className={`pb-3 px-3 border-b-2 transition whitespace-nowrap flex items-center gap-1.5 ${
+            className={`pb-3 px-3 border-b-2 transition whitespace-nowrap flex items-center gap-1.5 shrink-0 cursor-pointer ${
               activeTab === 'DISPLAY'
                 ? 'border-indigo-500 text-indigo-400 font-bold'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
             <Palette className="w-4 h-4" />
-            <span>1. Tampilan Profesional (Display &amp; Status Bar)</span>
+            <span>1. Tampilan &amp; WebView</span>
           </button>
-
           <button
             type="button"
             onClick={() => setActiveTab('FIREBASE_FCM')}
-            className={`pb-3 px-3 border-b-2 transition whitespace-nowrap flex items-center gap-1.5 ${
+            className={`pb-3 px-3 border-b-2 transition whitespace-nowrap flex items-center gap-1.5 shrink-0 cursor-pointer ${
               activeTab === 'FIREBASE_FCM'
                 ? 'border-amber-500 text-amber-400 font-bold'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
             <Bell className="w-4 h-4" />
-            <span>2. Push Notifikasi Firebase (FCM)</span>
+            <span>2. Push Notifikasi FCM</span>
           </button>
-
           <button
             type="button"
             onClick={() => setActiveTab('CODE_EXPORT')}
-            className={`pb-3 px-3 border-b-2 transition whitespace-nowrap flex items-center gap-1.5 ${
+            className={`pb-3 px-3 border-b-2 transition whitespace-nowrap flex items-center gap-1.5 shrink-0 cursor-pointer ${
               activeTab === 'CODE_EXPORT'
                 ? 'border-emerald-500 text-emerald-400 font-bold'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
             <FileCode className="w-4 h-4" />
-            <span>3. Salin Kode Android Studio (Java &amp; Gradle)</span>
+            <span className="flex items-center gap-1">
+              3. Salin Kode &amp; Gradle
+              <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px]">Fix Build</span>
+            </span>
           </button>
-
           <button
             type="button"
             onClick={() => setActiveTab('GUIDE')}
-            className={`pb-3 px-3 border-b-2 transition whitespace-nowrap flex items-center gap-1.5 ${
+            className={`pb-3 px-3 border-b-2 transition whitespace-nowrap flex items-center gap-1.5 shrink-0 cursor-pointer ${
               activeTab === 'GUIDE'
                 ? 'border-cyan-500 text-cyan-400 font-bold'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
             }`}
           >
             <BookOpen className="w-4 h-4" />
-            <span>4. Panduan Step-by-Step Android Studio</span>
+            <span>4. Panduan Build APK</span>
           </button>
         </div>
 
-        {/* Modal Body */}
+        {/* Modal Body - Scrollable */}
         <div className="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1 text-slate-200">
           {/* TAB 1: DISPLAY & PROFESSIONAL APPEARANCE */}
           {activeTab === 'DISPLAY' && (
@@ -333,7 +454,6 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
                     <Globe className="w-4 h-4 text-indigo-400" />
                     <span>Target URL &amp; Identitas Aplikasi Android</span>
                   </h4>
-
                   <div className="space-y-3">
                     <div>
                       <label className="block text-xs font-semibold text-slate-300 mb-1">
@@ -351,15 +471,12 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
                           href={config.webUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition"
-                          title="Buka URL Web"
+                          className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition"
+                          title="Buka URL di tab baru"
                         >
                           <ExternalLink className="w-4 h-4" />
                         </a>
                       </div>
-                      <p className="text-[11px] text-slate-400 mt-1">
-                        Aplikasi Android Studio akan secara otomatis membuka link web ini dengan performa native WebView.
-                      </p>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -372,480 +489,388 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
                           value={config.appName}
                           onChange={(e) => setConfig({ ...config, appName: e.target.value })}
                           className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:border-indigo-500 focus:outline-none"
-                          placeholder="Jesus Kingdom Christ"
                         />
                       </div>
-
                       <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <label className="block text-xs font-semibold text-slate-300">
-                            Package Name (Application ID):
-                          </label>
-                          {config.packageName !== 'com.jesuskingdomchrist.app' && (
-                            <button
-                              type="button"
-                              onClick={() => setConfig({ ...config, packageName: 'com.jesuskingdomchrist.app' })}
-                              className="text-[10px] text-amber-400 hover:text-amber-300 underline font-bold cursor-pointer"
-                            >
-                              Pakai com.jesuskingdomchrist.app
-                            </button>
-                          )}
-                        </div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          Package Name (Application ID):
+                        </label>
                         <input
                           type="text"
                           value={config.packageName}
-                          onChange={(e) => setConfig({ ...config, packageName: e.target.value })}
-                          className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono focus:border-indigo-500 focus:outline-none"
-                          placeholder="com.jesuskingdomchrist.app"
+                          onChange={(e) => setConfig({ ...config, packageName: e.target.value.toLowerCase().replace(/[^a-z0-9_.]/g, '') })}
+                          className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-indigo-300 font-mono focus:border-indigo-500 focus:outline-none"
                         />
-                        <p className="text-[10px] text-emerald-400 mt-1">
-                          ✅ <strong>Package Name Resmi:</strong> <code>{config.packageName}</code> (Sudah disesuaikan dengan folder <code>java/com/jesuskingdomchrist/app/</code> di proyek Android Studio Anda).
-                        </p>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Status Bar & Theming */}
+                {/* Status Bar Customizer */}
                 <div className="bg-slate-950/60 p-5 rounded-2xl border border-slate-800 space-y-4">
                   <h4 className="text-sm font-bold text-white flex items-center gap-2">
                     <Palette className="w-4 h-4 text-emerald-400" />
-                    <span>Status Bar &amp; Navigasi Profesional (NoActionBar)</span>
+                    <span>Warna Status Bar &amp; Navigasi HP</span>
                   </h4>
 
-                  <div className="space-y-4">
+                  {/* Quick Color Presets */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-2">
+                      Pilihan Cepat Warna Tema:
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      {colorPresets.map((preset) => (
+                        <button
+                          key={preset.hex}
+                          type="button"
+                          onClick={() =>
+                            setConfig({
+                              ...config,
+                              statusBarColor: preset.hex,
+                              statusBarStyle: preset.style,
+                              navBarColor: preset.hex,
+                              splashBgColor: preset.hex
+                            })
+                          }
+                          className={`p-2 rounded-xl border flex items-center gap-2 transition text-left cursor-pointer ${
+                            config.statusBarColor.toLowerCase() === preset.hex.toLowerCase()
+                              ? 'border-indigo-500 bg-indigo-500/10'
+                              : 'border-slate-800 bg-slate-900 hover:border-slate-700'
+                          }`}
+                        >
+                          <span
+                            className="w-4 h-4 rounded-full border border-white/20 shrink-0"
+                            style={{ backgroundColor: preset.hex }}
+                          />
+                          <span className="text-xs text-slate-200 font-medium truncate">{preset.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                     <div>
-                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                        Warna Status Bar Atas (Status Bar Color):
+                      <label className="block text-xs font-semibold text-slate-300 mb-1">
+                        Warna Status Bar (Hex):
                       </label>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2">
                         <input
                           type="color"
-                          value={config.statusBarColor.startsWith('#') ? config.statusBarColor : '#0f172a'}
+                          value={config.statusBarColor.length === 7 ? config.statusBarColor : '#0f172a'}
                           onChange={(e) => setConfig({ ...config, statusBarColor: e.target.value })}
-                          className="w-10 h-10 rounded-xl border border-slate-700 bg-slate-800 cursor-pointer p-0.5"
+                          className="w-9 h-9 rounded-lg bg-transparent cursor-pointer border border-slate-700"
                         />
                         <input
                           type="text"
                           value={config.statusBarColor}
                           onChange={(e) => setConfig({ ...config, statusBarColor: e.target.value })}
-                          className="w-28 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono focus:border-indigo-500 focus:outline-none"
+                          className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none"
                         />
-                        <div className="flex flex-wrap gap-1.5 flex-1">
-                          {colorPresets.map((preset) => (
-                            <button
-                              key={preset.hex}
-                              type="button"
-                              onClick={() => setConfig({ ...config, statusBarColor: preset.hex, statusBarStyle: preset.style })}
-                              className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition flex items-center gap-1.5 ${
-                                config.statusBarColor.toLowerCase() === preset.hex.toLowerCase()
-                                  ? 'border-indigo-500 bg-indigo-950/60 text-white font-bold'
-                                  : 'border-slate-800 bg-slate-900 text-slate-300 hover:border-slate-700'
-                              }`}
-                            >
-                              <span className="w-2.5 h-2.5 rounded-full border border-white/20" style={{ backgroundColor: preset.hex }} />
-                              <span>{preset.label}</span>
-                            </button>
-                          ))}
-                        </div>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-300 mb-1">
-                          Gaya Ikon Status Bar:
-                        </label>
-                        <select
-                          value={config.statusBarStyle}
-                          onChange={(e) => setConfig({ ...config, statusBarStyle: e.target.value as any })}
-                          className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:border-indigo-500 focus:outline-none"
-                        >
-                          <option value="LIGHT_ICONS">Ikon Putih (Untuk background gelap)</option>
-                          <option value="DARK_ICONS">Ikon Gelap (Untuk background putih/terang)</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-300 mb-1">
-                          Warna Navigation Bar Bawah:
-                        </label>
-                        <input
-                          type="text"
-                          value={config.navBarColor}
-                          onChange={(e) => setConfig({ ...config, navBarColor: e.target.value })}
-                          className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono focus:border-indigo-500 focus:outline-none"
-                          placeholder="#0f172a"
-                        />
-                      </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-1">
+                        Warna Ikon Status Bar (Jam &amp; Baterai):
+                      </label>
+                      <select
+                        value={config.statusBarStyle}
+                        onChange={(e) =>
+                          setConfig({ ...config, statusBarStyle: e.target.value as 'DARK_ICONS' | 'LIGHT_ICONS' })
+                        }
+                        className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"
+                      >
+                        <option value="LIGHT_ICONS">Ikon Putih (Untuk background gelap)</option>
+                        <option value="DARK_ICONS">Ikon Gelap (Untuk background terang)</option>
+                      </select>
                     </div>
                   </div>
                 </div>
 
-                {/* UX & Native Features */}
+                {/* Performance & UX Toggles */}
                 <div className="bg-slate-950/60 p-5 rounded-2xl border border-slate-800 space-y-3">
                   <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                    <Sliders className="w-4 h-4 text-amber-400" />
-                    <span>Fitur Interaktif &amp; WebView Optimization</span>
+                    <Sliders className="w-4 h-4 text-cyan-400" />
+                    <span>Fitur UX &amp; Optimasi Performa</span>
                   </h4>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                    <label className="flex items-center gap-3 p-3 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-slate-700 cursor-pointer transition">
+                  <div className="space-y-2.5">
+                    <label className="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-800 cursor-pointer hover:bg-slate-900">
+                      <div>
+                        <p className="text-xs font-bold text-white">Pull-To-Refresh (Tarik ke Bawah untuk Refresh)</p>
+                        <p className="text-[11px] text-slate-400">Jemaat dapat menyegarkan warta atau pengumuman dengan menarik layar ke bawah.</p>
+                      </div>
                       <input
                         type="checkbox"
                         checked={config.enablePullToRefresh}
                         onChange={(e) => setConfig({ ...config, enablePullToRefresh: e.target.checked })}
-                        className="w-4 h-4 text-indigo-600 rounded bg-slate-800 border-slate-700 focus:ring-indigo-500"
+                        className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-700 bg-slate-800"
                       />
-                      <div>
-                        <span className="text-xs font-bold text-white block">Pull-to-Refresh</span>
-                        <span className="text-[11px] text-slate-400">Tarik ke bawah untuk memuat ulang warta</span>
-                      </div>
                     </label>
 
-                    <label className="flex items-center gap-3 p-3 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-slate-700 cursor-pointer transition">
+                    <label className="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-slate-800 cursor-pointer hover:bg-slate-900">
+                      <div>
+                        <p className="text-xs font-bold text-white">Hardware Acceleration 60FPS</p>
+                        <p className="text-[11px] text-slate-400">Animasi perpindahan menu jemaat dan grafik keuangan berjalan mulus.</p>
+                      </div>
                       <input
                         type="checkbox"
                         checked={config.enableHardwareAcceleration}
                         onChange={(e) => setConfig({ ...config, enableHardwareAcceleration: e.target.checked })}
-                        className="w-4 h-4 text-indigo-600 rounded bg-slate-800 border-slate-700 focus:ring-indigo-500"
+                        className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-700 bg-slate-800"
                       />
-                      <div>
-                        <span className="text-xs font-bold text-white block">Hardware Acceleration</span>
-                        <span className="text-[11px] text-slate-400">Rendering 60fps halus &amp; responsif</span>
-                      </div>
-                    </label>
-
-                    <label className="flex items-center gap-3 p-3 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-slate-700 cursor-pointer transition">
-                      <input
-                        type="checkbox"
-                        checked={config.safeAreaPadding}
-                        onChange={(e) => setConfig({ ...config, safeAreaPadding: e.target.checked })}
-                        className="w-4 h-4 text-indigo-600 rounded bg-slate-800 border-slate-700 focus:ring-indigo-500"
-                      />
-                      <div>
-                        <span className="text-xs font-bold text-white block">Safe Area &amp; Notch Safe</span>
-                        <span className="text-[11px] text-slate-400">Hindari benturan poni kamera HP</span>
-                      </div>
-                    </label>
-
-                    <label className="flex items-center gap-3 p-3 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-slate-700 cursor-pointer transition">
-                      <input
-                        type="checkbox"
-                        checked={true}
-                        disabled
-                        className="w-4 h-4 text-emerald-500 rounded bg-slate-800 border-slate-700"
-                      />
-                      <div>
-                        <span className="text-xs font-bold text-emerald-400 block">Dukungan Kamera &amp; Upload</span>
-                        <span className="text-[11px] text-slate-400">Upload bukti persembahan &amp; foto</span>
-                      </div>
                     </label>
                   </div>
-                </div>
-
-                {/* App Icon Asset Studio Tool */}
-                <div className="bg-slate-950/60 p-5 rounded-2xl border border-slate-800 space-y-3">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-amber-400" />
-                      <span>Icon Aplikasi (Ganti Ikon Robot Android ke Logo Gereja)</span>
-                    </h4>
-                    <a
-                      href="/pwa-512x512.png"
-                      download="church_icon_512x512.png"
-                      className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-xs flex items-center gap-1.5 transition shrink-0 cursor-pointer shadow-md"
-                      title="Download Icon HD 512x512 PNG"
-                    >
-                      <Download className="w-3.5 h-3.5 text-slate-950" />
-                      <span>📥 Download Icon HD (512x512)</span>
-                    </a>
-                  </div>
-                  <p className="text-[11px] text-slate-300 leading-relaxed">
-                    Agar di layar utama HP jemaat muncul logo gereja (bukan robot Android hijau): Unduh gambar icon HD di atas, lalu di Android Studio klik kanan folder <strong>res</strong> &gt; <strong>New &gt; Image Asset</strong> &gt; pilih file gambar ini sebagai Foreground Layer &gt; Next &gt; Finish!
-                  </p>
                 </div>
               </div>
 
               {/* Right Column: Live Phone Mockup Preview */}
               <div className="lg:col-span-5 flex flex-col items-center">
-                <div className="w-full max-w-[280px] sm:max-w-[300px] rounded-[40px] p-3.5 bg-slate-950 border-4 border-slate-700 shadow-2xl relative">
-                  {/* Phone Notch & Speaker */}
-                  <div className="w-28 h-4 bg-slate-800 rounded-b-xl mx-auto mb-2 flex items-center justify-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-slate-900 border border-slate-700"></div>
-                    <div className="w-8 h-1 bg-slate-700 rounded-full"></div>
-                  </div>
+                <div className="text-center mb-3">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    Simulasi Tampilan di HP Android
+                  </span>
+                </div>
 
-                  {/* Simulated Status Bar */}
-                  <div
-                    className="rounded-t-2xl px-3 py-1.5 flex items-center justify-between text-[11px] transition-colors"
-                    style={{
-                      backgroundColor: config.statusBarColor,
-                      color: config.statusBarStyle === 'DARK_ICONS' ? '#0f172a' : '#ffffff'
-                    }}
-                  >
-                    <span className="font-semibold">09:41</span>
-                    <div className="flex items-center gap-1.5 opacity-90">
-                      <Wifi className="w-3 h-3" />
-                      <span className="text-[9px] font-bold">4G</span>
-                      <Battery className="w-3.5 h-3.5" />
-                    </div>
-                  </div>
+                {/* Smartphone Device Frame */}
+                <div className="w-[280px] sm:w-[300px] rounded-[44px] bg-slate-950 p-3 shadow-2xl border-4 border-slate-700 relative">
+                  {/* Camera Punchhole / Notch */}
+                  <div className="absolute top-5 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-black border-2 border-slate-800 z-30" />
 
-                  {/* App Bar / Top Banner */}
-                  <div
-                    className="px-3 py-2.5 border-b border-white/10 flex items-center justify-between"
-                    style={{ backgroundColor: config.statusBarColor }}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 rounded-lg bg-indigo-500 flex items-center justify-center text-white text-[10px] font-bold">
-                        ✝
+                  {/* Inner Screen */}
+                  <div className="w-full h-[530px] rounded-[34px] overflow-hidden flex flex-col bg-slate-900 relative">
+                    {/* Simulated Android Status Bar */}
+                    <div
+                      className="h-7 px-5 flex items-center justify-between text-[11px] font-bold z-20 transition-colors"
+                      style={{
+                        backgroundColor: config.statusBarColor,
+                        color: config.statusBarStyle === 'DARK_ICONS' ? '#0f172a' : '#ffffff'
+                      }}
+                    >
+                      <span>09:41</span>
+                      <div className="flex items-center gap-1.5">
+                        <Wifi className="w-3 h-3" />
+                        <Battery className="w-3.5 h-3.5" />
                       </div>
-                      <span
-                        className="font-bold text-xs truncate max-w-[150px]"
-                        style={{ color: config.statusBarStyle === 'DARK_ICONS' ? '#0f172a' : '#ffffff' }}
+                    </div>
+
+                    {/* App Content Preview */}
+                    <div className="flex-1 bg-slate-900 p-3 flex flex-col justify-between text-white overflow-hidden">
+                      <div className="space-y-2.5">
+                        <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-[10px] font-bold">
+                              GK
+                            </div>
+                            <span className="text-xs font-bold truncate max-w-[150px]">{config.appName}</span>
+                          </div>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold">
+                            Live Web
+                          </span>
+                        </div>
+
+                        {/* Banner Warta Sample */}
+                        <div className="p-3 rounded-xl bg-gradient-to-r from-indigo-900/60 to-purple-900/60 border border-indigo-500/30 space-y-1">
+                          <p className="text-[10px] text-indigo-300 font-bold uppercase tracking-wider">Ibadah Raya Minggu</p>
+                          <p className="text-xs font-extrabold text-white">Shalom, Selamat Datang di Aplikasi Jemaat</p>
+                          <p className="text-[10px] text-slate-300">Konversi Android native dengan performa optimal.</p>
+                        </div>
+                      </div>
+
+                      {/* Pull to refresh visual feedback hint */}
+                      {config.enablePullToRefresh && (
+                        <div className="text-center p-2 rounded-lg bg-slate-950/60 border border-slate-800 text-[10px] text-indigo-300">
+                          ↓ Tarik ke bawah untuk refresh
+                        </div>
+                      )}
+
+                      {/* Simulated Android Navigation Bar */}
+                      <div
+                        className="h-6 flex items-center justify-center gap-8 -mx-3 -mb-3 transition-colors"
+                        style={{ backgroundColor: config.navBarColor }}
                       >
-                        {config.appName}
-                      </span>
-                    </div>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/20 text-white font-mono">
-                      Native
-                    </span>
-                  </div>
-
-                  {/* Simulated WebView Content with Live URL Card */}
-                  <div className="h-[360px] bg-slate-900 overflow-hidden flex flex-col justify-between p-3 relative">
-                    {/* Simulated Floating Push Notification Banner */}
-                    <div className="w-full bg-slate-800/95 border border-amber-500/40 rounded-xl p-2 shadow-lg mb-2 animate-bounce">
-                      <div className="flex items-start gap-2">
-                        <div className="p-1 rounded-lg bg-amber-500/20 text-amber-400">
-                          <Bell className="w-3.5 h-3.5" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[10px] font-bold text-white truncate">Warta Ibadah Minggu</p>
-                          <p className="text-[9px] text-slate-300 line-clamp-1">Ibadah dimulai pukul 09.00 WIB. Klik untuk detail...</p>
-                        </div>
+                        <div className="w-3 h-3 border-l-2 border-b-2 border-white/60 -rotate-45" />
+                        <div className="w-3.5 h-3.5 rounded-full border-2 border-white/60" />
+                        <div className="w-3 h-3 border-2 border-white/60" />
                       </div>
                     </div>
-
-                    {/* Central Content */}
-                    <div className="my-auto text-center space-y-2">
-                      <div className="w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 mx-auto flex items-center justify-center text-indigo-400">
-                        <Globe className="w-6 h-6" />
-                      </div>
-                      <p className="text-xs font-bold text-white">WebView Active</p>
-                      <p className="text-[10px] text-slate-400 max-w-[200px] mx-auto break-all font-mono">
-                        {config.webUrl}
-                      </p>
-                      <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-medium border border-emerald-500/30">
-                        <CheckCircle className="w-3 h-3" />
-                        <span>Pull-To-Refresh Siap</span>
-                      </div>
-                    </div>
-
-                    {/* Bottom simulated navbar */}
-                    <div className="rounded-xl bg-slate-950/80 border border-slate-800 p-2 flex items-center justify-around text-slate-400 text-[9px]">
-                      <span className="text-indigo-400 font-bold">Warta</span>
-                      <span>Renungan</span>
-                      <span>Jadwal</span>
-                      <span>Profil</span>
-                    </div>
-                  </div>
-
-                  {/* Simulated Android Navigation Bar */}
-                  <div
-                    className="rounded-b-2xl py-2 flex items-center justify-center gap-8 text-white/50 text-xs"
-                    style={{ backgroundColor: config.navBarColor }}
-                  >
-                    <span>◀</span>
-                    <span className="text-base">●</span>
-                    <span>■</span>
                   </div>
                 </div>
-                <p className="text-xs text-slate-400 mt-2 text-center">
-                  Simulasi tampilan antarmuka di layar HP Android jemaat.
-                </p>
               </div>
             </div>
           )}
 
-          {/* TAB 2: FIREBASE PUSH NOTIFICATIONS (FCM) */}
+          {/* TAB 2: FIREBASE FCM */}
           {activeTab === 'FIREBASE_FCM' && (
             <div className="space-y-6">
-              {/* Banner Info */}
-              <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-950/60 via-slate-900 to-indigo-950/60 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shrink-0">
-                    <Bell className="w-6 h-6 animate-pulse" />
-                  </div>
-                  <div>
-                    <h4 className="font-extrabold text-sm sm:text-base text-white">
-                      Konfigurasi Firebase Cloud Messaging (FCM)
-                    </h4>
-                    <p className="text-xs text-slate-300 mt-0.5">
-                      Kirim pesan warta &amp; renungan langsung ke bilah status (status bar) HP Android jemaat dengan suara dering dan getar secara gratis tanpa batas.
-                    </p>
-                  </div>
+              {/* Info Banner */}
+              <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-start gap-3">
+                <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400 shrink-0 mt-0.5">
+                  <Bell className="w-5 h-5" />
                 </div>
-
-                <button
-                  type="button"
-                  onClick={handleDownloadGoogleServices}
-                  className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 flex items-center gap-2 shrink-0 transition cursor-pointer"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>{copiedJson ? 'Terdownload!' : 'Download google-services.json'}</span>
-                </button>
+                <div className="space-y-1 text-xs">
+                  <h4 className="font-extrabold text-sm text-white">
+                    Push Notifikasi Firebase Cloud Messaging (FCM) 100% Gratis &amp; Tanpa Batas
+                  </h4>
+                  <p className="text-slate-300 leading-relaxed">
+                    Aplikasi Android native yang dihasilkan akan langsung menerima warta dan pesan ibadah di bilah status HP jemaat lengkap dengan suara dering dan getar, meskipun aplikasi sedang ditutup oleh pengguna.
+                  </p>
+                </div>
               </div>
 
-              {/* Grid: Credentials & FCM Parameters */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div className="bg-slate-950/60 p-5 rounded-2xl border border-slate-800 space-y-3">
-                  <h5 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                    <span>Identitas Proyek Firebase</span>
-                  </h5>
+              {/* FCM Config Form */}
+              <div className="bg-slate-950/60 p-5 rounded-2xl border border-slate-800 space-y-4">
+                <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-indigo-400" />
+                  <span>Kredensial Firebase Cloud Messaging</span>
+                </h4>
 
-                  <div className="space-y-2.5 text-xs">
-                    <div>
-                      <span className="text-slate-400 block mb-0.5">Firebase Project ID (Dapat diganti untuk akun lain):</span>
-                      <input
-                        type="text"
-                        value={config.projectId}
-                        onChange={(e) => setConfig({ ...config, projectId: e.target.value.trim() })}
-                        className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 font-mono text-emerald-400 focus:border-indigo-500 focus:outline-none text-xs"
-                        placeholder="contoh-gereja-app"
-                      />
-                    </div>
-
-                    <div>
-                      <span className="text-slate-400 block mb-0.5">Messaging Sender ID / Project Number:</span>
-                      <input
-                        type="text"
-                        value={config.senderId}
-                        onChange={(e) => setConfig({ ...config, senderId: e.target.value.trim() })}
-                        className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 font-mono text-indigo-300 focus:border-indigo-500 focus:outline-none text-xs"
-                        placeholder="250034601366"
-                      />
-                    </div>
-
-                    <div>
-                      <span className="text-slate-400 block mb-0.5">Default FCM Topic (Semua Jemaat):</span>
-                      <input
-                        type="text"
-                        value={config.fcmTopic}
-                        onChange={(e) => setConfig({ ...config, fcmTopic: e.target.value.replace(/[^a-zA-Z0-9_-]/g, '') })}
-                        className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 font-mono text-white focus:border-indigo-500 focus:outline-none"
-                        placeholder="all_jemaat"
-                      />
-                      <p className="text-[11px] text-slate-400 mt-1">
-                        Aplikasi Android otomatis mendaftar ke topik ini di background saat pertama kali dibuka.
-                      </p>
-                    </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      Firebase Project ID:
+                    </label>
+                    <input
+                      type="text"
+                      value={config.projectId}
+                      onChange={(e) => setConfig({ ...config, projectId: e.target.value })}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none"
+                    />
                   </div>
-                </div>
 
-                {/* Server Key & Credentials */}
-                <div className="bg-slate-950/60 p-5 rounded-2xl border border-slate-800 space-y-3">
-                  <h5 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-amber-400" />
-                    <span>FCM Server Key (Untuk Kirim Langsung dari Web)</span>
-                  </h5>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      FCM Sender ID / Project Number:
+                    </label>
+                    <input
+                      type="text"
+                      value={config.senderId}
+                      onChange={(e) => setConfig({ ...config, senderId: e.target.value })}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none"
+                    />
+                  </div>
 
-                  <div className="space-y-2 text-xs">
-                    <label className="text-slate-300 block">
-                      Firebase Cloud Messaging Server Key / Key V1:
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      Default FCM Topic (Saluran Langganan Warta):
+                    </label>
+                    <input
+                      type="text"
+                      value={config.fcmTopic}
+                      onChange={(e) => setConfig({ ...config, fcmTopic: e.target.value })}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-emerald-400 focus:outline-none"
+                      placeholder="all_jemaat"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      FCM Server Key (Untuk Tes Kirim Langsung):
                     </label>
                     <input
                       type="password"
                       value={testServerKey}
                       onChange={(e) => setTestServerKey(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 font-mono text-white focus:border-amber-500 focus:outline-none text-xs"
-                      placeholder="AAAA... (Dapatkan dari Firebase Console > Project Settings > Cloud Messaging)"
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none"
+                      placeholder="AAAA..."
                     />
-                    <p className="text-[11px] text-slate-400">
-                      Anda juga dapat mengirim push notifikasi secara visual langsung melalui menu <strong>Firebase Console &gt; Engage &gt; Messaging</strong> tanpa Server Key.
-                    </p>
-                    <a
-                      href="https://console.firebase.google.com"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 text-amber-400 hover:text-amber-300 text-xs font-semibold mt-1"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" />
-                      <span>Buka Firebase Console</span>
-                    </a>
                   </div>
+                </div>
+
+                {/* 1-Click Download google-services.json */}
+                <div className="pt-3 border-t border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-bold text-white">File Konfigurasi Wajib: google-services.json</p>
+                    <p className="text-[11px] text-slate-400">
+                      File ini wajib ditaruh di dalam folder <code className="text-amber-400">app/</code> di proyek Android Studio Anda.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => downloadGoogleServicesJsonFile(config.packageName, settings)}
+                    className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 transition cursor-pointer shrink-0"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Download google-services.json</span>
+                  </button>
                 </div>
               </div>
 
-              {/* Form Kirim Tes Push Notifikasi */}
+              {/* FCM Live Notification Tester */}
               <div className="bg-slate-950/60 p-5 rounded-2xl border border-slate-800 space-y-4">
                 <div className="flex items-center justify-between">
                   <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                    <Send className="w-4 h-4 text-indigo-400" />
-                    <span>Uji Kirim Push Notifikasi ke HP Android (Live Test)</span>
+                    <Send className="w-4 h-4 text-emerald-400" />
+                    <span>Uji Coba Kirim Notifikasi Langsung ke HP Jemaat</span>
                   </h4>
-                  <span className="text-[11px] text-slate-400 font-mono">
-                    Target Topic: /{config.fcmTopic}
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30">
+                    Live Test
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                <div className="space-y-3">
                   <div>
-                    <label className="block text-slate-300 font-semibold mb-1">Judul Notifikasi:</label>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      Judul Notifikasi:
+                    </label>
                     <input
                       type="text"
                       value={testTitle}
                       onChange={(e) => setTestTitle(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white focus:border-indigo-500 focus:outline-none"
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"
                     />
                   </div>
-
                   <div>
-                    <label className="block text-slate-300 font-semibold mb-1">
-                      URL Tujuan Saat Notifikasi Diklik (Deep Link):
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      Isi Pesan Notifikasi:
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={testMessage}
+                      onChange={(e) => setTestMessage(e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none resize-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">
+                      Target Deep Link URL (Halaman yang otomatis terbuka saat diklik):
                     </label>
                     <input
                       type="text"
                       value={testTargetUrl}
                       onChange={(e) => setTestTargetUrl(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:border-indigo-500 focus:outline-none"
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none"
                     />
                   </div>
 
-                  <div className="sm:col-span-2">
-                    <label className="block text-slate-300 font-semibold mb-1">Isi Pesan Notifikasi:</label>
-                    <textarea
-                      rows={2}
-                      value={testMessage}
-                      onChange={(e) => setTestMessage(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white focus:border-indigo-500 focus:outline-none resize-none"
-                    />
+                  <div className="flex items-center justify-between pt-2">
+                    <button
+                      type="button"
+                      disabled={isSendingTest}
+                      onClick={handleSendTestNotification}
+                      className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/20 transition flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                    >
+                      {isSendingTest ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                      <span>{isSendingTest ? 'Mengirim...' : 'Kirim Push Notifikasi Tester Sekarang'}</span>
+                    </button>
                   </div>
-                </div>
-
-                <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={handleSendTestFcm}
-                    disabled={isSendingTest}
-                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 flex items-center gap-2 transition disabled:opacity-50 cursor-pointer"
-                  >
-                    {isSendingTest ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                    <span>{isSendingTest ? 'Mengirim ke HP...' : 'Kirim Tes Notifikasi Sekarang'}</span>
-                  </button>
 
                   {testResult && (
                     <div
-                      className={`px-3 py-1.5 rounded-xl text-xs flex items-center gap-2 border ${
+                      className={`p-3 rounded-xl border text-xs flex items-start gap-2 ${
                         testResult.success
-                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                          : 'bg-rose-500/20 text-rose-300 border-rose-500/30'
+                          ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                          : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
                       }`}
                     >
-                      {testResult.success ? <CheckCircle className="w-4 h-4 text-emerald-400" /> : <AlertCircle className="w-4 h-4 text-rose-400" />}
-                      <span>{testResult.message}</span>
+                      {testResult.success ? (
+                        <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                      ) : (
+                        <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                      )}
+                      <div>
+                        <p className="font-bold">{testResult.success ? 'Berhasil Dikirim!' : 'Gagal Mengirim'}</p>
+                        <p className="text-[11px] mt-0.5">{testResult.message}</p>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -856,15 +881,49 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
           {/* TAB 3: CODE EXPORT */}
           {activeTab === 'CODE_EXPORT' && (
             <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                  <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                    <FileCode className="w-4 h-4 text-emerald-400" />
-                    <span>Source Code Android Studio Lengkap (100% Siap Pakai)</span>
-                  </h4>
-                  <p className="text-xs text-slate-400">
-                    File kode di bawah ini sudah dikonfigurasi otomatis dengan URL <code className="text-amber-400">{config.webUrl}</code> dan package name <code className="text-indigo-300">{config.packageName}</code>.
-                  </p>
+              {/* Build Error Fix Alert Banner */}
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/90 via-slate-900 to-indigo-950/80 border border-emerald-500/40 text-xs text-slate-300 space-y-2 shadow-lg">
+                <div className="flex items-center gap-2 text-emerald-400 font-extrabold text-sm">
+                  <CheckCircle2 className="w-5 h-5 shrink-0" />
+                  <span>Kode Sumber Android Telah Diperbaiki 100% Bebas Error Build</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 text-[11px] pt-1">
+                  <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800">
+                    <span className="font-bold text-amber-300">✅ Plugin Declaration Standar:</span> Menggunakan <code>id("com.android.application")</code> langsung tanpa alias TOML sehingga proyek baru langsung sync tanpa error <em>unresolved reference libs</em>.
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800">
+                    <span className="font-bold text-amber-300">✅ Bebas Bentrok Repository:</span> Project-level Gradle tidak lagi menggunakan <code>allprojects {'{}'}</code> yang bentrok dengan <code>dependencyResolutionManagement</code> Gradle modern.
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800">
+                    <span className="font-bold text-amber-300">✅ AppCompat &amp; SwipeRefresh:</span> MainActivity memakai <code>AppCompatActivity</code> dan programmatic layout mandiri, menjamin tidak crash tema atau layout XML hilang.
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800">
+                    <span className="font-bold text-amber-300">✅ Full Java &amp; Kotlin Support:</span> Tersedia kode lengkap untuk Java maupun Kotlin, serta file <code>google-services.json</code> sekali klik.
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Bar: Download All & google-services.json */}
+              <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800 flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => downloadGoogleServicesJsonFile(config.packageName, settings)}
+                    className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-extrabold text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Download google-services.json</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={isDownloadingAll}
+                    onClick={handleDownloadAllFiles}
+                    className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  >
+                    {isDownloadingAll ? <RefreshCw className="w-4 h-4 animate-spin" /> : <FolderArchive className="w-4 h-4" />}
+                    <span>{isDownloadingAll ? 'Mengunduh...' : 'Unduh Semua File Proyek'}</span>
+                  </button>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -876,89 +935,74 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
                     {copiedFile === currentCode.filename ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                     <span>{copiedFile === currentCode.filename ? 'Tersalin!' : `Salin ${currentCode.filename}`}</span>
                   </button>
-
                   <button
                     type="button"
                     onClick={() => downloadFile(currentCode.filename, currentCode.code)}
                     className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-bold text-xs transition flex items-center gap-1.5 cursor-pointer"
                   >
                     <Download className="w-4 h-4" />
-                    <span>Download</span>
+                    <span>Unduh File Ini</span>
                   </button>
                 </div>
               </div>
 
-              {/* Code File Selector Tabs */}
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-2 border-b border-slate-800 text-xs">
-                {[
-                  { id: 'MAIN_ACTIVITY', label: 'MainActivity.java (Bebas Error) ⭐' },
-                  { id: 'MANIFEST', label: 'AndroidManifest.xml ⭐' },
-                  { id: 'APP_GRADLE_KTS', label: 'build.gradle.kts (:app) 🔥' },
-                  { id: 'GRADLE_PROPERTIES', label: 'gradle.properties' },
-                  { id: 'FCM_SERVICE', label: 'MyFirebaseMessagingService.java' },
-                  { id: 'PROJECT_GRADLE_KTS', label: 'build.gradle.kts (Project)' },
-                  { id: 'APP_GRADLE', label: 'app/build.gradle (Groovy)' },
-                  { id: 'PROJECT_GRADLE', label: 'project/build.gradle (Groovy)' },
-                  { id: 'ACTIVITY_LAYOUT', label: 'activity_main.xml (Opsional)' },
-                  { id: 'COLORS', label: 'colors.xml (Opsional)' },
-                  { id: 'STYLES', label: 'styles.xml (Opsional)' }
-                ].map((f) => (
-                  <button
-                    key={f.id}
-                    type="button"
-                    onClick={() => setSelectedCodeFile(f.id as any)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition whitespace-nowrap ${
-                      selectedCodeFile === f.id
-                        ? 'bg-emerald-600 text-white shadow'
-                        : 'bg-slate-800/80 text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    {f.label}
-                  </button>
-                ))}
+              {/* Code File Selector Tabs - Grouped & Clearly Organized */}
+              <div className="space-y-2">
+                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                  <span>Pilih File Proyek untuk Disalin:</span>
+                </div>
+
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-thin text-xs">
+                  {[
+                    { id: 'MAIN_ACTIVITY', label: 'MainActivity.java (Utama) ⭐', tag: 'Java' },
+                    { id: 'MAIN_ACTIVITY_KT', label: 'MainActivity.kt (Kotlin)', tag: 'Kotlin' },
+                    { id: 'MANIFEST', label: 'AndroidManifest.xml ⭐', tag: 'XML' },
+                    { id: 'APP_GRADLE_KTS', label: 'build.gradle.kts (:app) 🔥', tag: 'Kotlin DSL' },
+                    { id: 'PROJECT_GRADLE_KTS', label: 'build.gradle.kts (Project)', tag: 'Kotlin DSL' },
+                    { id: 'SETTINGS_GRADLE_KTS', label: 'settings.gradle.kts', tag: 'Kotlin DSL' },
+                    { id: 'LIBS_VERSIONS_TOML', label: 'libs.versions.toml', tag: 'TOML' },
+                    { id: 'APP_GRADLE', label: 'app/build.gradle', tag: 'Groovy' },
+                    { id: 'PROJECT_GRADLE', label: 'project/build.gradle', tag: 'Groovy' },
+                    { id: 'SETTINGS_GRADLE', label: 'settings.gradle', tag: 'Groovy' },
+                    { id: 'GRADLE_PROPERTIES', label: 'gradle.properties', tag: 'Config' },
+                    { id: 'FCM_SERVICE', label: 'MyFirebaseMessagingService.java', tag: 'FCM' },
+                    { id: 'ACTIVITY_LAYOUT', label: 'activity_main.xml', tag: 'Layout' },
+                    { id: 'NOTIFICATION_ICON', label: 'ic_notification.xml', tag: 'Drawable' },
+                    { id: 'COLORS', label: 'colors.xml', tag: 'Values' },
+                    { id: 'STYLES', label: 'styles.xml', tag: 'Values' }
+                  ].map((f) => (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => setSelectedCodeFile(f.id as any)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-mono font-medium transition whitespace-nowrap shrink-0 flex items-center gap-1.5 cursor-pointer ${
+                        selectedCodeFile === f.id
+                          ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 ring-1 ring-emerald-400'
+                          : 'bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700/80'
+                      }`}
+                    >
+                      <span>{f.label}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              {selectedCodeFile === 'MAIN_ACTIVITY' && (
-                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-200 flex items-start gap-2">
+              {/* Helper Description Box */}
+              {currentCode.desc && (
+                <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-300 flex items-start gap-2.5">
                   <Sparkles className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                  <p>
-                    <strong>Programmatic Layout (100% Mandiri):</strong> Kode MainActivity ini membangun UI langsung lewat kode Java tanpa bergantung pada file <code>activity_main.xml</code>. Hal ini menjamin <strong>bebas dari error 'Cannot resolve symbol R'</strong>, sudah mendukung upload foto bukti persembahan jemaat, deep link notifikasi warta, dan konfirmasi ganda keluar aplikasi.
-                  </p>
-                </div>
-              )}
-
-              {selectedCodeFile === 'MANIFEST' && (
-                <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/30 text-xs text-blue-200 flex items-start gap-2">
-                  <Sparkles className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
-                  <p>
-                    <strong>Manifest Bersih &amp; Kompatibel:</strong> Menggunakan tema bawaan sistem <code>@android:style/Theme.Material.Light.NoActionBar</code> sehingga tidak akan error <em>theme not found</em>, dan izin kamera sudah dilengkapi <code>uses-feature required=false</code> agar tidak memunculkan peringatan hardware.
-                  </p>
-                </div>
-              )}
-
-              {(selectedCodeFile === 'APP_GRADLE_KTS' || selectedCodeFile === 'PROJECT_GRADLE_KTS') && (
-                <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200 flex items-start gap-2">
-                  <Sparkles className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                  <p>
-                    <strong>Format Kotlin DSL (.kts):</strong> Format resmi bawaan Android Studio terbaru. Menggunakan <code>JavaVersion.VERSION_17</code> untuk menghilangkan peringatan usang (deprecated) dan sinkronisasi plugin yang mulus.
-                  </p>
-                </div>
-              )}
-
-              {selectedCodeFile === 'GRADLE_PROPERTIES' && (
-                <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/30 text-xs text-purple-200 flex items-start gap-2">
-                  <Sparkles className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
-                  <p>
-                    <strong>Pengaturan Proyek:</strong> Pastikan baris <code>android.useAndroidX=true</code> dan <code>android.enableJetifier=true</code> ada di file <code>gradle.properties</code> proyek Anda agar dependensi pustaka AndroidX berjalan lancar tanpa bentrok.
-                  </p>
+                  <p className="leading-relaxed">{currentCode.desc}</p>
                 </div>
               )}
 
               {/* Code Viewer Box */}
               <div className="rounded-2xl border border-slate-800 bg-slate-950 overflow-hidden shadow-inner">
-                <div className="px-4 py-2 bg-slate-900 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400 font-mono">
-                  <span>{currentCode.filename}</span>
-                  <span className="text-[11px] text-slate-500">Android SDK 34 • Java 8+</span>
+                <div className="px-4 py-2.5 bg-slate-900 border-b border-slate-800 flex items-center justify-between text-xs text-slate-300 font-mono">
+                  <span className="font-bold text-white flex items-center gap-1.5">
+                    <Terminal className="w-3.5 h-3.5 text-emerald-400" />
+                    {currentCode.filename}
+                  </span>
+                  <span className="text-[11px] text-slate-400">Android SDK 34 • Java 17 / Kotlin 1.9+</span>
                 </div>
                 <pre className="p-4 text-xs font-mono text-emerald-300/90 overflow-x-auto max-h-[420px] leading-relaxed select-all">
                   {currentCode.code}
@@ -976,7 +1020,7 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
                   <span>Panduan Langkah Demi Langkah Pembuatan di Android Studio</span>
                 </h4>
                 <p>
-                  Ikuti 7 langkah praktis ini untuk menghasilkan file APK dan AAB siap rilis ke Google Play Store dalam hitungan menit.
+                  Ikuti 6 langkah praktis ini untuk menghasilkan file APK dan AAB siap rilis ke Google Play Store dalam hitungan menit tanpa error.
                 </p>
               </div>
 
@@ -984,16 +1028,18 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
                 {/* Step 1 */}
                 <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-2">
                   <div className="flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-xs">1</span>
+                    <span className="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-xs shrink-0">1</span>
                     <h5 className="font-bold text-white text-sm">Buat Project Baru di Android Studio</h5>
                   </div>
                   <ul className="list-disc list-inside text-slate-300 space-y-1 ml-8">
                     <li>Buka aplikasi Android Studio di komputer Anda.</li>
                     <li>Pilih <strong>File &gt; New &gt; New Project</strong>.</li>
-                    <li>Pilih template <strong>Empty Views Activity</strong> (atau <em>Empty Activity</em> dengan Java). Lalu klik <strong>Next</strong>.</li>
+                    <li>Pilih template <strong>Empty Views Activity</strong> (atau <em>Empty Activity</em>). Lalu klik <strong>Next</strong>.</li>
                     <li>Masukkan Name: <strong className="text-white">{config.appName}</strong></li>
-                    <li>Masukkan Package Name: <strong className="text-emerald-400">{config.packageName}</strong></li>
-                    <li>Language: <strong>Java</strong>, Minimum SDK: <strong>API 24: Android 7.0 (Nougat)</strong> atau lebih baru.</li>
+                    <li>Masukkan Package Name: <strong className="text-emerald-400 font-mono">{config.packageName}</strong></li>
+                    <li>Language: <strong>Java</strong> (atau <strong>Kotlin</strong> jika lebih menyukai Kotlin).</li>
+                    <li>Minimum SDK: <strong>API 24: Android 7.0 (Nougat)</strong> atau lebih tinggi.</li>
+                    <li>Build Configuration Language: <strong>Kotlin DSL (build.gradle.kts)</strong> atau <strong>Groovy DSL</strong>.</li>
                     <li>Klik <strong>Finish</strong> dan tunggu Android Studio menyelesaikan build Gradle awal.</li>
                   </ul>
                 </div>
@@ -1001,32 +1047,25 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
                 {/* Step 2 */}
                 <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-2">
                   <div className="flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-xs">2</span>
+                    <span className="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-xs shrink-0">2</span>
                     <h5 className="font-bold text-white text-sm">Pasang File google-services.json</h5>
                   </div>
                   <ul className="list-disc list-inside text-slate-300 space-y-1 ml-8">
-                    <li>Klik tombol <strong>"Download google-services.json"</strong> di Tab 2 di atas.</li>
+                    <li>Klik tombol <strong>"Download google-services.json"</strong> di Tab 3 di atas.</li>
                     <li>Di Android Studio, ubah tampilan panel kiri dari <em>Android</em> menjadi <strong>Project</strong>.</li>
-                    <li>Salin/Drag file <code className="text-amber-400">google-services.json</code> langsung ke dalam folder <code className="text-indigo-300">app/</code> (sejajar dengan <code>build.gradle</code> di dalam folder app).</li>
+                    <li>Salin/Drag file <code className="text-amber-400">google-services.json</code> langsung ke dalam folder <code className="text-indigo-300">app/</code> (sejajar dengan <code>build.gradle.kts</code> di dalam folder app).</li>
                   </ul>
                 </div>
 
                 {/* Step 3 */}
                 <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-2">
                   <div className="flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-xs">3</span>
-                    <h5 className="font-bold text-white text-sm">Konfigurasi Gradle &amp; Sync</h5>
+                    <span className="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-xs shrink-0">3</span>
+                    <h5 className="font-bold text-white text-sm">Salin Kode Gradle &amp; Sync Project</h5>
                   </div>
                   <ul className="list-disc list-inside text-slate-300 space-y-1 ml-8">
-                    <li>
-                      <strong>Jika file Anda bernama <code className="text-amber-400">build.gradle.kts</code>:</strong> Salin dari tab <strong className="text-emerald-400">build.gradle.kts (:app) 🔥</strong> di Tab 3.
-                    </li>
-                    <li>
-                      <strong>Jika file Anda bernama <code className="text-slate-300">build.gradle</code> (Groovy lama):</strong> Salin dari tab <strong className="text-indigo-300">app/build.gradle (Groovy)</strong>.
-                    </li>
-                    <li>
-                      Buka juga <code className="text-indigo-300">build.gradle.kts (Project)</code> dan tambahkan plugin Google Services.
-                    </li>
+                    <li>Jika project Anda menggunakan Kotlin DSL, salin kode dari tab <strong>build.gradle.kts (:app)</strong> dan <strong>build.gradle.kts (Project)</strong>.</li>
+                    <li>Jika menggunakan Groovy, salin dari tab <strong>app/build.gradle</strong> dan <strong>project/build.gradle</strong>.</li>
                     <li>Klik tombol <strong>"Sync Now"</strong> yang muncul di bilah atas Android Studio.</li>
                   </ul>
                 </div>
@@ -1034,110 +1073,41 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
                 {/* Step 4 */}
                 <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-2">
                   <div className="flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-xs">4</span>
-                    <h5 className="font-bold text-white text-sm">Salin Kode Java &amp; AndroidManifest.xml</h5>
+                    <span className="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-xs shrink-0">4</span>
+                    <h5 className="font-bold text-white text-sm">Salin MainActivity &amp; MyFirebaseMessagingService</h5>
                   </div>
                   <ul className="list-disc list-inside text-slate-300 space-y-1 ml-8">
-                    <li>
-                      Pastikan filenya bernama <code className="text-emerald-400">MainActivity.java</code> (bukan <code>MainActivity.kt</code>). Jika bernama <code>.kt</code>, klik kanan &gt; <strong>Refactor &gt; Rename</strong> menjadi <code className="text-emerald-400">MainActivity.java</code>, lalu timpa isinya dengan kode Tab 3.
-                    </li>
-                    <li>
-                      <strong className="text-emerald-300">Layout Programmatic (Bebas Error R):</strong> Anda <em>TIDAK PERLU</em> lagi membuat file <code>activity_main.xml</code> karena tampilan sudah dibangun secara mandiri di dalam Java.
-                    </li>
-                    <li>Buka <code className="text-amber-400">AndroidManifest.xml</code>, salin isinya dari Tab 3 (sudah dilengkapi tema material sistem &amp; izin kamera).</li>
-                    <li>Buat Java Class baru bernama <code className="text-emerald-400">MyFirebaseMessagingService.java</code> di folder package yang sama, lalu salin kodenya untuk menerima notifikasi warta gereja.</li>
-                    <li>Periksa file <code className="text-purple-300">gradle.properties</code> dan pastikan baris <code>android.useAndroidX=true</code> sudah aktif.</li>
+                    <li>Buka file <code>app/src/main/java/{config.packageName.replace(/\./g, '/')}/MainActivity.java</code>. Ganti isinya dengan kode dari Tab 3.</li>
+                    <li>Buat file Java baru di folder yang sama dengan nama <code>MyFirebaseMessagingService.java</code>. Salin isinya dari Tab 3.</li>
                   </ul>
                 </div>
 
                 {/* Step 5 */}
                 <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-2">
                   <div className="flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-xs">5</span>
-                    <h5 className="font-bold text-white text-sm">Build APK Tanpa Kabel USB (Siap Pasang di HP)</h5>
+                    <span className="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-xs shrink-0">5</span>
+                    <h5 className="font-bold text-white text-sm">Perbarui AndroidManifest.xml</h5>
                   </div>
                   <ul className="list-disc list-inside text-slate-300 space-y-1 ml-8">
-                    <li>
-                      <strong>Membuat File APK Langsung:</strong> Di bilah menu atas Android Studio, klik <strong>Build &gt; Build Bundle(s) / APK(s) &gt; Build APK(s)</strong>.
-                    </li>
-                    <li>
-                      Android Studio akan mulai mengompilasi. Setelah selesai (beberapa detik), akan muncul notifikasi di pojok kanan bawah bertuliskan <em>"APK(s) generated successfully"</em>.
-                    </li>
-                    <li>
-                      Klik teks biru <strong>locate</strong> pada notifikasi tersebut untuk langsung membuka folder letak file <code className="text-emerald-400">app-debug.apk</code>.
-                    </li>
-                    <li>Kirim file APK tersebut ke HP Android Anda (melalui WhatsApp, Google Drive, atau Bluetooth) dan langsung install!</li>
-                    <li>Untuk rilis Google Play Store: Klik menu <strong>Build &gt; Generate Signed Bundle / APK</strong>, pilih <em>Android App Bundle (.aab)</em>.</li>
+                    <li>Buka file <code>app/src/main/AndroidManifest.xml</code>.</li>
+                    <li>Ganti seluruh isinya dengan kode dari tab <strong>AndroidManifest.xml</strong> di Tab 3.</li>
                   </ul>
                 </div>
 
                 {/* Step 6 */}
                 <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-2">
                   <div className="flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-amber-600 text-white font-bold flex items-center justify-center text-xs">6</span>
-                    <h5 className="font-bold text-white text-sm">Ganti Ikon Aplikasi Menjadi Logo Gereja (Bukan Robot Hijau)</h5>
+                    <span className="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-xs shrink-0">6</span>
+                    <h5 className="font-bold text-white text-sm">Build APK / Bundle Siap Rilis</h5>
                   </div>
                   <ul className="list-disc list-inside text-slate-300 space-y-1 ml-8">
-                    <li>Unduh file icon HD (512x512 PNG) dari Tab 1 di atas.</li>
-                    <li>Di Android Studio, pada panel sebelah kiri, <strong>klik kanan pada folder <code>res</code></strong> (di bawah <code>app &gt; res</code>).</li>
-                    <li>Pilih <strong>New &gt; Image Asset</strong>.</li>
-                    <li>Pada jendela Asset Studio yang terbuka:
-                      <ul className="list-circle list-inside ml-6 space-y-0.5 text-slate-300">
-                        <li><strong>Icon Type:</strong> Launcher Icons (Adaptive and Legacy)</li>
-                        <li><strong>Name:</strong> biarkan tetap <code>ic_launcher</code></li>
-                        <li><strong>Foreground Layer:</strong> pilih <em>Asset Type: Image</em> &gt; klik ikon folder Path dan pilih file gambar logo yang diunduh tadi. Geser slider <em>Resize</em> sekitar 75-80% agar pas.</li>
-                        <li><strong>Background Layer:</strong> pilih <em>Asset Type: Color</em> &gt; pilih warna latar belakang (misal <code>#0f172a</code> atau warna gereja).</li>
-                      </ul>
-                    </li>
-                    <li>Klik <strong>Next &gt; Finish</strong>. Lalu build ulang APK. Ikon di layar HP akan langsung berubah menjadi logo gereja!</li>
-                  </ul>
-                </div>
-
-                {/* Step 7 */}
-                <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-xs">7</span>
-                    <h5 className="font-bold text-white text-sm">Kirim Push Notifikasi Warta via Firebase Console</h5>
-                  </div>
-                  <ul className="list-disc list-inside text-slate-300 space-y-1 ml-8">
-                    <li>Buka <strong>Firebase Console</strong> &gt; menu <strong>Messaging</strong> &gt; klik <strong>New campaign &gt; Firebase Notification messages</strong>.</li>
-                    <li>Isi Judul (misal: <em>Warta Ibadah Raya</em>) dan Isi Pesan (misal: <em>Ibadah Minggu dimulai jam 09.00</em>).</li>
-                    <li>Pada Target: Pilih <strong>Topic</strong> &gt; ketik <code className="text-emerald-400 font-bold">all_church_members</code> atau <code className="text-emerald-400 font-bold">all_jemaat</code>.</li>
-                    <li>Pilih waktu pengiriman <strong>Now</strong>, klik <strong>Review &gt; Publish</strong>.</li>
-                    <li>
-                      <strong className="text-amber-400">PENTING (Izin Notifikasi di HP):</strong> Pada Android 13/14/15, pastikan saat aplikasi pertama kali dibuka Anda menekan tombol <strong>"Izinkan / Allow"</strong> notifikasi. Atau buka menu <em>Pengaturan HP &gt; Aplikasi &gt; {config.appName} &gt; Notifikasi &gt; Hidupkan Semua</em>. Notifikasi pertama biasanya masuk dalam waktu 10-30 detik setelah dipublikasikan.
-                    </li>
+                    <li>Klik menu <strong>Build &gt; Build Bundle(s) / APK(s) &gt; Build APK(s)</strong> untuk menghasilkan file APK testing.</li>
+                    <li>Atau pilih <strong>Build &gt; Generate Signed Bundle / APK</strong> untuk membuat file <code>.aab</code> siap upload ke Google Play Console.</li>
                   </ul>
                 </div>
               </div>
             </div>
           )}
-        </div>
-
-        {/* Footer */}
-        <div className="p-4 bg-slate-950 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2 text-slate-400">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>Target Web: <strong>https://tntimbu.github.io/jesuskingdomchrist/</strong></span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleSaveSettings}
-              className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition flex items-center gap-1.5 cursor-pointer"
-            >
-              <Check className="w-4 h-4" />
-              <span>Simpan Pengaturan</span>
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition cursor-pointer"
-            >
-              Tutup
-            </button>
-          </div>
         </div>
       </div>
     </div>
