@@ -10,6 +10,7 @@ import {
   Firestore
 } from 'firebase/firestore';
 import defaultFirebaseConfig from '../../firebase-applet-config.json';
+import { stopSecurityAlarmSiren } from './soundHelper';
 
 const COLLECTION_NAME = 'gkfc_cms';
 
@@ -64,7 +65,8 @@ const DOC_MAPPING: Record<string, string> = {
   cms_pro_komisi: 'komisi',
   cms_pro_hymn_songs: 'hymn_songs',
   cms_pro_favorite_songs: 'favorite_songs',
-  cms_pro_favorite_verses: 'favorite_verses'
+  cms_pro_favorite_verses: 'favorite_verses',
+  cms_pro_security_alert: 'security_alert'
 };
 
 const REVERSE_DOC_MAPPING: Record<string, string> = {
@@ -98,7 +100,8 @@ const REVERSE_DOC_MAPPING: Record<string, string> = {
   chat_messages: 'cms_pro_chat_messages',
   hymn_songs: 'cms_pro_hymn_songs',
   favorite_songs: 'cms_pro_favorite_songs',
-  favorite_verses: 'cms_pro_favorite_verses'
+  favorite_verses: 'cms_pro_favorite_verses',
+  security_alert: 'cms_pro_security_alert'
 };
 
 /**
@@ -609,13 +612,24 @@ export function initRealtimeCloudSync(onDataReceived?: () => void): () => void {
 
         try {
           querySnapshot.docChanges().forEach((change) => {
+            const docId = change.doc.id;
+            if (docId === 'connection_test' || isLocalDeviceSessionKey(docId)) return;
+
+            const storageKey = REVERSE_DOC_MAPPING[docId] || docId;
+            if (isLocalDeviceSessionKey(storageKey)) return;
+
+            if (change.type === 'removed') {
+              localStorage.removeItem(storageKey);
+              if (storageKey === 'cms_pro_security_alert' || docId === 'security_alert') {
+                localStorage.removeItem('cms_pro_security_alert');
+                stopSecurityAlarmSiren();
+                window.dispatchEvent(new CustomEvent('cms_security_alert_changed', { detail: null }));
+              }
+              hasChanges = true;
+              return;
+            }
+
             if (change.type === 'added' || change.type === 'modified') {
-              const docId = change.doc.id;
-              if (docId === 'connection_test' || isLocalDeviceSessionKey(docId)) return;
-
-              const storageKey = REVERSE_DOC_MAPPING[docId] || docId;
-              if (isLocalDeviceSessionKey(storageKey)) return;
-
               const cloudData = change.doc.data();
 
               if (cloudData && cloudData.payload !== undefined) {
@@ -625,6 +639,25 @@ export function initRealtimeCloudSync(onDataReceived?: () => void): () => void {
                     : JSON.stringify(cloudData.payload);
 
                 const currentLocalStr = localStorage.getItem(storageKey);
+
+                // Handle security alert specifically: if incoming alert is revoked or inactive, wipe it immediately
+                if (storageKey === 'cms_pro_security_alert' || docId === 'security_alert') {
+                  try {
+                    const alertObj = typeof cloudData.payload === 'string' ? JSON.parse(cloudData.payload) : cloudData.payload;
+                    if (!alertObj || alertObj.active === false || alertObj.revoked === true) {
+                      localStorage.removeItem('cms_pro_security_alert');
+                      lastPushedPayloads.set(docId, cloudPayloadStr);
+                      stopSecurityAlarmSiren();
+                      window.dispatchEvent(new CustomEvent('cms_security_alert_changed', { detail: null }));
+                      hasChanges = true;
+                      return;
+                    } else {
+                      window.dispatchEvent(new CustomEvent('cms_security_alert_changed', { detail: alertObj }));
+                    }
+                  } catch (e) {
+                    // ignore
+                  }
+                }
 
                 // Skip if current local storage already has this exact payload
                 if (currentLocalStr === cloudPayloadStr) {
@@ -644,6 +677,27 @@ export function initRealtimeCloudSync(onDataReceived?: () => void): () => void {
 
                 // If settings were updated with new firebaseConfig, check if project switched
                 if (storageKey === 'cms_pro_settings') {
+                  try {
+                    const parsedSettings = typeof cloudData.payload === 'string' ? JSON.parse(cloudData.payload) : cloudData.payload;
+                    if (!parsedSettings?.security_alert || parsedSettings.security_alert.active === false || parsedSettings.security_alert.revoked === true) {
+                      const curAlert = localStorage.getItem('cms_pro_security_alert');
+                      if (curAlert) {
+                        try {
+                          const parsedA = JSON.parse(curAlert);
+                          if (!parsedA || parsedA.active === false || parsedA.revoked === true) {
+                            localStorage.removeItem('cms_pro_security_alert');
+                            stopSecurityAlarmSiren();
+                            window.dispatchEvent(new CustomEvent('cms_security_alert_changed', { detail: null }));
+                          }
+                        } catch {
+                          // ignore
+                        }
+                      }
+                    }
+                  } catch {
+                    // ignore
+                  }
+
                   const newConfig = getActiveFirebaseConfig();
                   if (newConfig.projectId !== lastActiveProjectId) {
                     setTimeout(() => {
@@ -744,3 +798,61 @@ export function initRealtimeCloudSync(onDataReceived?: () => void): () => void {
 export function reconnectRealtimeCloudSync(onDataReceived?: () => void): () => void {
   return initRealtimeCloudSync(onDataReceived);
 }
+
+/**
+ * Pushes explicit revocation status for security alerts to Firestore across both document IDs
+ */
+export async function pushSecurityAlertRevocation(revokedAlert?: any): Promise<void> {
+  const payloadStr = JSON.stringify(
+    revokedAlert || {
+      id: 'SEC-ALERT-REVOKED',
+      active: false,
+      revoked: true,
+      title: 'Peringatan Dicabut',
+      message: 'Peringatan keamanan telah dinonaktifkan oleh Administrator.',
+      sender: 'SuperAdmin',
+      created_at: new Date().toLocaleString('id-ID'),
+      severity: 'WARNING',
+      target_user_id: 'ALL',
+      target_username: 'ALL',
+      revoked_at: new Date().toLocaleString('id-ID'),
+      revoked_by: 'SuperAdmin'
+    }
+  );
+
+  lastPushedPayloads.set('security_alert', payloadStr);
+  lastPushedPayloads.set('cms_pro_security_alert', payloadStr);
+
+  const writeDoc = async (dbInstance: Firestore, docName: string) => {
+    try {
+      const docRef = doc(dbInstance, COLLECTION_NAME, docName);
+      await setDoc(docRef, { payload: payloadStr, updatedAt: Date.now() }, { merge: true });
+    } catch (e) {
+      console.warn(`[FirebaseSync] Revoke write failed for ${docName}:`, e);
+    }
+  };
+
+  try {
+    const firestoreDb = getFirestoreInstance();
+    await Promise.all([
+      writeDoc(firestoreDb, 'security_alert'),
+      writeDoc(firestoreDb, 'cms_pro_security_alert')
+    ]);
+  } catch (err) {
+    // ignore
+  }
+
+  const activeConfig = getActiveFirebaseConfig();
+  if (activeConfig.isCustom) {
+    try {
+      const defaultDb = getDefaultFirestoreInstance();
+      await Promise.all([
+        writeDoc(defaultDb, 'security_alert'),
+        writeDoc(defaultDb, 'cms_pro_security_alert')
+      ]);
+    } catch (err) {
+      // ignore
+    }
+  }
+}
+

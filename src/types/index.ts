@@ -404,6 +404,9 @@ export interface SecurityAlert {
   severity: 'CRITICAL' | 'WARNING';
   target_user_id?: string; // Empty or 'ALL' for everyone, or specific user_id
   target_username?: string; // Empty or 'ALL' or specific username
+  revoked?: boolean;
+  revoked_at?: string;
+  revoked_by?: string;
 }
 
 export interface ActivityLog {

@@ -58,7 +58,8 @@ import {
 
 import { INITIAL_HYMN_SONGS } from '../data/hymnsData';
 
-import { pushToCloud, initRealtimeCloudSync } from './firebaseSync';
+import { pushToCloud, initRealtimeCloudSync, pushSecurityAlertRevocation } from './firebaseSync';
+import { stopSecurityAlarmSiren } from './soundHelper';
 
 const KEYS = {
   TENANTS: 'cms_pro_saas_tenants',
@@ -360,6 +361,19 @@ function sanitizeTenantDataIsolation(): void {
         }
       }
     });
+
+    // 5. Clean up any revoked or inactive security alerts from localStorage
+    const rawAlert = localStorage.getItem(KEYS.SECURITY_ALERT);
+    if (rawAlert) {
+      try {
+        const parsedAlert = JSON.parse(rawAlert);
+        if (!parsedAlert || parsedAlert.active === false || parsedAlert.revoked === true) {
+          localStorage.removeItem(KEYS.SECURITY_ALERT);
+        }
+      } catch {
+        localStorage.removeItem(KEYS.SECURITY_ALERT);
+      }
+    }
   } catch (e) {
     // ignore
   }
@@ -1495,11 +1509,23 @@ export const StorageManager = {
   getSecurityAlert: (): SecurityAlert | null => {
     // 1. Check direct key first
     const alert = getItem<SecurityAlert | null>(KEYS.SECURITY_ALERT, null);
-    if (alert && alert.active) return alert;
+    if (alert) {
+      if (alert.active && !alert.revoked) {
+        return alert;
+      }
+      // If alert was marked inactive or revoked, clean up local state
+      if (typeof localStorage !== 'undefined' && (alert.active === false || alert.revoked === true)) {
+        try {
+          localStorage.removeItem(KEYS.SECURITY_ALERT);
+        } catch {
+          // ignore
+        }
+      }
+    }
 
     // 2. Fallback to settings.security_alert
     const settings = StorageManager.getSettings();
-    if (settings && settings.security_alert && settings.security_alert.active) {
+    if (settings && settings.security_alert && settings.security_alert.active && !settings.security_alert.revoked) {
       return settings.security_alert;
     }
 
@@ -1507,11 +1533,20 @@ export const StorageManager = {
   },
 
   saveSecurityAlert: (alert: SecurityAlert | null): void => {
+    if (!alert || alert.active === false || alert.revoked === true) {
+      StorageManager.revokeSecurityAlert(alert?.sender || 'SuperAdmin');
+      return;
+    }
+
     setItem(KEYS.SECURITY_ALERT, alert);
     // Also sync into settings for cloud broadcast compatibility
     const settings = StorageManager.getSettings();
     settings.security_alert = alert;
     setItem(KEYS.SETTINGS, settings);
+
+    // Explicit cloud push to ensure both security_alert and cms_pro_security_alert docs are updated
+    pushToCloud('cms_pro_security_alert', alert);
+    pushToCloud('security_alert', alert);
 
     if (alert && alert.active) {
       // Add entry to notifications for history audit
@@ -1536,17 +1571,55 @@ export const StorageManager = {
     }
   },
 
-  clearSecurityAlert: (): void => {
-    localStorage.removeItem(KEYS.SECURITY_ALERT);
-    const settings = StorageManager.getSettings();
-    if (settings.security_alert) {
-      settings.security_alert = null;
-      setItem(KEYS.SETTINGS, settings);
+  revokeSecurityAlert: (revokedBy?: string): void => {
+    const existingAlert = StorageManager.getSecurityAlert() || getItem<SecurityAlert | null>(KEYS.SECURITY_ALERT, null);
+    const revokedPayload: SecurityAlert = {
+      id: existingAlert?.id || `SEC-ALERT-REVOKED-${Date.now()}`,
+      active: false,
+      revoked: true,
+      title: existingAlert?.title || 'Peringatan Keamanan Dicabut',
+      message: 'Peringatan keamanan dan alarm telah dinonaktifkan/dicabut oleh SuperAdmin.',
+      sender: existingAlert?.sender || 'SuperAdmin',
+      sender_user_id: existingAlert?.sender_user_id,
+      sender_username: existingAlert?.sender_username,
+      created_at: existingAlert?.created_at || new Date().toLocaleString('id-ID'),
+      severity: 'WARNING',
+      target_user_id: 'ALL',
+      target_username: 'ALL',
+      revoked_at: new Date().toLocaleString('id-ID'),
+      revoked_by: revokedBy || 'SuperAdmin'
+    };
+
+    // 1. Immediately remove from local storage on this device
+    try {
+      localStorage.removeItem(KEYS.SECURITY_ALERT);
+      localStorage.removeItem('cms_pro_security_alert');
+      localStorage.removeItem('security_alert');
+    } catch {
+      // ignore
     }
+
+    // 2. Clear from settings and sync to cloud
+    const settings = StorageManager.getSettings();
+    settings.security_alert = null;
+    setItem(KEYS.SETTINGS, settings);
+
+    // 3. Stop local alarm siren sound immediately
+    stopSecurityAlarmSiren();
+
+    // 4. Push explicit revocation tombstone to Firebase Firestore across all channels
+    pushSecurityAlertRevocation(revokedPayload).catch((e) => console.warn('[Storage] Revocation push warning:', e));
+
+    // 5. Notify local listeners, BroadcastChannel & components
     notifyStorageListeners();
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('cms_security_alert_changed', { detail: null }));
       window.dispatchEvent(new Event('cms_data_changed'));
+      window.dispatchEvent(new Event('storage'));
     }
+  },
+
+  clearSecurityAlert: (): void => {
+    StorageManager.revokeSecurityAlert('SuperAdmin');
   }
 };

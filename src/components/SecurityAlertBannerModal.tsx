@@ -20,11 +20,30 @@ export const SecurityAlertBannerModal: React.FC<SecurityAlertBannerModalProps> =
   useEffect(() => {
     const handleCheckAlert = () => {
       const activeAlert = StorageManager.getSecurityAlert();
+      if (!activeAlert || !activeAlert.active || activeAlert.revoked) {
+        stopSecurityAlarmSiren();
+        if (stopAlarmRef.current) {
+          stopAlarmRef.current();
+          stopAlarmRef.current = null;
+        }
+        setAlert(null);
+        return;
+      }
       setAlert(activeAlert);
     };
 
     const handleCustomEvent = (e: any) => {
-      setAlert(e.detail || StorageManager.getSecurityAlert());
+      const newAlert = e.detail;
+      if (!newAlert || !newAlert.active || newAlert.revoked) {
+        stopSecurityAlarmSiren();
+        if (stopAlarmRef.current) {
+          stopAlarmRef.current();
+          stopAlarmRef.current = null;
+        }
+        setAlert(null);
+      } else {
+        setAlert(newAlert);
+      }
     };
 
     window.addEventListener('cms_security_alert_changed', handleCustomEvent);
@@ -62,6 +81,7 @@ export const SecurityAlertBannerModal: React.FC<SecurityAlertBannerModalProps> =
   const isTargetMatch = Boolean(
     alert &&
       alert.active &&
+      !alert.revoked &&
       !isSender &&
       (!alert.target_user_id ||
         alert.target_user_id === 'ALL' ||
@@ -72,7 +92,20 @@ export const SecurityAlertBannerModal: React.FC<SecurityAlertBannerModalProps> =
           alert.target_username.toLowerCase() === currentUser.username.toLowerCase()))
   );
 
-  const isVisible = Boolean(alert && alert.active && isTargetMatch && alert.id !== dismissedAlertId);
+  const isSessionDismissed = Boolean(
+    alert &&
+      ((typeof sessionStorage !== 'undefined' && sessionStorage.getItem(`cms_dismissed_alert_${alert.id}`) === 'true') ||
+       (typeof localStorage !== 'undefined' && localStorage.getItem(`cms_dismissed_alert_${alert.id}`) === 'true'))
+  );
+
+  const isVisible = Boolean(
+    alert &&
+    alert.active &&
+    !alert.revoked &&
+    isTargetMatch &&
+    alert.id !== dismissedAlertId &&
+    !isSessionDismissed
+  );
 
   // Alarm sound effect trigger whenever a new active alert arrives
   useEffect(() => {
@@ -96,7 +129,7 @@ export const SecurityAlertBannerModal: React.FC<SecurityAlertBannerModalProps> =
     };
   }, [isVisible, alert?.id, isSoundMuted]);
 
-  if (!isVisible || !alert) {
+  if (!isVisible || !alert || !alert.active || alert.revoked) {
     return null;
   }
 
@@ -108,7 +141,19 @@ export const SecurityAlertBannerModal: React.FC<SecurityAlertBannerModalProps> =
       stopAlarmRef.current();
       stopAlarmRef.current = null;
     }
-    setDismissedAlertId(alert.id);
+    if (alert) {
+      setDismissedAlertId(alert.id);
+      try {
+        if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.setItem(`cms_dismissed_alert_${alert.id}`, 'true');
+        }
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem(`cms_dismissed_alert_${alert.id}`, 'true');
+        }
+      } catch {
+        // ignore
+      }
+    }
   };
 
   const handleDeactivatePermanently = () => {
@@ -117,7 +162,7 @@ export const SecurityAlertBannerModal: React.FC<SecurityAlertBannerModalProps> =
       stopAlarmRef.current();
       stopAlarmRef.current = null;
     }
-    StorageManager.clearSecurityAlert();
+    StorageManager.revokeSecurityAlert(currentUser?.username || currentUser?.nama || 'SuperAdmin');
     setAlert(null);
   };
 

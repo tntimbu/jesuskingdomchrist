@@ -40,14 +40,25 @@ export const SuperAdminSecurityAlertModal: React.FC<SuperAdminSecurityAlertModal
   const [feedback, setFeedback] = useState<string>('');
 
   useEffect(() => {
-    if (isOpen) {
+    const syncAlert = () => {
       setActiveAlert(StorageManager.getSecurityAlert());
+    };
+
+    if (isOpen) {
+      syncAlert();
       setFeedback('');
       if (initialTargetUserId) {
         setTargetScope('SPECIFIC');
         setSelectedUser(initialTargetUserId);
       }
     }
+
+    window.addEventListener('cms_security_alert_changed', syncAlert);
+    window.addEventListener('cms_data_changed', syncAlert);
+    return () => {
+      window.removeEventListener('cms_security_alert_changed', syncAlert);
+      window.removeEventListener('cms_data_changed', syncAlert);
+    };
   }, [isOpen, initialTargetUserId]);
 
   if (!isOpen) return null;
@@ -106,17 +117,17 @@ export const SuperAdminSecurityAlertModal: React.FC<SuperAdminSecurityAlertModal
   };
 
   const handleRevokeAlert = () => {
-    StorageManager.clearSecurityAlert();
+    StorageManager.revokeSecurityAlert(currentUser.nama || currentUser.username || 'SuperAdmin');
     setActiveAlert(null);
     StorageManager.logActivity(
       currentUser.username,
-      'Mencabut dan menghentikan status Peringatan Keamanan Sistem',
+      'Mencabut dan menghentikan status Peringatan Keamanan Sistem di Cloud dan seluruh perangkat',
       'Security System'
     );
-    setFeedback('Peringatan keamanan telah dinonaktifkan.');
+    setFeedback('Peringatan keamanan telah berhasil dicabut dan alarm dihentikan di server Cloud & semua perangkat!');
     setTimeout(() => {
       setFeedback('');
-    }, 3000);
+    }, 4000);
   };
 
   return (
@@ -155,7 +166,7 @@ export const SuperAdminSecurityAlertModal: React.FC<SuperAdminSecurityAlertModal
         </div>
 
         {/* Status Aktif Saat Ini */}
-        {activeAlert && activeAlert.active ? (
+        {activeAlert && activeAlert.active && !activeAlert.revoked ? (
           <div className="my-4 p-4 rounded-2xl bg-rose-950/40 border border-rose-600/60 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-rose-400 font-bold text-xs">
@@ -164,10 +175,10 @@ export const SuperAdminSecurityAlertModal: React.FC<SuperAdminSecurityAlertModal
               </div>
               <button
                 onClick={handleRevokeAlert}
-                className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white border border-rose-400 text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-md shadow-rose-900/50"
               >
-                <Trash2 className="w-3.5 h-3.5 text-rose-400" />
-                <span>Hentikan / Cabut Alarm</span>
+                <Trash2 className="w-3.5 h-3.5 text-white" />
+                <span>Hentikan &amp; Tarik Alarm Sekarang</span>
               </button>
             </div>
 
@@ -188,7 +199,23 @@ export const SuperAdminSecurityAlertModal: React.FC<SuperAdminSecurityAlertModal
               </div>
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="my-3 p-3 rounded-2xl bg-slate-950/60 border border-slate-800 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 text-xs text-slate-400">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>Status: Tidak ada alarm darurat aktif di sistem saat ini.</span>
+            </div>
+            <button
+              type="button"
+              onClick={handleRevokeAlert}
+              className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-[11px] font-semibold transition cursor-pointer flex items-center gap-1"
+              title="Kirim sinyal pencabutan paksa ke Firestore & seluruh perangkat jika ada alarm yang tersisa"
+            >
+              <Trash2 className="w-3 h-3 text-rose-400" />
+              <span>Bersihkan/Tarik Sisa Alarm di Cloud</span>
+            </button>
+          </div>
+        )}
 
         {feedback && (
           <div className="my-3 p-3 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-medium flex items-center gap-2">
