@@ -142,7 +142,7 @@ export const initialSettings: AppSettings = {
   video_description: 'Saksikan siaran ulang ibadah minggu & firman Tuhan yang memberkati.',
   video_enabled: true,
   show_apk_download_button: true,
-  apk_download_url: 'https://drive.google.com/file/d/1MnWPNmsDjO1clGqbixCgSHjNRcMaqx2h/view?usp=sharing',
+  apk_download_url: '/downloads/church-app.apk',
   header_title: 'Gereja Kemenangan Faith Center Pro',
   header_subtitle: 'Sistem Informasi Management & Portal Layanan Jemaat',
   theme_preset: 'DARK_SLATE',

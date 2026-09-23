@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Smartphone, Download, CheckCircle2, ShieldCheck, Zap, X, MoreVertical, Chrome, Apple, Sparkles, Copy, Check, ExternalLink, Lock, AlertCircle } from 'lucide-react';
-import { APK_DOWNLOAD_URL } from './FloatingApkDownloadButton';
+import { triggerDirectApkDownload } from '../utils/apkStorage';
 
 interface PWAInstallGuideModalProps {
   isOpen: boolean;
@@ -16,6 +16,7 @@ export const PWAInstallGuideModal: React.FC<PWAInstallGuideModalProps> = ({
   canDirectInstall
 }) => {
   const [copied, setCopied] = useState(false);
+  const [downloadMsg, setDownloadMsg] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
@@ -31,8 +32,13 @@ export const PWAInstallGuideModal: React.FC<PWAInstallGuideModalProps> = ({
     }
   };
 
-  const handleDownloadApk = () => {
-    window.open(APK_DOWNLOAD_URL, '_blank', 'noopener,noreferrer');
+  const handleDownloadApk = async () => {
+    setDownloadMsg('Memulai unduhan langsung berkas APK...');
+    const res = await triggerDirectApkDownload({
+      suggestedName: 'Aplikasi-Gereja-Mobile.apk'
+    });
+    setDownloadMsg(res.message);
+    setTimeout(() => setDownloadMsg(null), 5000);
   };
 
   return (
@@ -210,6 +216,12 @@ export const PWAInstallGuideModal: React.FC<PWAInstallGuideModalProps> = ({
         </div>
 
         {/* Footer */}
+        {downloadMsg && (
+          <div className="px-4 py-2 bg-emerald-950/90 border-t border-emerald-500/40 text-[11px] text-emerald-300 flex items-center gap-2">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            <span>{downloadMsg}</span>
+          </div>
+        )}
         <div className="p-4 bg-slate-950 border-t border-slate-800/80 flex items-center justify-between gap-2">
           <button
             onClick={handleDownloadApk}
