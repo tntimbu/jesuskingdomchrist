@@ -3669,16 +3669,38 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-1">
-                  <p className="font-bold text-amber-300">1. Tanda Merah di AndroidManifest.xml (Fixed):</p>
+                <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="font-bold text-amber-300">1. Error Baris 24: Theme.JesusKingdomChrist</p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText('android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"');
+                        setCopiedEmbedFile('manifest_theme_line');
+                        setTimeout(() => setCopiedEmbedFile(null), 2500);
+                      }}
+                      className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-emerald-400 font-bold flex items-center gap-1 cursor-pointer"
+                    >
+                      <Copy className="w-3 h-3" />
+                      <span>{copiedEmbedFile === 'manifest_theme_line' ? 'Tersalin!' : 'Salin Baris Tema'}</span>
+                    </button>
+                  </div>
                   <p className="text-slate-300 text-[11px] leading-relaxed">
-                    Kami telah memperbarui tema ke <code>Theme.AppCompat.DayNight.NoActionBar</code> sehingga tidak akan memicu error tanda merah / cannot resolve symbol di AndroidManifest.xml.
+                    Di <code>AndroidManifest.xml</code> baris 24, ganti:
                   </p>
+                  <div className="p-2 rounded bg-slate-900 border border-slate-700 font-mono text-[11px] space-y-1">
+                    <p className="text-rose-400 line-through">android:theme=&quot;@style/Theme.JesusKingdomChrist&quot;</p>
+                    <p className="text-emerald-400 font-bold">android:theme=&quot;@style/Theme.AppCompat.DayNight.NoActionBar&quot;</p>
+                  </div>
                 </div>
-                <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-1">
-                  <p className="font-bold text-amber-300">2. File google-services.json Terpasang:</p>
+
+                <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
+                  <p className="font-bold text-amber-300">2. Menghilangkan Warning Kuning Android 14:</p>
                   <p className="text-slate-300 text-[11px] leading-relaxed">
-                    File <code>google-services.json</code> Anda sudah tampak benar berada di folder <code>app/</code> (sesuai screenshot). Setelah menambahkan baris di atas, build APK akan sukses.
+                    Warning baris 16 tentang <em>broad access to photos/videos</em> telah dihilangkan dari kode tab ini. Izin storage lawas tidak lagi diperlukan karena Android modern menggunakan Photo Picker bawaan yang aman.
+                  </p>
+                  <p className="text-emerald-400 text-[11px]">
+                    Atau cukup klik tab <strong>&quot;AndroidManifest.xml (Diperbarui)&quot;</strong> di bawah dan salin seluruh kodenya.
                   </p>
                 </div>
               </div>

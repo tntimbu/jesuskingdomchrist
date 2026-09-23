@@ -672,8 +672,6 @@ export function generateAndroidManifestXml(config: AndroidStudioConfig): string 
     <!-- Izin Akses Foto Bukti & Kamera (Opsional) -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
     <application
         android:allowBackup="true"
