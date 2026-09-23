@@ -26,7 +26,6 @@ import { broadcastContentNotification } from '../utils/notificationBroadcast';
 import { RenunganFullscreenModal } from './RenunganFullscreenModal';
 import { FloatingApkDownloadButton } from './FloatingApkDownloadButton';
 import { SuperAdminChatModal } from './SuperAdminChatModal';
-import { triggerDirectApkDownload } from '../utils/apkStorage';
 import { DashboardVisibilityManager } from './dashboard/DashboardVisibilityManager';
 import {
   Users,
@@ -1890,23 +1889,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </button>
 
               <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 sm:mr-8 pt-0.5 sm:pt-0">
-                <button
-                  type="button"
-                  onClick={async () => {
-                    setRefreshToast('📥 Memulai unduhan langsung berkas APK...');
-                    const res = await triggerDirectApkDownload({
-                      customUrl: settings.apk_download_url,
-                      suggestedName: `${(settings.header_title || 'Aplikasi-Gereja').replace(/\s+/g, '-')}.apk`
-                    });
-                    setRefreshToast(res.message);
-                    setTimeout(() => setRefreshToast(''), 6000);
-                  }}
-                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-600/30 border border-emerald-400/40 flex items-center justify-center gap-2 transition-all active:scale-95 text-center cursor-pointer"
-                  title="Unduh & Pasang Langsung File APK di HP Android"
+                <a
+                  href={(!settings.apk_download_url || settings.apk_download_url === 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing') ? 'https://drive.google.com/file/d/1MnWPNmsDjO1clGqbixCgSHjNRcMaqx2h/view?usp=sharing' : settings.apk_download_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-600/30 border border-emerald-400/40 flex items-center justify-center gap-2 transition-all active:scale-95 text-center"
                 >
                   <Download className="w-4 h-4 animate-pulse shrink-0" />
-                  <span>Unduh &amp; Pasang APK</span>
-                </button>
+                  <span>Unduh File .APK</span>
+                </a>
 
                 {isAdmin && (
                   <button
@@ -3217,23 +3208,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </div>
               </div>
               <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 sm:mr-8 pt-1 sm:pt-0">
-                <button
-                  type="button"
-                  onClick={async () => {
-                    setRefreshToast('📥 Memulai unduhan langsung berkas APK...');
-                    const res = await triggerDirectApkDownload({
-                      customUrl: settings.apk_download_url,
-                      suggestedName: `${(settings.header_title || 'Aplikasi-Gereja').replace(/\s+/g, '-')}.apk`
-                    });
-                    setRefreshToast(res.message);
-                    setTimeout(() => setRefreshToast(''), 6000);
-                  }}
-                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-600/30 border border-emerald-400/40 flex items-center justify-center gap-2 transition-all active:scale-95 text-center cursor-pointer"
-                  title="Unduh & Pasang Langsung File APK di HP Android"
+                <a
+                  href={(!settings.apk_download_url || settings.apk_download_url === 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing') ? 'https://drive.google.com/file/d/1MnWPNmsDjO1clGqbixCgSHjNRcMaqx2h/view?usp=sharing' : settings.apk_download_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-600/30 border border-emerald-400/40 flex items-center justify-center gap-2 transition-all active:scale-95 text-center"
                 >
                   <Download className="w-4 h-4 animate-pulse shrink-0" />
-                  <span>Download &amp; Pasang APK</span>
-                </button>
+                  <span>Download File .APK</span>
+                </a>
 
                 {isAdmin && (
                   <button

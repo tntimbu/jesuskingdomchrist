@@ -50,7 +50,6 @@ import {
   downloadAndroidStudioProjectZip
 } from '../utils/androidStudioGenerator';
 import { downloadGoogleServicesJsonFile, sendFcmLegacyNotification } from '../utils/googleServicesHelper';
-import { ApkUploadSection } from './ApkUploadSection';
 
 interface AndroidStudioConverterModalProps {
   isOpen: boolean;
@@ -86,7 +85,7 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
   });
 
   // Navigation tab
-  const [activeTab, setActiveTab] = useState<'DISPLAY' | 'FIREBASE_FCM' | 'CODE_EXPORT' | 'GUIDE' | 'HOST_APK'>('DISPLAY');
+  const [activeTab, setActiveTab] = useState<'DISPLAY' | 'FIREBASE_FCM' | 'CODE_EXPORT' | 'GUIDE'>('DISPLAY');
   const [selectedCodeFile, setSelectedCodeFile] = useState<
     | 'MAIN_ACTIVITY'
     | 'MAIN_ACTIVITY_KT'
@@ -441,21 +440,6 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
           >
             <BookOpen className="w-4 h-4" />
             <span>4. Panduan Build APK</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('HOST_APK')}
-            className={`pb-3 px-3 border-b-2 transition whitespace-nowrap flex items-center gap-1.5 shrink-0 cursor-pointer ${
-              activeTab === 'HOST_APK'
-                ? 'border-emerald-400 text-emerald-300 font-bold'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <Smartphone className="w-4 h-4 text-emerald-400" />
-            <span className="flex items-center gap-1">
-              5. Unggah APK ke Web
-              <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px]">Direct Install</span>
-            </span>
           </button>
         </div>
 
@@ -1123,13 +1107,6 @@ export const AndroidStudioConverterModal: React.FC<AndroidStudioConverterModalPr
                   </ul>
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* TAB 5: HOSTING & UPLOAD APK MANDIRI */}
-          {activeTab === 'HOST_APK' && (
-            <div className="space-y-4">
-              <ApkUploadSection />
             </div>
           )}
         </div>

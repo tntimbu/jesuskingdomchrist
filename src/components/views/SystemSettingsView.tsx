@@ -78,7 +78,6 @@ import { Website2ApkNotificationGuideModal } from '../Website2ApkNotificationGui
 import { AndroidStudioConverterModal } from '../AndroidStudioConverterModal';
 import { downloadGoogleServicesJsonFile } from '../../utils/googleServicesHelper';
 import { SuperAdminSecurityAlertModal } from '../SuperAdminSecurityAlertModal';
-import { ApkUploadSection } from '../ApkUploadSection';
 import {
   AndroidStudioConfig,
   DEFAULT_ANDROID_CONFIG,
@@ -2485,22 +2484,17 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                   </button>
                 </div>
 
-                {/* Tempat Hosting & Upload File APK Mandiri (Direct Download Tanpa Google Drive) */}
-                <div className="sm:col-span-2">
-                  <ApkUploadSection onSuccess={loadData} />
-                </div>
-
                 <div className="sm:col-span-2 space-y-1">
-                  <label className="block text-slate-300 font-semibold text-xs">Opsi Tambahan: Link Tautan URL Unduhan Khusus (Kosongkan jika menggunakan file di atas):</label>
+                  <label className="block text-slate-300 font-semibold text-xs">Link Tautan Download File .APK (Google Drive / Direct URL):</label>
                   <input
-                    type="text"
-                    value={metaForm.apk_download_url || ''}
+                    type="url"
+                    value={(!metaForm.apk_download_url || metaForm.apk_download_url === 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing' || metaForm.apk_download_url === '/downloads/church-app.apk') ? 'https://drive.google.com/file/d/1MnWPNmsDjO1clGqbixCgSHjNRcMaqx2h/view?usp=sharing' : metaForm.apk_download_url}
                     onChange={(e) => setMetaForm({ ...metaForm, apk_download_url: e.target.value })}
-                    placeholder="/downloads/church-app.apk atau link direct download"
+                    placeholder="https://drive.google.com/file/d/..."
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-xs"
                   />
                   <p className="text-[11px] text-slate-400">
-                    💡 <em>Default:</em> File APK langsung diunduh dari penyimpanan internal web ini tanpa diarahkan ke Google Drive atau situs luar.
+                    Masukkan tautan Google Drive file APK hasil build Android Studio Anda untuk diunduh langsung oleh jemaat.
                   </p>
                 </div>
               </div>
@@ -3636,9 +3630,6 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                 </div>
               </div>
             </div>
-
-            {/* Tempat Hosting & Upload File APK Mandiri (Direct Download Tanpa Google Drive) */}
-            <ApkUploadSection onSuccess={loadData} />
 
             {/* Build Error Resolution Callout */}
             <div className="p-4 sm:p-6 rounded-3xl bg-slate-900 border-2 border-rose-500/50 text-xs text-slate-300 space-y-5 shadow-2xl">
