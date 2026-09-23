@@ -679,9 +679,9 @@ export function generateAndroidManifestXml(config: AndroidStudioConfig): string 
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="${config.appName}"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
-        android:theme="@style/Theme.JesusKingdomChrist"
+        android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"
         android:usesCleartextTraffic="true"
         ${config.enableHardwareAcceleration ? 'android:hardwareAccelerated="true"' : ''}>
 

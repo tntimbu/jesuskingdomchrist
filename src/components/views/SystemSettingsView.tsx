@@ -3550,34 +3550,57 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
             </div>
 
             {/* Build Error Resolution Callout */}
-            <div className="p-4 sm:p-5 rounded-3xl bg-slate-900 border border-emerald-500/40 text-xs text-slate-300 space-y-3 shadow-xl">
-              <div className="flex items-center gap-2 text-emerald-400 font-extrabold text-sm sm:text-base">
-                <ShieldCheck className="w-5 h-5 shrink-0" />
-                <span>Solusi Masalah Gagal Build Android Studio yang Telah Diperbaiki</span>
+            <div className="p-4 sm:p-5 rounded-3xl bg-slate-900 border-2 border-amber-500/50 text-xs text-slate-300 space-y-4 shadow-2xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2 text-amber-400 font-extrabold text-sm sm:text-base">
+                  <AlertTriangle className="w-5 h-5 shrink-0 text-rose-400 animate-pulse" />
+                  <span>Solusi Mengatasi Error: &quot;Set &apos;android.useAndroidX=true&apos; in gradle.properties&quot;</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(generateGradleProperties());
+                    setCopiedEmbedFile('gradle.properties');
+                    setTimeout(() => setCopiedEmbedFile(null), 2500);
+                  }}
+                  className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs shadow transition flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>{copiedEmbedFile === 'gradle.properties' ? 'Tersalin!' : 'Salin Isi gradle.properties'}</span>
+                </button>
               </div>
+
+              <div className="p-3.5 rounded-2xl bg-rose-950/40 border border-rose-500/40 text-rose-200 text-xs space-y-2">
+                <p className="font-bold flex items-center gap-1.5 text-white">
+                  <span>🚨 Penyebab Gagal Build pada Gambar Anda:</span>
+                </p>
+                <p className="leading-relaxed">
+                  Android Studio menampilkan pesan: <code className="bg-slate-950 px-2 py-0.5 rounded text-amber-300 font-mono">Configuration &apos;:app:debugRuntimeClasspath&apos; contains AndroidX dependencies, but the &apos;android.useAndroidX&apos; property is not enabled. Set &apos;android.useAndroidX=true&apos; in gradle.properties</code>.
+                </p>
+                <div className="bg-slate-950/90 p-3 rounded-xl border border-slate-800 text-[11px] text-slate-300 space-y-1.5 font-mono">
+                  <p className="text-emerald-400 font-sans font-bold">Langkah Cepat Memperbaikinya (10 Detik):</p>
+                  <p>1. Di Android Studio sebelah kiri, klik ganda file <span className="text-amber-400 font-bold">gradle.properties</span> (di bawah build.gradle.kts).</p>
+                  <p>2. Tempelkan (paste) kode berikut:</p>
+                  <div className="p-2 bg-slate-900 rounded border border-slate-700 text-emerald-300 select-all">
+                    android.useAndroidX=true<br />
+                    android.enableJetifier=true<br />
+                    org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+                  </div>
+                  <p>3. Klik tombol gajah/ikon <span className="text-cyan-400 font-bold">&quot;Sync Project with Gradle Files&quot;</span> atau menu <span className="text-white font-bold">Build &gt; Make Project</span>.</p>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                 <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-1">
-                  <p className="font-bold text-amber-300">1. Plugin Version Catalog Error (Fixed):</p>
+                  <p className="font-bold text-amber-300">1. Tanda Merah di AndroidManifest.xml (Fixed):</p>
                   <p className="text-slate-300 text-[11px] leading-relaxed">
-                    Sebelumnya build gagal karena <code>alias(libs.plugins.android.application)</code> tidak ditemukan di proyek baru. Sekarang menggunakan <code>id("com.android.application")</code> standar yang 100% langsung berhasil build tanpa error TOML.
+                    Kami telah memperbarui tema ke <code>Theme.AppCompat.DayNight.NoActionBar</code> sehingga tidak akan memicu error tanda merah / cannot resolve symbol di AndroidManifest.xml.
                   </p>
                 </div>
                 <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-1">
-                  <p className="font-bold text-amber-300">2. Repository Clash Settings vs Project (Fixed):</p>
+                  <p className="font-bold text-amber-300">2. File google-services.json Terpasang:</p>
                   <p className="text-slate-300 text-[11px] leading-relaxed">
-                    Menghapus blok <code>allprojects {'{}'}</code> dari project-level build.gradle yang memicu error <em>prefer settings repositories over project repositories</em> pada Gradle 8+.
-                  </p>
-                </div>
-                <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-1">
-                  <p className="font-bold text-amber-300">3. Missing Symbol R &amp; Theme Crash (Fixed):</p>
-                  <p className="text-slate-300 text-[11px] leading-relaxed">
-                    MainActivity kini menggunakan <code>AppCompatActivity</code> dan programmatic layout mandiri, menjamin WebView, progress bar, dan pull-to-refresh langsung tampil tanpa butuh file XML layout tambahan.
-                  </p>
-                </div>
-                <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-1">
-                  <p className="font-bold text-amber-300">4. File google-services.json Wajib:</p>
-                  <p className="text-slate-300 text-[11px] leading-relaxed">
-                    Pastikan file <code>google-services.json</code> diletakkan di dalam folder <code>app/</code> proyek Anda agar plugin Google Services tidak memicu error missing file saat kompilasi.
+                    File <code>google-services.json</code> Anda sudah tampak benar berada di folder <code>app/</code> (sesuai screenshot). Setelah menambahkan baris di atas, build APK akan sukses.
                   </p>
                 </div>
               </div>
