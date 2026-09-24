@@ -350,10 +350,10 @@ function sanitizeTenantDataIsolation(): void {
         if (rawSettings) {
           try {
             const s = JSON.parse(rawSettings);
-            if (s.rekening_bank_nomor === '527-089-1122' || s.rekening_bank_atas_nama === 'Gereja Kemenangan Faith Center') {
+            if (s.rekening_bank_nomor === '527-089-1122' || (s.rekening_bank_atas_nama && s.rekening_bank_atas_nama.includes('Kemenangan Faith'))) {
               s.rekening_bank_nama = '';
               s.rekening_bank_nomor = '';
-              s.rekening_bank_atas_nama = t.nama_gereja;
+              s.rekening_bank_atas_nama = t.nama_gereja || 'Jesus Kingdom Christ';
               s.qris_image_url = '';
               localStorage.setItem(settingsKey, JSON.stringify(s));
             }
@@ -361,6 +361,51 @@ function sanitizeTenantDataIsolation(): void {
         }
       }
     });
+
+    // Clean up any remaining legacy "Gereja Kemenangan Faith Center" references in stored tenants and root settings
+    let tenantsModified = false;
+    const sanitizedTenants = tenants.map((t) => {
+      if (t.nama_gereja && t.nama_gereja.includes('Kemenangan Faith')) {
+        tenantsModified = true;
+        return {
+          ...t,
+          nama_gereja: 'Jesus Kingdom Christ',
+          kode_unik: 'JKC-01',
+          admin_email: 'admin@jesuskingdomchrist.org'
+        };
+      }
+      return t;
+    });
+    if (tenantsModified) {
+      localStorage.setItem(KEYS.TENANTS, JSON.stringify(sanitizedTenants));
+    }
+
+    const rawRootSettings = localStorage.getItem(KEYS.SETTINGS);
+    if (rawRootSettings) {
+      try {
+        const s = JSON.parse(rawRootSettings);
+        let sChanged = false;
+        if (s.nama_gereja && s.nama_gereja.includes('Kemenangan Faith')) {
+          s.nama_gereja = 'Jesus Kingdom Christ';
+          sChanged = true;
+        }
+        if (s.header_title && s.header_title.includes('Kemenangan Faith')) {
+          s.header_title = 'Jesus Kingdom Christ';
+          sChanged = true;
+        }
+        if (s.rekening_bank_atas_nama && s.rekening_bank_atas_nama.includes('Kemenangan Faith')) {
+          s.rekening_bank_atas_nama = 'Jesus Kingdom Christ';
+          sChanged = true;
+        }
+        if (s.email === 'info@gkfc-cms.org') {
+          s.email = 'info@jesuskingdomchrist.org';
+          sChanged = true;
+        }
+        if (sChanged) {
+          localStorage.setItem(KEYS.SETTINGS, JSON.stringify(s));
+        }
+      } catch (e) {}
+    }
 
     // 5. Clean up any revoked or inactive security alerts from localStorage
     const rawAlert = localStorage.getItem(KEYS.SECURITY_ALERT);
@@ -742,6 +787,19 @@ export const StorageManager = {
   getSettings: (): AppSettings => {
     const saved = getItem<AppSettings>(KEYS.SETTINGS, initialSettings);
     const settings = { ...initialSettings, ...saved };
+    // Auto sanitize any stale legacy church name
+    if (settings.nama_gereja && settings.nama_gereja.includes('Kemenangan Faith')) {
+      settings.nama_gereja = 'Jesus Kingdom Christ';
+    }
+    if (settings.header_title && settings.header_title.includes('Kemenangan Faith')) {
+      settings.header_title = 'Jesus Kingdom Christ';
+    }
+    if (settings.rekening_bank_atas_nama && settings.rekening_bank_atas_nama.includes('Kemenangan Faith')) {
+      settings.rekening_bank_atas_nama = 'Jesus Kingdom Christ';
+    }
+    if (settings.email === 'info@gkfc-cms.org') {
+      settings.email = 'info@jesuskingdomchrist.org';
+    }
     if (settings.video_url && settings.video_url.includes('5qap5aO4i9A')) {
       settings.video_url = 'https://www.youtube.com/watch?v=wX2S6AebnI8';
     }

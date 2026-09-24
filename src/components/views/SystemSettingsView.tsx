@@ -1139,7 +1139,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                   <input
                     type="text"
                     value={metaForm.header_title || ''}
-                    placeholder="Gereja Kemenangan Faith Center Pro"
+                    placeholder="Jesus Kingdom Christ"
                     onChange={(e) => setMetaForm({ ...metaForm, header_title: e.target.value })}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold"
                   />
@@ -1241,7 +1241,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                   <label className="block text-slate-400 mb-1 font-semibold">Atas Nama Rekening *</label>
                   <input
                     type="text"
-                    placeholder="Contoh: Gereja Kemenangan Faith Center"
+                    placeholder="Contoh: Jesus Kingdom Christ"
                     value={metaForm.rekening_bank_atas_nama || ''}
                     onChange={(e) => setMetaForm({ ...metaForm, rekening_bank_atas_nama: e.target.value })}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold"

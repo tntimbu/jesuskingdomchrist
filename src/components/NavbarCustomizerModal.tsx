@@ -489,7 +489,7 @@ export const NavbarCustomizerModal: React.FC<NavbarCustomizerModalProps> = ({
                       />
                       <div className="truncate">
                         <p className={`text-xs font-extrabold truncate ${currentNavbarTheme.titleClass}`}>
-                          {form.nama_gereja || 'Gereja Kemenangan'}
+                          {form.nama_gereja || 'Jesus Kingdom Christ'}
                         </p>
                         <p className="text-[9px] uppercase tracking-wider text-amber-400 font-bold leading-none">
                           Enterprise CMS Pro

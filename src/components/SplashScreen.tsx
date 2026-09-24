@@ -40,6 +40,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ settings, onFinish }
   }, []);
 
   const churchLogo = settings.logo || (settings as any).logo_url || DEFAULT_CHURCH_LOGO;
+  const displayedChurchName =
+    settings?.nama_gereja && !settings.nama_gereja.includes('Kemenangan Faith')
+      ? settings.nama_gereja
+      : 'Jesus Kingdom Christ';
 
   return (
     <div className="fixed inset-0 z-[9999] bg-[#090d16] flex flex-col items-center justify-center p-6 text-white font-sans overflow-hidden">
@@ -52,7 +56,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ settings, onFinish }
           <div className="absolute -inset-1.5 rounded-3xl bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-600 blur opacity-80 animate-pulse" />
           <img
             src={churchLogo}
-            alt={settings.nama_gereja || 'Logo Gereja'}
+            alt={displayedChurchName}
             onError={(e) => {
               (e.target as HTMLImageElement).src = DEFAULT_CHURCH_LOGO;
             }}
@@ -63,7 +67,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ settings, onFinish }
         {/* Church Name & Description */}
         <div className="space-y-1.5">
           <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-snug">
-            {settings.nama_gereja || 'Gereja CMS Pro'}
+            {displayedChurchName}
           </h1>
           <p className="text-[11px] uppercase tracking-widest text-indigo-400 font-bold">
             Sistem Informasi Management Gereja

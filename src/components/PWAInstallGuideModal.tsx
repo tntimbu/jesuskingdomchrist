@@ -181,6 +181,25 @@ export const PWAInstallGuideModal: React.FC<PWAInstallGuideModalProps> = ({
             </div>
           )}
 
+          {/* Edukasi & Solusi Peringatan Play Protect / "File Mungkin Berbahaya" */}
+          <div className="p-3.5 rounded-2xl bg-amber-950/40 border border-amber-500/40 space-y-2 text-xs">
+            <div className="flex items-center gap-2 font-bold text-amber-300">
+              <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+              <span>Muncul Pesan &quot;Aplikasi Diblokir / Play Protect&quot; atau &quot;File Berbahaya&quot;?</span>
+            </div>
+            <p className="text-[11px] text-slate-300 leading-relaxed">
+              <strong>Jangan khawatir, aplikasi ini 100% aman dan bebas virus.</strong> Pesan tersebut adalah peringatan otomatis Android untuk semua aplikasi resmi yang didistribusikan langsung tanpa melalui Google Play Store komersial.
+            </p>
+            <div className="bg-slate-950/80 p-2.5 rounded-xl border border-amber-500/20 text-[11px] space-y-1 text-slate-200">
+              <div className="font-semibold text-amber-200">👉 Cara Memasang dengan Aman &amp; Cepat:</div>
+              <div>1. Saat muncul jendela Play Protect, ketuk <strong>&quot;Detail Selengkapnya&quot; (More details)</strong> di bagian bawah.</div>
+              <div>2. Ketuk <strong>&quot;Tetap Instal (Tidak Aman)&quot; (Install anyway)</strong>. Aplikasi langsung terpasang!</div>
+              <div className="text-[10px] text-emerald-400 font-semibold pt-1">
+                💡 Tips: Anda juga bisa memasang aplikasi lewat tombol <strong>&quot;Instal Otomatis / Tambahkan ke Layar Utama&quot;</strong> di atas untuk bebas 100% dari peringatan!
+              </div>
+            </div>
+          </div>
+
           {/* Fitur Keunggulan Aplikasi */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
             <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800 flex items-start gap-2.5">

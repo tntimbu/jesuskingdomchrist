@@ -2343,7 +2343,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                 <div>
                   <span className="text-[10px] text-slate-400 block">Atas Nama Rekening:</span>
-                  <p className="font-bold text-slate-200 text-xs sm:text-sm">{settings.rekening_bank_atas_nama || 'Gereja Kemenangan Faith Center'}</p>
+                  <p className="font-bold text-slate-200 text-xs sm:text-sm">{settings.rekening_bank_atas_nama || settings.nama_gereja || 'Jesus Kingdom Christ'}</p>
                 </div>
               </div>
 
@@ -2370,7 +2370,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     <div className="w-48 h-48 sm:w-64 sm:h-64 rounded-2xl bg-white flex flex-col items-center justify-center text-center p-4 text-slate-800 border-4 border-emerald-500/50 shadow-2xl">
                       <QrCode className="w-14 h-14 sm:w-16 sm:h-16 text-emerald-600 mb-2" />
                       <span className="font-extrabold text-sm">QRIS Standar Nasional (QRIS)</span>
-                      <span className="text-xs text-slate-500 mt-1">Gereja Kemenangan Faith Center</span>
+                      <span className="text-xs text-slate-500 mt-1">{settings.rekening_bank_atas_nama || settings.nama_gereja || 'Jesus Kingdom Christ'}</span>
                     </div>
                   )}
 
@@ -3987,7 +3987,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           <input
                             type="text"
                             value={customForm.header_title || ''}
-                            placeholder="Gereja Kemenangan Faith Center Pro"
+                            placeholder="Jesus Kingdom Christ"
                             onChange={(e) => setCustomForm({ ...customForm, header_title: e.target.value })}
                             className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-semibold text-xs"
                           />
@@ -4586,7 +4586,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 QRIS RESMI GEREJA
               </span>
               <h3 className="text-lg sm:text-xl font-extrabold text-white mt-2">
-                {settings.nama_gereja || 'Gereja Kemenangan Faith Center'}
+                {settings.nama_gereja || 'Jesus Kingdom Christ'}
               </h3>
               <p className="text-xs text-slate-400">
                 Pindai menggunakan aplikasi e-Wallet atau M-Banking apapun
@@ -4604,7 +4604,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <div className="w-72 h-72 sm:w-96 sm:h-96 bg-white flex flex-col items-center justify-center text-slate-800 p-4">
                   <QrCode className="w-24 h-24 text-emerald-600 mb-2" />
                   <span className="font-extrabold text-base">QRIS DIGITAL GEREJA</span>
-                  <span className="text-xs text-slate-500 mt-1">Gereja Kemenangan Faith Center</span>
+                  <span className="text-xs text-slate-500 mt-1">{settings.rekening_bank_atas_nama || settings.nama_gereja || 'Jesus Kingdom Christ'}</span>
                 </div>
               )}
             </div>

@@ -28,11 +28,11 @@ import {
 export const initialTenants: ChurchTenant[] = [
   {
     tenant_id: 'CHURCH-001',
-    nama_gereja: 'Gereja Kemenangan Faith Center Pro',
-    kode_unik: 'GKFC-01',
+    nama_gereja: 'Jesus Kingdom Christ',
+    kode_unik: 'JKC-01',
     admin_username: 'adminsekretariat',
     admin_nama: 'Dkn. Maria Melani',
-    admin_email: 'admin@gkfc-cms.org',
+    admin_email: 'admin@jesuskingdomchrist.org',
     admin_wa: '081298765432',
     alamat: 'Jl. Pemuda No. 77, Jakarta Pusat, DKI Jakarta',
     status: 'AKTIF',
@@ -125,16 +125,16 @@ export const initialFeaturedVideos: FeaturedVideo[] = [
 ];
 
 export const initialSettings: AppSettings = {
-  nama_gereja: 'Gereja Kemenangan Faith Center Pro',
+  nama_gereja: 'Jesus Kingdom Christ',
   logo: DEFAULT_CHURCH_LOGO,
   alamat: 'Jl. Pemuda No. 77, Jakarta Pusat, DKI Jakarta 10110',
-  email: 'info@gkfc-cms.org',
+  email: 'info@jesuskingdomchrist.org',
   telepon: '+62 21 555-9876',
   warna_tema: '#1e293b',
   // Rekening Bank & QRIS Transfer Persembahan Digital
   rekening_bank_nama: 'Bank BCA',
   rekening_bank_nomor: '527-089-1122',
-  rekening_bank_atas_nama: 'Gereja Kemenangan Faith Center',
+  rekening_bank_atas_nama: 'Jesus Kingdom Christ',
   qris_image_url: 'https://images.unsplash.com/photo-1628155930542-3c7a64e2c833?w=400&auto=format&fit=crop&q=80',
   // Video & Visual Customization Defaults
   video_url: 'https://www.youtube.com/watch?v=wX2S6AebnI8',
@@ -143,7 +143,7 @@ export const initialSettings: AppSettings = {
   video_enabled: true,
   show_apk_download_button: true,
   apk_download_url: 'https://drive.google.com/file/d/1MnWPNmsDjO1clGqbixCgSHjNRcMaqx2h/view?usp=sharing',
-  header_title: 'Gereja Kemenangan Faith Center Pro',
+  header_title: 'Jesus Kingdom Christ',
   header_subtitle: 'Sistem Informasi Management & Portal Layanan Jemaat',
   theme_preset: 'DARK_SLATE',
   accent_color: 'INDIGO',
