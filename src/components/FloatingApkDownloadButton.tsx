@@ -1,17 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Download, Smartphone, X, Sparkles, ShieldCheck } from 'lucide-react';
+import { Download, Smartphone, X, Sparkles, ShieldCheck, Link2 } from 'lucide-react';
 import { StorageManager } from '../utils/storage';
-import { AppSettings } from '../types';
+import { AppSettings, User } from '../types';
 
 export const APK_DOWNLOAD_URL = 'https://drive.google.com/file/d/1MnWPNmsDjO1clGqbixCgSHjNRcMaqx2h/view?usp=sharing';
 export const OLD_APK_DOWNLOAD_URL = 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing';
 
 interface FloatingApkDownloadButtonProps {
   settings?: AppSettings;
+  currentUser?: User;
+  onOpenSettings?: () => void;
 }
 
-export const FloatingApkDownloadButton: React.FC<FloatingApkDownloadButtonProps> = ({ settings }) => {
+export const FloatingApkDownloadButton: React.FC<FloatingApkDownloadButtonProps> = ({
+  settings,
+  currentUser,
+  onOpenSettings
+}) => {
   const [appSettings, setAppSettings] = useState<AppSettings>(() => settings || StorageManager.getSettings());
+  const [loggedInUser, setLoggedInUser] = useState<User | null>(() => currentUser || StorageManager.getCurrentUser());
   const [isOpenTooltip, setIsOpenTooltip] = useState(false);
   const [isHidden, setIsHidden] = useState<boolean>(() => {
     try {
@@ -20,6 +27,12 @@ export const FloatingApkDownloadButton: React.FC<FloatingApkDownloadButtonProps>
       return false;
     }
   });
+
+  useEffect(() => {
+    if (currentUser !== undefined) {
+      setLoggedInUser(currentUser);
+    }
+  }, [currentUser]);
 
   useEffect(() => {
     const handleHiddenChange = (e: any) => {
@@ -46,6 +59,7 @@ export const FloatingApkDownloadButton: React.FC<FloatingApkDownloadButtonProps>
     }
     const handleSync = () => {
       setAppSettings(StorageManager.getSettings());
+      setLoggedInUser(StorageManager.getCurrentUser());
     };
     window.addEventListener('cms_data_changed', handleSync);
     window.addEventListener('storage', handleSync);
@@ -55,15 +69,47 @@ export const FloatingApkDownloadButton: React.FC<FloatingApkDownloadButtonProps>
     };
   }, [settings]);
 
+  // Syarat Kritis: HANYA MUNCUL KETIKA SUDAH LOGIN KE GEREJA MASING-MASING
+  const isGuestOrUnauthenticated =
+    !loggedInUser ||
+    loggedInUser.role === 'GUEST' ||
+    loggedInUser.user_id === 'guest' ||
+    loggedInUser.username === 'guest';
+
+  if (isGuestOrUnauthenticated) {
+    return null;
+  }
+
   // Hidden if disabled by Admin in Settings OR hidden by user clicking (x)
   if (appSettings.show_apk_download_button === false || isHidden) {
     return null;
   }
 
-  const rawUrl = appSettings.apk_download_url;
-  const downloadUrl = (rawUrl && rawUrl !== OLD_APK_DOWNLOAD_URL) ? rawUrl : APK_DOWNLOAD_URL;
+  const activeTenantId = StorageManager.getActiveTenantId();
+  const rawUrl = appSettings.apk_download_url?.trim();
+  let downloadUrl = (rawUrl && rawUrl !== OLD_APK_DOWNLOAD_URL) ? rawUrl : '';
+  if (!downloadUrl && activeTenantId === 'CHURCH-001') {
+    downloadUrl = APK_DOWNLOAD_URL;
+  }
+
+  const isAdmin = loggedInUser.role === 'ADMIN' || loggedInUser.role === 'SUPER_ADMIN';
+
+  // Jika jemaat gereja membuka tapi admin gereja ini belum menempelkan link Google Drive APK
+  if (!downloadUrl && !isAdmin) {
+    return null;
+  }
 
   const handleDownload = () => {
+    if (!downloadUrl) {
+      if (isAdmin) {
+        if (onOpenSettings) {
+          onOpenSettings();
+        } else {
+          window.dispatchEvent(new CustomEvent('cms_navigate_tab', { detail: { tab: 'settings' } }));
+        }
+      }
+      return;
+    }
     window.open(downloadUrl, '_blank', 'noopener,noreferrer');
   };
 
@@ -95,14 +141,16 @@ export const FloatingApkDownloadButton: React.FC<FloatingApkDownloadButtonProps>
           </button>
           <div className="flex items-center gap-1.5 font-bold text-emerald-400 pr-5">
             <Smartphone className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>Aplikasi Android (.APK)</span>
+            <span>APK {appSettings.nama_gereja || 'Gereja'}</span>
           </div>
           <p className="text-[11px] text-slate-300 leading-snug">
-            Pasang aplikasi resmi gereja di HP Android Anda untuk akses langsung, hemat kuota &amp; notifikasi instan.
+            {downloadUrl
+              ? `Unduh aplikasi resmi ${appSettings.nama_gereja} langsung dari Google Drive gereja Anda.`
+              : 'Admin gereja dapat menempelkan link Google Drive APK di menu Pengaturan Sistem.'}
           </p>
           <div className="pt-1.5 border-t border-white/10 flex items-center justify-between text-[10px]">
             <span className="text-emerald-300 flex items-center gap-1 font-semibold">
-              <ShieldCheck className="w-3 h-3" /> File Aman &amp; Terverifikasi
+              <ShieldCheck className="w-3 h-3" /> Link Resmi Gereja
             </span>
             <button
               onClick={handleHideFromDashboard}
@@ -120,26 +168,34 @@ export const FloatingApkDownloadButton: React.FC<FloatingApkDownloadButtonProps>
         <button
           id="btn-floating-apk-download"
           onClick={handleDownload}
-          className="relative px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-[0_8px_20px_-4px_rgba(16,185,129,0.6)] border-2 border-emerald-400/60 flex items-center gap-2 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer ring-4 ring-emerald-500/20"
-          title="Klik untuk Mengunduh Aplikasi Android (.APK)"
+          className={`relative px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-2xl ${
+            downloadUrl
+              ? 'bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white shadow-[0_8px_20px_-4px_rgba(16,185,129,0.6)] border-emerald-400/60 ring-emerald-500/20'
+              : 'bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 hover:from-amber-500 hover:to-orange-500 text-white shadow-[0_8px_20px_-4px_rgba(245,158,11,0.6)] border-amber-400/60 ring-amber-500/20'
+          } font-extrabold text-xs border-2 flex items-center gap-2 transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer ring-4`}
+          title={downloadUrl ? `Download File APK ${appSettings.nama_gereja}` : 'Klik untuk Mengatur Link Google Drive APK Gereja'}
         >
           <div className="p-1.5 rounded-xl bg-white/20 text-white shrink-0 shadow-inner group-hover:rotate-12 transition-transform">
-            <Smartphone className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-100" />
+            <Smartphone className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
           </div>
           
           {/* Teks terlihat jelas di HP Android maupun Desktop */}
           <div className="text-left leading-tight">
-            <div className="text-[9px] sm:text-[10px] text-emerald-200 uppercase font-black tracking-wider flex items-center gap-1">
+            <div className="text-[9px] sm:text-[10px] text-emerald-100 uppercase font-black tracking-wider flex items-center gap-1">
               <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-300" />
-              <span>App Android</span>
+              <span className="truncate max-w-[120px]">{appSettings.nama_gereja || 'Aplikasi Gereja'}</span>
             </div>
             <div className="text-[11px] sm:text-xs font-black text-white flex items-center gap-1">
-              <span>Download APK</span>
+              <span>{downloadUrl ? 'Download APK' : 'Atur Link APK Drive'}</span>
             </div>
           </div>
 
-          <div className="p-1 sm:p-1.5 rounded-xl bg-white text-emerald-800 shrink-0 shadow-md">
-            <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-pulse" />
+          <div className="p-1 sm:p-1.5 rounded-xl bg-white text-slate-900 shrink-0 shadow-md">
+            {downloadUrl ? (
+              <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-700 animate-pulse" />
+            ) : (
+              <Link2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-700" />
+            )}
           </div>
         </button>
 

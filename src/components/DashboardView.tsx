@@ -50,6 +50,7 @@ import {
   X,
   Check,
   ExternalLink,
+  Link2,
   Sparkles,
   BookOpen,
   MessageCircle,
@@ -147,6 +148,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const isSuperAdmin = currentUser.role === 'SUPER_ADMIN';
   const isAdmin = (currentUser.role === 'ADMIN' || isSuperAdmin) && !isGuestMode;
   const isJemaat = currentUser.role === 'JEMAAT' || isGuestMode;
+
+  const activeTenantId = StorageManager.getActiveTenantId();
+  const rawApkUrl = settings.apk_download_url?.trim();
+  const churchApkUrl = (rawApkUrl && rawApkUrl !== 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing')
+    ? rawApkUrl
+    : (activeTenantId === 'CHURCH-001' ? 'https://drive.google.com/file/d/1MnWPNmsDjO1clGqbixCgSHjNRcMaqx2h/view?usp=sharing' : '');
 
   // Refresh & Toast State
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -1830,8 +1837,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
         )}
 
-          {/* Banner Download Aplikasi Mobile Android (.APK) Khusus HP Android */}
-          {settings.show_apk_banner !== false && settings.show_apk_download_button !== false && !isApkBannerDismissed && (
+          {/* Banner Download Aplikasi Mobile Android (.APK) Khusus HP Android (Hanya muncul jika sudah login ke gereja masing-masing) */}
+          {!isGuestMode && (churchApkUrl || isAdmin) && settings.show_apk_banner !== false && settings.show_apk_download_button !== false && !isApkBannerDismissed && (
             <div className="relative p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-emerald-950/90 via-slate-900/95 to-teal-950/90 border-2 border-emerald-500/50 shadow-xl backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 text-white animate-fade-in">
               <div className="flex items-start gap-3 min-w-0 flex-1">
                 <div className="p-2 sm:p-2.5 md:p-3 rounded-xl sm:rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-inner shrink-0 mt-0.5">
@@ -1844,7 +1851,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         Khusus HP Android
                       </span>
                       <span className="text-[9px] sm:text-[10px] text-amber-300 font-bold flex items-center gap-1 whitespace-nowrap">
-                        <ShieldCheck className="w-3 h-3" /> File Aman &amp; Resmi
+                        <ShieldCheck className="w-3 h-3" /> File Aman &amp; Resmi {settings.nama_gereja}
                       </span>
                     </div>
                     {/* Tombol tutup banner mobile yang rapi dan sejajar */}
@@ -1867,7 +1874,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     Download Aplikasi Mobile Android (.APK)
                   </h4>
                   <p className="text-xs text-slate-300 leading-relaxed">
-                    Instal di ponsel Android untuk akses cepat renungan, warta, pengumuman &amp; notifikasi ibadah otomatis.
+                    {churchApkUrl
+                      ? `Instal aplikasi resmi ${settings.nama_gereja} di ponsel Android untuk akses cepat renungan, warta & notifikasi ibadah.`
+                      : 'Admin gereja dapat menempelkan link Google Drive APK di menu pengaturan agar jemaat dapat langsung mengunduhnya.'}
                   </p>
                 </div>
               </div>
@@ -1889,15 +1898,29 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </button>
 
               <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 sm:mr-8 pt-0.5 sm:pt-0">
-                <a
-                  href={(!settings.apk_download_url || settings.apk_download_url === 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing') ? 'https://drive.google.com/file/d/1MnWPNmsDjO1clGqbixCgSHjNRcMaqx2h/view?usp=sharing' : settings.apk_download_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-600/30 border border-emerald-400/40 flex items-center justify-center gap-2 transition-all active:scale-95 text-center"
-                >
-                  <Download className="w-4 h-4 animate-pulse shrink-0" />
-                  <span>Unduh File .APK</span>
-                </a>
+                {churchApkUrl ? (
+                  <a
+                    href={churchApkUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-600/30 border border-emerald-400/40 flex items-center justify-center gap-2 transition-all active:scale-95 text-center"
+                  >
+                    <Download className="w-4 h-4 animate-pulse shrink-0" />
+                    <span>Unduh File .APK</span>
+                  </a>
+                ) : isAdmin ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsCustomizerOpen(true);
+                      setCustomizerTab('media');
+                    }}
+                    className="w-full sm:w-auto px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-extrabold text-xs shadow-lg border border-amber-400/40 flex items-center justify-center gap-1.5 transition-all cursor-pointer text-center"
+                  >
+                    <Link2 className="w-4 h-4 shrink-0" />
+                    <span>Tempelkan Link APK Drive</span>
+                  </button>
+                ) : null}
 
                 {isAdmin && (
                   <button
@@ -3169,8 +3192,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
           )}
 
-          {/* Banner Download Aplikasi Mobile Android (.APK) Khusus Pengurus & Admin */}
-          {settings.show_apk_banner !== false && settings.show_apk_download_button !== false && !isApkBannerDismissed && (
+          {/* Banner Download Aplikasi Mobile Android (.APK) Khusus Pengurus & Admin (Hanya muncul jika sudah login ke gereja masing-masing) */}
+          {!isGuestMode && settings.show_apk_banner !== false && settings.show_apk_download_button !== false && !isApkBannerDismissed && (
             <div className="relative p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-emerald-950/90 via-slate-900/95 to-teal-950/90 border-2 border-emerald-500/50 shadow-xl backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 sm:gap-4 text-white animate-fade-in">
               <button
                 type="button"
@@ -3196,27 +3219,43 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       App Android (.APK)
                     </span>
                     <span className="text-[10px] text-amber-300 font-bold flex items-center gap-1 whitespace-nowrap">
-                      <ShieldCheck className="w-3 h-3" /> File Aman &amp; Resmi
+                      <ShieldCheck className="w-3 h-3" /> File Resmi {settings.nama_gereja}
                     </span>
                   </div>
                   <h4 className="font-extrabold text-sm sm:text-base text-white leading-snug">
-                    Download Aplikasi Mobile Android Gereja (.APK)
+                    Download Aplikasi Mobile Android {settings.nama_gereja} (.APK)
                   </h4>
                   <p className="text-xs text-slate-300 leading-relaxed">
-                    Unduh file APK resmi untuk instalasi di smartphone Android pengurus &amp; jemaat untuk akses praktis &amp; cepat.
+                    {churchApkUrl
+                      ? `Unduh file APK resmi untuk instalasi di smartphone Android pengurus & jemaat ${settings.nama_gereja}.`
+                      : 'Belum ada link APK yang dikonfigurasi untuk gereja ini. Silakan tempelkan link Google Drive APK Anda di bawah ini.'}
                   </p>
                 </div>
               </div>
               <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 sm:mr-8 pt-1 sm:pt-0">
-                <a
-                  href={(!settings.apk_download_url || settings.apk_download_url === 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing') ? 'https://drive.google.com/file/d/1MnWPNmsDjO1clGqbixCgSHjNRcMaqx2h/view?usp=sharing' : settings.apk_download_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-600/30 border border-emerald-400/40 flex items-center justify-center gap-2 transition-all active:scale-95 text-center"
-                >
-                  <Download className="w-4 h-4 animate-pulse shrink-0" />
-                  <span>Download File .APK</span>
-                </a>
+                {churchApkUrl ? (
+                  <a
+                    href={churchApkUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-600/30 border border-emerald-400/40 flex items-center justify-center gap-2 transition-all active:scale-95 text-center"
+                  >
+                    <Download className="w-4 h-4 animate-pulse shrink-0" />
+                    <span>Download File .APK</span>
+                  </a>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsCustomizerOpen(true);
+                      setCustomizerTab('media');
+                    }}
+                    className="w-full sm:w-auto px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-extrabold text-xs shadow-lg border border-amber-400/40 flex items-center justify-center gap-1.5 transition-all cursor-pointer text-center"
+                  >
+                    <Link2 className="w-4 h-4 shrink-0" />
+                    <span>Tempelkan Link APK Drive</span>
+                  </button>
+                )}
 
                 {isAdmin && (
                   <button
@@ -4128,27 +4167,37 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       )}
 
                       <div className="space-y-1">
-                        <label className="block text-slate-300 font-semibold text-xs">
-                          Link Tautan Download File .APK Android (Google Drive / Direct URL):
-                        </label>
+                        <div className="flex items-center justify-between gap-2">
+                          <label className="block text-slate-300 font-semibold text-xs">
+                            Link Tautan Google Drive File .APK Khusus {settings.nama_gereja}:
+                          </label>
+                          <span className="text-[10px] text-emerald-400 font-bold px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
+                            Terpisah Per-Gereja
+                          </span>
+                        </div>
                         <div className="flex flex-col sm:flex-row gap-2">
                           <input
                             type="url"
-                            value={(!customForm.apk_download_url || customForm.apk_download_url === 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing') ? 'https://drive.google.com/file/d/1MnWPNmsDjO1clGqbixCgSHjNRcMaqx2h/view?usp=sharing' : customForm.apk_download_url}
+                            value={customForm.apk_download_url || ''}
                             onChange={(e) => setCustomForm({ ...customForm, apk_download_url: e.target.value })}
-                            placeholder="https://drive.google.com/file/d/..."
+                            placeholder="https://drive.google.com/file/d/.../view?usp=sharing"
                             className="flex-1 px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-xs focus:ring-1 focus:ring-emerald-500 min-w-0"
                           />
-                          <a
-                            href={(!customForm.apk_download_url || customForm.apk_download_url === 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing') ? 'https://drive.google.com/file/d/1MnWPNmsDjO1clGqbixCgSHjNRcMaqx2h/view?usp=sharing' : customForm.apk_download_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-3.5 py-2 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center justify-center gap-1 shrink-0 transition-all cursor-pointer"
-                          >
-                            <Download className="w-3.5 h-3.5" />
-                            <span>Tes Link</span>
-                          </a>
+                          {customForm.apk_download_url && (
+                            <a
+                              href={customForm.apk_download_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-3.5 py-2 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center justify-center gap-1 shrink-0 transition-all cursor-pointer"
+                            >
+                              <Download className="w-3.5 h-3.5" />
+                              <span>Tes Link</span>
+                            </a>
+                          )}
                         </div>
+                        <p className="text-[10px] text-slate-400">
+                          Setiap gereja dapat menempelkan link Google Drive miliknya sendiri di sini. Pastikan akses link Drive diatur ke "Siapa saja yang memiliki link".
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -4561,8 +4610,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         churchName={settings.nama_gereja}
       />
 
-      {/* Floating APK Download Button for Android */}
-      <FloatingApkDownloadButton settings={settings} />
+      {/* Floating APK Download Button for Android (Hanya muncul ketika sudah login pada gereja masing-masing) */}
+      {!isGuestMode && (
+        <FloatingApkDownloadButton
+          settings={settings}
+          currentUser={currentUser}
+          onOpenSettings={() => {
+            if (isAdmin) {
+              setIsCustomizerOpen(true);
+              setCustomizerTab('media');
+            }
+          }}
+        />
+      )}
 
       {/* Fullscreen Renungan Modal */}
       <RenunganFullscreenModal

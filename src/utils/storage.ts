@@ -209,7 +209,8 @@ function getItem<T>(key: string, fallback: T): T {
             rekening_bank_nama: '',
             rekening_bank_nomor: '',
             rekening_bank_atas_nama: matchedTenant?.nama_gereja || '',
-            qris_image_url: ''
+            qris_image_url: '',
+            apk_download_url: matchedTenant?.apk_download_url || ''
           } as unknown as T;
         }
         if (Array.isArray(fallback) && key !== KEYS.HYMN_SONGS) {
@@ -350,11 +351,22 @@ function sanitizeTenantDataIsolation(): void {
         if (rawSettings) {
           try {
             const s = JSON.parse(rawSettings);
+            let sChanged = false;
             if (s.rekening_bank_nomor === '527-089-1122' || (s.rekening_bank_atas_nama && s.rekening_bank_atas_nama.includes('Kemenangan Faith'))) {
               s.rekening_bank_nama = '';
               s.rekening_bank_nomor = '';
               s.rekening_bank_atas_nama = t.nama_gereja || 'Jesus Kingdom Christ';
               s.qris_image_url = '';
+              sChanged = true;
+            }
+            // Isolate APK link: prevent other churches from inheriting CHURCH-001's default APK drive link
+            if (t.tenant_id !== 'CHURCH-001') {
+              if (s.apk_download_url && (s.apk_download_url.includes('1MnWPNmsDjO1clGqbixCgSHjNRcMaqx2h') || s.apk_download_url.includes('1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s'))) {
+                s.apk_download_url = t.apk_download_url || '';
+                sChanged = true;
+              }
+            }
+            if (sChanged) {
               localStorage.setItem(settingsKey, JSON.stringify(s));
             }
           } catch (e) {}
@@ -633,7 +645,8 @@ export const StorageManager = {
       rekening_bank_nama: '',
       rekening_bank_nomor: '',
       rekening_bank_atas_nama: cleanTenant.nama_gereja,
-      qris_image_url: ''
+      qris_image_url: '',
+      apk_download_url: cleanTenant.apk_download_url || ''
     };
     const tenantSettingsKey = getTenantScopedKey(KEYS.SETTINGS, cleanTenantId);
     localStorage.setItem(tenantSettingsKey, JSON.stringify(newChurchSettings));
@@ -687,7 +700,8 @@ export const StorageManager = {
         nama_gereja: updatedTenant.nama_gereja,
         email: updatedTenant.admin_email || currentSettings.email,
         telepon: updatedTenant.admin_wa || currentSettings.telepon,
-        alamat: updatedTenant.alamat || currentSettings.alamat
+        alamat: updatedTenant.alamat || currentSettings.alamat,
+        ...(updatedTenant.apk_download_url !== undefined ? { apk_download_url: updatedTenant.apk_download_url } : {})
       });
     } else {
       const tenantSettingsKey = getTenantScopedKey(KEYS.SETTINGS, updatedTenant.tenant_id);
@@ -699,6 +713,7 @@ export const StorageManager = {
           if (updatedTenant.admin_email) parsed.email = updatedTenant.admin_email;
           if (updatedTenant.admin_wa) parsed.telepon = updatedTenant.admin_wa;
           if (updatedTenant.alamat) parsed.alamat = updatedTenant.alamat;
+          if (updatedTenant.apk_download_url !== undefined) parsed.apk_download_url = updatedTenant.apk_download_url;
           localStorage.setItem(tenantSettingsKey, JSON.stringify(parsed));
           pushToCloud(tenantSettingsKey, parsed);
         }
@@ -803,41 +818,61 @@ export const StorageManager = {
     if (settings.video_url && settings.video_url.includes('5qap5aO4i9A')) {
       settings.video_url = 'https://www.youtube.com/watch?v=wX2S6AebnI8';
     }
-    // Auto upgrade legacy/deleted APK link to the new Google Drive APK file
-    if (!settings.apk_download_url || settings.apk_download_url.includes('1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s')) {
-      settings.apk_download_url = 'https://drive.google.com/file/d/1MnWPNmsDjO1clGqbixCgSHjNRcMaqx2h/view?usp=sharing';
+
+    const activeTenantId = StorageManager.getActiveTenantId();
+    if (activeTenantId === 'CHURCH-001') {
+      // Auto upgrade legacy/deleted APK link to the official Google Drive APK file ONLY for Church 001
+      if (!settings.apk_download_url || settings.apk_download_url.includes('1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s')) {
+        settings.apk_download_url = 'https://drive.google.com/file/d/1MnWPNmsDjO1clGqbixCgSHjNRcMaqx2h/view?usp=sharing';
+      }
+    } else {
+      // For other churches, ensure they do not inherit Church 001's default link unless explicitly set by their admin
+      if (settings.apk_download_url && (settings.apk_download_url.includes('1MnWPNmsDjO1clGqbixCgSHjNRcMaqx2h') || settings.apk_download_url.includes('1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s'))) {
+        const tenants = getItem<ChurchTenant[]>(KEYS.TENANTS, initialTenants);
+        const currentTenant = tenants.find((t) => t.tenant_id === activeTenantId);
+        settings.apk_download_url = currentTenant?.apk_download_url || '';
+      }
     }
     return settings;
   },
   saveSettings: (settings: AppSettings): void => {
     setItem(KEYS.SETTINGS, settings);
-    if (settings.nama_gereja) {
-      const activeTenantId = StorageManager.getActiveTenantId();
-      const tenants = getItem<ChurchTenant[]>(KEYS.TENANTS, initialTenants);
-      let needsSync = false;
-      const updatedTenants = tenants.map((t) => {
-        if (t.tenant_id === activeTenantId || (tenants.length === 1 && t.tenant_id === 'CHURCH-001')) {
-          if (
-            t.nama_gereja !== settings.nama_gereja ||
-            (settings.email && t.admin_email !== settings.email) ||
-            (settings.telepon && t.admin_wa !== settings.telepon) ||
-            (settings.alamat && t.alamat !== settings.alamat)
-          ) {
-            needsSync = true;
-            return {
-              ...t,
-              nama_gereja: settings.nama_gereja,
-              ...(settings.email ? { admin_email: settings.email } : {}),
-              ...(settings.telepon ? { admin_wa: settings.telepon } : {}),
-              ...(settings.alamat ? { alamat: settings.alamat } : {})
-            };
-          }
+    const activeTenantId = StorageManager.getActiveTenantId();
+    const tenants = getItem<ChurchTenant[]>(KEYS.TENANTS, initialTenants);
+    let needsSync = false;
+    const updatedTenants = tenants.map((t) => {
+      if (t.tenant_id === activeTenantId || (tenants.length === 1 && t.tenant_id === 'CHURCH-001')) {
+        let tChanged = false;
+        let newObj = { ...t };
+        if (settings.nama_gereja && t.nama_gereja !== settings.nama_gereja) {
+          newObj.nama_gereja = settings.nama_gereja;
+          tChanged = true;
         }
-        return t;
-      });
-      if (needsSync) {
-        setItem(KEYS.TENANTS, updatedTenants);
+        if (settings.email && t.admin_email !== settings.email) {
+          newObj.admin_email = settings.email;
+          tChanged = true;
+        }
+        if (settings.telepon && t.admin_wa !== settings.telepon) {
+          newObj.admin_wa = settings.telepon;
+          tChanged = true;
+        }
+        if (settings.alamat && t.alamat !== settings.alamat) {
+          newObj.alamat = settings.alamat;
+          tChanged = true;
+        }
+        if (settings.apk_download_url !== undefined && t.apk_download_url !== settings.apk_download_url) {
+          newObj.apk_download_url = settings.apk_download_url;
+          tChanged = true;
+        }
+        if (tChanged) {
+          needsSync = true;
+          return newObj;
+        }
       }
+      return t;
+    });
+    if (needsSync) {
+      setItem(KEYS.TENANTS, updatedTenants);
     }
   },
 

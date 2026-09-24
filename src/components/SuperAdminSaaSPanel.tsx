@@ -72,7 +72,8 @@ export const SuperAdminSaaSPanel: React.FC<SuperAdminSaaSPanelProps> = ({
     tanggal_kadaluarsa: '2027-12-31',
     paket_langganan: 'PRO_SAAS_ANNUAL' as ChurchTenant['paket_langganan'],
     harga_sewa: 'Rp 2.500.000 / Tahun',
-    catatan_admin: ''
+    catatan_admin: '',
+    apk_download_url: ''
   });
 
   const loadData = () => {
@@ -127,7 +128,8 @@ export const SuperAdminSaaSPanel: React.FC<SuperAdminSaaSPanelProps> = ({
       tanggal_kadaluarsa: newTenantData.tanggal_kadaluarsa,
       paket_langganan: newTenantData.paket_langganan,
       harga_sewa: newTenantData.harga_sewa,
-      catatan_admin: newTenantData.catatan_admin
+      catatan_admin: newTenantData.catatan_admin,
+      apk_download_url: newTenantData.apk_download_url || ''
     };
 
     const adminUser: User = {
@@ -705,6 +707,17 @@ export const SuperAdminSaaSPanel: React.FC<SuperAdminSaaSPanelProps> = ({
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-emerald-400 font-bold focus:ring-2 focus:ring-amber-500 outline-none"
                   />
                 </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-slate-300 font-bold mb-1">Link File .APK Google Drive Khusus Gereja Ini (Opsional)</label>
+                  <input
+                    type="url"
+                    value={newTenantData.apk_download_url}
+                    onChange={(e) => setNewTenantData({ ...newTenantData, apk_download_url: e.target.value })}
+                    placeholder="https://drive.google.com/file/d/.../view?usp=sharing"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono text-xs focus:ring-2 focus:ring-amber-500 outline-none"
+                  />
+                </div>
               </div>
 
               <div className="pt-3 flex items-center justify-end gap-2.5">
@@ -851,6 +864,23 @@ export const SuperAdminSaaSPanel: React.FC<SuperAdminSaaSPanelProps> = ({
                     <option value="KADALUARSA">KADALUARSA</option>
                     <option value="DIBLOKIR">DIBLOKIR</option>
                   </select>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-emerald-400 font-bold mb-1 flex items-center justify-between">
+                    <span>Link File .APK Google Drive Khusus Gereja Ini</span>
+                    <span className="text-[10px] text-slate-400 font-normal">Isolasi Penuh</span>
+                  </label>
+                  <input
+                    type="url"
+                    value={editingTenant.apk_download_url || ''}
+                    onChange={(e) => setEditingTenant({ ...editingTenant, apk_download_url: e.target.value })}
+                    placeholder="https://drive.google.com/file/d/.../view?usp=sharing"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono text-xs focus:ring-2 focus:ring-emerald-500 outline-none"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    Setiap akun gereja memiliki link APK Google Drive masing-masing sehingga jemaat dan pengurus hanya mendownload APK gereja mereka sendiri.
+                  </p>
                 </div>
               </div>
 

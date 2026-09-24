@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Smartphone, Download, CheckCircle2, ShieldCheck, Zap, X, MoreVertical, Chrome, Apple, Sparkles, Copy, Check, ExternalLink, Lock, AlertCircle } from 'lucide-react';
 import { APK_DOWNLOAD_URL } from './FloatingApkDownloadButton';
+import { StorageManager } from '../utils/storage';
 
 interface PWAInstallGuideModalProps {
   isOpen: boolean;
@@ -32,7 +33,16 @@ export const PWAInstallGuideModal: React.FC<PWAInstallGuideModalProps> = ({
   };
 
   const handleDownloadApk = () => {
-    window.open(APK_DOWNLOAD_URL, '_blank', 'noopener,noreferrer');
+    const settings = StorageManager.getSettings();
+    const activeTenantId = StorageManager.getActiveTenantId();
+    const raw = settings?.apk_download_url?.trim();
+    let downloadUrl = (raw && raw !== 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing') ? raw : '';
+    if (!downloadUrl && activeTenantId === 'CHURCH-001') {
+      downloadUrl = APK_DOWNLOAD_URL;
+    }
+    if (downloadUrl) {
+      window.open(downloadUrl, '_blank', 'noopener,noreferrer');
+    }
   };
 
   return (

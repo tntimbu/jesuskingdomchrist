@@ -359,7 +359,7 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
           </button>
         )}
 
-        {canInstallPWA && (
+        {canInstallPWA && !isGuest && currentUser.role !== 'GUEST' && (
           <button
             onClick={onInstallPWA}
             className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 text-xs font-semibold shadow-sm transition-all border border-emerald-500/30 cursor-pointer"

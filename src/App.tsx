@@ -292,8 +292,18 @@ export default function App() {
   }, [currentUser, isLoginPageOpen]);
 
   const handleDownloadAPK = () => {
-    const raw = settings?.apk_download_url;
-    const downloadUrl = (raw && raw !== 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing') ? raw : APK_DOWNLOAD_URL;
+    const activeTenantId = StorageManager.getActiveTenantId();
+    const raw = settings?.apk_download_url?.trim();
+    let downloadUrl = (raw && raw !== 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing') ? raw : '';
+    if (!downloadUrl && activeTenantId === 'CHURCH-001') {
+      downloadUrl = APK_DOWNLOAD_URL;
+    }
+    if (!downloadUrl) {
+      if (currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN') {
+        setActiveTab('settings');
+      }
+      return;
+    }
     window.open(downloadUrl, '_blank', 'noopener,noreferrer');
   };
 

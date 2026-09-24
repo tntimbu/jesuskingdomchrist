@@ -40,7 +40,8 @@ export const initialTenants: ChurchTenant[] = [
     tanggal_kadaluarsa: '2028-12-31',
     paket_langganan: 'PRO_SAAS_ANNUAL',
     harga_sewa: 'Rp 2.500.000 / Tahun',
-    catatan_admin: 'Lisensi Gereja Utama (SaaS Pro Plan)'
+    catatan_admin: 'Lisensi Gereja Utama (SaaS Pro Plan)',
+    apk_download_url: 'https://drive.google.com/file/d/1MnWPNmsDjO1clGqbixCgSHjNRcMaqx2h/view?usp=sharing'
   },
   {
     tenant_id: 'CHURCH-002',
@@ -56,7 +57,8 @@ export const initialTenants: ChurchTenant[] = [
     tanggal_kadaluarsa: '2027-03-15',
     paket_langganan: 'PRO_SAAS_ANNUAL',
     harga_sewa: 'Rp 3.000.000 / Tahun',
-    catatan_admin: 'Mitra Pembeli Paket SaaS Pro'
+    catatan_admin: 'Mitra Pembeli Paket SaaS Pro',
+    apk_download_url: ''
   },
   {
     tenant_id: 'CHURCH-003',
@@ -72,7 +74,8 @@ export const initialTenants: ChurchTenant[] = [
     tanggal_kadaluarsa: '2026-06-30',
     paket_langganan: 'BASIC_MONTHLY',
     harga_sewa: 'Rp 250.000 / Bulan',
-    catatan_admin: 'Masa berlaku lisensi telah habis. Diperlukan pembayaran untuk mengaktifkan kembali.'
+    catatan_admin: 'Masa berlaku lisensi telah habis. Diperlukan pembayaran untuk mengaktifkan kembali.',
+    apk_download_url: ''
   },
   {
     tenant_id: 'CHURCH-004',
@@ -88,7 +91,8 @@ export const initialTenants: ChurchTenant[] = [
     tanggal_kadaluarsa: '2028-12-31',
     paket_langganan: 'PRO_SAAS_ANNUAL',
     harga_sewa: 'Rp 2.500.000 / Tahun',
-    catatan_admin: 'Akun Lisensi Resmi Gereja Monapa Puriala'
+    catatan_admin: 'Akun Lisensi Resmi Gereja Monapa Puriala',
+    apk_download_url: ''
   }
 ];
 

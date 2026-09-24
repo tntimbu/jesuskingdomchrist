@@ -18,6 +18,7 @@ export interface ChurchTenant {
   paket_langganan: 'PRO_SAAS_ANNUAL' | 'ENTERPRISE_LIFETIME' | 'BASIC_MONTHLY';
   harga_sewa?: string;
   catatan_admin?: string;
+  apk_download_url?: string;
 }
 
 export interface SuperAdminContact {

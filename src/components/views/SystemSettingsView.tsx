@@ -2484,18 +2484,45 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                   </button>
                 </div>
 
-                <div className="sm:col-span-2 space-y-1">
-                  <label className="block text-slate-300 font-semibold text-xs">Link Tautan Download File .APK (Google Drive / Direct URL):</label>
+                <div className="sm:col-span-2 space-y-2 p-3.5 rounded-2xl bg-slate-900/80 border border-emerald-500/30">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <label className="block text-emerald-300 font-bold text-xs flex items-center gap-1.5">
+                        <Smartphone className="w-4 h-4 text-emerald-400" />
+                        <span>Link File .APK Google Drive Khusus Gereja Ini:</span>
+                      </label>
+                      <p className="text-[11px] text-slate-400">
+                        Setiap gereja memiliki link APK terpisah. Tempelkan link file APK Google Drive resmi milik gereja Anda di sini.
+                      </p>
+                    </div>
+                    {metaForm.apk_download_url && (
+                      <a
+                        href={metaForm.apk_download_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/40 text-emerald-300 text-xs font-bold transition-all shrink-0 cursor-pointer"
+                        title="Buka dan tes tautan Google Drive APK"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>Tes Buka Link APK</span>
+                      </a>
+                    )}
+                  </div>
                   <input
                     type="url"
-                    value={(!metaForm.apk_download_url || metaForm.apk_download_url === 'https://drive.google.com/file/d/1TlnvPxgIPWQ13CE_EJnj4gUMAipCWy1s/view?usp=sharing' || metaForm.apk_download_url === '/downloads/church-app.apk') ? 'https://drive.google.com/file/d/1MnWPNmsDjO1clGqbixCgSHjNRcMaqx2h/view?usp=sharing' : metaForm.apk_download_url}
+                    value={metaForm.apk_download_url || ''}
                     onChange={(e) => setMetaForm({ ...metaForm, apk_download_url: e.target.value })}
-                    placeholder="https://drive.google.com/file/d/..."
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-xs"
+                    placeholder="https://drive.google.com/file/d/.../view?usp=sharing"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-xs focus:ring-2 focus:ring-emerald-500 outline-none"
                   />
-                  <p className="text-[11px] text-slate-400">
-                    Masukkan tautan Google Drive file APK hasil build Android Studio Anda untuk diunduh langsung oleh jemaat.
-                  </p>
+                  <div className="flex flex-wrap items-center gap-2 text-[10px] text-slate-400 pt-1">
+                    <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">
+                      ✓ Terisolasi Per-Gereja
+                    </span>
+                    <span>
+                      Pastikan izin sharing file Google Drive diatur ke <b>"Anyone with the link" (Siapa saja yang memiliki link)</b>.
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
