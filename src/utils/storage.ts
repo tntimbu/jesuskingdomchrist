@@ -982,15 +982,16 @@ export const StorageManager = {
         } else if (adminIndex !== -1) {
           const adm = list[adminIndex];
           let updatedAdm = false;
-          if (t.admin_nama && adm.nama !== t.admin_nama) {
+          // Only populate empty fields from tenant, NEVER overwrite existing user-edited data!
+          if (!adm.nama && t.admin_nama) {
             adm.nama = t.admin_nama;
             updatedAdm = true;
           }
-          if (t.admin_email && adm.email !== t.admin_email) {
+          if (!adm.email && t.admin_email) {
             adm.email = t.admin_email;
             updatedAdm = true;
           }
-          if (t.admin_wa && adm.no_hp !== t.admin_wa) {
+          if (!adm.no_hp && t.admin_wa) {
             adm.no_hp = t.admin_wa;
             updatedAdm = true;
           }
@@ -1028,6 +1029,59 @@ export const StorageManager = {
   },
   saveUsers: (users: User[]): void => {
     setItem(KEYS.USERS, users);
+
+    // Auto sync admin profile changes to matching ChurchTenant so they stay permanently in sync
+    try {
+      const tenants = getItem<ChurchTenant[]>(KEYS.TENANTS, initialTenants);
+      let tenantsChanged = false;
+      const updatedTenants = tenants.map((t) => {
+        const normalizedTenantId = normalizeTenantId(t.tenant_id);
+        const adminAccount = users.find(
+          (u) => u && normalizeTenantId(u.tenant_id) === normalizedTenantId && u.role === 'ADMIN'
+        );
+        if (adminAccount) {
+          let tModified = false;
+          let newName = t.admin_nama;
+          let newUsername = t.admin_username;
+          let newEmail = t.admin_email;
+          let newWa = t.admin_wa;
+
+          if (adminAccount.nama && t.admin_nama !== adminAccount.nama) {
+            newName = adminAccount.nama;
+            tModified = true;
+          }
+          if (adminAccount.username && t.admin_username !== adminAccount.username) {
+            newUsername = adminAccount.username;
+            tModified = true;
+          }
+          if (adminAccount.email && t.admin_email !== adminAccount.email) {
+            newEmail = adminAccount.email;
+            tModified = true;
+          }
+          if (adminAccount.no_hp && t.admin_wa !== adminAccount.no_hp) {
+            newWa = adminAccount.no_hp;
+            tModified = true;
+          }
+          if (tModified) {
+            tenantsChanged = true;
+            return {
+              ...t,
+              admin_nama: newName,
+              admin_username: newUsername,
+              admin_email: newEmail,
+              admin_wa: newWa
+            };
+          }
+        }
+        return t;
+      });
+      if (tenantsChanged) {
+        setItem(KEYS.TENANTS, updatedTenants);
+      }
+    } catch (e) {
+      // ignore
+    }
+
     window.dispatchEvent(new Event('cms_data_changed'));
   },
   deleteUser: (userId: string, username?: string, jemaatId?: string, nama?: string): void => {

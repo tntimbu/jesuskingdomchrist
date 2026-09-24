@@ -663,7 +663,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
     });
 
     StorageManager.saveUsers(updatedGlobal);
-    setUsersList(updatedGlobal);
+    setUsersList(StorageManager.getUsers());
 
     // If edited account is current logged in user, update current user session
     if (editingUser.username.toLowerCase() === currentUser.username.toLowerCase()) {
