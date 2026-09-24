@@ -54,8 +54,31 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
   throw new Error(JSON.stringify(errInfo));
 }
 
-let firebaseApp: any = null;
-let firestoreDb: any = null;
+// Default exported instances per Firebase skill standards
+export const app = !getApps().length ? initializeApp(defaultFirebaseConfig) : getApp();
+
+const defaultDbId = defaultFirebaseConfig.firestoreDatabaseId && defaultFirebaseConfig.firestoreDatabaseId !== '(default)'
+  ? defaultFirebaseConfig.firestoreDatabaseId
+  : undefined;
+
+let firestoreInstance;
+try {
+  firestoreInstance = initializeFirestore(
+    app,
+    {
+      experimentalAutoDetectLongPolling: true
+    },
+    defaultDbId
+  );
+} catch {
+  firestoreInstance = defaultDbId ? getFirestore(app, defaultDbId) : getFirestore(app);
+}
+
+export const db = firestoreInstance;
+export const auth = getAuth(app);
+
+let firebaseApp: any = app;
+let firestoreDb: any = db;
 
 export function initFirebase(settings?: AppSettings) {
   try {
@@ -82,7 +105,7 @@ export function initFirebase(settings?: AppSettings) {
       firestoreDb = initializeFirestore(
         firebaseApp,
         {
-          experimentalForceLongPolling: true
+          experimentalAutoDetectLongPolling: true
         },
         dbId
       );
@@ -112,3 +135,6 @@ export async function testConnection() {
     return false;
   }
 }
+
+// Initial connection test on boot as required by Firebase skill
+testConnection().catch(() => {});

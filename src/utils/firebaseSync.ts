@@ -151,9 +151,9 @@ export function getActiveFirebaseConfig() {
 const firestoreInstanceCache = new Map<string, Firestore>();
 
 /**
- * Safely initializes or retrieves a Firestore instance with experimentalForceLongPolling enabled.
- * This guarantees stable connectivity through container proxies, sandboxed iframes, and restrictive firewalls,
- * resolving the "Could not reach Cloud Firestore backend" connection issue.
+ * Safely initializes or retrieves a Firestore instance with experimentalAutoDetectLongPolling enabled.
+ * This guarantees fast WebSocket connection by default with seamless auto-fallback to long polling if WebSockets are blocked,
+ * eliminating the 10-second backend connection warning.
  */
 export function getOrInitFirestore(app: FirebaseApp, databaseId?: string): Firestore {
   const dbId = databaseId && databaseId !== '(default)' ? databaseId : undefined;
@@ -168,7 +168,7 @@ export function getOrInitFirestore(app: FirebaseApp, databaseId?: string): Fires
     firestoreDb = initializeFirestore(
       app,
       {
-        experimentalForceLongPolling: true
+        experimentalAutoDetectLongPolling: true
       },
       dbId
     );
@@ -361,6 +361,12 @@ export async function pushToCloud(storageKey: string, data: any): Promise<void> 
       markQuotaExhausted();
       console.warn(`[FirebaseSync] Firestore daily write quota limit reached. Pausing background sync writes.`);
       return;
+    } else if (
+      error?.code === 'unavailable' ||
+      (error?.message && (error.message.includes('offline') || error.message.includes('Could not reach Cloud Firestore')))
+    ) {
+      syncConnectedStatus = false;
+      console.info(`[FirebaseSync] Firestore operating in offline mode. Changes preserved locally.`);
     } else {
       console.warn(`[FirebaseSync] Primary sync failed for ${storageKey}:`, error);
     }
@@ -726,7 +732,10 @@ export function initRealtimeCloudSync(onDataReceived?: () => void): () => void {
         ) {
           markQuotaExhausted();
           console.warn(`[FirebaseSync] Collection snapshot quota exceeded:`, error);
-        } else if (error?.code === 'unavailable') {
+        } else if (
+          error?.code === 'unavailable' ||
+          (error?.message && (error.message.includes('offline') || error.message.includes('Could not reach Cloud Firestore')))
+        ) {
           syncConnectedStatus = false;
           console.info(`[FirebaseSync] Firestore operating in offline/local cache mode.`);
         } else {
