@@ -13,6 +13,9 @@ interface MediaViewProps {
 }
 
 export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH' }) => {
+  const [settings, setSettings] = useState(() => StorageManager.getSettings());
+  const isLightSystem = settings.theme_preset === 'EMERALD_LIGHT' || settings.theme_preset === 'LUXE_LIGHT';
+
   const [activeTab, setActiveTab] = useState<'PENGUMUMAN' | 'RENUNGAN'>(mode === 'RENUNGAN' ? 'RENUNGAN' : 'PENGUMUMAN');
   const [pengumumanList, setPengumumanList] = useState<Pengumuman[]>([]);
   const [renunganList, setRenunganList] = useState<Renungan[]>([]);
@@ -74,6 +77,7 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
   }, []);
 
   const loadData = () => {
+    setSettings(StorageManager.getSettings());
     setPengumumanList(StorageManager.getPengumuman());
     setRenunganList(StorageManager.getRenungan());
   };
@@ -284,25 +288,25 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
+          <h2 className={`text-xl sm:text-2xl font-extrabold ${isLightSystem ? 'text-slate-900' : 'text-white'} tracking-tight flex items-center gap-2`}>
             {mode === 'RENUNGAN' ? (
               <>
-                <BookOpen className="w-6 h-6 text-amber-400" />
+                <BookOpen className="w-6 h-6 text-amber-500" />
                 <span>Renungan Harian & Santapan Rohani</span>
               </>
             ) : mode === 'PENGUMUMAN' ? (
               <>
-                <Megaphone className="w-6 h-6 text-indigo-400" />
+                <Megaphone className="w-6 h-6 text-emerald-600" />
                 <span>Pengumuman & Warta Gereja</span>
               </>
             ) : (
               <>
-                <Megaphone className="w-6 h-6 text-indigo-400" />
+                <Megaphone className="w-6 h-6 text-emerald-600" />
                 <span>Pengumuman Jemaat & Renungan Harian</span>
               </>
             )}
           </h2>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+          <p className={`text-xs sm:text-sm ${isLightSystem ? 'text-slate-600' : 'text-slate-400'} mt-1`}>
             {mode === 'RENUNGAN'
               ? 'Santapan rohani harian, firman Tuhan, dan inspirasi iman bagi pertumbuhan jemaat.'
               : mode === 'PENGUMUMAN'
@@ -312,11 +316,15 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
         </div>
 
         {mode === 'BOTH' && (
-          <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-800 p-1 rounded-2xl">
+          <div className={`flex items-center gap-1.5 ${isLightSystem ? 'bg-white border border-slate-200/90 shadow-sm' : 'bg-slate-900 border border-slate-800'} p-1.5 rounded-2xl`}>
             <button
               onClick={() => setActiveTab('PENGUMUMAN')}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                activeTab === 'PENGUMUMAN' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'
+                activeTab === 'PENGUMUMAN'
+                  ? 'bg-emerald-600 text-white shadow-md'
+                  : isLightSystem
+                  ? 'text-slate-600 hover:text-slate-900'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               Warta / Pengumuman ({pengumumanList.length})
@@ -324,7 +332,11 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
             <button
               onClick={() => setActiveTab('RENUNGAN')}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                activeTab === 'RENUNGAN' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'
+                activeTab === 'RENUNGAN'
+                  ? 'bg-amber-600 text-white shadow-md'
+                  : isLightSystem
+                  ? 'text-slate-600 hover:text-slate-900'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               Renungan Harian ({renunganList.length})
@@ -337,11 +349,11 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
       {activeTab === 'PENGUMUMAN' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider">Warta Jemaat & Informasi Gereja</h3>
+            <h3 className={`text-sm font-bold ${isLightSystem ? 'text-slate-800' : 'text-white'} uppercase tracking-wider`}>Warta Jemaat & Informasi Gereja</h3>
             {currentUser.role !== 'JEMAAT' && (
               <button
                 onClick={handleOpenAddPengumuman}
-                className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md flex items-center gap-1.5 cursor-pointer transition-all"
+                className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-md flex items-center gap-1.5 cursor-pointer transition-all"
               >
                 <Plus className="w-4 h-4" />
                 <span>Buat Pengumuman Baru</span>
@@ -353,20 +365,24 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
             {pengumumanList.map((p) => (
               <div
                 key={p.pengumuman_id}
-                className="rounded-3xl bg-slate-900 border border-slate-800 p-6 shadow-sm text-white space-y-3 hover:border-indigo-500/40 transition-all flex flex-col justify-between"
+                className={`rounded-3xl ${
+                  isLightSystem
+                    ? 'bg-white border border-slate-200/90 shadow-sm text-slate-800 hover:border-emerald-400'
+                    : 'bg-slate-900 border border-slate-800 shadow-sm text-white hover:border-indigo-500/40'
+                } p-6 transition-all flex flex-col justify-between`}
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold">
+                    <span className={`px-2.5 py-0.5 rounded-full ${isLightSystem ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'} border text-[10px] font-bold`}>
                       {p.kategori}
                     </span>
-                    <span className="text-xs text-slate-400">{p.tanggal}</span>
+                    <span className={`text-xs ${isLightSystem ? 'text-slate-500' : 'text-slate-400'}`}>{p.tanggal}</span>
                   </div>
 
-                  <h4 className="text-lg font-bold text-white leading-snug tracking-tight text-left">{p.judul}</h4>
+                  <h4 className={`text-lg font-bold ${isLightSystem ? 'text-slate-900' : 'text-white'} leading-snug tracking-tight text-left`}>{p.judul}</h4>
                   <p
                     lang="id"
-                    className="text-xs text-slate-300 leading-relaxed text-justify hyphens-auto [text-align-last:left] [text-justify:inter-word] break-words whitespace-pre-line"
+                    className={`text-xs ${isLightSystem ? 'text-slate-600' : 'text-slate-300'} leading-relaxed text-justify hyphens-auto [text-align-last:left] [text-justify:inter-word] break-words whitespace-pre-line`}
                     style={{
                       textAlign: 'justify',
                       textJustify: 'inter-word',
@@ -381,10 +397,10 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
                   </p>
                 </div>
 
-                <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-500 font-medium">
+                <div className={`pt-3 border-t ${isLightSystem ? 'border-slate-100 text-slate-500' : 'border-slate-800/80 text-slate-500'} flex items-center justify-between text-xs font-medium`}>
                   <span>Diterbitkan oleh: {p.penulis}</span>
                   <div className="flex items-center gap-2">
-                    <button className="text-indigo-400 hover:text-indigo-300 flex items-center gap-1 cursor-pointer">
+                    <button className={`${isLightSystem ? 'text-emerald-700 hover:text-emerald-800' : 'text-indigo-400 hover:text-indigo-300'} flex items-center gap-1 cursor-pointer`}>
                       <Share2 className="w-3.5 h-3.5" />
                       <span>Bagikan</span>
                     </button>
@@ -392,7 +408,7 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
                       <>
                         <button
                           onClick={() => handleOpenEditPengumuman(p)}
-                          className="px-2.5 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 hover:bg-indigo-600 hover:text-white transition-all flex items-center gap-1 text-[11px] font-semibold cursor-pointer border border-indigo-500/30"
+                          className={`px-2.5 py-1 rounded-lg ${isLightSystem ? 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200' : 'bg-indigo-500/20 text-indigo-300 hover:bg-indigo-600 hover:text-white border-indigo-500/30'} border transition-all flex items-center gap-1 text-[11px] font-semibold cursor-pointer`}
                           title="Edit Pengumuman ini"
                         >
                           <Edit3 className="w-3.5 h-3.5" />
@@ -420,11 +436,11 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
       {activeTab === 'RENUNGAN' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider">Santapan Rohani & Renungan Harian</h3>
+            <h3 className={`text-sm font-bold ${isLightSystem ? 'text-slate-800' : 'text-white'} uppercase tracking-wider`}>Santapan Rohani & Renungan Harian</h3>
             {currentUser.role !== 'JEMAAT' && (
               <button
                 onClick={handleOpenAddRenungan}
-                className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md flex items-center gap-1.5 cursor-pointer"
+                className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold shadow-md flex items-center gap-1.5 cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Tulis Renungan Baru</span>
@@ -436,17 +452,21 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
             {renunganList.map((r) => (
               <div
                 key={r.renungan_id}
-                className="rounded-3xl bg-slate-900 border border-slate-800 p-5 sm:p-6 shadow-xl text-white space-y-4 hover:border-indigo-500/40 transition-all"
+                className={`rounded-3xl ${
+                  isLightSystem
+                    ? 'bg-white border border-slate-200/90 shadow-sm text-slate-800 hover:border-emerald-400'
+                    : 'bg-slate-900 border border-slate-800 p-5 sm:p-6 shadow-xl text-white hover:border-indigo-500/40'
+                } p-5 sm:p-6 transition-all space-y-4`}
               >
                 {/* Header Info */}
-                <div className="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-slate-800/80">
+                <div className={`flex items-center justify-between flex-wrap gap-2 pb-2 border-b ${isLightSystem ? 'border-slate-100' : 'border-slate-800/80'}`}>
                   <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-amber-400" />
-                    <span className="text-xs font-bold text-amber-300 uppercase tracking-wider">
+                    <Sparkles className="w-4 h-4 text-amber-500" />
+                    <span className={`text-xs font-bold ${isLightSystem ? 'text-amber-800' : 'text-amber-300'} uppercase tracking-wider`}>
                       Tanggal: {r.tanggal}
                     </span>
                   </div>
-                  <span className="text-xs text-indigo-300 bg-indigo-500/10 px-2.5 py-1 rounded-xl border border-indigo-500/20 font-semibold">
+                  <span className={`text-xs ${isLightSystem ? 'text-slate-700 bg-slate-100 border-slate-200' : 'text-indigo-300 bg-indigo-500/10 border-indigo-500/20'} px-2.5 py-1 rounded-xl border font-semibold`}>
                     Penulis: {r.penulis || 'Pdt. Dr. Herman Setyawan'}
                   </span>
                 </div>
@@ -455,11 +475,11 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
                 <div>
                   <h4
                     onClick={() => setSelectedRenunganForModal(r)}
-                    className="text-lg sm:text-xl font-extrabold text-white tracking-tight cursor-pointer hover:text-indigo-300 transition-colors text-left"
+                    className={`text-lg sm:text-xl font-extrabold ${isLightSystem ? 'text-slate-900 hover:text-emerald-700' : 'text-white hover:text-indigo-300'} tracking-tight cursor-pointer transition-colors text-left`}
                   >
                     {r.judul}
                   </h4>
-                  <div className="mt-2 inline-block px-3 py-1 rounded-xl bg-indigo-950/80 border border-indigo-500/30 text-indigo-300 font-semibold text-xs">
+                  <div className={`mt-2 inline-block px-3 py-1 rounded-xl ${isLightSystem ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-indigo-950/80 border-indigo-500/30 text-indigo-300'} border font-semibold text-xs`}>
                     Bacaan Alkitab: {r.ayat_alkitab || r.ayat}
                   </div>
                 </div>
@@ -468,18 +488,18 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
                 <div
                   lang="id"
                   onClick={() => setSelectedRenunganForModal(r)}
-                  className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80 text-xs sm:text-sm text-slate-300 leading-relaxed font-sans cursor-pointer hover:border-indigo-500/40 hover:bg-slate-950 transition-all text-justify break-words line-clamp-3 select-none"
+                  className={`p-4 rounded-2xl ${isLightSystem ? 'bg-slate-50 border-slate-200 text-slate-600 hover:border-emerald-300 hover:bg-slate-100/60' : 'bg-slate-950/60 border-slate-800/80 text-slate-300 hover:border-indigo-500/40 hover:bg-slate-950'} border text-xs sm:text-sm leading-relaxed font-sans cursor-pointer transition-all text-justify break-words line-clamp-3 select-none`}
                   title="Klik untuk membaca selengkapnya"
                 >
                   {r.isi.length > 200 ? `${r.isi.slice(0, 200)}...` : r.isi}
                 </div>
 
                 {/* Horizontal Action Bar (Tombol Jejer Kesamping) */}
-                <div className="pt-3 border-t border-slate-800 flex items-center justify-between gap-2.5 flex-wrap">
+                <div className={`pt-3 border-t ${isLightSystem ? 'border-slate-100' : 'border-slate-800'} flex items-center justify-between gap-2.5 flex-wrap`}>
                   <div className="flex items-center gap-2 flex-wrap">
                     <button
                       onClick={() => setSelectedRenunganForModal(r)}
-                      className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md shadow-indigo-600/20 flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
+                      className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/20 flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
                     >
                       <BookOpen className="w-3.5 h-3.5 text-amber-300" />
                       <span>Baca Selengkapnya</span>
@@ -499,10 +519,10 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
                     <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => handleOpenEditRenungan(r)}
-                        className="px-3 py-2 rounded-xl bg-indigo-900/50 hover:bg-indigo-900/80 text-indigo-200 transition-all flex items-center gap-1.5 text-xs font-semibold border border-indigo-500/30 cursor-pointer active:scale-95"
+                        className={`px-3 py-2 rounded-xl ${isLightSystem ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200' : 'bg-indigo-900/50 hover:bg-indigo-900/80 text-indigo-200 border-indigo-500/30'} transition-all flex items-center gap-1.5 text-xs font-semibold border cursor-pointer active:scale-95`}
                         title="Edit Renungan"
                       >
-                        <Edit3 className="w-3.5 h-3.5 text-indigo-300" />
+                        <Edit3 className={`w-3.5 h-3.5 ${isLightSystem ? 'text-indigo-600' : 'text-indigo-300'}`} />
                         <span>Edit</span>
                       </button>
                       <button

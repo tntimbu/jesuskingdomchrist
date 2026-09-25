@@ -695,55 +695,55 @@ export const JemaatPortalView: React.FC<JemaatPortalViewProps> = ({ currentUser,
 
       {/* 5. Detailed Member Info & Contact Card */}
       <div className={`rounded-3xl ${theme.cardClass} p-6 sm:p-8 transition-all duration-300 space-y-4`}>
-        <h3 className="text-base font-bold flex items-center justify-between border-b border-white/10 pb-3">
+        <h3 className={`text-base font-bold flex items-center justify-between border-b ${theme.isLight ? 'border-slate-100 text-slate-900' : 'border-white/10 text-white'} pb-3`}>
           <div className="flex items-center gap-2">
             <UserCheck className={`w-5 h-5 ${theme.accentText}`} />
             <span>Informasi Detail Diri &amp; Keanggotaan</span>
           </div>
-          <span className="text-xs text-slate-400 font-normal">Status: {jemaatData?.status || 'Aktif'}</span>
+          <span className={`text-xs ${theme.isLight ? 'text-slate-500' : 'text-slate-400'} font-normal`}>Status: {jemaatData?.status || 'Aktif'}</span>
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-xs">
-          <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-1">
-            <span className="text-slate-400 block font-semibold">Identitas KTP &amp; No. KK:</span>
-            <p className="font-mono text-slate-200 font-bold text-sm">NIK: {jemaatData?.nik || '-'}</p>
-            <p className="text-[11px] text-slate-400">No. KK: {jemaatData?.no_kk || '-'}</p>
+          <div className={`p-4 ${theme.isLight ? 'bg-slate-50 border-slate-200 text-slate-800' : 'bg-white/5 border-white/10 text-white'} rounded-2xl border space-y-1`}>
+            <span className={`${theme.isLight ? 'text-slate-600' : 'text-slate-400'} block font-semibold`}>Identitas KTP &amp; No. KK:</span>
+            <p className={`font-mono ${theme.isLight ? 'text-slate-900' : 'text-slate-200'} font-bold text-sm`}>NIK: {jemaatData?.nik || '-'}</p>
+            <p className={`text-[11px] ${theme.isLight ? 'text-slate-500' : 'text-slate-400'}`}>No. KK: {jemaatData?.no_kk || '-'}</p>
           </div>
 
-          <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-1">
-            <span className="text-slate-400 block font-semibold">Tempat &amp; Tanggal Lahir:</span>
-            <p className="text-slate-200 font-bold text-xs">{jemaatData?.tempat_lahir || 'Jakarta'}, {jemaatData?.tanggal_lahir || '01 Jan 1990'}</p>
-            <p className="text-[11px] text-slate-400">Jenis Kelamin: {jemaatData?.jenis_kelamin || 'Laki-laki'}</p>
+          <div className={`p-4 ${theme.isLight ? 'bg-slate-50 border-slate-200 text-slate-800' : 'bg-white/5 border-white/10 text-white'} rounded-2xl border space-y-1`}>
+            <span className={`${theme.isLight ? 'text-slate-600' : 'text-slate-400'} block font-semibold`}>Tempat &amp; Tanggal Lahir:</span>
+            <p className={`${theme.isLight ? 'text-slate-900' : 'text-slate-200'} font-bold text-xs`}>{jemaatData?.tempat_lahir || 'Jakarta'}, {jemaatData?.tanggal_lahir || '01 Jan 1990'}</p>
+            <p className={`text-[11px] ${theme.isLight ? 'text-slate-500' : 'text-slate-400'}`}>Jenis Kelamin: {jemaatData?.jenis_kelamin || 'Laki-laki'}</p>
           </div>
 
-          <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-1">
-            <span className="text-slate-400 block font-semibold">Status Pernikahan &amp; Pekerjaan:</span>
-            <p className="text-slate-200 font-bold text-xs">{jemaatData?.status_pernikahan || 'Menikah'}</p>
-            <p className="text-[11px] text-slate-400">Pekerjaan: {jemaatData?.pekerjaan || 'Karyawan Swasta'}</p>
+          <div className={`p-4 ${theme.isLight ? 'bg-slate-50 border-slate-200 text-slate-800' : 'bg-white/5 border-white/10 text-white'} rounded-2xl border space-y-1`}>
+            <span className={`${theme.isLight ? 'text-slate-600' : 'text-slate-400'} block font-semibold`}>Status Pernikahan &amp; Pekerjaan:</span>
+            <p className={`${theme.isLight ? 'text-slate-900' : 'text-slate-200'} font-bold text-xs`}>{jemaatData?.status_pernikahan || 'Menikah'}</p>
+            <p className={`text-[11px] ${theme.isLight ? 'text-slate-500' : 'text-slate-400'}`}>Pekerjaan: {jemaatData?.pekerjaan || 'Karyawan Swasta'}</p>
           </div>
 
-          <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-1">
-            <span className="text-slate-400 block font-semibold flex items-center gap-1">
+          <div className={`p-4 ${theme.isLight ? 'bg-slate-50 border-slate-200 text-slate-800' : 'bg-white/5 border-white/10 text-white'} rounded-2xl border space-y-1`}>
+            <span className={`${theme.isLight ? 'text-slate-600' : 'text-slate-400'} block font-semibold flex items-center gap-1`}>
               <Phone className={`w-3.5 h-3.5 ${theme.accentText}`} />
               <span>Kontak HP / WhatsApp:</span>
             </span>
-            <p className="text-slate-200 font-bold text-xs">{jemaatData?.nomor_hp || currentUser.no_hp || '-'}</p>
+            <p className={`${theme.isLight ? 'text-slate-900' : 'text-slate-200'} font-bold text-xs`}>{jemaatData?.nomor_hp || currentUser.no_hp || '-'}</p>
           </div>
 
-          <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-1">
-            <span className="text-slate-400 block font-semibold flex items-center gap-1">
+          <div className={`p-4 ${theme.isLight ? 'bg-slate-50 border-slate-200 text-slate-800' : 'bg-white/5 border-white/10 text-white'} rounded-2xl border space-y-1`}>
+            <span className={`${theme.isLight ? 'text-slate-600' : 'text-slate-400'} block font-semibold flex items-center gap-1`}>
               <Mail className={`w-3.5 h-3.5 ${theme.accentText}`} />
               <span>Email Resmi:</span>
             </span>
-            <p className="text-slate-200 font-bold text-xs truncate">{jemaatData?.email || currentUser.email || '-'}</p>
+            <p className={`${theme.isLight ? 'text-slate-900' : 'text-slate-200'} font-bold text-xs truncate`}>{jemaatData?.email || currentUser.email || '-'}</p>
           </div>
 
-          <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-1">
-            <span className="text-slate-400 block font-semibold flex items-center gap-1">
+          <div className={`p-4 ${theme.isLight ? 'bg-slate-50 border-slate-200 text-slate-800' : 'bg-white/5 border-white/10 text-white'} rounded-2xl border space-y-1`}>
+            <span className={`${theme.isLight ? 'text-slate-600' : 'text-slate-400'} block font-semibold flex items-center gap-1`}>
               <MapPin className={`w-3.5 h-3.5 ${theme.accentText}`} />
               <span>Alamat Domisili:</span>
             </span>
-            <p className="text-slate-200 font-bold text-xs">{jemaatData?.alamat || '-'}</p>
+            <p className={`${theme.isLight ? 'text-slate-900' : 'text-slate-200'} font-bold text-xs`}>{jemaatData?.alamat || '-'}</p>
           </div>
         </div>
       </div>

@@ -2000,16 +2000,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           )}
 
           {settings.show_jemaat_quick_menu !== false && (
-            <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-slate-900/80 backdrop-blur-xl border border-indigo-500/30 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className={`p-4 sm:p-5 rounded-2xl sm:rounded-3xl ${
+              isLightSystem
+                ? 'bg-white border border-slate-200/90 shadow-sm text-slate-800'
+                : 'bg-slate-900/80 backdrop-blur-xl border border-indigo-500/30 text-white shadow-xl'
+            } flex flex-col md:flex-row md:items-center justify-between gap-4`}>
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shadow-inner shrink-0">
+                <div className={`p-2.5 rounded-2xl ${isLightSystem ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30'} shadow-inner shrink-0`}>
                   <Sparkles className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-sm sm:text-base text-white tracking-tight">
+                  <h3 className={`font-extrabold text-sm sm:text-base ${isLightSystem ? 'text-slate-900' : 'text-white'} tracking-tight`}>
                     Portal Informasi Terfokus Jemaat
                   </h3>
-                  <p className="text-xs text-slate-300 mt-0.5">
+                  <p className={`text-xs ${isLightSystem ? 'text-slate-600' : 'text-slate-300'} mt-0.5`}>
                     Akses cepat renungan harian, pengumuman resmi &amp; tayangan ibadah gereja
                   </p>
                 </div>
@@ -2017,21 +2021,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <div className="grid grid-cols-3 gap-1.5 sm:gap-2 w-full md:w-auto shrink-0">
                 <button
                   onClick={() => onNavigate('renungan')}
-                  className="px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-indigo-600/90 hover:bg-indigo-600 text-white font-bold text-[10px] sm:text-xs border border-indigo-400/30 shadow-md shadow-indigo-600/20 transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap text-center"
+                  className="px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] sm:text-xs border border-indigo-500/30 shadow-md shadow-indigo-600/20 transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap text-center"
                 >
                   <BookOpen className="w-3 sm:w-3.5 h-3 sm:h-3.5 shrink-0" />
                   <span>Renungan</span>
                 </button>
                 <button
                   onClick={() => onNavigate('pengumuman')}
-                  className="px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-emerald-600/90 hover:bg-emerald-600 text-white font-bold text-[10px] sm:text-xs border border-emerald-400/30 shadow-md shadow-emerald-600/20 transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap text-center"
+                  className="px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] sm:text-xs border border-emerald-500/30 shadow-md shadow-emerald-600/20 transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap text-center"
                 >
                   <Megaphone className="w-3 sm:w-3.5 h-3 sm:h-3.5 shrink-0" />
                   <span>Pengumuman</span>
                 </button>
                 <button
                   onClick={() => onNavigate('media')}
-                  className="px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-red-600/90 hover:bg-red-600 text-white font-bold text-[10px] sm:text-xs border border-red-400/30 shadow-md shadow-red-600/20 transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap text-center"
+                  className="px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-[10px] sm:text-xs border border-rose-500/30 shadow-md shadow-rose-600/20 transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap text-center"
                 >
                   <Tv className="w-3 sm:w-3.5 h-3 sm:h-3.5 shrink-0" />
                   <span>Streaming</span>
@@ -2043,20 +2047,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-3.5 md:gap-6">
             {/* 1. Latest Renungan Utama */}
             {settings.show_renungan_widget !== false && (
-              <div className={`rounded-2xl sm:rounded-3xl ${cardStyleClass} text-white space-y-2.5 sm:space-y-3 flex flex-col justify-between transition-all duration-300 border border-indigo-500/30`}>
+              <div className={`p-4 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} ${isLightSystem ? 'border-slate-200/90 text-slate-800' : 'text-white border border-indigo-500/30'} space-y-2.5 sm:space-y-3 flex flex-col justify-between transition-all duration-300`}>
                 <div>
-                  <div className="flex items-center justify-between pb-2.5 sm:pb-3 border-b border-white/10">
-                    <span className="px-2.5 py-1 rounded-xl bg-indigo-500/20 text-indigo-300 font-bold text-[10px] border border-indigo-500/30 flex items-center gap-1.5">
-                      <BookOpen className="w-3.5 h-3.5 text-indigo-400" />
+                  <div className={`flex items-center justify-between pb-2.5 sm:pb-3 border-b ${isLightSystem ? 'border-slate-100' : 'border-white/10'}`}>
+                    <span className={`px-2.5 py-1 rounded-xl ${isLightSystem ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'} font-bold text-[10px] border flex items-center gap-1.5`}>
+                      <BookOpen className={`w-3.5 h-3.5 ${isLightSystem ? 'text-indigo-600' : 'text-indigo-400'}`} />
                       <span>Renungan Utama Hari Ini</span>
                     </span>
                     {latestRenungan && (
                       <button
                         onClick={() => setSelectedRenunganForModal(latestRenungan)}
-                        className="px-2 py-1 rounded-lg bg-indigo-600/80 hover:bg-indigo-500 text-white text-[10px] font-extrabold flex items-center gap-1 border border-indigo-400/30 shadow transition-all cursor-pointer"
+                        className={`px-2 py-1 rounded-lg ${isLightSystem ? 'bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-indigo-600/80 hover:bg-indigo-500 text-white border-indigo-400/30'} text-[10px] font-extrabold flex items-center gap-1 border shadow-xs transition-all cursor-pointer`}
                         title="Baca Layar Penuh"
                       >
-                        <Maximize2 className="w-3 h-3 text-amber-300" />
+                        <Maximize2 className={`w-3 h-3 ${isLightSystem ? 'text-indigo-600' : 'text-amber-300'}`} />
                         <span>Layar Penuh</span>
                       </button>
                     )}
@@ -2066,39 +2070,39 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     <div className="mt-2.5 sm:mt-3 space-y-2">
                       <h3
                         onClick={() => setSelectedRenunganForModal(latestRenungan)}
-                        className="font-extrabold text-base text-white hover:text-indigo-300 transition-colors cursor-pointer"
+                        className={`font-extrabold text-base ${isLightSystem ? 'text-slate-900 hover:text-emerald-700' : 'text-white hover:text-indigo-300'} transition-colors cursor-pointer text-left`}
                       >
                         {latestRenungan.judul}
                       </h3>
                       {(latestRenungan.ayat || latestRenungan.ayat_alkitab) && (
-                        <p className="text-xs text-amber-400 font-semibold italic bg-amber-500/10 p-2 rounded-xl border border-amber-500/20">
+                        <p className={`text-xs ${isLightSystem ? 'text-amber-800 bg-amber-50 border-amber-200 font-semibold' : 'text-amber-400 bg-amber-500/10 border-amber-500/20 font-semibold'} italic p-2 rounded-xl border`}>
                           &ldquo;{latestRenungan.ayat || latestRenungan.ayat_alkitab}&rdquo;
                         </p>
                       )}
                       <p
                         lang="id"
                         onClick={() => setSelectedRenunganForModal(latestRenungan)}
-                        className="text-xs text-slate-300 line-clamp-3 leading-relaxed cursor-pointer hover:text-slate-100 text-justify break-words"
+                        className={`text-xs ${isLightSystem ? 'text-slate-600 hover:text-slate-900' : 'text-slate-300 hover:text-slate-100'} line-clamp-3 leading-relaxed cursor-pointer text-justify break-words`}
                       >
                         {latestRenungan.isi.length > 180 ? `${latestRenungan.isi.slice(0, 180)}...` : latestRenungan.isi}
                       </p>
                     </div>
                   ) : (
-                    <p className="text-xs text-slate-400 py-6 text-center">Belum ada data renungan terbaru.</p>
+                    <p className={`text-xs ${isLightSystem ? 'text-slate-500' : 'text-slate-400'} py-6 text-center`}>Belum ada data renungan terbaru.</p>
                   )}
                 </div>
 
-                <div className="pt-2.5 sm:pt-3 border-t border-white/10 space-y-2">
-                  <div className="flex items-center justify-between text-[11px] text-slate-400">
-                    <span>Oleh: <strong className="text-slate-200 font-semibold">{latestRenungan?.penulis || 'Gembala Sidang'}</strong></span>
-                    <span className="text-[10px] text-slate-400">{latestRenungan?.tanggal || 'Hari Ini'}</span>
+                <div className={`pt-2.5 sm:pt-3 border-t ${isLightSystem ? 'border-slate-100' : 'border-white/10'} space-y-2`}>
+                  <div className={`flex items-center justify-between text-[11px] ${isLightSystem ? 'text-slate-500' : 'text-slate-400'}`}>
+                    <span>Oleh: <strong className={`${isLightSystem ? 'text-slate-800' : 'text-slate-200'} font-semibold`}>{latestRenungan?.penulis || 'Gembala Sidang'}</strong></span>
+                    <span className={`text-[10px] ${isLightSystem ? 'text-slate-500' : 'text-slate-400'}`}>{latestRenungan?.tanggal || 'Hari Ini'}</span>
                   </div>
 
                   <div className="flex items-center justify-between gap-2 pt-1">
                     {latestRenungan ? (
                       <button
                         onClick={() => setSelectedRenunganForModal(latestRenungan)}
-                        className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold flex items-center gap-1.5 cursor-pointer text-xs border border-indigo-400/30 transition-all shadow-md active:scale-95"
+                        className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold flex items-center gap-1.5 cursor-pointer text-xs border border-indigo-400/30 transition-all shadow-md active:scale-95"
                         title="Baca Selengkapnya"
                       >
                         <BookOpen className="w-3.5 h-3.5 text-amber-300" />
@@ -2108,7 +2112,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                     <button
                       onClick={() => onNavigate('renungan')}
-                      className="px-3 py-1.5 rounded-xl bg-indigo-600/90 hover:bg-indigo-600 text-white font-extrabold flex items-center gap-1.5 cursor-pointer text-xs border border-indigo-400/30 transition-all shadow-md shadow-indigo-600/20"
+                      className={`px-3 py-1.5 rounded-xl ${isLightSystem ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-indigo-600/90 hover:bg-indigo-600 text-white border-indigo-400/30'} font-extrabold flex items-center gap-1.5 cursor-pointer text-xs border transition-all shadow-xs`}
                     >
                       <span>Kumpulan Renungan &rarr;</span>
                     </button>
@@ -2119,22 +2123,22 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
             {/* 2. Latest Pengumuman */}
             {settings.show_pengumuman_widget !== false && (
-              <div className={`rounded-2xl sm:rounded-3xl ${cardStyleClass} text-white space-y-2.5 sm:space-y-3 flex flex-col justify-between transition-all duration-300`}>
+              <div className={`p-4 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} ${isLightSystem ? 'border-slate-200/90 text-slate-800' : 'text-white'} space-y-2.5 sm:space-y-3 flex flex-col justify-between transition-all duration-300`}>
                 <div>
-                  <div className="flex items-center justify-between pb-2.5 sm:pb-3 border-b border-white/10">
-                    <span className="px-2.5 py-1 rounded-xl bg-emerald-500/20 text-emerald-300 font-bold text-[10px] border border-emerald-500/30 flex items-center gap-1">
+                  <div className={`flex items-center justify-between pb-2.5 sm:pb-3 border-b ${isLightSystem ? 'border-slate-100' : 'border-white/10'}`}>
+                    <span className={`px-2.5 py-1 rounded-xl ${isLightSystem ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'} font-bold text-[10px] border flex items-center gap-1`}>
                       <Megaphone className="w-3 h-3" />
                       Pengumuman Resmi Terbaru
                     </span>
-                    <span className="text-[10px] text-slate-400">{latestPengumuman?.tanggal || 'Terbaru'}</span>
+                    <span className={`text-[10px] ${isLightSystem ? 'text-slate-500' : 'text-slate-400'}`}>{latestPengumuman?.tanggal || 'Terbaru'}</span>
                   </div>
 
                   {latestPengumuman ? (
                     <div className="mt-2.5 sm:mt-3 space-y-2">
-                      <h3 className="font-extrabold text-base text-white text-left tracking-tight">{latestPengumuman.judul}</h3>
+                      <h3 className={`font-extrabold text-base ${isLightSystem ? 'text-slate-900' : 'text-white'} text-left tracking-tight`}>{latestPengumuman.judul}</h3>
                       <p
                         lang="id"
-                        className="text-xs text-slate-300 line-clamp-4 leading-relaxed text-justify hyphens-auto [text-align-last:left] [text-justify:inter-word] break-words whitespace-pre-line"
+                        className={`text-xs ${isLightSystem ? 'text-slate-600' : 'text-slate-300'} line-clamp-4 leading-relaxed text-justify hyphens-auto [text-align-last:left] [text-justify:inter-word] break-words whitespace-pre-line`}
                         style={{
                           textAlign: 'justify',
                           textJustify: 'inter-word',
@@ -2149,15 +2153,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       </p>
                     </div>
                   ) : (
-                    <p className="text-xs text-slate-400 py-6 text-center">Belum ada pengumuman terbaru.</p>
+                    <p className={`text-xs ${isLightSystem ? 'text-slate-500' : 'text-slate-400'} py-6 text-center`}>Belum ada pengumuman terbaru.</p>
                   )}
                 </div>
 
-                <div className="pt-2.5 sm:pt-3 border-t border-white/10 flex items-center justify-between text-xs">
-                  <span className="text-[11px] text-slate-400">Sekretariat Gereja</span>
+                <div className={`pt-2.5 sm:pt-3 border-t ${isLightSystem ? 'border-slate-100' : 'border-white/10'} flex items-center justify-between text-xs`}>
+                  <span className={`text-[11px] ${isLightSystem ? 'text-slate-500' : 'text-slate-400'}`}>Sekretariat Gereja</span>
                   <button
                     onClick={() => onNavigate('pengumuman')}
-                    className="text-emerald-400 hover:text-emerald-300 font-semibold flex items-center gap-1 cursor-pointer"
+                    className={`${isLightSystem ? 'text-emerald-700 hover:text-emerald-800' : 'text-emerald-400 hover:text-emerald-300'} font-bold flex items-center gap-1 cursor-pointer`}
                   >
                     <span>Kumpulan Pengumuman &rarr;</span>
                   </button>
@@ -2167,30 +2171,30 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
             {/* 3. Latest Upcoming Event */}
             {settings.show_event_widget !== false && (
-              <div className={`rounded-2xl sm:rounded-3xl ${cardStyleClass} text-white space-y-2.5 sm:space-y-3 flex flex-col justify-between transition-all duration-300`}>
+              <div className={`p-4 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} ${isLightSystem ? 'border-slate-200/90 text-slate-800' : 'text-white'} space-y-2.5 sm:space-y-3 flex flex-col justify-between transition-all duration-300`}>
                 <div>
-                  <div className="flex items-center justify-between pb-2.5 sm:pb-3 border-b border-white/10">
-                    <span className="px-2.5 py-1 rounded-xl bg-amber-500/20 text-amber-300 font-bold text-[10px] border border-amber-500/30 flex items-center gap-1">
+                  <div className={`flex items-center justify-between pb-2.5 sm:pb-3 border-b ${isLightSystem ? 'border-slate-100' : 'border-white/10'}`}>
+                    <span className={`px-2.5 py-1 rounded-xl ${isLightSystem ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-amber-500/20 text-amber-300 border-amber-500/30'} font-bold text-[10px] border flex items-center gap-1`}>
                       <Calendar className="w-3 h-3" />
                       Agenda / Event Terdekat
                     </span>
-                    <span className="text-[10px] text-slate-400">{latestEvent?.tanggal || 'Mendatang'}</span>
+                    <span className={`text-[10px] ${isLightSystem ? 'text-slate-500' : 'text-slate-400'}`}>{latestEvent?.tanggal || 'Mendatang'}</span>
                   </div>
 
                   {latestEvent ? (
                     <div className="mt-2.5 sm:mt-3 space-y-2">
-                      <h3 className="font-extrabold text-base text-white">{latestEvent.nama}</h3>
-                      <div className="space-y-1 text-xs text-slate-300 bg-white/5 p-3 rounded-2xl border border-white/5">
+                      <h3 className={`font-extrabold text-base ${isLightSystem ? 'text-slate-900' : 'text-white'}`}>{latestEvent.nama}</h3>
+                      <div className={`space-y-1 text-xs ${isLightSystem ? 'text-slate-700 bg-slate-50 border-slate-200/80' : 'text-slate-300 bg-white/5 border-white/5'} p-3 rounded-2xl border`}>
                         <div className="flex items-center gap-2">
-                          <Clock className="w-3.5 h-3.5 text-amber-400" />
-                          <span>Pukul {latestEvent.jam} WIB</span>
+                          <Clock className={`w-3.5 h-3.5 ${isLightSystem ? 'text-amber-600' : 'text-amber-400'}`} />
+                          <span className="font-medium">Pukul {latestEvent.jam} WIB</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <MapPin className="w-3.5 h-3.5 text-indigo-400" />
+                          <MapPin className={`w-3.5 h-3.5 ${isLightSystem ? 'text-indigo-600' : 'text-indigo-400'}`} />
                           <span>{latestEvent.lokasi}</span>
                         </div>
                         {latestEvent.pembicara && (
-                          <div className="flex items-center gap-2 text-slate-400">
+                          <div className={`flex items-center gap-2 ${isLightSystem ? 'text-slate-600' : 'text-slate-400'}`}>
                             <span>Pembicara: {latestEvent.pembicara}</span>
                           </div>
                         )}
@@ -2207,23 +2211,23 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       {!isJemaat && (
                         <button
                           onClick={() => setIsAdminResModalOpen(true)}
-                          className="w-full mt-1.5 py-2 px-3 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-amber-300 hover:text-amber-200 border border-amber-500/30 text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                          className={`w-full mt-1.5 py-2 px-3 rounded-xl ${isLightSystem ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-300' : 'bg-slate-900/90 hover:bg-slate-800 text-amber-300 hover:text-amber-200 border-amber-500/30'} border text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer`}
                         >
-                          <Ticket className="w-3.5 h-3.5 text-amber-400" />
+                          <Ticket className={`w-3.5 h-3.5 ${isLightSystem ? 'text-amber-600' : 'text-amber-400'}`} />
                           <span>Daftar Reservasi Jemaat ({reservationsList.length} Pendaftar)</span>
                         </button>
                       )}
                     </div>
                   ) : (
-                    <p className="text-xs text-slate-400 py-6 text-center">Belum ada agenda mendatang.</p>
+                    <p className={`text-xs ${isLightSystem ? 'text-slate-500' : 'text-slate-400'} py-6 text-center`}>Belum ada agenda mendatang.</p>
                   )}
                 </div>
 
-                <div className="pt-2.5 sm:pt-3 border-t border-white/10 flex items-center justify-between text-xs">
-                  <span className="text-[11px] text-slate-400">Jadwal Minggu Ini</span>
+                <div className={`pt-2.5 sm:pt-3 border-t ${isLightSystem ? 'border-slate-100' : 'border-white/10'} flex items-center justify-between text-xs`}>
+                  <span className={`text-[11px] ${isLightSystem ? 'text-slate-500' : 'text-slate-400'}`}>Jadwal Minggu Ini</span>
                   <button
                     onClick={() => onNavigate('agenda')}
-                    className="text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1"
+                    className={`${isLightSystem ? 'text-amber-700 hover:text-amber-800' : 'text-amber-400 hover:text-amber-300'} font-bold flex items-center gap-1 cursor-pointer`}
                   >
                     <span>Lihat Kalender</span>
                     <ChevronRight className="w-3.5 h-3.5" />
@@ -2235,17 +2239,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           {/* Direct Prayer Request Form for Jemaat */}
           {settings.show_prayer_widget !== false && (
-            <div className={`rounded-2xl sm:rounded-3xl ${cardStyleClass} text-white space-y-2.5 sm:space-y-4 transition-all duration-300`}>
-              <div className="flex items-center gap-2 pb-2.5 sm:pb-3 border-b border-white/10">
-                <HeartHandshake className="w-5 h-5 text-pink-400" />
+            <div className={`p-4 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl ${cardStyleClass} ${isLightSystem ? 'border-slate-200/90 text-slate-800' : 'text-white'} space-y-2.5 sm:space-y-4 transition-all duration-300`}>
+              <div className={`flex items-center gap-2 pb-2.5 sm:pb-3 border-b ${isLightSystem ? 'border-slate-100' : 'border-white/10'}`}>
+                <HeartHandshake className="w-5 h-5 text-rose-500" />
                 <div>
-                  <h3 className="font-bold text-base">Kirim Permohonan Doa Mandiri</h3>
-                  <p className="text-xs text-slate-400">Tim pendoa dan hamba Tuhan akan mendoakan beban permohonan Anda.</p>
+                  <h3 className={`font-bold text-base ${isLightSystem ? 'text-slate-900' : 'text-white'}`}>Kirim Permohonan Doa Mandiri</h3>
+                  <p className={`text-xs ${isLightSystem ? 'text-slate-600' : 'text-slate-400'}`}>Tim pendoa dan hamba Tuhan akan mendoakan beban permohonan Anda.</p>
                 </div>
               </div>
 
               {prayerSubmitted && (
-                <div className="p-3 bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 rounded-2xl text-xs font-bold flex items-center gap-2">
+                <div className={`p-3 ${isLightSystem ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-emerald-500/20 border-emerald-500/30 text-emerald-300'} border rounded-2xl text-xs font-bold flex items-center gap-2`}>
                   <Check className="w-4 h-4" />
                   <span>Permohonan doa Anda telah berhasil dikirimkan ke Tim Pendoa Gereja!</span>
                 </div>
@@ -2254,11 +2258,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <form onSubmit={handleSubmitPrayer} className="space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-slate-400 text-xs mb-1 font-semibold">Kategori Doa</label>
+                    <label className={`block ${isLightSystem ? 'text-slate-700 font-bold' : 'text-slate-400 font-semibold'} text-xs mb-1`}>Kategori Doa</label>
                     <select
                       value={prayerTopic}
                       onChange={(e) => setPrayerTopic(e.target.value)}
-                      className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs"
+                      className={`w-full px-3.5 py-2 rounded-xl ${isLightSystem ? 'bg-white border-slate-300 text-slate-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500' : 'bg-slate-950 border-slate-700 text-white'} border text-xs`}
                     >
                       <option value="Kesehatan">Kesehatan & Pemulihan</option>
                       <option value="Pekerjaan">Pekerjaan & Karir</option>
@@ -2270,7 +2274,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </div>
 
                   <div className="sm:col-span-2">
-                    <label className="block text-slate-400 text-xs mb-1 font-semibold">Isi Permohonan Doa</label>
+                    <label className={`block ${isLightSystem ? 'text-slate-700 font-bold' : 'text-slate-400 font-semibold'} text-xs mb-1`}>Isi Permohonan Doa</label>
                     <div className="flex gap-2">
                       <input
                         type="text"
@@ -2278,11 +2282,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         placeholder="Tuliskan pokok permohonan doa Anda..."
                         value={prayerText}
                         onChange={(e) => setPrayerText(e.target.value)}
-                        className="flex-1 px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs"
+                        className={`flex-1 px-3.5 py-2 rounded-xl ${isLightSystem ? 'bg-white border-slate-300 text-slate-800 placeholder-slate-400 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500' : 'bg-slate-950 border-slate-700 text-white'} border text-xs`}
                       />
                       <button
                         type="submit"
-                        className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-md shadow-indigo-600/30 flex items-center gap-1.5 shrink-0 cursor-pointer"
+                        className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md shadow-indigo-600/30 flex items-center gap-1.5 shrink-0 cursor-pointer"
                       >
                         <Send className="w-3.5 h-3.5" />
                         <span>Kirim</span>
@@ -2294,12 +2298,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
               {/* Status Permohonan Doa untuk Jemaat atau Tindakan Doa Cepat untuk Admin */}
               {prayerRequests.length > 0 && (
-                <div className="pt-3 border-t border-white/10 space-y-2.5">
+                <div className={`pt-3 border-t ${isLightSystem ? 'border-slate-100' : 'border-white/10'} space-y-2.5`}>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    <span className={`text-xs font-bold ${isLightSystem ? 'text-slate-700' : 'text-slate-300'} uppercase tracking-wider`}>
                       {isAdmin ? 'Permohonan Doa Jemaat Masuk' : 'Status Permohonan Doa Anda'}
                     </span>
-                    <span className="text-[10px] text-slate-400">
+                    <span className={`text-[10px] ${isLightSystem ? 'text-slate-500' : 'text-slate-400'}`}>
                       {isAdmin ? 'Admin & Majelis dapat menekan Selesai Doa' : 'Dipantau langsung oleh Tim Pendoa Gereja'}
                     </span>
                   </div>
@@ -2318,33 +2322,33 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         return (
                           <div
                             key={pr.prayer_id}
-                            className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs"
+                            className={`p-3 rounded-2xl ${isLightSystem ? 'bg-slate-50 border-slate-200' : 'bg-slate-950/70 border-slate-800'} border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs`}
                           >
                             <div className="space-y-1 flex-1 min-w-0">
                               <div className="flex items-center gap-2">
-                                <span className="font-bold text-white truncate">
+                                <span className={`font-bold ${isLightSystem ? 'text-slate-900' : 'text-white'} truncate`}>
                                   {isAdmin ? pr.jemaat_name : 'Permohonan Anda'}
                                 </span>
-                                <span className="px-2 py-0.5 rounded-md bg-indigo-950/80 text-indigo-300 text-[10px] border border-indigo-800/40">
+                                <span className={`px-2 py-0.5 rounded-md ${isLightSystem ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-indigo-950/80 text-indigo-300 border-indigo-800/40'} border text-[10px]`}>
                                   {pr.topik}
                                 </span>
-                                <span className="text-[10px] text-slate-500">{pr.tanggal}</span>
+                                <span className={`text-[10px] ${isLightSystem ? 'text-slate-500' : 'text-slate-500'}`}>{pr.tanggal}</span>
                               </div>
-                              <p className="text-slate-300 text-[11px] italic truncate">
+                              <p className={`${isLightSystem ? 'text-slate-700' : 'text-slate-300'} text-[11px] italic truncate`}>
                                 "{pr.permohonan}"
                               </p>
                             </div>
 
                             <div className="flex items-center gap-2 shrink-0">
                               {isDone ? (
-                                <span className="px-2.5 py-1 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[11px] font-bold flex items-center gap-1.5">
-                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                                <span className={`px-2.5 py-1 rounded-xl ${isLightSystem ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'} border text-[11px] font-bold flex items-center gap-1.5`}>
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                                   <span>Sudah Didoakan</span>
                                 </span>
                               ) : (
                                 <>
-                                  <span className="px-2.5 py-1 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[11px] font-bold flex items-center gap-1.5">
-                                    <Clock className="w-3.5 h-3.5 text-amber-400" />
+                                  <span className={`px-2.5 py-1 rounded-xl ${isLightSystem ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-amber-500/20 text-amber-300 border-amber-500/30'} border text-[11px] font-bold flex items-center gap-1.5`}>
+                                    <Clock className="w-3.5 h-3.5 text-amber-500" />
                                     <span>Dalam Doa</span>
                                   </span>
 
@@ -2373,17 +2377,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           {/* Transfer Persembahan & Perpuluhan Digital Card for Jemaat & All Users */}
           {settings.show_digital_offering_widget !== false && (
-            <div className={`rounded-2xl sm:rounded-3xl ${cardStyleClass} border border-emerald-500/30 shadow-2xl text-white space-y-3 sm:space-y-4 md:space-y-6 relative overflow-hidden transition-all duration-300`}>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-white/10 pb-3 sm:pb-4">
+            <div className={`p-4 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl ${cardStyleClass} ${isLightSystem ? 'border-slate-200/90 text-slate-800' : 'border-emerald-500/30 text-white'} shadow-xl space-y-3 sm:space-y-4 md:space-y-6 relative overflow-hidden transition-all duration-300`}>
+            <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b ${isLightSystem ? 'border-slate-100' : 'border-white/10'} pb-3 sm:pb-4`}>
               <div className="flex items-center gap-3">
                 <div className="p-2.5 sm:p-3 rounded-2xl bg-emerald-600 text-white shadow-lg shadow-emerald-600/30">
                   <CreditCard className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
                 <div>
-                  <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest block">
+                  <span className={`text-[10px] ${isLightSystem ? 'text-emerald-700' : 'text-emerald-400'} font-bold uppercase tracking-widest block`}>
                     Transfer Digital & QRIS Gereja
                   </span>
-                  <h3 className="text-base sm:text-lg font-extrabold text-white">Transfer Persembahan & Perpuluhan</h3>
+                  <h3 className={`text-base sm:text-lg font-extrabold ${isLightSystem ? 'text-slate-900' : 'text-white'}`}>Transfer Persembahan & Perpuluhan</h3>
                 </div>
               </div>
 
@@ -2398,40 +2402,40 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-5 items-center">
               {/* Bank Account Info Card */}
-              <div className="p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2.5 sm:space-y-3">
+              <div className={`p-3.5 sm:p-5 rounded-xl sm:rounded-2xl ${isLightSystem ? 'bg-slate-50 border-slate-200 text-slate-800' : 'bg-slate-950/80 border-slate-800 text-white'} border space-y-2.5 sm:space-y-3`}>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Rekening Resmi Gereja</span>
-                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">
+                  <span className={`text-xs font-bold ${isLightSystem ? 'text-emerald-800' : 'text-emerald-400'} uppercase tracking-wider`}>Rekening Resmi Gereja</span>
+                  <span className={`px-2.5 py-0.5 rounded-full ${isLightSystem ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'} border text-[10px] font-bold`}>
                     {settings.rekening_bank_nama || 'Bank BCA'}
                   </span>
                 </div>
 
                 <div>
-                  <span className="text-[10px] text-slate-400 block">Nomor Rekening:</span>
-                  <div className="flex items-center justify-between mt-1 bg-slate-900 p-2 sm:p-2.5 rounded-xl border border-slate-800">
-                    <span className="font-mono text-base sm:text-lg font-black text-white tracking-wider">
+                  <span className={`text-[10px] ${isLightSystem ? 'text-slate-500' : 'text-slate-400'} block`}>Nomor Rekening:</span>
+                  <div className={`flex items-center justify-between mt-1 ${isLightSystem ? 'bg-white border-slate-200' : 'bg-slate-900 border-slate-800'} p-2 sm:p-2.5 rounded-xl border`}>
+                    <span className={`font-mono text-base sm:text-lg font-black ${isLightSystem ? 'text-slate-900' : 'text-white'} tracking-wider`}>
                       {settings.rekening_bank_nomor || '527-089-1122'}
                     </span>
                     <button
                       onClick={handleCopyBank}
-                      className="px-2.5 sm:px-3 py-1.5 rounded-lg bg-emerald-600/30 hover:bg-emerald-600/60 text-emerald-300 border border-emerald-500/40 text-xs font-bold flex items-center gap-1 cursor-pointer transition-all"
+                      className={`px-2.5 sm:px-3 py-1.5 rounded-lg ${isLightSystem ? 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border-emerald-300' : 'bg-emerald-600/30 hover:bg-emerald-600/60 text-emerald-300 border-emerald-500/40'} border text-xs font-bold flex items-center gap-1 cursor-pointer transition-all`}
                     >
-                      {copiedBankNum ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                      {copiedBankNum ? <Check className={`w-3.5 h-3.5 ${isLightSystem ? 'text-emerald-700' : 'text-emerald-400'}`} /> : <Copy className="w-3.5 h-3.5" />}
                       <span>{copiedBankNum ? 'Tersalin!' : 'Salin'}</span>
                     </button>
                   </div>
                 </div>
 
                 <div>
-                  <span className="text-[10px] text-slate-400 block">Atas Nama Rekening:</span>
-                  <p className="font-bold text-slate-200 text-xs sm:text-sm">{settings.rekening_bank_atas_nama || settings.nama_gereja || 'Jesus Kingdom Christ'}</p>
+                  <span className={`text-[10px] ${isLightSystem ? 'text-slate-500' : 'text-slate-400'} block`}>Atas Nama Rekening:</span>
+                  <p className={`font-bold ${isLightSystem ? 'text-slate-800' : 'text-slate-200'} text-xs sm:text-sm`}>{settings.rekening_bank_atas_nama || settings.nama_gereja || 'Jesus Kingdom Christ'}</p>
                 </div>
               </div>
 
               {/* QRIS Code Large Display Card */}
-              <div className="p-3.5 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl bg-slate-950/90 border-2 border-emerald-500/40 shadow-2xl flex flex-col items-center justify-center text-center gap-3 sm:gap-4">
-                <div className="flex items-center gap-2 text-emerald-400 font-extrabold text-sm tracking-wide uppercase">
-                  <QrCode className="w-5 h-5 text-emerald-400 animate-pulse" />
+              <div className={`p-3.5 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl ${isLightSystem ? 'bg-slate-50 border-emerald-300' : 'bg-slate-950/90 border-emerald-500/40'} border-2 shadow-xl flex flex-col items-center justify-center text-center gap-3 sm:gap-4`}>
+                <div className={`flex items-center gap-2 ${isLightSystem ? 'text-emerald-800' : 'text-emerald-400'} font-extrabold text-sm tracking-wide uppercase`}>
+                  <QrCode className={`w-5 h-5 ${isLightSystem ? 'text-emerald-600' : 'text-emerald-400'} animate-pulse`} />
                   <span>Barcode QRIS Persembahan Digital</span>
                 </div>
 
@@ -3355,19 +3359,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 md:gap-6">
               {/* Today's Schedule */}
               {settings.show_upcoming_events_table !== false && (
-                <div className={`${settings.show_system_logs_widget !== false ? 'lg:col-span-6' : 'lg:col-span-12'} rounded-2xl sm:rounded-3xl ${cardStyleClass} text-white`}>
+                <div className={`${settings.show_system_logs_widget !== false ? 'lg:col-span-6' : 'lg:col-span-12'} p-4 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl ${cardStyleClass} ${isLightSystem ? 'border-slate-200/90 text-slate-800' : 'text-white'}`}>
                   <div className="flex items-center justify-between mb-3 sm:mb-4">
                     <div className="flex items-center gap-2">
-                      <div className="p-2 rounded-xl bg-indigo-500/20 border border-indigo-500/30 text-indigo-300">
+                      <div className={`p-2 rounded-xl ${isLightSystem ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-indigo-500/20 border-indigo-500/30 text-indigo-300'} border`}>
                         <Clock className="w-4 h-4" />
                       </div>
-                      <h3 className="text-base font-bold">Jadwal Ibadah & Agenda Terbaru</h3>
+                      <h3 className={`text-base font-bold ${isLightSystem ? 'text-slate-900' : 'text-white'}`}>Jadwal Ibadah & Agenda Terbaru</h3>
                     </div>
                     <button
                       onClick={() => onNavigate('agenda')}
-                      className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold"
+                      className={`text-xs ${isLightSystem ? 'text-indigo-600 hover:text-indigo-800' : 'text-indigo-400 hover:text-indigo-300'} font-bold cursor-pointer`}
                     >
-                      Semua Agenda
+                      Semua Agenda &rarr;
                     </button>
                   </div>
 
@@ -3375,19 +3379,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     {eventsList.slice(0, 3).map((evt) => (
                       <div
                         key={evt.event_id}
-                        className="p-3 sm:p-3.5 rounded-2xl bg-white/5 border border-white/10 flex items-start justify-between gap-3 text-xs hover:border-indigo-500/30 transition-all"
+                        className={`p-3 sm:p-3.5 rounded-2xl ${isLightSystem ? 'bg-slate-50 border-slate-200 hover:border-emerald-300' : 'bg-white/5 border-white/10 hover:border-indigo-500/30'} border flex items-start justify-between gap-3 text-xs transition-all`}
                       >
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-bold text-[10px] border border-indigo-500/30">
+                            <span className={`px-2 py-0.5 rounded ${isLightSystem ? 'bg-indigo-100 text-indigo-800 border-indigo-200' : 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'} font-bold text-[10px] border`}>
                               {evt.kategori || 'Ibadah'}
                             </span>
-                            <span className="text-slate-400 text-[11px]">{evt.jam}</span>
+                            <span className={`${isLightSystem ? 'text-slate-500' : 'text-slate-400'} text-[11px]`}>{evt.jam}</span>
                           </div>
-                          <h4 className="font-bold text-slate-100 text-sm mt-1">{evt.nama}</h4>
-                          <p className="text-slate-400 mt-0.5">{evt.lokasi} &bull; Pembicara: {evt.pembicara || '-'}</p>
+                          <h4 className={`font-bold ${isLightSystem ? 'text-slate-900' : 'text-slate-100'} text-sm mt-1`}>{evt.nama}</h4>
+                          <p className={`${isLightSystem ? 'text-slate-600' : 'text-slate-400'} mt-0.5`}>{evt.lokasi} &bull; Pembicara: {evt.pembicara || '-'}</p>
                         </div>
-                        <span className="text-[11px] font-semibold text-slate-300 bg-white/5 border border-white/10 px-2.5 py-1 rounded-lg shrink-0">
+                        <span className={`text-[11px] font-semibold ${isLightSystem ? 'text-slate-700 bg-white border-slate-200' : 'text-slate-300 bg-white/5 border-white/10'} border px-2.5 py-1 rounded-lg shrink-0`}>
                           {evt.tanggal}
                         </span>
                       </div>
@@ -3398,20 +3402,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
               {/* Activity Logs & Audit Feed */}
               {settings.show_system_logs_widget !== false && (
-                <div className={`${settings.show_upcoming_events_table !== false ? 'lg:col-span-6' : 'lg:col-span-12'} rounded-2xl sm:rounded-3xl ${cardStyleClass} text-white`}>
+                <div className={`${settings.show_upcoming_events_table !== false ? 'lg:col-span-6' : 'lg:col-span-12'} p-4 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl ${cardStyleClass} ${isLightSystem ? 'border-slate-200/90 text-slate-800' : 'text-white'}`}>
                   <div className="flex items-center justify-between mb-3 sm:mb-4">
                     <div className="flex items-center gap-2">
-                      <div className="p-2 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-300">
+                      <div className={`p-2 rounded-xl ${isLightSystem ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-emerald-500/20 border-emerald-500/30 text-emerald-300'} border`}>
                         <Activity className="w-4 h-4" />
                       </div>
-                      <h3 className="text-base font-bold">Aktivitas System Terbaru</h3>
+                      <h3 className={`text-base font-bold ${isLightSystem ? 'text-slate-900' : 'text-white'}`}>Aktivitas System Terbaru</h3>
                     </div>
                     {isSuperAdmin && (
                       <button
                         onClick={() => onNavigate('settings')}
-                        className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold"
+                        className={`text-xs ${isLightSystem ? 'text-indigo-600 hover:text-indigo-800' : 'text-indigo-400 hover:text-indigo-300'} font-bold cursor-pointer`}
                       >
-                        Audit Log
+                        Audit Log &rarr;
                       </button>
                     )}
                   </div>
@@ -3420,16 +3424,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     {activityLogs.slice(0, 4).map((log) => (
                       <div
                         key={log.log_id}
-                        className="p-3 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between text-xs hover:border-white/20 transition-all"
+                        className={`p-3 rounded-2xl ${isLightSystem ? 'bg-slate-50 border-slate-200 hover:border-emerald-300' : 'bg-white/5 border-white/10 hover:border-white/20'} border flex items-center justify-between text-xs transition-all`}
                       >
                         <div className="space-y-0.5">
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-indigo-300">{log.user}</span>
-                            <span className="text-[10px] text-slate-500">&bull; {log.module || 'System'}</span>
+                            <span className={`font-bold ${isLightSystem ? 'text-emerald-800' : 'text-indigo-300'}`}>{log.user}</span>
+                            <span className={`text-[10px] ${isLightSystem ? 'text-slate-500' : 'text-slate-500'}`}>&bull; {log.module || 'System'}</span>
                           </div>
-                          <p className="text-slate-300 line-clamp-1">{log.aktivitas}</p>
+                          <p className={`${isLightSystem ? 'text-slate-700' : 'text-slate-300'} line-clamp-1`}>{log.aktivitas}</p>
                         </div>
-                        <span className="text-[10px] text-slate-500 shrink-0">{log.tanggal}</span>
+                        <span className={`text-[10px] ${isLightSystem ? 'text-slate-500' : 'text-slate-500'} shrink-0`}>{log.tanggal}</span>
                       </div>
                     ))}
                   </div>
