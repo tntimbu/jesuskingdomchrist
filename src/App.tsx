@@ -402,7 +402,7 @@ export default function App() {
         <div className="flex items-center gap-2 min-w-0">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
           <span className="font-semibold tracking-wide truncate text-[11px] sm:text-xs text-white/95">
-            SIAKAD &bull; {settings.nama_gereja || 'Jesus Kingdom Christ'} — Sistem Informasi Akademik &amp; Manajemen
+            CMS GEREJA &bull; {settings.nama_gereja || 'Jesus Kingdom Christ'} — Sistem Informasi Manajemen &amp; Pelayanan Jemaat
           </span>
         </div>
         <div className="flex items-center gap-3 text-white/70 text-xs font-mono shrink-0">

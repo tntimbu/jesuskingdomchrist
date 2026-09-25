@@ -272,13 +272,13 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
 
   const theme = getThemeClasses(settings);
 
-  const churchName = settings?.nama_gereja || 'SLH Gereja';
+  const churchName = settings?.nama_gereja || 'Jesus Kingdom Christ';
   const shortCode = churchName
     .split(' ')
     .map((w) => w[0])
     .join('')
     .substring(0, 4)
-    .toUpperCase() || 'SLH';
+    .toUpperCase() || 'JKC';
 
   return (
     <header className="sticky top-0 z-30 h-16 w-full bg-white border-b border-slate-200/80 px-3 sm:px-6 flex items-center justify-between shadow-xs select-none">
@@ -300,14 +300,14 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2">
               <h1 className="text-xs sm:text-base font-black text-slate-900 tracking-tight truncate leading-tight">
-                {shortCode}
+                {settings?.nama_gereja || 'Jesus Kingdom Christ'}
               </h1>
               <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-[#00a859] border border-emerald-200 text-[10px] font-bold shrink-0">
-                TA 2026/2027 (Ganjil)
+                Portal Jemaat
               </span>
             </div>
-            <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium leading-none mt-0.5 truncate max-w-[140px] xs:max-w-none">
-              Sistem Informasi Akademik Sekolah
+            <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium leading-none mt-0.5 truncate max-w-[160px] xs:max-w-none">
+              Sistem Informasi Manajemen Gereja
             </p>
           </div>
         </div>
@@ -331,7 +331,7 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
         {/* 2. Admin Pill */}
         <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#dcfce7] border border-[#bbf7d0] text-[#15803d] text-xs font-bold shadow-2xs">
           <span className="w-2 h-2 rounded-full bg-[#16a34a]" />
-          <span>{isAdmin ? 'Admin Sekolah' : 'Jemaat Sekolah'}</span>
+          <span>{isAdmin ? 'Admin Gereja' : 'Jemaat Gereja'}</span>
         </div>
         {currentUser.role === 'SUPER_ADMIN' && onOpenSuperAdminSaaSPanel && (
           <button
@@ -534,7 +534,7 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
                     {currentUser.nama}
                   </p>
                   <p className="text-[10px] text-slate-400 font-medium leading-none mt-0.5 truncate">
-                    {currentUser.role === 'ADMIN' ? 'Admin Sekolah (TU)' : currentUser.role}
+                    {currentUser.role === 'ADMIN' ? 'Admin Gereja' : currentUser.role}
                   </p>
                 </div>
                 <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden lg:block" />

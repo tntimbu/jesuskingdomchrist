@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { User, AppSettings } from '../../types';
 import { NavTab } from '../Sidebar';
-import { getThemeClasses } from '../../utils/themeHelper';
 import {
   Users,
   DollarSign,
@@ -18,9 +17,12 @@ import {
   Grid,
   Sparkles,
   MapPin,
-  ArrowRight,
+  ChevronRight,
   MessageCircle,
-  BookMarked
+  BookMarked,
+  Search,
+  Church,
+  SlidersHorizontal
 } from 'lucide-react';
 
 interface LainnyaViewProps {
@@ -29,289 +31,334 @@ interface LainnyaViewProps {
   settings: AppSettings;
 }
 
+interface MenuItem {
+  id: NavTab;
+  title: string;
+  subtitle: string;
+  group: string;
+  icon: React.ElementType;
+  badge: string;
+  colorClass: string;
+  roles: string[];
+}
+
 export const LainnyaView: React.FC<LainnyaViewProps> = ({
   currentUser,
   onNavigate,
   settings
 }) => {
-  const theme = getThemeClasses(settings);
-  const isAdmin = currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN';
+  const [searchQuery, setSearchQuery] = useState('');
 
-  // Dynamic Theme Preset Style Classes matching Dashboard
-  const getCardStyleClass = () => {
-    const cardBg = settings.jemaat_cards_bg || 'DEFAULT_GLASS';
-    const cardStyle = settings.card_style || 'GLASS';
-
-    let base = 'bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl';
-
-    if (cardBg && cardBg !== 'DEFAULT_GLASS') {
-      switch (cardBg) {
-        case 'GRADIENT_INDIGO':
-          base = 'bg-gradient-to-br from-indigo-950/90 via-slate-900 to-indigo-950/90 border border-indigo-500/40 shadow-xl shadow-indigo-950/30 backdrop-blur-xl';
-          break;
-        case 'GRADIENT_PURPLE':
-          base = 'bg-gradient-to-br from-purple-950/90 via-slate-900 to-purple-950/90 border border-purple-500/40 shadow-xl shadow-purple-950/30 backdrop-blur-xl';
-          break;
-        case 'GRADIENT_GOLD':
-          base = 'bg-gradient-to-br from-amber-950/90 via-slate-900 to-amber-950/90 border border-amber-500/40 shadow-xl shadow-amber-950/30 backdrop-blur-xl';
-          break;
-        case 'GRADIENT_EMERALD':
-          base = 'bg-gradient-to-br from-emerald-950/90 via-slate-900 to-emerald-950/90 border border-emerald-500/40 shadow-xl shadow-emerald-950/30 backdrop-blur-xl';
-          break;
-        case 'OBSIDIAN_NIGHT':
-          base = 'bg-gradient-to-br from-slate-950 via-slate-900 to-zinc-950 border border-slate-700/80 shadow-2xl backdrop-blur-xl';
-          break;
-        case 'OCEAN_BLUE':
-          base = 'bg-gradient-to-br from-blue-950/90 via-slate-900 to-cyan-950/90 border border-cyan-500/40 shadow-xl shadow-cyan-950/30 backdrop-blur-xl';
-          break;
-        case 'SOLID_SLATE':
-          base = 'bg-slate-900 border border-slate-800 shadow-xl';
-          break;
-        case 'NEON_CYAN':
-          base = 'bg-cyan-950/50 border border-cyan-400/50 shadow-lg shadow-cyan-500/20 backdrop-blur-xl';
-          break;
-        default:
-          base = 'bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl';
-          break;
-      }
-    } else {
-      switch (cardStyle) {
-        case 'SOLID':
-          base = 'bg-slate-900 border border-slate-800 shadow-xl';
-          break;
-        case 'NEON':
-          base = 'bg-slate-900/90 border border-indigo-500/40 shadow-lg shadow-indigo-500/10 backdrop-blur-xl';
-          break;
-        case 'FLAT':
-          base = 'bg-slate-900/60 border border-slate-700/60 shadow-none';
-          break;
-        case 'GLASS':
-        default:
-          base = 'bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl';
-          break;
-      }
-    }
-
-    return base;
-  };
-
-  const cardStyleClass = getCardStyleClass();
-
-  const menuModules = [
+  const menuModules: MenuItem[] = [
+    // 1. PELAYANAN & JEMAAT MANDIRI
     {
-      id: 'jemaat_portal' as NavTab,
-      title: 'Portal Jemaat Saya',
-      subtitle: 'KTA Digital, Sakramen, Doa & Persembahan Saya',
-      category: 'PELAYANAN MANDIRI',
+      id: 'jemaat_portal',
+      title: 'Portal Jemaat Mandiri',
+      subtitle: 'KTA Digital, riwayat sakramen, warta personal & persembahan',
+      group: 'Pelayanan & Komunitas Jemaat',
       icon: UserCheck,
-      badge: 'Jemaat Mandatory',
+      badge: 'Portal Jemaat',
+      colorClass: 'bg-emerald-50 text-[#00a859] border-emerald-200',
       roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
     },
     {
-      id: 'chat' as NavTab,
-      title: 'Ruang Chat Komunitas Jemaat',
-      subtitle: 'Obrolan Komunitas, Berbagi Sapaan, Doa & Persekutuan Bersama',
-      category: 'KOMUNITAS & CHAT',
+      id: 'chat',
+      title: 'Ruang Chat Komunitas',
+      subtitle: 'Forum persekutuan, obrolan jemaat, saling menguatkan dalam doa',
+      group: 'Pelayanan & Komunitas Jemaat',
       icon: MessageCircle,
       badge: 'Live Chat',
+      colorClass: 'bg-teal-50 text-teal-600 border-teal-200',
       roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
     },
     {
-      id: 'pustaka' as NavTab,
-      title: 'Alkitab & Buku Pujian (KJ, NKB, PKJ, Lagu)',
-      subtitle: '66 Kitab Suci Alkitab, Kidung Jemaat, NKB, PKJ & Lagu Kontemporer Berchord',
-      category: 'PUSTAKA ROHANI',
+      id: 'doa',
+      title: 'Permohonan Doa & Syafaat',
+      subtitle: 'Kirimkan pokok doa pribadi ke tim pendoa syafaat gereja',
+      group: 'Pelayanan & Komunitas Jemaat',
+      icon: Heart,
+      badge: 'Pelayanan Doa',
+      colorClass: 'bg-rose-50 text-rose-600 border-rose-200',
+      roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
+    },
+    {
+      id: 'pustaka',
+      title: 'Alkitab & Buku Pujian (Lagu)',
+      subtitle: 'Teks Alkitab 66 Kitab, Kidung Jemaat, NKB, PKJ & lagu rohani berchord',
+      group: 'Pelayanan & Komunitas Jemaat',
       icon: BookMarked,
       badge: 'Alkitab & Lagu',
+      colorClass: 'bg-amber-50 text-amber-600 border-amber-200',
       roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
     },
     {
-      id: 'jemaat' as NavTab,
+      id: 'renungan',
+      title: 'Renungan Harian',
+      subtitle: 'Santapan rohani setiap hari, firman Tuhan & renungan audio',
+      group: 'Pelayanan & Komunitas Jemaat',
+      icon: BookOpen,
+      badge: 'Renungan',
+      colorClass: 'bg-indigo-50 text-indigo-600 border-indigo-200',
+      roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
+    },
+
+    // 2. IBADAH & KEGIATAN GEREJA
+    {
+      id: 'jadwal',
+      title: 'Jadwal Ibadah Rutin',
+      subtitle: 'Jadwal kebaktian umum, pemuda, anak, dan pelayan ibadah',
+      group: 'Ibadah & Agenda Gereja',
+      icon: Calendar,
+      badge: 'Ibadah',
+      colorClass: 'bg-blue-50 text-blue-600 border-blue-200',
+      roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
+    },
+    {
+      id: 'agenda',
+      title: 'Agenda Acara & Reservasi',
+      subtitle: 'Kalender kegiatan gereja, seminar, retreat & booking kursi ibadah',
+      group: 'Ibadah & Agenda Gereja',
+      icon: Sparkles,
+      badge: 'Event & Reservasi',
+      colorClass: 'bg-amber-50 text-amber-600 border-amber-200',
+      roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
+    },
+    {
+      id: 'pengumuman',
+      title: 'Warta & Pengumuman Resmi',
+      subtitle: 'Informasi warta jemaat mingguan dan pengumuman pastoral gereja',
+      group: 'Ibadah & Agenda Gereja',
+      icon: Megaphone,
+      badge: 'Warta Jemaat',
+      colorClass: 'bg-orange-50 text-orange-600 border-orange-200',
+      roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
+    },
+
+    // 3. ADMINISTRASI & KEUANGAN
+    {
+      id: 'jemaat',
       title: 'Data Jemaat & Kartu Keluarga',
-      subtitle: 'Database Seluruh Anggota, Sektor & Kepala Keluarga',
-      category: 'ADMINISTRASI JEMAAT',
+      subtitle: 'Database lengkap jemaat, nomor KK, status baptis/sidi & biodata',
+      group: 'Administrasi & Keuangan',
       icon: Users,
-      badge: 'Database',
+      badge: 'Data Jemaat',
+      colorClass: 'bg-sky-50 text-sky-600 border-sky-200',
       roles: ['ADMIN', 'SUPER_ADMIN']
     },
     {
-      id: 'keuangan' as NavTab,
-      title: 'Keuangan & Kas Gereja',
-      subtitle: 'Pencatatan Kas, Transfer Bank, QRIS & Laporan Kebendaharaan',
-      category: 'KEUANGAN & BENDAHARA',
+      id: 'keuangan',
+      title: 'Keuangan, Kas & Persembahan',
+      subtitle: 'Pencatatan kas masuk/keluar, transfer persembahan, QRIS & bank',
+      group: 'Administrasi & Keuangan',
       icon: DollarSign,
       badge: 'Kas & QRIS',
+      colorClass: 'bg-emerald-50 text-[#00a859] border-emerald-200',
       roles: ['ADMIN', 'SUPER_ADMIN', 'JEMAAT']
     },
     {
-      id: 'administrasi' as NavTab,
-      title: 'Surat Sakramen & Akta',
-      subtitle: 'Pengurusan Surat Baptis Kudus, Sidi, Pernikahan & Jemaat',
-      category: 'SEKRETARIAT',
+      id: 'administrasi',
+      title: 'Administrasi Surat & Sakramen',
+      subtitle: 'Surat keterangan jemaat, akta baptisan kudus, peneguhan sidi & nikah',
+      group: 'Administrasi & Keuangan',
       icon: FileText,
-      badge: 'Arsip Surat',
+      badge: 'Surat & Akta',
+      colorClass: 'bg-purple-50 text-purple-600 border-purple-200',
       roles: ['ADMIN', 'SUPER_ADMIN', 'JEMAAT']
     },
     {
-      id: 'jadwal' as NavTab,
-      title: 'Jadwal Ibadah Rutin',
-      subtitle: 'Jadwal Kebaktian Minggu, Pelayan Ibadah & Pemusik',
-      category: 'IBADAH & PELAYANAN',
-      icon: Calendar,
-      badge: 'Ibadah Minggu',
-      roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
+      id: 'wilayah',
+      title: 'Wilayah Sektor & Komisi Pelayanan',
+      subtitle: 'Pengaturan wilayah domisili jemaat, persekutuan doa sektor & komisi',
+      group: 'Administrasi & Keuangan',
+      icon: MapPin,
+      badge: 'Sektor & Komisi',
+      colorClass: 'bg-cyan-50 text-cyan-600 border-cyan-200',
+      roles: ['ADMIN', 'SUPER_ADMIN']
     },
+
+    // 4. MULTIMEDIA & DOKUMENTASI
     {
-      id: 'agenda' as NavTab,
-      title: 'Agenda Events & Reservasi',
-      subtitle: 'Jadwal Acara Spesial & Booking Tempat Duduk Ibadah',
-      category: 'EVENT & RESERVASI',
-      icon: Sparkles,
-      badge: 'Booking Seat',
-      roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
-    },
-    {
-      id: 'doa' as NavTab,
-      title: 'Permohonan Doa & Syafaat',
-      subtitle: 'Kirim Pokok Doa Pribadi & Dukungan Komunitas Doa',
-      category: 'PELAYANAN DOA',
-      icon: Heart,
-      badge: 'Syafaat',
-      roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
-    },
-    {
-      id: 'renungan' as NavTab,
-      title: 'Renungan Harian & Audio',
-      subtitle: 'Artikel Firman Tuhan & Audio Podcast Renungan Pagi',
-      category: 'ROHANI & MEDIA',
-      icon: BookOpen,
-      badge: 'Audio & Teks',
-      roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
-    },
-    {
-      id: 'pengumuman' as NavTab,
-      title: 'Warta & Pengumuman',
-      subtitle: 'Informasi Warta Minggu & Pengumuman Resmi Gembala',
-      category: 'INFORMASI GEREJA',
-      icon: Megaphone,
-      badge: 'Warta Minggu',
-      roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
-    },
-    {
-      id: 'galeri' as NavTab,
-      title: 'Galeri Foto Kegiatan',
-      subtitle: 'Dokumentasi Album Foto Ibadah, Youth & Diakonia',
-      category: 'DOKUMENTASI',
-      icon: ImageIcon,
-      badge: 'Album Foto',
-      roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
-    },
-    {
-      id: 'media' as NavTab,
-      title: 'Video & Live Streaming',
-      subtitle: 'Rekaman Khotbah, Live Broadcast & Video Youtube',
-      category: 'MULTIMEDIA',
+      id: 'media',
+      title: 'Video Khotbah & Live Streaming',
+      subtitle: 'Tayangan siaran langsung ibadah dan arsip khotbah video YouTube',
+      group: 'Multimedia & Dokumentasi',
       icon: Video,
       badge: 'Live Streaming',
+      colorClass: 'bg-red-50 text-red-600 border-red-200',
       roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
     },
     {
-      id: 'wilayah' as NavTab,
-      title: 'Wilayah & Sektor Pelayanan',
-      subtitle: 'Pemetaan Sektor Jemaat, Ketua Sektor & Lokasi Ibadah Rumah',
-      category: 'ORGANISASI',
-      icon: MapPin,
-      badge: 'Sektor',
-      roles: ['ADMIN', 'SUPER_ADMIN']
+      id: 'galeri',
+      title: 'Galeri Foto & Dokumentasi',
+      subtitle: 'Album foto momen peribadahan, pelayanan kasih, perayaan gerejawi',
+      group: 'Multimedia & Dokumentasi',
+      icon: ImageIcon,
+      badge: 'Galeri Foto',
+      colorClass: 'bg-violet-50 text-violet-600 border-violet-200',
+      roles: ['JEMAAT', 'ADMIN', 'SUPER_ADMIN']
     },
+
+    // 5. SISTEM & LAPORAN
     {
-      id: 'laporan' as NavTab,
-      title: 'Laporan PDF & Excel',
-      subtitle: 'Cetak Laporan Keuangan, Jemaat & Statistik Ibadah',
-      category: 'LAPORAN SYSTEM',
+      id: 'laporan',
+      title: 'Laporan Keuangan & Statistik',
+      subtitle: 'Export laporan kas, neraca, rekapitulasi data jemaat ke PDF & Excel',
+      group: 'Sistem & Laporan',
       icon: FileSpreadsheet,
-      badge: 'Export PDF',
+      badge: 'Export PDF/Excel',
+      colorClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
       roles: ['ADMIN', 'SUPER_ADMIN']
     },
     {
-      id: 'settings' as NavTab,
-      title: 'Pengaturan System & Visual',
-      subtitle: 'Kustomisasi Tema, Logo Gereja, Banner & Hak Akses User',
-      category: 'SYSTEM ADMIN',
+      id: 'settings',
+      title: 'Pengaturan Sistem & Gereja',
+      subtitle: 'Kustomisasi identitas gereja, logo, rekening persembahan, tema & user',
+      group: 'Sistem & Laporan',
       icon: Settings,
-      badge: 'SuperAdmin',
+      badge: 'Pengaturan',
+      colorClass: 'bg-slate-100 text-slate-700 border-slate-300',
       roles: ['ADMIN', 'SUPER_ADMIN']
     }
   ];
 
-  const filteredModules = menuModules.filter((m) => m.roles.includes(currentUser.role));
+  const visibleModules = menuModules.filter((m) => m.roles.includes(currentUser.role));
+
+  const filteredModules = visibleModules.filter((item) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      item.title.toLowerCase().includes(q) ||
+      item.subtitle.toLowerCase().includes(q) ||
+      item.group.toLowerCase().includes(q) ||
+      item.badge.toLowerCase().includes(q)
+    );
+  });
+
+  // Extract distinct groups in chronological order
+  const distinctGroups = Array.from(new Set(filteredModules.map((m) => m.group)));
 
   return (
-    <div className="space-y-2.5 sm:space-y-4 md:space-y-6 pb-6 max-w-7xl mx-auto px-1 sm:px-3 animate-fade-in">
-      {/* Header Banner */}
-      <div className={`p-3.5 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl ${cardStyleClass} text-white border border-white/10 shadow-2xl relative overflow-hidden space-y-3`}>
-        <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-        
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 relative z-10">
-          <div className="flex items-center gap-3 sm:gap-3.5">
-            <div className="p-2 sm:p-3.5 rounded-xl sm:rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shadow-xl shadow-indigo-500/10 shrink-0">
-              <Grid className="w-5 h-5 sm:w-7 sm:h-7" />
-            </div>
-            <div>
-              <span className="text-[10px] sm:text-xs font-bold text-indigo-400 uppercase tracking-widest block">
-                Pusat Navigasi Terpadu
-              </span>
-              <h2 className="text-base sm:text-2xl md:text-3xl font-extrabold text-white tracking-tight">
-                Menu Utama &amp; Seluruh Modul Pelayanan
+    <div className="space-y-4 max-w-5xl mx-auto px-1 sm:px-3 pb-16 animate-fade-in text-slate-800">
+      {/* 1. Header Bar: Clean List Navigation Title */}
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-[#00a859] border border-emerald-200 flex items-center justify-center shrink-0">
+            <Church className="w-5 h-5 text-[#00a859]" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+                Menu &amp; Modul Pelayanan Gereja
               </h2>
-              <p className="text-xs text-slate-300 mt-0.5 sm:mt-1">
-                Akses cepat ke semua fitur sistem, portal jemaat, jadwal, keuangan &amp; dokumentasi
-              </p>
+              <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-[#00a859] border border-emerald-200 text-[10px] font-bold">
+                {visibleModules.length} Menu
+              </span>
             </div>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">
+              {settings.nama_gereja || 'Jesus Kingdom Christ'} — Pilih menu untuk membuka modul pelayanan
+            </p>
           </div>
+        </div>
 
-          <div className="shrink-0 px-3 py-1 sm:px-4 sm:py-2 rounded-xl sm:rounded-2xl bg-white/5 border border-white/10 text-xs font-bold text-slate-300 flex items-center gap-2 self-start sm:self-auto">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>{filteredModules.length} Fitur Siap Digunakan</span>
-          </div>
+        {/* Real-time search filter */}
+        <div className="relative w-full sm:w-64">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Cari menu pelayanan..."
+            className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#00a859] focus:bg-white transition-all"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600 font-bold"
+            >
+              ✕
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Grid Menu Utama - Selaras dengan Tema Dashboard */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4 md:gap-5">
-        {filteredModules.map((item) => {
-          const Icon = item.icon;
-          return (
-            <button
-              key={item.id}
-              onClick={() => onNavigate(item.id)}
-              className={`p-3.5 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl ${cardStyleClass} hover:border-indigo-500/50 hover:bg-white/10 text-left transition-all duration-200 group cursor-pointer shadow-xl relative overflow-hidden flex flex-col justify-between space-y-2.5 sm:space-y-4 min-h-[130px] sm:min-h-[160px]`}
-            >
-              <div className="flex items-center justify-between relative z-10">
-                <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 group-hover:bg-indigo-500/30 group-hover:text-indigo-300 group-hover:border-indigo-400/50 shadow-md group-hover:scale-105 transition-all">
-                  <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
-                </div>
-                <span className="px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full bg-indigo-500/15 text-indigo-300 text-[10px] font-extrabold border border-indigo-500/30 uppercase tracking-wider">
-                  {item.badge}
-                </span>
-              </div>
+      {/* 2. Structured Grouped Lists (NOT in Card/Grid Form!) */}
+      {filteredModules.length === 0 ? (
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-8 text-center space-y-2">
+          <p className="text-sm font-bold text-slate-700">Menu tidak ditemukan</p>
+          <p className="text-xs text-slate-400">
+            Tidak ada menu yang sesuai dengan kata kunci &ldquo;{searchQuery}&rdquo;.
+          </p>
+          <button
+            onClick={() => setSearchQuery('')}
+            className="mt-2 px-3 py-1.5 rounded-lg bg-emerald-50 text-[#00a859] text-xs font-bold hover:bg-emerald-100 transition-colors"
+          >
+            Tampilkan Semua Menu
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {distinctGroups.map((groupName) => {
+            const itemsInGroup = filteredModules.filter((m) => m.group === groupName);
+            if (itemsInGroup.length === 0) return null;
 
-              <div className="relative z-10 space-y-1">
-                <span className="text-[10px] font-extrabold text-indigo-400 uppercase tracking-widest block">
-                  {item.category}
-                </span>
-                <h3 className="text-sm sm:text-base md:text-lg font-extrabold text-white leading-snug group-hover:text-indigo-300 transition-colors flex items-center justify-between">
-                  <span>{item.title}</span>
-                  <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-indigo-400 transition-all shrink-0 ml-1.5" />
-                </h3>
-                <p className="text-xs text-slate-400 group-hover:text-slate-300 font-normal leading-relaxed line-clamp-2">
-                  {item.subtitle}
-                </p>
+            return (
+              <div key={groupName} className="space-y-1.5">
+                {/* Group Heading */}
+                <div className="px-3 flex items-center justify-between text-[11px] font-black uppercase tracking-wider text-slate-500">
+                  <span>{groupName}</span>
+                  <span className="text-[10px] text-slate-400 font-normal">
+                    {itemsInGroup.length} pilihan
+                  </span>
+                </div>
+
+                {/* Sleek List Container with smooth row dividers */}
+                <div className="bg-white border border-slate-200/90 rounded-2xl shadow-xs divide-y divide-slate-100 overflow-hidden">
+                  {itemsInGroup.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => onNavigate(item.id)}
+                        className="w-full flex items-center justify-between p-3.5 sm:p-4 text-left hover:bg-emerald-50/50 active:bg-emerald-100/60 transition-all cursor-pointer group"
+                      >
+                        <div className="flex items-center gap-3 min-w-0 pr-2">
+                          {/* Colorful Icon Badge */}
+                          <div
+                            className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl ${item.colorClass} border flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-2xs`}
+                          >
+                            <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                          </div>
+
+                          {/* Title and Subtitle */}
+                          <div className="min-w-0">
+                            <h3 className="font-bold text-xs sm:text-sm text-slate-800 group-hover:text-[#00a859] transition-colors truncate">
+                              {item.title}
+                            </h3>
+                            <p className="text-[11px] sm:text-xs text-slate-500 font-normal truncate mt-0.5">
+                              {item.subtitle}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Right: Badge & Chevron Navigation */}
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold group-hover:bg-emerald-100 group-hover:text-emerald-800 transition-colors">
+                            {item.badge}
+                          </span>
+                          <div className="w-7 h-7 rounded-lg bg-slate-50 group-hover:bg-[#00a859] text-slate-400 group-hover:text-white flex items-center justify-center transition-all">
+                            <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </button>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

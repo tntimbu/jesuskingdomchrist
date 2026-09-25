@@ -190,7 +190,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   ];
 
-  const churchName = settings?.nama_gereja || 'SLH Gereja';
+  const churchName = settings?.nama_gereja || 'Jesus Kingdom Christ';
   const shortCode = churchName
     .split(' ')
     .map((w) => w[0])

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { User, AppSettings } from '../types';
 import { NavTab } from './Sidebar';
 import { menuModules } from '../data/navigationMenu';
-import { X, Search, Grid, ArrowRight, Sparkles, Building2, Palette, Smartphone, Download } from 'lucide-react';
+import { X, Search, Grid, ArrowRight, Sparkles, Building2, Palette, Smartphone, Download, ChevronRight } from 'lucide-react';
 import { downloadGoogleServicesJsonFile } from '../utils/googleServicesHelper';
 
 interface CardMenuModalProps {
@@ -118,31 +118,28 @@ export const CardMenuModal: React.FC<CardMenuModalProps> = ({
   const cardStyleClass = getCardStyleClass();
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-xl animate-fade-in text-white overflow-y-auto">
-      <div className="w-full max-w-6xl bg-slate-950 border border-slate-800 rounded-3xl p-4 sm:p-7 shadow-2xl space-y-4 sm:space-y-6 my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden relative">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6 bg-slate-900/60 backdrop-blur-md animate-fade-in text-slate-800 overflow-y-auto">
+      <div className="w-full max-w-5xl bg-white border border-slate-200/90 rounded-3xl p-4 sm:p-6 shadow-2xl space-y-4 my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden relative">
         {/* Header Modal */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800 shrink-0">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 shrink-0">
           <div className="flex items-center gap-3.5">
-            <div
-              className="p-3 rounded-2xl text-white shadow-xl flex items-center justify-center shrink-0"
-              style={{ backgroundColor: customHexColor }}
-            >
-              <Grid className="w-7 h-7 text-white" />
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-[#00a859] border border-emerald-200 flex items-center justify-center shrink-0 shadow-2xs">
+              <Grid className="w-6 h-6 text-[#00a859]" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] uppercase font-black tracking-widest text-amber-400 px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20">
-                  Kartu Menu Utama Mewah
+                <span className="text-[10px] uppercase font-black tracking-widest text-[#00a859] px-2 py-0.5 rounded-md bg-emerald-50 border border-emerald-200">
+                  Daftar Menu Navigasi
                 </span>
-                <span className="text-[10px] text-slate-400 font-bold">
+                <span className="text-[10px] text-slate-500 font-bold">
                   {availableModules.length} Modul Aktif
                 </span>
               </div>
-              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight mt-0.5">
+              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-0.5">
                 Pusat Navigasi &amp; Modul Pelayanan Gereja
               </h2>
-              <p className="text-xs text-slate-400">
-                Pilih kartu menu di bawah ini untuk berpindah modul secara instan dari perangkat manapun.
+              <p className="text-xs text-slate-500">
+                Pilih menu pelayanan di bawah ini untuk berpindah modul secara instan dari perangkat manapun.
               </p>
             </div>
           </div>
@@ -154,12 +151,12 @@ export const CardMenuModal: React.FC<CardMenuModalProps> = ({
                   onClose();
                   onOpenNavbarCustomizer();
                 }}
-                className="px-3.5 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-black shadow-lg flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
+                className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-bold shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
                 title="Kustomisasi Warna & Tema Navbar (Khusus Admin)"
               >
-                <Palette className="w-4 h-4 text-amber-400" />
-                <span className="hidden sm:inline">Kustom Warna Navbar</span>
-                <span className="sm:hidden">Warna Navbar</span>
+                <Palette className="w-4 h-4 text-emerald-600" />
+                <span className="hidden sm:inline">Kustom Navbar</span>
+                <span className="sm:hidden">Warna</span>
               </button>
             )}
 
@@ -169,38 +166,19 @@ export const CardMenuModal: React.FC<CardMenuModalProps> = ({
                   onClose();
                   onOpenSuperAdminSaaSPanel();
                 }}
-                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white text-xs font-black shadow-lg flex items-center gap-2 transition-all cursor-pointer"
+                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-400 hover:to-indigo-500 text-white text-xs font-black shadow-sm flex items-center gap-2 transition-all cursor-pointer"
               >
-                <Building2 className="w-4 h-4 text-amber-300" />
+                <Building2 className="w-4 h-4 text-amber-200" />
                 <span className="hidden sm:inline">SuperAdmin SaaS</span>
-              </button>
-            )}
-
-            {isAdmin && (
-              <button
-                onClick={() => {
-                  onClose();
-                  if (onOpenAndroidStudioModal) {
-                    onOpenAndroidStudioModal();
-                  } else {
-                    window.dispatchEvent(new CustomEvent('open_android_studio_modal'));
-                  }
-                }}
-                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-500 hover:to-indigo-500 text-white text-xs font-black shadow-lg flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
-                title="Konversi Android Studio & Download google-services.json"
-              >
-                <Smartphone className="w-4 h-4 text-amber-300" />
-                <span className="hidden sm:inline">📱 Android Studio &amp; FCM</span>
-                <span className="sm:hidden">Android</span>
               </button>
             )}
 
             <button
               onClick={onClose}
-              className="p-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition-all cursor-pointer"
+              className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-all cursor-pointer"
               title="Tutup Menu"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5" />
             </button>
           </div>
         </div>
@@ -214,13 +192,13 @@ export const CardMenuModal: React.FC<CardMenuModalProps> = ({
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Cari kartu menu atau modul..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-slate-900 border border-slate-800 text-white text-xs font-semibold focus:ring-2 focus:ring-indigo-500 outline-none"
+              placeholder="Cari menu pelayanan..."
+              className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs font-medium focus:outline-none focus:border-[#00a859] focus:bg-white transition-all"
             />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs font-bold"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold"
               >
                 ✕
               </button>
@@ -233,16 +211,11 @@ export const CardMenuModal: React.FC<CardMenuModalProps> = ({
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold whitespace-nowrap transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer ${
                   selectedCategory === cat
-                    ? 'text-white shadow-md'
-                    : 'bg-slate-900/80 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-800/80'
+                    ? 'bg-[#00a859] text-white shadow-2xs'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200/80 border border-slate-200/80'
                 }`}
-                style={
-                  selectedCategory === cat
-                    ? { backgroundColor: customHexColor }
-                    : {}
-                }
               >
                 {cat === 'ALL' ? 'Semua Kategori' : cat}
               </button>
@@ -250,58 +223,8 @@ export const CardMenuModal: React.FC<CardMenuModalProps> = ({
           </div>
         </div>
 
-        {/* Banner Spesial: Konversi Android Studio & FCM (Khusus Admin) */}
-        {isAdmin && (
-          <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-indigo-950/80 via-slate-900 to-emerald-950/80 border border-indigo-500/40 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-xl shrink-0">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shrink-0">
-                <Smartphone className="w-5 h-5 text-emerald-400 animate-pulse" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-extrabold text-white text-sm">📱 Konversi Android Studio &amp; Firebase FCM</span>
-                  <span className="text-[10px] px-2 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">
-                    Resmi
-                  </span>
-                </div>
-                <p className="text-slate-300 text-xs mt-0.5">
-                  Target: <strong className="text-amber-300 font-mono">https://tntimbu.github.io/jesuskingdomchrist/</strong> &bull; Dapatkan file <code className="bg-slate-950 text-amber-300 px-1 py-0.2 rounded font-mono">google-services.json</code> &amp; kode Java lengkap.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
-              <button
-                type="button"
-                onClick={() => {
-                  downloadGoogleServicesJsonFile(settings.firebase_package_name || settings.android_package_name || 'com.jesuskingdomchrist.app', settings);
-                }}
-                className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer shadow-md active:scale-95 flex-1 sm:flex-initial"
-                title="Download google-services.json"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>📥 Download .json</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  if (onOpenAndroidStudioModal) {
-                    onOpenAndroidStudioModal();
-                  } else {
-                    window.dispatchEvent(new CustomEvent('open_android_studio_modal'));
-                  }
-                }}
-                className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer shadow-md active:scale-95 flex-1 sm:flex-initial"
-              >
-                <span>Buka Generator</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Grid Kartu Menu Utama - Selaras dengan Tema Dashboard */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 overflow-y-auto pr-1 flex-1">
+        {/* Daftar List Menu Utama (BUKAN DALAM BENTUK KARTU) */}
+        <div className="bg-slate-50/60 border border-slate-200/90 rounded-2xl divide-y divide-slate-100 overflow-y-auto pr-0 flex-1">
           {filteredModules.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -313,40 +236,45 @@ export const CardMenuModal: React.FC<CardMenuModalProps> = ({
                   onSelectTab(item.id);
                   onClose();
                 }}
-                className={`p-4 sm:p-5 rounded-2xl sm:rounded-3xl ${cardStyleClass} hover:border-indigo-500/50 hover:bg-white/10 active:scale-95 text-left transition-all duration-200 group cursor-pointer shadow-xl relative overflow-hidden flex flex-col justify-between space-y-3 sm:space-y-4 border ${
-                  isActive
-                    ? 'ring-2 ring-indigo-400 border-indigo-400 shadow-indigo-500/20'
-                    : 'border-white/10 hover:border-white/20'
+                className={`w-full flex items-center justify-between p-3 sm:p-3.5 text-left transition-all duration-150 cursor-pointer group ${
+                  isActive ? 'bg-emerald-50 text-emerald-950 font-bold' : 'hover:bg-white text-slate-700'
                 }`}
               >
-                <div className="flex items-center justify-between relative z-10">
-                  <div className="p-2.5 rounded-xl sm:rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 group-hover:bg-indigo-500/30 group-hover:text-indigo-300 group-hover:border-indigo-400/50 shadow-md group-hover:scale-105 transition-all">
-                    <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-400 group-hover:text-indigo-300" />
+                <div className="flex items-center gap-3 min-w-0 pr-2">
+                  <div
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-2xs transition-transform group-hover:scale-105 ${
+                      isActive
+                        ? 'bg-[#00a859] text-white'
+                        : 'bg-emerald-50 text-[#00a859] border border-emerald-200'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
                   </div>
 
-                  <div className="flex items-center gap-1.5">
-                    {isActive && (
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[9px] font-black uppercase tracking-wider">
-                        Aktif
-                      </span>
-                    )}
-                    <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/15 text-indigo-300 text-[10px] font-extrabold border border-indigo-500/30 uppercase tracking-wider">
-                      {item.badge}
-                    </span>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className={`text-xs sm:text-sm font-bold truncate ${isActive ? 'text-[#00a859]' : 'text-slate-800 group-hover:text-[#00a859]'}`}>
+                        {item.title}
+                      </h3>
+                      {isActive && (
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[9px] font-black uppercase tracking-wider shrink-0">
+                          Aktif
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-slate-500 font-normal truncate mt-0.5">
+                      {item.subtitle}
+                    </p>
                   </div>
                 </div>
 
-                <div className="relative z-10 space-y-1">
-                  <span className="text-[10px] font-extrabold text-indigo-400 uppercase tracking-widest block">
-                    {item.category}
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold group-hover:bg-emerald-100 group-hover:text-emerald-800">
+                    {item.badge}
                   </span>
-                  <h3 className="text-sm sm:text-base font-extrabold text-white leading-snug flex items-center justify-between group-hover:text-indigo-300 transition-colors">
-                    <span>{item.title}</span>
-                    <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 group-hover:text-indigo-400 transition-all shrink-0 ml-2" />
-                  </h3>
-                  <p className="text-xs text-slate-400 group-hover:text-slate-300 font-normal leading-relaxed line-clamp-2">
-                    {item.subtitle}
-                  </p>
+                  <div className="w-6 h-6 rounded-lg bg-slate-100 group-hover:bg-[#00a859] text-slate-400 group-hover:text-white flex items-center justify-center transition-all">
+                    <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                  </div>
                 </div>
               </button>
             );
@@ -354,16 +282,16 @@ export const CardMenuModal: React.FC<CardMenuModalProps> = ({
         </div>
 
         {/* Footer Info */}
-        <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 shrink-0">
+        <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 shrink-0">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-indigo-400" />
+            <Sparkles className="w-4 h-4 text-[#00a859]" />
             <span className="text-[11px] sm:text-xs">
-              Navigasi Terpadu Berbasis Tema Dashboard — Multi-Device Connected &amp; Cloud Synchronized
+              {settings.nama_gereja || 'Jesus Kingdom Christ'} — Navigasi Modul Pelayanan Gereja
             </span>
           </div>
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold cursor-pointer transition-all"
+            className="px-4 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold cursor-pointer transition-all text-xs"
           >
             Tutup
           </button>
