@@ -98,6 +98,7 @@ import { Website2ApkNotificationGuideModal } from './Website2ApkNotificationGuid
 import { AndroidStudioConverterModal } from './AndroidStudioConverterModal';
 import { downloadGoogleServicesJsonFile } from '../utils/googleServicesHelper';
 import { confirmDialog } from '../utils/confirmDialog';
+import { isColorLight } from '../utils/themeHelper';
 
 import {
   Chart as ChartJS,
@@ -1117,47 +1118,63 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   };
 
   // Dynamic Theme Preset Style Classes & Density
-  const isLightSystem = settings.theme_preset === 'EMERALD_LIGHT' || settings.theme_preset === 'LUXE_LIGHT';
+  const isLightSystem =
+    settings.theme_preset === 'EMERALD_LIGHT' ||
+    settings.theme_preset === 'LUXE_LIGHT' ||
+    settings.theme_preset === 'CLEAN_LIGHT' ||
+    !settings.theme_preset ||
+    settings.navbar_theme_preset === 'CLEAN_LIGHT' ||
+    isColorLight(settings?.navbar_custom_bg || settings?.warna_tema);
 
   const getCardStyleClass = () => {
     const cardBg = settings.jemaat_cards_bg || 'DEFAULT_GLASS';
     const cardStyle = settings.card_style || 'GLASS';
 
     let base = isLightSystem
-      ? 'bg-white border border-slate-200/90 shadow-xs hover:shadow-md text-slate-800 backdrop-blur-xl'
+      ? 'bg-white border border-teal-100/90 shadow-xs hover:shadow-md text-slate-800 backdrop-blur-xl'
       : 'bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl text-white';
 
     if (cardBg && cardBg !== 'DEFAULT_GLASS') {
       switch (cardBg) {
         case 'GRADIENT_INDIGO':
-          base = 'bg-gradient-to-br from-indigo-950/90 via-slate-900 to-indigo-950/90 border border-indigo-500/40 shadow-xl shadow-indigo-950/30 backdrop-blur-xl text-white';
+          base = isLightSystem
+            ? 'bg-gradient-to-br from-indigo-50/80 via-white to-sky-50/80 border border-indigo-200/80 shadow-md text-slate-800'
+            : 'bg-gradient-to-br from-indigo-950/90 via-slate-900 to-indigo-950/90 border border-indigo-500/40 shadow-xl shadow-indigo-950/30 backdrop-blur-xl text-white';
           break;
         case 'GRADIENT_PURPLE':
-          base = 'bg-gradient-to-br from-purple-950/90 via-slate-900 to-purple-950/90 border border-purple-500/40 shadow-xl shadow-purple-950/30 backdrop-blur-xl text-white';
+          base = isLightSystem
+            ? 'bg-gradient-to-br from-purple-50/80 via-white to-pink-50/80 border border-purple-200/80 shadow-md text-slate-800'
+            : 'bg-gradient-to-br from-purple-950/90 via-slate-900 to-purple-950/90 border border-purple-500/40 shadow-xl shadow-purple-950/30 backdrop-blur-xl text-white';
           break;
         case 'GRADIENT_GOLD':
-          base = 'bg-gradient-to-br from-amber-950/90 via-slate-900 to-amber-950/90 border border-amber-500/40 shadow-xl shadow-amber-950/30 backdrop-blur-xl text-white';
+          base = isLightSystem
+            ? 'bg-gradient-to-br from-amber-50/80 via-white to-orange-50/80 border border-amber-200/80 shadow-md text-slate-800'
+            : 'bg-gradient-to-br from-amber-950/90 via-slate-900 to-amber-950/90 border border-amber-500/40 shadow-xl shadow-amber-950/30 backdrop-blur-xl text-white';
           break;
         case 'GRADIENT_EMERALD':
           base = isLightSystem
-            ? 'bg-gradient-to-br from-emerald-50 via-teal-50 to-white border border-emerald-200 shadow-md backdrop-blur-xl text-slate-800'
+            ? 'bg-gradient-to-br from-teal-50/90 via-emerald-50/60 to-white border border-teal-200 shadow-md backdrop-blur-xl text-slate-800'
             : 'bg-gradient-to-br from-emerald-950/90 via-slate-900 to-emerald-950/90 border border-emerald-500/40 shadow-xl shadow-emerald-950/30 backdrop-blur-xl text-white';
           break;
         case 'OBSIDIAN_NIGHT':
-          base = 'bg-gradient-to-br from-slate-950 via-slate-900 to-zinc-950 border border-slate-700/80 shadow-2xl backdrop-blur-xl text-white';
+          base = isLightSystem
+            ? 'bg-white border border-slate-200 shadow-md text-slate-800'
+            : 'bg-gradient-to-br from-slate-950 via-slate-900 to-zinc-950 border border-slate-700/80 shadow-2xl backdrop-blur-xl text-white';
           break;
         case 'OCEAN_BLUE':
-          base = 'bg-gradient-to-br from-blue-950/90 via-slate-900 to-cyan-950/90 border border-cyan-500/40 shadow-xl shadow-cyan-950/30 backdrop-blur-xl text-white';
+          base = isLightSystem
+            ? 'bg-gradient-to-br from-cyan-50/80 via-sky-50/60 to-white border border-cyan-200 shadow-md text-slate-800'
+            : 'bg-gradient-to-br from-blue-950/90 via-slate-900 to-cyan-950/90 border border-cyan-500/40 shadow-xl shadow-cyan-950/30 backdrop-blur-xl text-white';
           break;
         case 'SOLID_SLATE':
           base = isLightSystem ? 'bg-white border border-slate-200 shadow-md text-slate-800' : 'bg-slate-900 border border-slate-800 shadow-xl text-white';
           break;
         case 'NEON_CYAN':
-          base = 'bg-cyan-950/50 border border-cyan-400/50 shadow-lg shadow-cyan-500/20 backdrop-blur-xl text-white';
+          base = isLightSystem ? 'bg-white border-2 border-teal-400 shadow-lg text-slate-800' : 'bg-cyan-950/50 border border-cyan-400/50 shadow-lg shadow-cyan-500/20 backdrop-blur-xl text-white';
           break;
         default:
           base = isLightSystem
-            ? 'bg-white border border-slate-200/90 shadow-xs text-slate-800 backdrop-blur-xl'
+            ? 'bg-white border border-teal-100/90 shadow-xs text-slate-800 backdrop-blur-xl'
             : 'bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl text-white';
           break;
       }
@@ -1167,7 +1184,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           base = isLightSystem ? 'bg-white border border-slate-200 shadow-md text-slate-800' : 'bg-slate-900 border border-slate-800 shadow-xl text-white';
           break;
         case 'NEON':
-          base = isLightSystem ? 'bg-white border-2 border-emerald-400 shadow-xl shadow-emerald-500/10 text-slate-800' : 'bg-slate-900/90 border border-indigo-500/40 shadow-lg shadow-indigo-500/10 backdrop-blur-xl text-white';
+          base = isLightSystem ? 'bg-white border-2 border-teal-400 shadow-xl shadow-teal-500/10 text-slate-800' : 'bg-slate-900/90 border border-indigo-500/40 shadow-lg shadow-indigo-500/10 backdrop-blur-xl text-white';
           break;
         case 'FLAT':
           base = isLightSystem ? 'bg-slate-50 border border-slate-200/80 shadow-none text-slate-800' : 'bg-slate-900/60 border border-slate-700/60 shadow-none text-white';
@@ -1175,7 +1192,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         case 'GLASS':
         default:
           base = isLightSystem
-            ? 'bg-white border border-slate-200/90 shadow-xs hover:shadow-md text-slate-800 backdrop-blur-xl'
+            ? 'bg-white border border-teal-100/90 shadow-xs hover:shadow-md text-slate-800 backdrop-blur-xl'
             : 'bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl text-white';
           break;
       }
@@ -2377,65 +2394,101 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           {/* Transfer Persembahan & Perpuluhan Digital Card for Jemaat & All Users */}
           {settings.show_digital_offering_widget !== false && (
-            <div className={`p-4 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl ${cardStyleClass} ${isLightSystem ? 'border-slate-200/90 text-slate-800' : 'border-emerald-500/30 text-white'} shadow-xl space-y-3 sm:space-y-4 md:space-y-6 relative overflow-hidden transition-all duration-300`}>
-            <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b ${isLightSystem ? 'border-slate-100' : 'border-white/10'} pb-3 sm:pb-4`}>
+            <div className={`p-4 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl ${
+              isLightSystem
+                ? 'bg-white border-2 border-teal-200/90 shadow-xl text-slate-800'
+                : 'bg-slate-900/90 border border-emerald-500/30 text-white shadow-xl'
+            } space-y-3 sm:space-y-4 md:space-y-6 relative overflow-hidden transition-all duration-300`}>
+            <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b ${isLightSystem ? 'border-teal-100' : 'border-white/10'} pb-3 sm:pb-4`}>
               <div className="flex items-center gap-3">
-                <div className="p-2.5 sm:p-3 rounded-2xl bg-emerald-600 text-white shadow-lg shadow-emerald-600/30">
+                <div className={`p-2.5 sm:p-3 rounded-2xl ${isLightSystem ? 'bg-gradient-to-br from-teal-500 to-emerald-600 text-white shadow-md shadow-teal-600/30' : 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30'}`}>
                   <CreditCard className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
                 <div>
-                  <span className={`text-[10px] ${isLightSystem ? 'text-emerald-700' : 'text-emerald-400'} font-bold uppercase tracking-widest block`}>
-                    Transfer Digital & QRIS Gereja
+                  <span className={`text-[10px] ${isLightSystem ? 'text-teal-700' : 'text-emerald-400'} font-bold uppercase tracking-widest block`}>
+                    Transfer Digital &amp; QRIS Gereja
                   </span>
-                  <h3 className={`text-base sm:text-lg font-extrabold ${isLightSystem ? 'text-slate-900' : 'text-white'}`}>Transfer Persembahan & Perpuluhan</h3>
+                  <h3 className={`text-base sm:text-lg font-extrabold ${isLightSystem ? 'text-slate-900' : 'text-white'}`}>Transfer Persembahan &amp; Perpuluhan</h3>
                 </div>
               </div>
 
               <button
                 onClick={() => setIsTransferModalOpen(true)}
-                className="px-4 py-2.5 rounded-xl sm:rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 transition-all cursor-pointer shrink-0"
+                className={`px-4 py-2.5 rounded-xl sm:rounded-2xl ${
+                  isLightSystem
+                    ? 'bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white shadow-md shadow-teal-600/25'
+                    : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/30'
+                } font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0`}
               >
                 <Send className="w-4 h-4" />
                 <span>Kirim / Konfirmasi Transfer</span>
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-5 items-center">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-5 items-stretch">
               {/* Bank Account Info Card */}
-              <div className={`p-3.5 sm:p-5 rounded-xl sm:rounded-2xl ${isLightSystem ? 'bg-slate-50 border-slate-200 text-slate-800' : 'bg-slate-950/80 border-slate-800 text-white'} border space-y-2.5 sm:space-y-3`}>
-                <div className="flex items-center justify-between">
-                  <span className={`text-xs font-bold ${isLightSystem ? 'text-emerald-800' : 'text-emerald-400'} uppercase tracking-wider`}>Rekening Resmi Gereja</span>
-                  <span className={`px-2.5 py-0.5 rounded-full ${isLightSystem ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'} border text-[10px] font-bold`}>
-                    {settings.rekening_bank_nama || 'Bank BCA'}
-                  </span>
-                </div>
-
-                <div>
-                  <span className={`text-[10px] ${isLightSystem ? 'text-slate-500' : 'text-slate-400'} block`}>Nomor Rekening:</span>
-                  <div className={`flex items-center justify-between mt-1 ${isLightSystem ? 'bg-white border-slate-200' : 'bg-slate-900 border-slate-800'} p-2 sm:p-2.5 rounded-xl border`}>
-                    <span className={`font-mono text-base sm:text-lg font-black ${isLightSystem ? 'text-slate-900' : 'text-white'} tracking-wider`}>
-                      {settings.rekening_bank_nomor || '527-089-1122'}
+              <div className={`p-4 sm:p-5 rounded-2xl ${
+                isLightSystem
+                  ? 'bg-gradient-to-br from-teal-50/70 via-white to-emerald-50/40 border-2 border-teal-200/90 text-slate-800 shadow-sm'
+                  : 'bg-slate-950/80 border border-slate-800 text-white'
+              } flex flex-col justify-between space-y-3`}>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className={`text-xs font-extrabold ${isLightSystem ? 'text-teal-800' : 'text-emerald-400'} uppercase tracking-wider`}>
+                      Rekening Resmi Gereja
                     </span>
-                    <button
-                      onClick={handleCopyBank}
-                      className={`px-2.5 sm:px-3 py-1.5 rounded-lg ${isLightSystem ? 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border-emerald-300' : 'bg-emerald-600/30 hover:bg-emerald-600/60 text-emerald-300 border-emerald-500/40'} border text-xs font-bold flex items-center gap-1 cursor-pointer transition-all`}
-                    >
-                      {copiedBankNum ? <Check className={`w-3.5 h-3.5 ${isLightSystem ? 'text-emerald-700' : 'text-emerald-400'}`} /> : <Copy className="w-3.5 h-3.5" />}
-                      <span>{copiedBankNum ? 'Tersalin!' : 'Salin'}</span>
-                    </button>
+                    <span className={`px-2.5 py-0.5 rounded-full ${
+                      isLightSystem
+                        ? 'bg-teal-100 text-teal-900 border-teal-300'
+                        : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                    } border text-[10px] font-bold`}>
+                      {settings.rekening_bank_nama || 'Bank BCA'}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className={`text-[10px] ${isLightSystem ? 'text-slate-500' : 'text-slate-400'} font-semibold block`}>Nomor Rekening:</span>
+                    <div className={`flex items-center justify-between mt-1 ${
+                      isLightSystem ? 'bg-white border-2 border-teal-200/80 shadow-xs' : 'bg-slate-900 border border-slate-800'
+                    } p-2.5 sm:p-3 rounded-xl border`}>
+                      <span className={`font-mono text-base sm:text-lg font-black ${isLightSystem ? 'text-slate-900' : 'text-white'} tracking-wider`}>
+                        {settings.rekening_bank_nomor || '527-089-1122'}
+                      </span>
+                      <button
+                        onClick={handleCopyBank}
+                        className={`px-3 py-1.5 rounded-lg ${
+                          isLightSystem
+                            ? 'bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-300 shadow-xs'
+                            : 'bg-emerald-600/30 hover:bg-emerald-600/60 text-emerald-300 border border-emerald-500/40'
+                        } border text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-all`}
+                      >
+                        {copiedBankNum ? <Check className={`w-3.5 h-3.5 ${isLightSystem ? 'text-teal-700' : 'text-emerald-400'}`} /> : <Copy className="w-3.5 h-3.5" />}
+                        <span>{copiedBankNum ? 'Tersalin!' : 'Salin Rekening'}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className={`text-[10px] ${isLightSystem ? 'text-slate-500' : 'text-slate-400'} font-semibold block`}>Atas Nama Rekening:</span>
+                    <p className={`font-black ${isLightSystem ? 'text-slate-900' : 'text-slate-200'} text-xs sm:text-sm mt-0.5`}>
+                      {settings.rekening_bank_atas_nama || settings.nama_gereja || 'Jesus Kingdom Christ'}
+                    </p>
                   </div>
                 </div>
 
-                <div>
-                  <span className={`text-[10px] ${isLightSystem ? 'text-slate-500' : 'text-slate-400'} block`}>Atas Nama Rekening:</span>
-                  <p className={`font-bold ${isLightSystem ? 'text-slate-800' : 'text-slate-200'} text-xs sm:text-sm`}>{settings.rekening_bank_atas_nama || settings.nama_gereja || 'Jesus Kingdom Christ'}</p>
+                <div className={`p-3 rounded-xl ${isLightSystem ? 'bg-teal-100/40 border border-teal-200/60 text-teal-900' : 'bg-white/5 border border-white/10 text-slate-300'} text-[11px] leading-relaxed mt-2`}>
+                  💡 <span className="font-semibold">Petunjuk:</span> Cantumkan keterangan nama atau jenis persembahan pada berita transfer bank, lalu klik tombol konfirmasi di atas.
                 </div>
               </div>
 
               {/* QRIS Code Large Display Card */}
-              <div className={`p-3.5 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl ${isLightSystem ? 'bg-slate-50 border-emerald-300' : 'bg-slate-950/90 border-emerald-500/40'} border-2 shadow-xl flex flex-col items-center justify-center text-center gap-3 sm:gap-4`}>
-                <div className={`flex items-center gap-2 ${isLightSystem ? 'text-emerald-800' : 'text-emerald-400'} font-extrabold text-sm tracking-wide uppercase`}>
-                  <QrCode className={`w-5 h-5 ${isLightSystem ? 'text-emerald-600' : 'text-emerald-400'} animate-pulse`} />
+              <div className={`p-4 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl ${
+                isLightSystem
+                  ? 'bg-gradient-to-b from-teal-50/70 via-white to-teal-50/40 border-2 border-teal-300 shadow-md'
+                  : 'bg-slate-950/90 border-2 border-emerald-500/40 shadow-xl'
+              } border-2 flex flex-col items-center justify-center text-center gap-3 sm:gap-4`}>
+                <div className={`flex items-center gap-2 ${isLightSystem ? 'text-teal-900' : 'text-emerald-400'} font-extrabold text-sm tracking-wide uppercase`}>
+                  <QrCode className={`w-5 h-5 ${isLightSystem ? 'text-teal-600' : 'text-emerald-400'} animate-pulse`} />
                   <span>Barcode QRIS Persembahan Digital</span>
                 </div>
 
@@ -2444,35 +2497,47 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   className="relative group cursor-pointer transition-transform hover:scale-105"
                 >
                   {settings.qris_image_url ? (
-                    <div className="bg-white p-3 rounded-2xl border-4 border-emerald-500/50 shadow-2xl">
+                    <div className={`p-3 rounded-2xl ${
+                      isLightSystem
+                        ? 'bg-white border-4 border-teal-400/80 shadow-xl ring-4 ring-teal-100/70'
+                        : 'bg-white border-4 border-emerald-500/50 shadow-2xl'
+                    }`}>
                       <img
                         src={settings.qris_image_url}
                         alt="Barcode QRIS Gereja"
-                        className="w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 object-contain rounded-xl"
+                        className="w-48 h-48 sm:w-60 sm:h-60 md:w-72 md:h-72 object-contain rounded-xl"
                       />
                     </div>
                   ) : (
-                    <div className="w-48 h-48 sm:w-64 sm:h-64 rounded-2xl bg-white flex flex-col items-center justify-center text-center p-4 text-slate-800 border-4 border-emerald-500/50 shadow-2xl">
-                      <QrCode className="w-14 h-14 sm:w-16 sm:h-16 text-emerald-600 mb-2" />
-                      <span className="font-extrabold text-sm">QRIS Standar Nasional (QRIS)</span>
-                      <span className="text-xs text-slate-500 mt-1">{settings.rekening_bank_atas_nama || settings.nama_gereja || 'Jesus Kingdom Christ'}</span>
+                    <div className={`w-48 h-48 sm:w-60 sm:h-60 md:w-72 md:h-72 rounded-2xl bg-white flex flex-col items-center justify-center text-center p-4 text-slate-800 ${
+                      isLightSystem
+                        ? 'border-4 border-teal-400/80 shadow-xl ring-4 ring-teal-100/70'
+                        : 'border-4 border-emerald-500/50 shadow-2xl'
+                    }`}>
+                      <QrCode className={`w-14 h-14 sm:w-16 sm:h-16 ${isLightSystem ? 'text-teal-600' : 'text-emerald-600'} mb-2`} />
+                      <span className="font-extrabold text-sm text-slate-900">QRIS Standar Nasional (QRIS)</span>
+                      <span className="text-xs text-slate-500 mt-1 font-medium">{settings.rekening_bank_atas_nama || settings.nama_gereja || 'Jesus Kingdom Christ'}</span>
                     </div>
                   )}
 
-                  <div className="absolute inset-0 bg-slate-950/70 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl flex items-center justify-center text-white font-extrabold text-xs sm:text-sm gap-2 backdrop-blur-xs">
-                    <Maximize2 className="w-5 h-5 text-amber-400" />
+                  <div className={`absolute inset-0 ${isLightSystem ? 'bg-teal-950/70' : 'bg-slate-950/70'} opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl flex items-center justify-center text-white font-extrabold text-xs sm:text-sm gap-2 backdrop-blur-xs`}>
+                    <Maximize2 className="w-5 h-5 text-amber-300" />
                     <span>Klik Untuk Perbesar Layar Penuh</span>
                   </div>
                 </div>
 
                 <div className="max-w-md space-y-2">
-                  <p className="text-xs sm:text-sm text-slate-300 font-medium leading-relaxed">
-                    Pindai QRIS di atas menggunakan <span className="text-emerald-400 font-extrabold">GoPay, OVO, DANA, ShopeePay, LinkAja, BCA Mobile</span>, atau seluruh aplikasi e-Wallet &amp; M-Banking.
+                  <p className={`text-xs sm:text-sm ${isLightSystem ? 'text-slate-600' : 'text-slate-300'} font-medium leading-relaxed`}>
+                    Pindai QRIS di atas menggunakan <span className={`${isLightSystem ? 'text-teal-700 font-extrabold' : 'text-emerald-400 font-extrabold'}`}>GoPay, OVO, DANA, ShopeePay, LinkAja, BCA Mobile</span>, atau seluruh aplikasi e-Wallet &amp; M-Banking.
                   </p>
                   <button
                     type="button"
                     onClick={() => setIsQrisZoomModalOpen(true)}
-                    className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-lg transition-all cursor-pointer"
+                    className={`inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl ${
+                      isLightSystem
+                        ? 'bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white shadow-md shadow-teal-600/25'
+                        : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg'
+                    } font-extrabold text-xs transition-all cursor-pointer`}
                   >
                     <Maximize2 className="w-4 h-4" />
                     <span>Perbesar Layar Penuh (Zoom QRIS)</span>
@@ -2482,9 +2547,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
 
             {/* Riwayat Transfer Persembahan Saya */}
-            <div className="space-y-3 pt-1">
-              <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-                <Clock className="w-4 h-4 text-indigo-400" />
+            <div className="space-y-3 pt-2">
+              <h4 className={`text-xs font-bold ${isLightSystem ? 'text-slate-700' : 'text-slate-300'} uppercase tracking-wider flex items-center gap-2`}>
+                <Clock className={`w-4 h-4 ${isLightSystem ? 'text-teal-600' : 'text-indigo-400'}`} />
                 <span>Riwayat Persembahan Transfer Saya</span>
               </h4>
 
@@ -2503,7 +2568,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                 if (myTransfers.length === 0) {
                   return (
-                    <div className="p-4 rounded-xl bg-slate-950/50 border border-slate-800 text-center text-xs text-slate-400">
+                    <div className={`p-4 rounded-xl ${
+                      isLightSystem
+                        ? 'bg-teal-50/50 border border-teal-200/70 text-slate-600'
+                        : 'bg-slate-950/50 border border-slate-800 text-slate-400'
+                    } text-center text-xs`}>
                       Belum ada riwayat persembahan transfer. Klik "Kirim / Konfirmasi Transfer" di atas untuk mengirim persembahan.
                     </div>
                   );
@@ -2521,16 +2590,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       return (
                         <div
                           key={p.persembahan_id}
-                          className="p-3.5 rounded-2xl bg-slate-950/90 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-md"
+                          className={`p-3.5 rounded-2xl ${
+                            isLightSystem
+                              ? 'bg-white border border-slate-200 shadow-sm text-slate-800'
+                              : 'bg-slate-950/90 border border-slate-800 text-white shadow-md'
+                          } flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs`}
                         >
                           <div className="space-y-1">
                             <div className="flex items-center gap-2">
-                              <span className="font-bold text-white">{p.jenis || 'Persembahan'}</span>
-                              <span className="text-[10px] text-slate-400 font-mono">({p.tanggal})</span>
+                              <span className={`font-bold ${isLightSystem ? 'text-slate-900' : 'text-white'}`}>{p.jenis || 'Persembahan'}</span>
+                              <span className={`text-[10px] ${isLightSystem ? 'text-slate-500' : 'text-slate-400'} font-mono`}>({p.tanggal})</span>
                             </div>
-                            <p className="text-[11px] text-slate-400">{p.keterangan || '-'}</p>
+                            <p className={`text-[11px] ${isLightSystem ? 'text-slate-600' : 'text-slate-400'}`}>{p.keterangan || '-'}</p>
                             {p.catatan_admin && (
-                              <p className="text-[10px] text-amber-300/90 italic">
+                              <p className={`text-[10px] ${isLightSystem ? 'text-amber-700 font-semibold' : 'text-amber-300/90 italic'}`}>
                                 Catatan Admin: {p.catatan_admin}
                               </p>
                             )}
@@ -2541,32 +2614,42 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                               <button
                                 type="button"
                                 onClick={() => setPreviewReceiptItem(p)}
-                                className="px-2.5 py-1 rounded-xl bg-slate-900 hover:bg-slate-800 text-indigo-300 text-[11px] font-semibold border border-slate-700 flex items-center gap-1 cursor-pointer"
+                                className={`px-2.5 py-1 rounded-xl ${
+                                  isLightSystem
+                                    ? 'bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200'
+                                    : 'bg-slate-900 hover:bg-slate-800 text-indigo-300 border border-slate-700'
+                                } text-[11px] font-semibold flex items-center gap-1 cursor-pointer`}
                               >
-                                <Eye className="w-3 h-3 text-indigo-400" />
+                                <Eye className={`w-3 h-3 ${isLightSystem ? 'text-teal-600' : 'text-indigo-400'}`} />
                                 <span>Bukti</span>
                               </button>
                             )}
 
-                            <span className="font-bold text-sm text-emerald-400">
+                            <span className={`font-bold text-sm ${isLightSystem ? 'text-teal-700' : 'text-emerald-400'}`}>
                               Rp {p.jumlah.toLocaleString('id-ID')}
                             </span>
 
                             {isPending && (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-bold">
-                                <Clock className="w-3 h-3 text-amber-400" />
+                              <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full ${
+                                isLightSystem ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                              } text-[10px] font-bold`}>
+                                <Clock className="w-3 h-3 text-amber-500" />
                                 <span>Menunggu Verifikasi</span>
                               </span>
                             )}
                             {isVerified && (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold">
-                                <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                              <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full ${
+                                isLightSystem ? 'bg-teal-100 text-teal-800 border border-teal-300' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                              } text-[10px] font-bold`}>
+                                <CheckCircle2 className={`w-3 h-3 ${isLightSystem ? 'text-teal-600' : 'text-emerald-400'}`} />
                                 <span>Terverifikasi / Diterima</span>
                               </span>
                             )}
                             {isRejected && (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[10px] font-bold">
-                                <XCircle className="w-3 h-3 text-rose-400" />
+                              <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full ${
+                                isLightSystem ? 'bg-rose-100 text-rose-800 border border-rose-300' : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+                              } text-[10px] font-bold`}>
+                                <XCircle className="w-3 h-3 text-rose-500" />
                                 <span>Ditolak</span>
                               </span>
                             )}
@@ -2578,16 +2661,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     {myTransfers.length > 1 && (
                       <button
                         onClick={() => setShowAllMyTransfers(!showAllMyTransfers)}
-                        className="w-full py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-indigo-300 hover:text-indigo-200 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm mt-1"
+                        className={`w-full py-2.5 px-3 rounded-xl ${
+                          isLightSystem
+                            ? 'bg-teal-50/70 hover:bg-teal-100 border border-teal-200 text-teal-800'
+                            : 'bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-indigo-300 hover:text-indigo-200'
+                        } text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs mt-1`}
                       >
                         {showAllMyTransfers ? (
                           <>
-                            <ChevronUp className="w-4 h-4 text-indigo-400" />
+                            <ChevronUp className={`w-4 h-4 ${isLightSystem ? 'text-teal-600' : 'text-indigo-400'}`} />
                             <span>Sembunyikan (Tampilkan 1 Terbaru Saja)</span>
                           </>
                         ) : (
                           <>
-                            <ChevronDown className="w-4 h-4 text-indigo-400" />
+                            <ChevronDown className={`w-4 h-4 ${isLightSystem ? 'text-teal-600' : 'text-indigo-400'}`} />
                             <span>Lihat Selengkapnya ({myTransfers.length - 1} riwayat lagi)</span>
                           </>
                         )}
@@ -2602,19 +2689,28 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           {/* Modal Submit Konfirmasi Transfer */}
           {isTransferModalOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
-              <div className="w-full max-w-lg rounded-3xl bg-slate-900 border border-slate-800 p-5 sm:p-6 text-white space-y-4 shadow-2xl my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
+              <div className={`w-full max-w-lg rounded-3xl ${
+                isLightSystem
+                  ? 'bg-white border-2 border-teal-200/90 text-slate-900 shadow-2xl'
+                  : 'bg-slate-900 border border-slate-800 text-white shadow-2xl'
+              } p-5 sm:p-6 space-y-4 my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden`}>
+                <div className={`flex items-center justify-between pb-3 border-b ${isLightSystem ? 'border-teal-100' : 'border-slate-800'} shrink-0`}>
                   <div className="flex items-center gap-2">
-                    <Send className="w-5 h-5 text-emerald-400" />
-                    <h3 className="text-base font-bold">Konfirmasi Transfer Persembahan</h3>
+                    <div className={`p-2 rounded-xl ${isLightSystem ? 'bg-teal-50 text-teal-700 border border-teal-200' : 'bg-emerald-500/20 text-emerald-400'}`}>
+                      <Send className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className={`text-base font-extrabold ${isLightSystem ? 'text-slate-900' : 'text-white'}`}>Konfirmasi Transfer Persembahan</h3>
+                      <p className={`text-[11px] ${isLightSystem ? 'text-slate-500' : 'text-slate-400'}`}>Kirim bukti transfer untuk dicatat ke kas jemaat</p>
+                    </div>
                   </div>
                   <button
                     onClick={() => {
                       setIsTransferModalOpen(false);
                       setTransferMsg(null);
                     }}
-                    className="text-slate-400 hover:text-white cursor-pointer p-1 rounded-lg"
+                    className={`p-1.5 rounded-lg ${isLightSystem ? 'text-slate-400 hover:text-slate-700 hover:bg-slate-100' : 'text-slate-400 hover:text-white hover:bg-slate-800'} cursor-pointer`}
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -2624,8 +2720,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <div
                     className={`p-3.5 rounded-2xl text-xs font-bold border shrink-0 ${
                       transferMsg.type === 'success'
-                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                        : 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                        ? isLightSystem
+                          ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                          : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                        : isLightSystem
+                          ? 'bg-rose-50 text-rose-800 border-rose-300'
+                          : 'bg-rose-500/20 text-rose-300 border-rose-500/40'
                     }`}
                   >
                     {transferMsg.text}
@@ -2634,11 +2734,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                 <form onSubmit={handleSubmitTransfer} className="space-y-3 text-xs overflow-y-auto pr-1 flex-1">
                   <div>
-                    <label className="block text-slate-400 mb-1 font-semibold">Jenis / Kategori Persembahan *</label>
+                    <label className={`block ${isLightSystem ? 'text-slate-700' : 'text-slate-400'} mb-1 font-semibold`}>Jenis / Kategori Persembahan *</label>
                     <select
                       value={transferForm.jenis}
                       onChange={(e) => setTransferForm({ ...transferForm, jenis: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold"
+                      className={`w-full px-3.5 py-2.5 rounded-xl border ${
+                        isLightSystem
+                          ? 'bg-slate-50 border-slate-300 text-slate-900 focus:bg-white focus:border-teal-500'
+                          : 'bg-slate-950 border-slate-700 text-white'
+                      } font-semibold`}
                     >
                       <option value="Persembahan Perpuluhan">Persembahan Perpuluhan (10%)</option>
                       <option value="Persembahan Minggu">Persembahan Minggu</option>
@@ -2649,34 +2753,46 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-slate-400 mb-1 font-semibold">Nama Pengirim / Atas Nama Rekening *</label>
+                    <label className={`block ${isLightSystem ? 'text-slate-700' : 'text-slate-400'} mb-1 font-semibold`}>Nama Pengirim / Atas Nama Rekening *</label>
                     <input
                       type="text"
                       required
                       value={transferForm.nama_pengirim}
                       onChange={(e) => setTransferForm({ ...transferForm, nama_pengirim: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold"
+                      className={`w-full px-3.5 py-2.5 rounded-xl border ${
+                        isLightSystem
+                          ? 'bg-slate-50 border-slate-300 text-slate-900 focus:bg-white focus:border-teal-500'
+                          : 'bg-slate-950 border-slate-700 text-white'
+                      } font-semibold`}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-slate-400 mb-1 font-semibold">Nominal Persembahan (Rp) *</label>
+                    <label className={`block ${isLightSystem ? 'text-slate-700' : 'text-slate-400'} mb-1 font-semibold`}>Nominal Persembahan (Rp) *</label>
                     <input
                       type="number"
                       required
                       min={1000}
                       value={transferForm.jumlah}
                       onChange={(e) => setTransferForm({ ...transferForm, jumlah: Number(e.target.value) })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono font-extrabold text-sm text-emerald-400"
+                      className={`w-full px-3.5 py-2.5 rounded-xl border ${
+                        isLightSystem
+                          ? 'bg-slate-50 border-slate-300 text-teal-700 focus:bg-white focus:border-teal-500'
+                          : 'bg-slate-950 border-slate-700 text-emerald-400'
+                      } font-mono font-extrabold text-sm`}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-slate-400 mb-1 font-semibold">Metode Pembayaran</label>
+                    <label className={`block ${isLightSystem ? 'text-slate-700' : 'text-slate-400'} mb-1 font-semibold`}>Metode Pembayaran</label>
                     <select
                       value={transferForm.metode_pembayaran}
                       onChange={(e) => setTransferForm({ ...transferForm, metode_pembayaran: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                      className={`w-full px-3.5 py-2.5 rounded-xl border ${
+                        isLightSystem
+                          ? 'bg-slate-50 border-slate-300 text-slate-900 focus:bg-white focus:border-teal-500'
+                          : 'bg-slate-950 border-slate-700 text-white'
+                      }`}
                     >
                       <option value="Transfer Bank">Transfer Bank ({settings.rekening_bank_nama || 'BCA'})</option>
                       <option value="QRIS Digital">QRIS Digital Scan</option>
@@ -2685,16 +2801,24 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                   {/* Upload Bukti Transfer */}
                   <div>
-                    <label className="block text-slate-400 mb-1 font-semibold">Unggah / Upload Foto Bukti Transfer</label>
+                    <label className={`block ${isLightSystem ? 'text-slate-700' : 'text-slate-400'} mb-1 font-semibold`}>Unggah / Upload Foto Bukti Transfer</label>
                     <div className="flex items-center gap-2">
                       <input
                         type="text"
                         placeholder="URL bukti transfer atau upload file..."
                         value={transferForm.bukti_transfer}
                         onChange={(e) => setTransferForm({ ...transferForm, bukti_transfer: e.target.value })}
-                        className="flex-1 px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white text-[11px] font-mono"
+                        className={`flex-1 px-3 py-2 rounded-xl border ${
+                          isLightSystem
+                            ? 'bg-slate-50 border-slate-300 text-slate-900 text-[11px] font-mono focus:bg-white'
+                            : 'bg-slate-950 border-slate-700 text-white text-[11px] font-mono'
+                        }`}
                       />
-                      <label className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1 cursor-pointer shrink-0">
+                      <label className={`px-3.5 py-2 rounded-xl ${
+                        isLightSystem
+                          ? 'bg-teal-600 hover:bg-teal-500 text-white'
+                          : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                      } font-bold text-xs flex items-center gap-1 cursor-pointer shrink-0 transition-all`}>
                         <Upload className="w-3.5 h-3.5" />
                         <span>Upload Foto</span>
                         <input
@@ -2719,27 +2843,39 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-slate-400 mb-1 font-semibold">Catatan / Pokok Doa (Opsional)</label>
+                    <label className={`block ${isLightSystem ? 'text-slate-700' : 'text-slate-400'} mb-1 font-semibold`}>Catatan / Pokok Doa (Opsional)</label>
                     <input
                       type="text"
-                      placeholder="Contoh: Ucapan syukur ulang tahun / perpuluhan bulan Juli"
+                      placeholder="Contoh: Ucapan syukur ulang tahun / perpuluhan bulan ini"
                       value={transferForm.keterangan}
                       onChange={(e) => setTransferForm({ ...transferForm, keterangan: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                      className={`w-full px-3.5 py-2.5 rounded-xl border ${
+                        isLightSystem
+                          ? 'bg-slate-50 border-slate-300 text-slate-900 focus:bg-white focus:border-teal-500'
+                          : 'bg-slate-950 border-slate-700 text-white'
+                      }`}
                     />
                   </div>
 
-                  <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800 shrink-0">
+                  <div className={`flex items-center justify-end gap-2 pt-3 border-t ${isLightSystem ? 'border-teal-100' : 'border-slate-800'} shrink-0`}>
                     <button
                       type="button"
                       onClick={() => setIsTransferModalOpen(false)}
-                      className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-bold cursor-pointer"
+                      className={`px-4 py-2 rounded-xl ${
+                        isLightSystem
+                          ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'
+                          : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                      } font-bold cursor-pointer`}
                     >
                       Batal
                     </button>
                     <button
                       type="submit"
-                      className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 shadow cursor-pointer"
+                      className={`px-5 py-2 rounded-xl ${
+                        isLightSystem
+                          ? 'bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white shadow-md'
+                          : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow'
+                      } font-bold flex items-center gap-1.5 cursor-pointer`}
                     >
                       <Send className="w-4 h-4" />
                       <span>Kirim Konfirmasi Transfer</span>
@@ -2752,48 +2888,56 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           {/* Modal Preview Bukti Transfer */}
           {previewReceiptItem && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/90 backdrop-blur-md overflow-y-auto">
-              <div className="w-full max-w-xl rounded-3xl bg-slate-900 border border-slate-700 p-5 sm:p-6 text-white space-y-4 shadow-2xl my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
+              <div className={`w-full max-w-xl rounded-3xl ${
+                isLightSystem
+                  ? 'bg-white border-2 border-teal-200 text-slate-900 shadow-2xl'
+                  : 'bg-slate-900 border border-slate-700 text-white shadow-2xl'
+              } p-5 sm:p-6 space-y-4 my-auto max-h-[calc(100dvh-2rem)] flex flex-col overflow-hidden`}>
+                <div className={`flex items-center justify-between pb-3 border-b ${isLightSystem ? 'border-teal-100' : 'border-slate-800'} shrink-0`}>
                   <div className="flex items-center gap-2">
-                    <Eye className="w-5 h-5 text-indigo-400" />
+                    <Eye className={`w-5 h-5 ${isLightSystem ? 'text-teal-600' : 'text-indigo-400'}`} />
                     <h3 className="text-base font-bold">Bukti Transfer Persembahan</h3>
                   </div>
                   <button
                     type="button"
                     onClick={() => setPreviewReceiptItem(null)}
-                    className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
+                    className={`p-1.5 rounded-lg ${isLightSystem ? 'text-slate-400 hover:text-slate-700 hover:bg-slate-100' : 'text-slate-400 hover:text-white hover:bg-slate-800'} transition-all cursor-pointer`}
                   >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
 
                 <div className="space-y-4 overflow-y-auto pr-1 flex-1">
-                  <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-1 text-xs">
+                  <div className={`p-3.5 rounded-2xl ${
+                    isLightSystem
+                      ? 'bg-teal-50/70 border border-teal-200/80 text-slate-800'
+                      : 'bg-slate-950/80 border border-slate-800 text-white'
+                  } space-y-1.5 text-xs`}>
                     <div className="flex items-center justify-between">
-                      <span className="text-slate-400">Pengirim:</span>
-                      <strong className="text-white">{previewReceiptItem.nama_pengirim}</strong>
+                      <span className={isLightSystem ? 'text-slate-600' : 'text-slate-400'}>Pengirim:</span>
+                      <strong className={isLightSystem ? 'text-slate-900' : 'text-white'}>{previewReceiptItem.nama_pengirim}</strong>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-slate-400">Jenis Persembahan:</span>
-                      <strong className="text-indigo-300">{previewReceiptItem.jenis}</strong>
+                      <span className={isLightSystem ? 'text-slate-600' : 'text-slate-400'}>Jenis Persembahan:</span>
+                      <strong className={isLightSystem ? 'text-teal-800' : 'text-indigo-300'}>{previewReceiptItem.jenis}</strong>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-slate-400">Nominal:</span>
-                      <strong className="text-emerald-400 text-sm font-mono">Rp {previewReceiptItem.jumlah.toLocaleString('id-ID')}</strong>
+                      <span className={isLightSystem ? 'text-slate-600' : 'text-slate-400'}>Nominal:</span>
+                      <strong className={`${isLightSystem ? 'text-teal-700' : 'text-emerald-400'} text-sm font-mono font-black`}>Rp {previewReceiptItem.jumlah.toLocaleString('id-ID')}</strong>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-slate-400">Tanggal:</span>
-                      <span className="text-slate-300 font-mono">{previewReceiptItem.tanggal}</span>
+                      <span className={isLightSystem ? 'text-slate-600' : 'text-slate-400'}>Tanggal:</span>
+                      <span className={`${isLightSystem ? 'text-slate-600' : 'text-slate-300'} font-mono`}>{previewReceiptItem.tanggal}</span>
                     </div>
                     {previewReceiptItem.keterangan && (
-                      <div className="pt-1 border-t border-slate-800 text-slate-400 text-[11px]">
+                      <div className={`pt-1 border-t ${isLightSystem ? 'border-teal-200/60 text-slate-600' : 'border-slate-800 text-slate-400'} text-[11px]`}>
                         Catatan: {previewReceiptItem.keterangan}
                       </div>
                     )}
                   </div>
 
-                  <div className="rounded-2xl overflow-hidden bg-black border border-slate-800 max-h-[50vh] flex items-center justify-center p-2">
+                  <div className={`rounded-2xl overflow-hidden ${isLightSystem ? 'bg-slate-50 border border-teal-200' : 'bg-black border border-slate-800'} max-h-[50vh] flex items-center justify-center p-2`}>
                     {previewReceiptItem.bukti_transfer ? (
                       <img
                         src={previewReceiptItem.bukti_transfer}
@@ -2801,16 +2945,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         className="max-h-[45vh] w-auto max-w-full object-contain rounded-lg"
                       />
                     ) : (
-                      <p className="text-xs text-slate-400 py-10">Tidak ada lampiran foto bukti transfer.</p>
+                      <p className={`text-xs ${isLightSystem ? 'text-slate-500' : 'text-slate-400'} py-10`}>Tidak ada lampiran foto bukti transfer.</p>
                     )}
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between gap-3 pt-3 border-t border-slate-800 shrink-0">
+                <div className={`flex items-center justify-between gap-3 pt-3 border-t ${isLightSystem ? 'border-teal-100' : 'border-slate-800'} shrink-0`}>
                   <button
                     type="button"
                     onClick={() => setPreviewReceiptItem(null)}
-                    className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white text-xs font-bold cursor-pointer"
+                    className={`px-4 py-2 rounded-xl ${
+                      isLightSystem
+                        ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'
+                        : 'bg-slate-800 text-slate-300 hover:text-white'
+                    } text-xs font-bold cursor-pointer`}
                   >
                     Tutup
                   </button>
@@ -2824,7 +2972,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           setPreviewReceiptItem(null);
                           handleRejectPersembahan(id);
                         }}
-                        className="px-3.5 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/40 text-rose-300 text-xs font-bold border border-rose-500/30 transition-all cursor-pointer"
+                        className="px-3.5 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/40 text-rose-600 text-xs font-bold border border-rose-300 transition-all cursor-pointer"
                       >
                         Tolak
                       </button>
@@ -2846,20 +2994,34 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </div>
           )}
           {settings.show_video_widget !== false && settings.video_enabled !== false && (
-            <div className="rounded-2xl sm:rounded-3xl bg-slate-900/90 border border-slate-800 p-3.5 sm:p-5 overflow-hidden text-white space-y-2.5 sm:space-y-3 transition-all duration-300 shadow-xl">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-white/10">
+            <div className={`rounded-2xl sm:rounded-3xl ${
+              isLightSystem
+                ? 'bg-white border-2 border-teal-200/90 shadow-xl text-slate-800'
+                : 'bg-slate-900/90 border border-slate-800 shadow-xl text-white'
+            } p-3.5 sm:p-5 overflow-hidden space-y-3 sm:space-y-4 transition-all duration-300`}>
+              <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b ${
+                isLightSystem ? 'border-teal-100' : 'border-white/10'
+              }`}>
                 <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-xl bg-red-500/20 border border-red-500/30 text-red-400 animate-pulse shrink-0">
+                  <div className={`p-2 rounded-xl ${
+                    isLightSystem
+                      ? 'bg-rose-50 border border-rose-200 text-rose-600'
+                      : 'bg-red-500/20 border border-red-500/30 text-red-400'
+                  } animate-pulse shrink-0`}>
                     <Tv className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="px-2 py-0.5 rounded bg-red-500/20 text-red-300 font-bold text-[10px] uppercase tracking-wider border border-red-500/30">
+                      <span className={`px-2 py-0.5 rounded ${
+                        isLightSystem
+                          ? 'bg-rose-100 text-rose-700 border border-rose-200'
+                          : 'bg-red-500/20 text-red-300 border border-red-500/30'
+                      } font-bold text-[10px] uppercase tracking-wider`}>
                         🔴 Live Media Stream
                       </span>
-                      <span className="text-[11px] text-slate-400 capitalize">Media: {parsedVideo.type}</span>
+                      <span className={`text-[11px] ${isLightSystem ? 'text-slate-500' : 'text-slate-400'} capitalize`}>Media: {parsedVideo.type}</span>
                     </div>
-                    <h3 className="text-sm sm:text-base font-bold text-white mt-0.5">
+                    <h3 className={`text-sm sm:text-base font-extrabold ${isLightSystem ? 'text-slate-900' : 'text-white'} mt-0.5`}>
                       {currentVideoDisplayTitle}
                     </h3>
                   </div>
@@ -2867,22 +3029,34 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                 <button
                   onClick={() => onNavigate('galeri')}
-                  className="px-3 py-1.5 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 border border-indigo-500/40 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
+                  className={`px-3 py-1.5 rounded-xl ${
+                    isLightSystem
+                      ? 'bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 shadow-xs'
+                      : 'bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 border border-indigo-500/40'
+                  } text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0`}
                 >
-                  <Video className="w-3.5 h-3.5 text-indigo-400" />
+                  <Video className={`w-3.5 h-3.5 ${isLightSystem ? 'text-teal-600' : 'text-indigo-400'}`} />
                   <span>Galeri Video &amp; Foto</span>
                   <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </div>
 
               {settings.video_description && (
-                <p className="text-xs text-slate-300 italic bg-white/5 py-1.5 px-3 rounded-xl border border-white/5">
+                <p className={`text-xs ${
+                  isLightSystem
+                    ? 'text-slate-600 italic bg-teal-50/50 py-1.5 px-3 rounded-xl border border-teal-100'
+                    : 'text-slate-300 italic bg-white/5 py-1.5 px-3 rounded-xl border border-white/5'
+                }`}>
                   "{settings.video_description}"
                 </p>
               )}
 
               {/* Embedded Video Display */}
-              <div className="relative w-full max-w-5xl mx-auto rounded-2xl overflow-hidden bg-black/90 border border-white/10 aspect-video max-h-[380px] sm:max-h-[460px] shadow-2xl">
+              <div className={`relative w-full max-w-5xl mx-auto rounded-2xl overflow-hidden ${
+                isLightSystem
+                  ? 'bg-slate-950 border-2 border-teal-300/80 shadow-lg ring-4 ring-teal-50'
+                  : 'bg-black/90 border border-white/10 shadow-2xl'
+              } aspect-video max-h-[380px] sm:max-h-[460px]`}>
                 {parsedVideo.isValid ? (
                   parsedVideo.type === 'mp4' ? (
                     <video
@@ -2912,15 +3086,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
               {/* Gallery Video & Photo Stream Playlist Selector */}
               {allDashboardVideos.length > 0 && (
-                <div className="pt-2.5 border-t border-white/10 space-y-2">
+                <div className={`pt-2.5 border-t ${isLightSystem ? 'border-teal-100' : 'border-white/10'} space-y-2`}>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-slate-300 flex items-center gap-1.5 text-[11px]">
-                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                    <span className={`font-bold ${isLightSystem ? 'text-slate-700' : 'text-slate-300'} flex items-center gap-1.5 text-[11px]`}>
+                      <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                       Pilihan Tayangan &amp; Informasi Media Stream:
                     </span>
                     <button
                       onClick={() => onNavigate('galeri')}
-                      className="text-indigo-400 hover:text-indigo-300 font-semibold text-[11px] cursor-pointer flex items-center gap-1"
+                      className={`${isLightSystem ? 'text-teal-700 hover:text-teal-800' : 'text-indigo-400 hover:text-indigo-300'} font-semibold text-[11px] cursor-pointer flex items-center gap-1`}
                     >
                       <span>Buka Galeri Media</span>
                       <ChevronRight className="w-3 h-3" />
@@ -2928,43 +3102,58 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-                    {allDashboardVideos.map((v) => (
-                      <button
-                        key={v.id}
-                        type="button"
-                        onClick={() => setActiveVideoUrl(v.video_url)}
-                        className={`p-2.5 rounded-2xl border text-left transition-all cursor-pointer ${
-                          currentVideoUrl === v.video_url
-                            ? 'bg-gradient-to-r from-indigo-950/90 to-purple-950/90 border-indigo-500 text-white shadow-lg ring-1 ring-indigo-500/30'
-                            : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between text-[10px] font-bold text-indigo-400 mb-0.5">
-                          <span className="flex items-center gap-1">
-                            <Play className="w-3 h-3 fill-current" />
-                            {v.platform || 'YouTube'} &bull; {v.kategori || 'Ibadah'}
-                          </span>
-                          {currentVideoUrl === v.video_url && (
-                            <span className="px-1.5 py-0.2 rounded bg-indigo-500/30 text-indigo-200 text-[9px]">
-                              Sedang Diputar
+                    {allDashboardVideos.map((v) => {
+                      const isPlaying = currentVideoUrl === v.video_url;
+                      return (
+                        <button
+                          key={v.id}
+                          type="button"
+                          onClick={() => setActiveVideoUrl(v.video_url)}
+                          className={`p-2.5 rounded-2xl border text-left transition-all cursor-pointer ${
+                            isPlaying
+                              ? isLightSystem
+                                ? 'bg-gradient-to-r from-teal-600 to-emerald-600 border-teal-600 text-white shadow-md ring-2 ring-teal-300/50'
+                                : 'bg-gradient-to-r from-indigo-950/90 to-purple-950/90 border-indigo-500 text-white shadow-lg ring-1 ring-indigo-500/30'
+                              : isLightSystem
+                              ? 'bg-teal-50/40 border-teal-200/70 text-slate-700 hover:bg-teal-50 hover:border-teal-300 shadow-2xs'
+                              : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
+                          }`}
+                        >
+                          <div className={`flex items-center justify-between text-[10px] font-bold ${
+                            isPlaying ? 'text-teal-100' : isLightSystem ? 'text-teal-700' : 'text-indigo-400'
+                          } mb-0.5`}>
+                            <span className="flex items-center gap-1">
+                              <Play className="w-3 h-3 fill-current" />
+                              {v.platform || 'YouTube'} &bull; {v.kategori || 'Ibadah'}
                             </span>
-                          )}
-                        </div>
-                        <p className="text-xs font-bold text-white truncate">{v.judul}</p>
-                      </button>
-                    ))}
+                            {isPlaying && (
+                              <span className={`px-1.5 py-0.2 rounded ${
+                                isLightSystem ? 'bg-white/20 text-white font-extrabold' : 'bg-indigo-500/30 text-indigo-200'
+                              } text-[9px]`}>
+                                Sedang Diputar
+                              </span>
+                            )}
+                          </div>
+                          <p className={`text-xs font-bold ${isPlaying ? 'text-white' : isLightSystem ? 'text-slate-900' : 'text-white'} truncate`}>{v.judul}</p>
+                        </button>
+                      );
+                    })}
 
                     {/* Fill empty grid slots proportionally with church streaming information */}
                     {allDashboardVideos.length < 2 && (
-                      <div className="p-2.5 rounded-2xl bg-white/5 border border-white/10 text-left flex items-center gap-2.5">
-                        <div className="p-2 rounded-xl bg-red-500/20 text-red-400 border border-red-500/30 shrink-0">
+                      <div className={`p-2.5 rounded-2xl ${
+                        isLightSystem ? 'bg-teal-50/40 border-teal-200/70 text-slate-800' : 'bg-white/5 border-white/10 text-white'
+                      } border text-left flex items-center gap-2.5`}>
+                        <div className={`p-2 rounded-xl ${
+                          isLightSystem ? 'bg-rose-50 text-rose-600 border-rose-200' : 'bg-red-500/20 text-red-400 border-red-500/30'
+                        } border shrink-0`}>
                           <Tv className="w-4 h-4" />
                         </div>
                         <div className="min-w-0">
-                          <div className="text-[10px] font-extrabold text-red-300 uppercase tracking-wider">
+                          <div className={`text-[10px] font-extrabold ${isLightSystem ? 'text-rose-700' : 'text-red-300'} uppercase tracking-wider`}>
                             Jadwal Live Stream
                           </div>
-                          <p className="text-xs font-bold text-white truncate">Ibadah Minggu 07.00 &amp; 10.00 WIB</p>
+                          <p className={`text-xs font-bold ${isLightSystem ? 'text-slate-900' : 'text-white'} truncate`}>Ibadah Minggu 07.00 &amp; 10.00 WIB</p>
                         </div>
                       </div>
                     )}
@@ -2972,17 +3161,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     {allDashboardVideos.length < 3 && (
                       <div
                         onClick={() => onNavigate('galeri')}
-                        className="p-2.5 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 text-left flex items-center justify-between cursor-pointer transition-all"
+                        className={`p-2.5 rounded-2xl ${
+                          isLightSystem ? 'bg-teal-50/40 border-teal-200/70 hover:bg-teal-50 hover:border-teal-300 text-slate-800' : 'bg-white/5 border-white/10 hover:bg-white/10 text-white'
+                        } border text-left flex items-center justify-between cursor-pointer transition-all`}
                       >
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shrink-0">
+                          <div className={`p-2 rounded-xl ${
+                            isLightSystem ? 'bg-amber-50 text-amber-600 border-amber-200' : 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+                          } border shrink-0`}>
                             <Video className="w-4 h-4" />
                           </div>
                           <div className="min-w-0">
-                            <div className="text-[10px] font-extrabold text-amber-300 uppercase tracking-wider">
+                            <div className={`text-[10px] font-extrabold ${isLightSystem ? 'text-amber-800' : 'text-amber-300'} uppercase tracking-wider`}>
                               Koleksi Khotbah
                             </div>
-                            <p className="text-xs font-bold text-white truncate">Arsip Khotbah &amp; Pujian Lengkap</p>
+                            <p className={`text-xs font-bold ${isLightSystem ? 'text-slate-900' : 'text-white'} truncate`}>Arsip Khotbah &amp; Pujian Lengkap</p>
                           </div>
                         </div>
                         <ChevronRight className="w-4 h-4 text-slate-400 shrink-0 ml-1" />
@@ -4711,37 +4904,53 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       {/* Fullscreen QRIS Zoom Modal */}
       {isQrisZoomModalOpen && (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 bg-slate-950/95 backdrop-blur-md overflow-y-auto">
-          <div className="w-full max-w-lg bg-slate-900 border-2 border-emerald-500/50 rounded-3xl p-5 sm:p-8 text-white space-y-5 text-center shadow-2xl relative my-auto max-h-[calc(100dvh-2rem)] overflow-y-auto">
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
+          <div className={`w-full max-w-lg ${
+            isLightSystem
+              ? 'bg-white border-2 border-teal-300 text-slate-900 shadow-2xl'
+              : 'bg-slate-900 border-2 border-emerald-500/50 text-white shadow-2xl'
+          } rounded-3xl p-5 sm:p-8 space-y-5 text-center relative my-auto max-h-[calc(100dvh-2rem)] overflow-y-auto`}>
             <button
               onClick={() => setIsQrisZoomModalOpen(false)}
-              className="absolute top-4 right-4 p-2 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
+              className={`absolute top-4 right-4 p-2 rounded-full ${
+                isLightSystem
+                  ? 'bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900'
+                  : 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white'
+              } transition-colors cursor-pointer`}
             >
               <X className="w-6 h-6" />
             </button>
 
             <div className="space-y-1">
-              <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-black tracking-widest uppercase">
+              <span className={`px-3 py-1 rounded-full ${
+                isLightSystem
+                  ? 'bg-teal-100 text-teal-800 border border-teal-200'
+                  : 'bg-emerald-500/20 text-emerald-400'
+              } text-xs font-black tracking-widest uppercase`}>
                 QRIS RESMI GEREJA
               </span>
-              <h3 className="text-lg sm:text-xl font-extrabold text-white mt-2">
+              <h3 className={`text-lg sm:text-xl font-extrabold ${isLightSystem ? 'text-slate-900' : 'text-white'} mt-2`}>
                 {settings.nama_gereja || 'Jesus Kingdom Christ'}
               </h3>
-              <p className="text-xs text-slate-400">
+              <p className={`text-xs ${isLightSystem ? 'text-slate-600' : 'text-slate-400'}`}>
                 Pindai menggunakan aplikasi e-Wallet atau M-Banking apapun
               </p>
             </div>
 
-            <div className="bg-white p-4 rounded-2xl border-4 border-emerald-500 shadow-2xl mx-auto inline-block">
+            <div className={`p-4 rounded-2xl ${
+              isLightSystem
+                ? 'bg-teal-50/50 border-4 border-teal-400/80 shadow-xl ring-4 ring-teal-100/60'
+                : 'bg-white border-4 border-emerald-500 shadow-2xl'
+            } mx-auto inline-block`}>
               {settings.qris_image_url ? (
                 <img
                   src={settings.qris_image_url}
                   alt="Barcode QRIS Fullscreen"
-                  className="w-72 h-72 sm:w-96 sm:h-96 object-contain rounded-lg"
+                  className="w-72 h-72 sm:w-96 sm:h-96 object-contain rounded-lg bg-white"
                 />
               ) : (
-                <div className="w-72 h-72 sm:w-96 sm:h-96 bg-white flex flex-col items-center justify-center text-slate-800 p-4">
-                  <QrCode className="w-24 h-24 text-emerald-600 mb-2" />
+                <div className="w-72 h-72 sm:w-96 sm:h-96 bg-white flex flex-col items-center justify-center text-slate-800 p-4 rounded-lg">
+                  <QrCode className="w-24 h-24 text-teal-600 mb-2" />
                   <span className="font-extrabold text-base">QRIS DIGITAL GEREJA</span>
                   <span className="text-xs text-slate-500 mt-1">{settings.rekening_bank_atas_nama || settings.nama_gereja || 'Jesus Kingdom Christ'}</span>
                 </div>
@@ -4759,7 +4968,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     setTimeout(() => setCopiedBankNum(false), 2000);
                   }
                 }}
-                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer"
+                className={`w-full sm:w-auto px-5 py-2.5 rounded-xl ${
+                  isLightSystem
+                    ? 'bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white shadow-md shadow-teal-600/25'
+                    : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg'
+                } font-extrabold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer`}
               >
                 {copiedBankNum ? <Check className="w-4 h-4 text-white" /> : <Copy className="w-4 h-4" />}
                 <span>{copiedBankNum ? 'No. Rekening Tersalin!' : 'Salin No. Rekening Bank'}</span>
@@ -4767,7 +4980,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <button
                 type="button"
                 onClick={() => setIsQrisZoomModalOpen(false)}
-                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs cursor-pointer"
+                className={`w-full sm:w-auto px-5 py-2.5 rounded-xl ${
+                  isLightSystem
+                    ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'
+                    : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                } font-bold text-xs cursor-pointer`}
               >
                 Tutup Layar Penuh
               </button>

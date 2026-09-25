@@ -46,6 +46,12 @@ interface GaleriViewProps {
 
 export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser, initialTab = 'GALLERY' }) => {
   const isAdmin = currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN';
+  const [settings] = useState(() => StorageManager.getSettings());
+  const isLightSystem =
+    settings.theme_preset === 'EMERALD_LIGHT' ||
+    settings.theme_preset === 'LUXE_LIGHT' ||
+    settings.theme_preset === 'CLEAN_LIGHT' ||
+    !settings.theme_preset;
   const [activeTab, setActiveTab] = useState<'GALLERY' | 'SOCIAL_VIDEOS'>(initialTab);
 
   useEffect(() => {
@@ -759,20 +765,22 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser, initialTab 
       {/* TAB 2: VIDEO MEDIA SOSIAL DASHBOARD (YouTube / Reels / TikTok) */}
       {activeTab === 'SOCIAL_VIDEOS' && (
         <div className="space-y-6">
-          <div className="p-4 rounded-3xl bg-slate-900 border border-slate-800 text-slate-300 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className={`p-4 rounded-3xl ${
+            isLightSystem ? 'bg-white border-2 border-teal-200 text-slate-800 shadow-sm' : 'bg-slate-900 border border-slate-800 text-slate-300'
+          } flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4`}>
             <div>
-              <h3 className="font-bold text-white text-sm flex items-center gap-2">
-                <Tv className="w-4 h-4 text-rose-400" />
+              <h3 className={`font-bold ${isLightSystem ? 'text-slate-900' : 'text-white'} text-sm flex items-center gap-2`}>
+                <Tv className={`w-4 h-4 ${isLightSystem ? 'text-rose-600' : 'text-rose-400'}`} />
                 <span>Pengaturan Tayangan Video Media Sosial Dashboard</span>
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Pilih video media sosial mana yang ditampilkan secara otomatis di Dashboard Utama Admin & Portal Jemaat.
+              <p className={`text-xs ${isLightSystem ? 'text-slate-500' : 'text-slate-400'} mt-0.5`}>
+                Pilih video media sosial mana yang ditampilkan secara otomatis di Dashboard Utama Admin &amp; Portal Jemaat.
               </p>
             </div>
             {isAdmin && (
               <button
                 onClick={() => setIsVideoModalOpen(true)}
-                className="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-md shrink-0"
+                className="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-md shrink-0 cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Tambah Link Video Baru</span>
@@ -781,13 +789,15 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser, initialTab 
           </div>
 
           {featuredVideos.length === 0 ? (
-            <div className="p-12 text-center rounded-3xl bg-slate-900/50 border border-slate-800 space-y-3">
-              <Video className="w-12 h-12 text-slate-600 mx-auto" />
-              <p className="text-slate-400 text-sm font-semibold">Belum ada tautan video media sosial yang terdaftar.</p>
+            <div className={`p-12 text-center rounded-3xl ${
+              isLightSystem ? 'bg-white border-2 border-teal-100 text-slate-600' : 'bg-slate-900/50 border border-slate-800'
+            } space-y-3`}>
+              <Video className={`w-12 h-12 ${isLightSystem ? 'text-teal-400' : 'text-slate-600'} mx-auto`} />
+              <p className={`${isLightSystem ? 'text-slate-600' : 'text-slate-400'} text-sm font-semibold`}>Belum ada tautan video media sosial yang terdaftar.</p>
               {isAdmin && (
                 <button
                   onClick={() => setIsVideoModalOpen(true)}
-                  className="px-4 py-2 rounded-xl bg-rose-600 text-white text-xs font-bold inline-flex items-center gap-1.5"
+                  className="px-4 py-2 rounded-xl bg-rose-600 text-white text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Tambah Link Pertama</span>
@@ -802,9 +812,17 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser, initialTab 
                 return (
                   <div
                     key={video.video_id}
-                    className={`p-5 rounded-3xl bg-slate-900/90 border transition-all ${
+                    className={`p-5 rounded-3xl ${
+                      isLightSystem
+                        ? 'bg-white border-2 shadow-md text-slate-800'
+                        : 'bg-slate-900/90 border text-white'
+                    } transition-all ${
                       video.is_active
-                        ? 'border-emerald-500/70 ring-1 ring-emerald-500/30 shadow-xl'
+                        ? isLightSystem
+                          ? 'border-teal-400 ring-2 ring-teal-200 shadow-lg'
+                          : 'border-emerald-500/70 ring-1 ring-emerald-500/30 shadow-xl'
+                        : isLightSystem
+                        ? 'border-slate-200 hover:border-teal-300'
                         : 'border-slate-800 hover:border-slate-700'
                     }`}
                   >
@@ -820,14 +838,16 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser, initialTab 
                           }`}>
                             {video.platform || 'YouTube'}
                           </span>
-                          <span className="text-xs font-bold text-indigo-300">{video.kategori || 'Ibadah'}</span>
-                          <span className="text-[10px] text-slate-500">• {video.tanggal}</span>
+                          <span className={`text-xs font-bold ${isLightSystem ? 'text-teal-700' : 'text-indigo-300'}`}>{video.kategori || 'Ibadah'}</span>
+                          <span className={`text-[10px] ${isLightSystem ? 'text-slate-400' : 'text-slate-500'}`}>• {video.tanggal}</span>
                         </div>
-                        <h4 className="font-extrabold text-white text-base mt-1">{video.judul}</h4>
+                        <h4 className={`font-extrabold ${isLightSystem ? 'text-slate-900' : 'text-white'} text-base mt-1`}>{video.judul}</h4>
                       </div>
 
                       {video.is_active ? (
-                        <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[11px] font-extrabold flex items-center gap-1 shrink-0">
+                        <span className={`px-3 py-1 rounded-full ${
+                          isLightSystem ? 'bg-teal-100 text-teal-800 border border-teal-300' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                        } text-[11px] font-extrabold flex items-center gap-1 shrink-0`}>
                           <CheckCircle2 className="w-3.5 h-3.5" />
                           <span>TAYANG AKTIF</span>
                         </span>
@@ -835,7 +855,9 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser, initialTab 
                         isAdmin && (
                           <button
                             onClick={() => handleActivateSocialVideo(video.video_id)}
-                            className="px-3 py-1 rounded-full bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white border border-slate-700 text-[11px] font-bold transition-all shrink-0"
+                            className={`px-3 py-1 rounded-full ${
+                              isLightSystem ? 'bg-slate-100 hover:bg-teal-600 text-slate-700 hover:text-white border border-slate-200' : 'bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white border border-slate-700'
+                            } text-[11px] font-bold transition-all shrink-0 cursor-pointer`}
                           >
                             Set Tayang Utama
                           </button>
@@ -844,7 +866,9 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser, initialTab 
                     </div>
 
                     {/* Embedded Video Player Preview */}
-                    <div className="aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 shadow-inner my-3">
+                    <div className={`aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 ${
+                      isLightSystem ? 'border-2 border-teal-200/80 shadow-md ring-2 ring-teal-50' : 'border border-slate-800 shadow-inner'
+                    } my-3`}>
                       {parsed.isValid ? (
                         parsed.type === 'mp4' ? (
                           <video src={parsed.embedUrl} controls className="w-full h-full object-cover" />
@@ -865,17 +889,17 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser, initialTab 
                     </div>
 
                     {video.keterangan && (
-                      <p className="text-xs text-slate-400 mt-2 font-normal line-clamp-2">
+                      <p className={`text-xs ${isLightSystem ? 'text-slate-600' : 'text-slate-400'} mt-2 font-normal line-clamp-2`}>
                         {video.keterangan}
                       </p>
                     )}
 
-                    <div className="mt-3 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
+                    <div className={`mt-3 pt-3 border-t ${isLightSystem ? 'border-slate-100' : 'border-slate-800/80'} flex items-center justify-between text-xs`}>
                       <a
                         href={video.video_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-indigo-400 hover:text-indigo-300 font-semibold inline-flex items-center gap-1 text-[11px]"
+                        className={`${isLightSystem ? 'text-teal-700 hover:text-teal-800' : 'text-indigo-400 hover:text-indigo-300'} font-semibold inline-flex items-center gap-1 text-[11px]`}
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
                         <span>Buka Link Asli Video</span>
@@ -884,7 +908,7 @@ export const GaleriView: React.FC<GaleriViewProps> = ({ currentUser, initialTab 
                       {isAdmin && (
                         <button
                           onClick={() => handleDeleteSocialVideo(video.video_id)}
-                          className="text-rose-400 hover:text-rose-300 font-semibold inline-flex items-center gap-1 text-[11px]"
+                          className="text-rose-400 hover:text-rose-300 font-semibold inline-flex items-center gap-1 text-[11px] cursor-pointer"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                           <span>Hapus</span>
