@@ -32,7 +32,8 @@ import {
   ArrowLeft,
   Home,
   Download,
-  Palette
+  Palette,
+  Search
 } from 'lucide-react';
 import { NavbarCustomizerModal } from './NavbarCustomizerModal';
 
@@ -271,82 +272,67 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
 
   const theme = getThemeClasses(settings);
 
+  const churchName = settings?.nama_gereja || 'SLH Gereja';
+  const shortCode = churchName
+    .split(' ')
+    .map((w) => w[0])
+    .join('')
+    .substring(0, 4)
+    .toUpperCase() || 'SLH';
+
   return (
-    <header
-      className={`sticky top-0 z-30 h-20 w-full ${theme.navbar.containerClass} ${theme.navbar.borderBottomClass} ${theme.navbar.textClass} px-3 sm:px-6 flex items-center justify-between transition-all duration-300`}
-      style={{
-        ...theme.navbar.containerStyle,
-        ...theme.navbar.borderBottomStyle
-      }}
-    >
-      {/* Left section: Kartu Menu Utama toggle & Church Branding */}
-      <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink">
-        {/* Button 1: Kartu Menu */}
+    <header className="sticky top-0 z-30 h-16 w-full bg-white border-b border-slate-200/80 px-3 sm:px-6 flex items-center justify-between shadow-xs select-none">
+      {/* Left section: Hamburger for Mobile & School/Church Branding */}
+      <div className="flex items-center gap-2 sm:gap-3.5 min-w-0">
+        {/* Mobile menu trigger */}
         <button
           onClick={onOpenMobileMenu}
-          className="px-3 py-2 rounded-2xl text-white font-extrabold text-xs shadow-lg flex items-center gap-2 border border-white/20 hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer"
-          style={theme.navbar.menuBtnStyle}
-          title="Buka Pusat Kartu Menu Utama Mewah"
+          className="lg:hidden p-2 rounded-xl text-slate-600 hover:text-emerald-700 hover:bg-emerald-50 transition-all cursor-pointer shrink-0"
+          title="Buka Navigasi"
         >
-          <Grid className="w-4 h-4 text-white" />
-          <span className="hidden xs:inline">Kartu Menu</span>
+          <Grid className="w-5 h-5 text-[#00a859]" />
         </button>
 
-        {/* Button 2: Kembali ke Dashboard Utama (when in any submodule) */}
-        {activeTab && activeTab !== 'dashboard' && onNavigateToDashboard && (
-          <button
-            onClick={onNavigateToDashboard}
-            className="px-3 py-2 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs shadow-lg flex items-center gap-1.5 border border-indigo-400/30 hover:scale-105 active:scale-95 transition-all shrink-0 cursor-pointer animate-fade-in"
-            title="Kembali Ke Dashboard Utama"
-          >
-            <ArrowLeft className="w-4 h-4 text-white" />
-            <span className="hidden md:inline">Kembali Ke Dashboard</span>
-            <span className="md:hidden">Dashboard</span>
-          </button>
-        )}
-
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          <div className="relative group shrink-0">
-            <img
-              src={settings.logo || DEFAULT_CHURCH_LOGO}
-              alt="Logo"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = DEFAULT_CHURCH_LOGO;
-              }}
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-cover border border-white/20 shadow-lg shadow-indigo-500/10"
-            />
+        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#00a859] flex items-center justify-center p-1.5 shadow-xs shrink-0 text-white">
+            <Building2 className="w-5 h-5 text-white" />
           </div>
           <div className="flex flex-col min-w-0">
-            <h1 className={`text-xs sm:text-base font-extrabold leading-tight ${theme.navbar.titleClass} tracking-tight max-w-[100px] xs:max-w-[140px] sm:max-w-none truncate`}>
-              {settings.nama_gereja || 'Gereja'}
-            </h1>
-            <p className="text-[8px] sm:text-[10px] uppercase tracking-widest text-amber-400 font-bold leading-none mt-0.5 truncate">
-              Enterprise CMS Pro
+            <div className="flex items-center gap-2">
+              <h1 className="text-xs sm:text-base font-black text-slate-900 tracking-tight truncate leading-tight">
+                {shortCode}
+              </h1>
+              <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-[#00a859] border border-emerald-200 text-[10px] font-bold shrink-0">
+                TA 2026/2027 (Ganjil)
+              </span>
+            </div>
+            <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium leading-none mt-0.5 truncate max-w-[140px] xs:max-w-none">
+              Sistem Informasi Akademik Sekolah
             </p>
           </div>
         </div>
       </div>
 
-      {/* Middle section: Digital Clock & Date */}
-      <div className={`hidden md:flex items-center gap-4 px-5 py-2 rounded-full ${theme.navbar.pillClass} border ${theme.navbar.pillBorderClass} backdrop-blur-md text-xs`}>
-        <div className="flex items-center gap-2 font-mono font-medium">
-          <Clock className="w-3.5 h-3.5 text-indigo-400" />
-          <span>{timeStr}</span>
-        </div>
-        <div className={`h-3 w-[1px] ${theme.navbar.pillBorderClass}`} />
-        <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full ${theme.navbar.badgeClass} border text-[10px] font-bold`}>
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span>Real-Time Cloud</span>
-        </div>
-        <div className={`h-3 w-[1px] ${theme.navbar.pillBorderClass}`} />
-        <div className={`flex items-center gap-2 ${theme.navbar.subtextClass} text-[11px] font-medium uppercase tracking-wider`}>
-          <Calendar className="w-3.5 h-3.5" />
-          <span>{dateStr}</span>
-        </div>
+      {/* Middle section: Search Box from screenshot */}
+      <div className="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100/90 hover:bg-slate-100 border border-slate-200/80 text-xs text-slate-500 w-44 lg:w-56 cursor-pointer transition-all">
+        <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+        <span className="truncate">Cari Cepat...</span>
+        <kbd className="ml-auto text-[10px] bg-white border border-slate-200 rounded px-1.5 py-0.5 text-slate-400 font-mono">/</kbd>
       </div>
 
-      {/* Right section: SuperAdmin SaaS Switcher, Install PWA, Quick Palette, Notifications, Profile Dropdown */}
-      <div className="flex items-center gap-2 sm:gap-3">
+      {/* Right section: Firebase Live Pill, Admin Pill, Notifications, Profile Dropdown */}
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        {/* 1. Firebase Live Pill */}
+        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#dcfce7] border border-[#bbf7d0] text-[#15803d] text-xs font-bold shadow-2xs">
+          <span className="w-2 h-2 rounded-full bg-[#16a34a] animate-pulse" />
+          <span>Firebase Live</span>
+        </div>
+
+        {/* 2. Admin Pill */}
+        <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#dcfce7] border border-[#bbf7d0] text-[#15803d] text-xs font-bold shadow-2xs">
+          <span className="w-2 h-2 rounded-full bg-[#16a34a]" />
+          <span>{isAdmin ? 'Admin Sekolah' : 'Jemaat Sekolah'}</span>
+        </div>
         {currentUser.role === 'SUPER_ADMIN' && onOpenSuperAdminSaaSPanel && (
           <button
             onClick={onOpenSuperAdminSaaSPanel}
@@ -538,20 +524,20 @@ export const NavbarHeader: React.FC<NavbarHeaderProps> = ({
                   setShowUserDropdown(!showUserDropdown);
                   setShowNotifDropdown(false);
                 }}
-                className={`flex items-center gap-2.5 p-1.5 pr-3 rounded-xl ${theme.navbar.iconBtnClass} transition-all`}
+                className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-full hover:bg-slate-100 transition-all cursor-pointer border border-transparent hover:border-slate-200"
               >
-                <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center font-bold text-white text-xs shadow-md shadow-indigo-500/20">
-                  {currentUser.nama.slice(0, 2).toUpperCase()}
+                <div className="w-8 h-8 rounded-full bg-[#00a859] flex items-center justify-center font-bold text-white text-xs shadow-xs">
+                  {currentUser.nama.slice(0, 1).toUpperCase()}
                 </div>
-                <div className="hidden lg:block text-left">
-                  <p className={`text-xs font-bold leading-tight ${theme.navbar.titleClass} truncate max-w-[120px]`}>
+                <div className="hidden lg:block text-left min-w-0">
+                  <p className="text-xs font-bold leading-tight text-slate-800 truncate max-w-[130px]">
                     {currentUser.nama}
                   </p>
-                  <span className={`inline-block px-1.5 py-0.2 rounded text-[9px] font-bold mt-0.5 ${getRoleBadge(currentUser.role)}`}>
-                    {currentUser.role}
-                  </span>
+                  <p className="text-[10px] text-slate-400 font-medium leading-none mt-0.5 truncate">
+                    {currentUser.role === 'ADMIN' ? 'Admin Sekolah (TU)' : currentUser.role}
+                  </p>
                 </div>
-                <ChevronDown className={`w-3.5 h-3.5 ${theme.navbar.subtextClass} hidden lg:block`} />
+                <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden lg:block" />
               </button>
 
               {showUserDropdown && (

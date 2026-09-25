@@ -33,12 +33,12 @@ export function isColorLight(hex?: string): boolean {
 }
 
 export const getNavbarTheme = (settings?: AppSettings): NavbarThemeStyles => {
-  const preset = settings?.navbar_theme_preset || 'DEFAULT_DARK';
-  const customBg = (settings?.navbar_custom_bg || settings?.warna_tema || '#1e293b').trim();
+  const preset = settings?.navbar_theme_preset || 'CLEAN_LIGHT';
+  const customBg = (settings?.navbar_custom_bg || settings?.warna_tema || '#ffffff').trim();
   const hex = customBg.startsWith('#') ? customBg : `#${customBg}`;
-  const churchHex = (settings?.warna_tema || '#CD5C5C').trim().startsWith('#')
-    ? (settings?.warna_tema || '#CD5C5C').trim()
-    : `#${(settings?.warna_tema || '#CD5C5C').trim()}`;
+  const churchHex = (settings?.warna_tema || '#059669').trim().startsWith('#')
+    ? (settings?.warna_tema || '#059669').trim()
+    : `#${(settings?.warna_tema || '#059669').trim()}`;
   const style = settings?.navbar_style || 'GLASS';
   const borderAccent = settings?.navbar_border_accent || 'SUBTLE';
   const customTextChoice = settings?.navbar_custom_text || 'AUTO';
@@ -157,10 +157,10 @@ export const getNavbarTheme = (settings?: AppSettings): NavbarThemeStyles => {
     }
     case 'DEFAULT_DARK':
     default: {
-      const isSystemLight = settings?.theme_preset === 'LUXE_LIGHT';
+      const isSystemLight = settings?.theme_preset === 'LUXE_LIGHT' || settings?.theme_preset === 'EMERALD_LIGHT';
       if (isSystemLight) {
         isLight = true;
-        containerClass = 'bg-white/90 border-slate-200 shadow-sm backdrop-blur-xl border-b';
+        containerClass = 'bg-white/95 border-slate-200 shadow-sm backdrop-blur-xl border-b';
       } else {
         isLight = false;
         containerClass = 'bg-slate-950/80 backdrop-blur-xl border-b border-white/10';
@@ -194,14 +194,14 @@ export const getNavbarTheme = (settings?: AppSettings): NavbarThemeStyles => {
   const titleClass = isLight ? 'text-slate-900' : 'text-white';
   const subtextClass = isLight ? 'text-slate-500' : 'text-slate-400';
   const pillClass = isLight
-    ? 'bg-slate-100/90 text-slate-800 border-slate-300'
+    ? 'bg-emerald-50/90 text-emerald-950 border-emerald-200/80'
     : 'bg-white/5 text-indigo-300 border-white/10';
-  const pillBorderClass = isLight ? 'border-slate-300' : 'border-white/10';
+  const pillBorderClass = isLight ? 'border-emerald-200' : 'border-white/10';
   const iconBtnClass = isLight
-    ? 'text-slate-600 hover:text-slate-900 bg-slate-100/80 hover:bg-slate-200 border-slate-300'
+    ? 'text-slate-600 hover:text-emerald-700 bg-slate-100/80 hover:bg-emerald-50 border-slate-200'
     : 'text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 border-white/10';
   const badgeClass = isLight
-    ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
     : 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30';
 
   const menuBtnStyle: CSSProperties = {
@@ -234,10 +234,10 @@ export interface FooterThemeStyles {
 }
 
 export const getFooterTheme = (settings?: AppSettings): FooterThemeStyles => {
-  const preset = settings?.footer_theme_preset || 'DEFAULT_DARK';
-  const churchHex = (settings?.warna_tema || '#CD5C5C').trim().startsWith('#')
-    ? (settings?.warna_tema || '#CD5C5C').trim()
-    : `#${(settings?.warna_tema || '#CD5C5C').trim()}`;
+  const preset = settings?.footer_theme_preset || 'CLEAN_LIGHT';
+  const churchHex = (settings?.warna_tema || '#059669').trim().startsWith('#')
+    ? (settings?.warna_tema || '#059669').trim()
+    : `#${(settings?.warna_tema || '#059669').trim()}`;
 
   let baseBgHex = '#020617';
   if (preset === 'MATCH_THEME') {
@@ -337,8 +337,12 @@ export const getFooterTheme = (settings?: AppSettings): FooterThemeStyles => {
     else if (iconBgStyle === 'NONE') shapeClass = 'rounded-lg px-2 py-1';
     else shapeClass = 'rounded-xl px-2.5 py-1.5';
 
-    const glowClass = isActive && iconBgStyle === 'GLOW' ? 'shadow-md shadow-indigo-500/30' : '';
-    const activeStateClass = isActive ? `font-black scale-105 ${glowClass}` : 'hover:text-slate-200 opacity-80 hover:opacity-100';
+    const glowClass = isActive && iconBgStyle === 'GLOW' ? 'shadow-md shadow-emerald-500/30' : '';
+    const activeStateClass = isActive
+      ? `font-black scale-105 ${glowClass}`
+      : isLight
+      ? 'hover:text-emerald-700 opacity-80 hover:opacity-100'
+      : 'hover:text-slate-200 opacity-80 hover:opacity-100';
 
     return `flex flex-col items-center gap-1 text-[10px] transition-all cursor-pointer border ${shapeClass} ${activeStateClass}`;
   };
@@ -373,21 +377,21 @@ export interface ThemeStyles {
 }
 
 export const getThemeClasses = (settings?: AppSettings): ThemeStyles => {
-  const preset = settings?.theme_preset || 'DARK_SLATE';
-  const accent = settings?.accent_color || 'INDIGO';
+  const preset = settings?.theme_preset || 'EMERALD_LIGHT';
+  const accent = settings?.accent_color || 'EMERALD';
   const cardStyle = settings?.card_style || 'GLASS';
   const cardSize = settings?.card_size || 'NORMAL';
   const fontFam = settings?.font_family || 'SANS';
   const cardBorderAccent = settings?.card_border_accent || 'ACCENT_FULL';
   
-  let rawHex = (settings?.warna_tema || '#CD5C5C').trim();
+  let rawHex = (settings?.warna_tema || '#00a859').trim();
   if (!rawHex.startsWith('#')) {
     rawHex = `#${rawHex}`;
   }
   const customHexColor = rawHex;
 
   // 1. Root Container Background
-  let rootBg = 'bg-slate-950 text-slate-100';
+  let rootBg = 'bg-[#f0f5f2] text-slate-800';
   switch (preset) {
     case 'MIDNIGHT_BLUE':
       rootBg = 'bg-[#030712] text-slate-100';
@@ -405,27 +409,31 @@ export const getThemeClasses = (settings?: AppSettings): ThemeStyles => {
       rootBg = 'bg-slate-100 text-slate-900';
       break;
     case 'DARK_SLATE':
-    default:
       rootBg = 'bg-slate-950 text-slate-100';
+      break;
+    case 'EMERALD_LIGHT':
+    default:
+      rootBg = 'bg-[#f0f5f2] text-slate-800';
       break;
   }
 
   // 2. Card Background & Borders
-  let cardBg = 'bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl';
-  if (preset === 'LUXE_LIGHT') {
+  const isLightSystem = preset === 'LUXE_LIGHT' || preset === 'EMERALD_LIGHT';
+  let cardBg = 'bg-white border border-slate-200/90 shadow-sm text-slate-900';
+  if (isLightSystem) {
     switch (cardStyle) {
       case 'SOLID':
-        cardBg = 'bg-white border border-slate-200 shadow-xl text-slate-900';
+        cardBg = 'bg-white border border-slate-200/90 shadow-md text-slate-900';
         break;
       case 'NEON':
-        cardBg = 'bg-white border-2 border-indigo-400 shadow-xl shadow-indigo-500/10 text-slate-900';
+        cardBg = 'bg-white border-2 border-emerald-400 shadow-xl shadow-emerald-500/10 text-slate-900';
         break;
       case 'FLAT':
-        cardBg = 'bg-slate-50 border border-slate-200 shadow-none text-slate-900';
+        cardBg = 'bg-slate-50 border border-slate-200/80 shadow-none text-slate-900';
         break;
       case 'GLASS':
       default:
-        cardBg = 'bg-white/90 backdrop-blur-md border border-slate-200 shadow-lg text-slate-900';
+        cardBg = 'bg-white/95 backdrop-blur-md border border-slate-200/80 shadow-sm text-slate-900';
         break;
     }
   } else {
@@ -537,7 +545,7 @@ export const getThemeClasses = (settings?: AppSettings): ThemeStyles => {
     accentBg,
     accentRing,
     fontClass,
-    isLight: preset === 'LUXE_LIGHT',
+    isLight: preset === 'LUXE_LIGHT' || preset === 'EMERALD_LIGHT',
     customHexColor,
     customBgStyle: { backgroundColor: customHexColor },
     customTextStyle: { color: customHexColor },

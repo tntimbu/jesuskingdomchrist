@@ -396,8 +396,24 @@ export default function App() {
   const theme = getThemeClasses(settings);
 
   return (
-    <div id="app-container" className={`min-h-screen ${theme.rootBg} ${theme.fontClass} flex flex-col selection:bg-indigo-500/30 selection:text-white relative transition-colors duration-300`}>
-      {/* Main Top Header */}
+    <div id="app-container" className="min-h-screen bg-[#f0f5f2] text-slate-800 flex flex-col selection:bg-emerald-500/30 selection:text-emerald-900 relative transition-colors duration-200">
+      {/* 1. Top Window Bar matching screenshot header */}
+      <div className="h-7 sm:h-8 bg-[#004d2c] text-white/90 text-xs px-3 sm:px-4 flex items-center justify-between font-medium select-none shrink-0 z-40 border-b border-emerald-950/40">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+          <span className="font-semibold tracking-wide truncate text-[11px] sm:text-xs text-white/95">
+            SIAKAD &bull; {settings.nama_gereja || 'Jesus Kingdom Christ'} — Sistem Informasi Akademik &amp; Manajemen
+          </span>
+        </div>
+        <div className="flex items-center gap-3 text-white/70 text-xs font-mono shrink-0">
+          <span className="hover:text-white cursor-pointer hidden sm:inline text-[10px]">&bull;&bull;&bull;</span>
+          <span className="hover:text-white cursor-pointer px-1">&minus;</span>
+          <span className="hover:text-white cursor-pointer px-1">&#9633;</span>
+          <span className="hover:text-red-400 cursor-pointer px-1">&#10005;</span>
+        </div>
+      </div>
+
+      {/* 2. Main Top Header (NavbarHeader) */}
       <NavbarHeader
         currentUser={effectiveUser}
         isGuest={!currentUser}
@@ -417,39 +433,36 @@ export default function App() {
         onOpenAndroidStudioModal={isEffectiveAdmin ? () => setIsAndroidStudioModalOpen(true) : undefined}
       />
 
-      {/* Card Menu Overlay Modal (Replaces Left Sidebar for All Devices) */}
-      <CardMenuModal
-        isOpen={isMobileMenuOpen}
-        onClose={() => setIsMobileMenuOpen(false)}
-        currentUser={effectiveUser}
-        settings={settings}
-        activeTab={activeTab}
-        onSelectTab={handleSelectTab}
-        onOpenSuperAdminSaaSPanel={() => setIsSaaSPanelOpen(true)}
-        onOpenNavbarCustomizer={isEffectiveAdmin ? () => setIsNavbarCustomizerOpen(true) : undefined}
-        onOpenAndroidStudioModal={isEffectiveAdmin ? () => setIsAndroidStudioModalOpen(true) : undefined}
-      />
+      {/* 3. Main Body: Left Sidebar + Content */}
+      <div className="flex flex-1 w-full min-h-[calc(100vh-6.5rem)]">
+        {/* Left Persistent Sidebar (docked on desktop, drawer on mobile) */}
+        <Sidebar
+          currentUser={effectiveUser}
+          activeTab={activeTab}
+          onSelectTab={handleSelectTab}
+          isMobileOpen={isMobileMenuOpen}
+          onCloseMobile={() => setIsMobileMenuOpen(false)}
+          settings={settings}
+        />
 
-      {/* Content Layout - Full Width Without Left Sidebar */}
-      <div className="flex flex-1 w-full max-w-7xl mx-auto px-2 sm:px-4">
         {/* Main Content Area */}
-        <main className="flex-1 w-full min-w-0 p-1 sm:p-3 lg:p-4 pb-20 lg:pb-8">
+        <main className="flex-1 min-w-0 p-3 sm:p-5 lg:p-6 pb-24 lg:pb-12 max-w-7xl mx-auto w-full">
           {/* Top Breadcrumb & Quick Back Bar when in Sub-Modules */}
           {activeTab !== 'dashboard' && (
-            <div className="mb-4 p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-center justify-between gap-3 shadow-2xl backdrop-blur-md animate-fade-in">
+            <div className="mb-4 p-3.5 rounded-2xl bg-white border border-slate-200/90 text-slate-800 shadow-xs flex items-center justify-between gap-3 animate-fade-in">
               <div className="flex items-center gap-2.5 min-w-0">
                 <button
                   onClick={() => handleSelectTab('dashboard')}
-                  className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black flex items-center gap-2 border border-indigo-400/30 shadow-lg transition-all cursor-pointer shrink-0 active:scale-95"
+                  className="px-3.5 py-2 rounded-xl bg-[#00a859] hover:bg-[#00914c] text-white text-xs font-bold flex items-center gap-2 shadow-xs transition-all cursor-pointer shrink-0 active:scale-95"
                 >
                   <ArrowLeft className="w-4 h-4 text-white" />
                   <span>Kembali ke Dashboard Utama</span>
                 </button>
 
-                <span className="text-slate-600 font-bold hidden sm:inline">/</span>
+                <span className="text-slate-400 font-bold hidden sm:inline">/</span>
 
                 <div className="hidden sm:flex items-center gap-2 min-w-0">
-                  <span className="text-xs font-extrabold text-amber-400 uppercase tracking-wider truncate">
+                  <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider truncate">
                     Modul: {menuModules.find((m) => m.id === activeTab)?.title || activeTab}
                   </span>
                 </div>
@@ -457,11 +470,10 @@ export default function App() {
 
               <button
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="px-3.5 py-2 rounded-xl text-white text-xs font-extrabold flex items-center gap-2 shadow-lg transition-all shrink-0 cursor-pointer hover:scale-105 active:scale-95"
-                style={{ backgroundColor: settings.warna_tema || '#CD5C5C' }}
+                className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold flex items-center gap-2 shadow-xs transition-all shrink-0 cursor-pointer lg:hidden"
               >
-                <Grid className="w-4 h-4 text-white" />
-                <span className="hidden xs:inline">Kartu Menu</span>
+                <Grid className="w-4 h-4 text-emerald-600" />
+                <span>Menu</span>
               </button>
             </div>
           )}

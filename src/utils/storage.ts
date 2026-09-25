@@ -802,6 +802,23 @@ export const StorageManager = {
   getSettings: (): AppSettings => {
     const saved = getItem<AppSettings>(KEYS.SETTINGS, initialSettings);
     const settings = { ...initialSettings, ...saved };
+    // Auto upgrade any legacy preset to universal EMERALD_LIGHT theme so all users experience the new theme
+    if (!saved || saved.theme_preset !== 'EMERALD_LIGHT') {
+      settings.theme_preset = 'EMERALD_LIGHT';
+      settings.warna_tema = '#00a859';
+      settings.accent_color = 'EMERALD';
+      settings.navbar_theme_preset = 'CLEAN_LIGHT';
+      settings.navbar_custom_bg = '#ffffff';
+      settings.navbar_custom_text = 'DARK';
+      settings.navbar_border_accent = 'THEME_COLOR';
+      settings.footer_theme_preset = 'CLEAN_LIGHT';
+      settings.footer_custom_bg = '#ffffff';
+      settings.footer_icon_active_bg = '#dcfce7';
+      settings.footer_icon_active_text = '#00a859';
+      settings.footer_icon_inactive_text = '#64748b';
+      settings.jemaat_banner_bg = 'GRADIENT_EMERALD';
+      setItem(KEYS.SETTINGS, settings);
+    }
     // Auto sanitize any stale legacy church name
     if (settings.nama_gereja && settings.nama_gereja.includes('Kemenangan Faith')) {
       settings.nama_gereja = 'Jesus Kingdom Christ';

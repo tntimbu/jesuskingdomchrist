@@ -52,14 +52,17 @@ export const CardMenuModal: React.FC<CardMenuModalProps> = ({
     return matchSearch && matchCat;
   });
 
-  const customHexColor = settings.warna_tema || '#CD5C5C';
+  const customHexColor = settings.warna_tema || '#059669';
+  const isLightSystem = settings.theme_preset === 'EMERALD_LIGHT' || settings.theme_preset === 'LUXE_LIGHT';
 
   // Dynamic Theme Preset Style Classes matching Dashboard
   const getCardStyleClass = () => {
     const cardBg = settings.jemaat_cards_bg || 'DEFAULT_GLASS';
     const cardStyle = settings.card_style || 'GLASS';
 
-    let base = 'bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl';
+    let base = isLightSystem
+      ? 'bg-white border border-slate-200/90 shadow-xs hover:shadow-md text-slate-800'
+      : 'bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl text-white';
 
     if (cardBg && cardBg !== 'DEFAULT_GLASS') {
       switch (cardBg) {

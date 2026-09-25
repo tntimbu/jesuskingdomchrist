@@ -1329,6 +1329,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                   <label className="block text-slate-400 font-semibold">Preset Background Admin</label>
                   <div className="grid grid-cols-2 gap-2">
                     {[
+                      { id: 'EMERALD_LIGHT', label: '🌿 Emerald Light (Universal)', bg: 'from-emerald-50 via-teal-50 to-white text-emerald-950', border: 'border-emerald-500' },
                       { id: 'DARK_SLATE', label: '🌌 Dark Slate', bg: 'from-slate-900 to-indigo-950', border: 'border-indigo-500/50' },
                       { id: 'MIDNIGHT_BLUE', label: '💙 Midnight Blue', bg: 'from-slate-950 to-blue-950', border: 'border-blue-500/50' },
                       { id: 'DEEP_PURPLE', label: '💜 Amethyst Dark', bg: 'from-neutral-950 to-purple-950', border: 'border-purple-500/50' },
@@ -1341,13 +1342,13 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                         key={t.id}
                         onClick={() => setMetaForm({ ...metaForm, theme_preset: t.id as any })}
                         className={`p-2.5 rounded-xl bg-gradient-to-br ${t.bg} border text-left text-[11px] font-bold transition-all flex items-center justify-between ${
-                          (metaForm.theme_preset || 'DARK_SLATE') === t.id
-                            ? `${t.border} ring-2 ring-indigo-500 shadow-lg scale-[1.02]`
+                          (metaForm.theme_preset || 'EMERALD_LIGHT') === t.id
+                            ? `${t.border} ring-2 ring-emerald-500 shadow-lg scale-[1.02]`
                             : 'border-slate-800 opacity-70 hover:opacity-100'
                         }`}
                       >
                         <span className="truncate">{t.label}</span>
-                        {(metaForm.theme_preset || 'DARK_SLATE') === t.id && <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
+                        {(metaForm.theme_preset || 'EMERALD_LIGHT') === t.id && <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
                       </button>
                     ))}
                   </div>

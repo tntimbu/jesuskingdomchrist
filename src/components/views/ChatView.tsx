@@ -124,7 +124,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ currentUser, settings }) => 
   const effectiveDisplayName = isGuest ? guestName : currentUser.nama || currentUser.username;
 
   // Sync custom theme color
-  const themeHex = settings?.warna_tema?.trim() || '#CD5C5C';
+  const themeHex = settings?.warna_tema?.trim() || '#059669';
 
   // Load and subscribe to storage & real-time changes
   useEffect(() => {

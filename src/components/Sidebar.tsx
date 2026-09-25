@@ -1,5 +1,5 @@
 import React from 'react';
-import { User } from '../types';
+import { User, AppSettings } from '../types';
 import {
   LayoutDashboard,
   Users,
@@ -19,8 +19,15 @@ import {
   Grid,
   ChevronRight,
   MessageCircle,
-  BookMarked
+  BookMarked,
+  Home,
+  CheckSquare,
+  Building2,
+  Clock,
+  ShieldCheck,
+  X
 } from 'lucide-react';
+import { DEFAULT_CHURCH_LOGO } from '../data/initialData';
 
 export type NavTab =
   | 'dashboard'
@@ -48,6 +55,7 @@ interface SidebarProps {
   onSelectTab: (tab: NavTab) => void;
   isMobileOpen?: boolean;
   onCloseMobile?: () => void;
+  settings?: AppSettings;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -55,190 +63,256 @@ export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   onSelectTab,
   isMobileOpen,
-  onCloseMobile
+  onCloseMobile,
+  settings
 }) => {
   const isSuperAdmin = currentUser.role === 'SUPER_ADMIN';
   const isAdmin = currentUser.role === 'ADMIN' || isSuperAdmin;
+  const isJemaat = currentUser.role === 'JEMAAT';
 
-  const navItems = [
+  // Menu groups strictly styled like the reference UI (tampilan.png)
+  const menuSections = [
     {
-      id: 'dashboard',
-      label: 'Dashboard',
-      icon: LayoutDashboard,
-      roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
+      group: 'UTAMA',
+      items: [
+        {
+          id: 'dashboard',
+          label: isAdmin ? 'Dashboard Admin' : 'Dashboard Jemaat',
+          icon: LayoutDashboard,
+          roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
+        }
+      ]
     },
     {
-      id: 'jemaat',
-      label: 'Data Jemaat & KK',
-      icon: Users,
-      roles: ['SUPER_ADMIN', 'ADMIN']
+      group: 'DATA MASTER',
+      items: [
+        {
+          id: 'jemaat',
+          label: 'Data Jemaat',
+          icon: Users,
+          roles: ['SUPER_ADMIN', 'ADMIN']
+        },
+        {
+          id: 'jemaat_portal',
+          label: isJemaat ? 'Profil Saya' : 'Data Anggota',
+          icon: UserCheck,
+          roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
+        },
+        {
+          id: 'wilayah',
+          label: 'Data Wilayah / Sektor',
+          icon: Building2,
+          roles: ['SUPER_ADMIN', 'ADMIN']
+        },
+        {
+          id: 'administrasi',
+          label: 'Administrasi Surat',
+          icon: FileText,
+          roles: ['SUPER_ADMIN', 'ADMIN']
+        }
+      ]
     },
     {
-      id: 'wilayah',
-      label: 'Wilayah & Pelayanan',
-      icon: MapPin,
-      roles: ['SUPER_ADMIN', 'ADMIN']
+      group: 'PELAYANAN & AGENDA',
+      items: [
+        {
+          id: 'jadwal',
+          label: 'Jadwal Ibadah',
+          icon: CalendarDays,
+          roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
+        },
+        {
+          id: 'agenda',
+          label: 'Agenda & Event',
+          icon: Clock,
+          roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
+        },
+        {
+          id: 'renungan',
+          label: 'Renungan Harian',
+          icon: BookOpen,
+          roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
+        },
+        {
+          id: 'pustaka',
+          label: 'Alkitab & Pujian',
+          icon: BookMarked,
+          roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
+        },
+        {
+          id: 'doa',
+          label: 'Permohonan Doa',
+          icon: Heart,
+          roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
+        }
+      ]
     },
     {
-      id: 'administrasi',
-      label: 'Baptisan, Sidi, Nikah & Surat',
-      icon: FileText,
-      roles: ['SUPER_ADMIN', 'ADMIN']
-    },
-    {
-      id: 'keuangan',
-      label: 'Persembahan & Kas',
-      icon: DollarSign,
-      roles: ['SUPER_ADMIN', 'ADMIN']
-    },
-    {
-      id: 'jadwal',
-      label: 'Jadwal Ibadah Rutin',
-      icon: CalendarDays,
-      roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
-    },
-    {
-      id: 'agenda',
-      label: 'Upcoming Events & Reservasi',
-      icon: Sparkles,
-      roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
-    },
-    {
-      id: 'doa',
-      label: 'Permohonan Doa',
-      icon: Heart,
-      roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
-    },
-    {
-      id: 'pengumuman',
-      label: 'Pengumuman Gereja',
-      icon: Megaphone,
-      roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
-    },
-    {
-      id: 'renungan',
-      label: 'Renungan Harian',
-      icon: BookOpen,
-      roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
-    },
-    {
-      id: 'galeri',
-      label: 'Galeri Foto Kegiatan',
-      icon: ImageIcon,
-      roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
-    },
-    {
-      id: 'media',
-      label: 'Galeri Video & Streaming',
-      icon: Video,
-      roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
-    },
-    {
-      id: 'laporan',
-      label: 'Laporan PDF & Excel',
-      icon: FileSpreadsheet,
-      roles: ['SUPER_ADMIN', 'ADMIN']
-    },
-    {
-      id: 'jemaat_portal',
-      label: 'Portal Jemaat Saya',
-      icon: UserCheck,
-      roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
-    },
-    {
-      id: 'chat',
-      label: 'Ruang Chat Jemaat',
-      icon: MessageCircle,
-      roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
-    },
-    {
-      id: 'pustaka',
-      label: 'Alkitab & Buku Pujian',
-      icon: BookMarked,
-      roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
-    },
-    {
-      id: 'settings',
-      label: 'Pengaturan & Custom Tampilan',
-      icon: Settings,
-      roles: ['SUPER_ADMIN', 'ADMIN']
-    },
-    {
-      id: 'lainnya',
-      label: 'Menu Lainnya & All Modul',
-      icon: Grid,
-      roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
+      group: 'KOMUNIKASI & KEUANGAN',
+      items: [
+        {
+          id: 'keuangan',
+          label: 'Kas & Persembahan',
+          icon: DollarSign,
+          roles: ['SUPER_ADMIN', 'ADMIN']
+        },
+        {
+          id: 'pengumuman',
+          label: 'Warta & Pengumuman',
+          icon: Megaphone,
+          roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
+        },
+        {
+          id: 'chat',
+          label: 'Ruang Chat',
+          icon: MessageCircle,
+          roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
+        },
+        {
+          id: 'galeri',
+          label: 'Galeri Foto & Media',
+          icon: ImageIcon,
+          roles: ['SUPER_ADMIN', 'ADMIN', 'JEMAAT']
+        },
+        {
+          id: 'laporan',
+          label: 'Laporan Keuangan',
+          icon: FileSpreadsheet,
+          roles: ['SUPER_ADMIN', 'ADMIN']
+        },
+        {
+          id: 'settings',
+          label: 'Pengaturan Sistem',
+          icon: Settings,
+          roles: ['SUPER_ADMIN', 'ADMIN']
+        }
+      ]
     }
   ];
 
-  const filteredItems = navItems.filter((item) => item.roles.includes(currentUser.role));
+  const churchName = settings?.nama_gereja || 'SLH Gereja';
+  const shortCode = churchName
+    .split(' ')
+    .map((w) => w[0])
+    .join('')
+    .substring(0, 4)
+    .toUpperCase() || 'JKC';
 
-  const content = (
-    <aside className="w-64 lg:w-72 bg-white/5 backdrop-blur-xl border-r border-white/10 flex flex-col justify-between shrink-0 h-full text-slate-300 overflow-hidden">
-      <div className="p-4 space-y-6 overflow-y-auto">
-        {/* Navigation Category Header */}
-        <div>
-          <p className="px-3 text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-3 truncate">
-            {currentUser.role === 'JEMAAT' ? 'Menu Portal Jemaat GKFC' : 'Main Menu CMS Pro'}
-          </p>
-          <nav className="space-y-1">
-            {filteredItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeTab === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    onSelectTab(item.id as NavTab);
-                    if (onCloseMobile) onCloseMobile();
-                  }}
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all ${
-                    isActive
-                      ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 font-semibold shadow-md shadow-indigo-500/10'
-                      : 'hover:bg-white/5 text-slate-400 hover:text-slate-100 border border-transparent'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-indigo-400' : 'text-slate-400'}`} />
-                    <span className="truncate text-left">{item.label}</span>
-                  </div>
-                  {isActive && <ChevronRight className="w-3.5 h-3.5 text-indigo-400 shrink-0 ml-1" />}
-                </button>
-              );
-            })}
-          </nav>
+  const sidebarContent = (
+    <div className="w-64 bg-white border-r border-slate-200/80 flex flex-col justify-between h-full text-slate-700 select-none overflow-hidden">
+      {/* 1. Header Box: Brand / School / Church Info */}
+      <div className="p-3.5 border-b border-slate-100 shrink-0">
+        <div className="p-2.5 rounded-2xl bg-emerald-50/70 border border-emerald-200/70 flex items-center justify-between gap-2.5">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-white border border-emerald-200 flex items-center justify-center p-1 shadow-xs shrink-0">
+              <img
+                src={settings?.logo || DEFAULT_CHURCH_LOGO}
+                alt="Logo"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = DEFAULT_CHURCH_LOGO;
+                }}
+                className="w-full h-full object-contain rounded-lg"
+              />
+            </div>
+            <div className="min-w-0">
+              <h2 className="text-xs font-black text-slate-800 tracking-tight truncate leading-tight">
+                {shortCode}
+              </h2>
+              <p className="text-[10px] text-emerald-700 font-bold truncate">
+                ID: {settings?.header_title?.substring(0, 14) || '20104523'}
+              </p>
+            </div>
+          </div>
+
+          {onCloseMobile && (
+            <button
+              onClick={onCloseMobile}
+              className="lg:hidden p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Footer info in sidebar */}
-      <div className="p-4 border-t border-white/10 bg-white/5 shrink-0">
-        <div className="flex items-center justify-between text-[10px] text-slate-400 font-medium gap-1">
-          <span className="shrink-0">Status Database:</span>
-          <span className="inline-flex items-center gap-1.5 text-emerald-400 font-semibold truncate">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-            <span className="truncate">Google Sheets Sync</span>
-          </span>
-        </div>
+      {/* 2. Scrollable Navigation List */}
+      <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4 text-xs font-medium scrollbar-thin">
+        {menuSections.map((section, idx) => {
+          const visibleItems = section.items.filter((item) =>
+            item.roles.includes(currentUser.role)
+          );
+          if (visibleItems.length === 0) return null;
+
+          return (
+            <div key={idx} className="space-y-1">
+              <p className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                {section.group}
+              </p>
+              <div className="space-y-1">
+                {visibleItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.id;
+
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        onSelectTab(item.id as NavTab);
+                        if (onCloseMobile) onCloseMobile();
+                      }}
+                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-all duration-150 cursor-pointer ${
+                        isActive
+                          ? 'bg-[#00a859] hover:bg-[#00914c] text-white font-bold shadow-xs'
+                          : 'text-slate-600 hover:text-emerald-800 hover:bg-emerald-50/60 font-semibold'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <Icon
+                          className={`w-4 h-4 shrink-0 ${
+                            isActive ? 'text-white' : 'text-slate-400'
+                          }`}
+                        />
+                        <span className="truncate">{item.label}</span>
+                      </div>
+                      {isActive && (
+                        <div className="w-1.5 h-1.5 rounded-full bg-white shrink-0 ml-1" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
       </div>
-    </aside>
+
+      {/* 3. Bottom Status Bar */}
+      <div className="p-3 border-t border-slate-100 bg-slate-50/70 shrink-0 text-[10px] text-slate-500 flex items-center justify-between">
+        <span className="flex items-center gap-1.5 font-bold text-emerald-700">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span>Firebase Cloud Live</span>
+        </span>
+        <span className="font-semibold text-slate-400">v2.4</span>
+      </div>
+    </div>
   );
 
   return (
     <>
-      {/* Desktop Persistent Sidebar */}
-      <div className="hidden lg:block h-[calc(100vh-5rem)] sticky top-20 z-20">
-        {content}
-      </div>
+      {/* Desktop Persistent Sidebar (Fixed on the Left) */}
+      <aside className="hidden lg:block w-64 shrink-0 h-[calc(100vh-5rem)] sticky top-20 z-20 shadow-xs">
+        {sidebarContent}
+      </aside>
 
       {/* Mobile Drawer Overlay */}
       {isMobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden flex">
           <div
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm"
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity"
             onClick={onCloseMobile}
           />
-          <div className="relative z-10 w-72 max-w-full bg-slate-900 h-full shadow-2xl">
-            {content}
+          <div className="relative z-10 w-64 max-w-full bg-white h-full shadow-2xl animate-fade-in">
+            {sidebarContent}
           </div>
         </div>
       )}

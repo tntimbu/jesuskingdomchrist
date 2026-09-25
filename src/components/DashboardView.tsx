@@ -1117,56 +1117,66 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   };
 
   // Dynamic Theme Preset Style Classes & Density
+  const isLightSystem = settings.theme_preset === 'EMERALD_LIGHT' || settings.theme_preset === 'LUXE_LIGHT';
+
   const getCardStyleClass = () => {
     const cardBg = settings.jemaat_cards_bg || 'DEFAULT_GLASS';
     const cardStyle = settings.card_style || 'GLASS';
 
-    let base = 'bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl';
+    let base = isLightSystem
+      ? 'bg-white border border-slate-200/90 shadow-xs hover:shadow-md text-slate-800 backdrop-blur-xl'
+      : 'bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl text-white';
 
     if (cardBg && cardBg !== 'DEFAULT_GLASS') {
       switch (cardBg) {
         case 'GRADIENT_INDIGO':
-          base = 'bg-gradient-to-br from-indigo-950/90 via-slate-900 to-indigo-950/90 border border-indigo-500/40 shadow-xl shadow-indigo-950/30 backdrop-blur-xl';
+          base = 'bg-gradient-to-br from-indigo-950/90 via-slate-900 to-indigo-950/90 border border-indigo-500/40 shadow-xl shadow-indigo-950/30 backdrop-blur-xl text-white';
           break;
         case 'GRADIENT_PURPLE':
-          base = 'bg-gradient-to-br from-purple-950/90 via-slate-900 to-purple-950/90 border border-purple-500/40 shadow-xl shadow-purple-950/30 backdrop-blur-xl';
+          base = 'bg-gradient-to-br from-purple-950/90 via-slate-900 to-purple-950/90 border border-purple-500/40 shadow-xl shadow-purple-950/30 backdrop-blur-xl text-white';
           break;
         case 'GRADIENT_GOLD':
-          base = 'bg-gradient-to-br from-amber-950/90 via-slate-900 to-amber-950/90 border border-amber-500/40 shadow-xl shadow-amber-950/30 backdrop-blur-xl';
+          base = 'bg-gradient-to-br from-amber-950/90 via-slate-900 to-amber-950/90 border border-amber-500/40 shadow-xl shadow-amber-950/30 backdrop-blur-xl text-white';
           break;
         case 'GRADIENT_EMERALD':
-          base = 'bg-gradient-to-br from-emerald-950/90 via-slate-900 to-emerald-950/90 border border-emerald-500/40 shadow-xl shadow-emerald-950/30 backdrop-blur-xl';
+          base = isLightSystem
+            ? 'bg-gradient-to-br from-emerald-50 via-teal-50 to-white border border-emerald-200 shadow-md backdrop-blur-xl text-slate-800'
+            : 'bg-gradient-to-br from-emerald-950/90 via-slate-900 to-emerald-950/90 border border-emerald-500/40 shadow-xl shadow-emerald-950/30 backdrop-blur-xl text-white';
           break;
         case 'OBSIDIAN_NIGHT':
-          base = 'bg-gradient-to-br from-slate-950 via-slate-900 to-zinc-950 border border-slate-700/80 shadow-2xl backdrop-blur-xl';
+          base = 'bg-gradient-to-br from-slate-950 via-slate-900 to-zinc-950 border border-slate-700/80 shadow-2xl backdrop-blur-xl text-white';
           break;
         case 'OCEAN_BLUE':
-          base = 'bg-gradient-to-br from-blue-950/90 via-slate-900 to-cyan-950/90 border border-cyan-500/40 shadow-xl shadow-cyan-950/30 backdrop-blur-xl';
+          base = 'bg-gradient-to-br from-blue-950/90 via-slate-900 to-cyan-950/90 border border-cyan-500/40 shadow-xl shadow-cyan-950/30 backdrop-blur-xl text-white';
           break;
         case 'SOLID_SLATE':
-          base = 'bg-slate-900 border border-slate-800 shadow-xl';
+          base = isLightSystem ? 'bg-white border border-slate-200 shadow-md text-slate-800' : 'bg-slate-900 border border-slate-800 shadow-xl text-white';
           break;
         case 'NEON_CYAN':
-          base = 'bg-cyan-950/50 border border-cyan-400/50 shadow-lg shadow-cyan-500/20 backdrop-blur-xl';
+          base = 'bg-cyan-950/50 border border-cyan-400/50 shadow-lg shadow-cyan-500/20 backdrop-blur-xl text-white';
           break;
         default:
-          base = 'bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl';
+          base = isLightSystem
+            ? 'bg-white border border-slate-200/90 shadow-xs text-slate-800 backdrop-blur-xl'
+            : 'bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl text-white';
           break;
       }
     } else {
       switch (cardStyle) {
         case 'SOLID':
-          base = 'bg-slate-900 border border-slate-800 shadow-xl';
+          base = isLightSystem ? 'bg-white border border-slate-200 shadow-md text-slate-800' : 'bg-slate-900 border border-slate-800 shadow-xl text-white';
           break;
         case 'NEON':
-          base = 'bg-slate-900/90 border border-indigo-500/40 shadow-lg shadow-indigo-500/10 backdrop-blur-xl';
+          base = isLightSystem ? 'bg-white border-2 border-emerald-400 shadow-xl shadow-emerald-500/10 text-slate-800' : 'bg-slate-900/90 border border-indigo-500/40 shadow-lg shadow-indigo-500/10 backdrop-blur-xl text-white';
           break;
         case 'FLAT':
-          base = 'bg-slate-900/60 border border-slate-700/60 shadow-none';
+          base = isLightSystem ? 'bg-slate-50 border border-slate-200/80 shadow-none text-slate-800' : 'bg-slate-900/60 border border-slate-700/60 shadow-none text-white';
           break;
         case 'GLASS':
         default:
-          base = 'bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl';
+          base = isLightSystem
+            ? 'bg-white border border-slate-200/90 shadow-xs hover:shadow-md text-slate-800 backdrop-blur-xl'
+            : 'bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl text-white';
           break;
       }
     }
@@ -1239,13 +1249,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   if (settings.jemaat_card_width === 'COMPACT' || settings.jemaat_card_width === 'MOBILE_COMPACT') widthClass = 'max-w-4xl mx-auto px-1 sm:px-3';
   if (settings.jemaat_card_width === 'CONTAINED') widthClass = 'max-w-7xl mx-auto px-1 sm:px-3';
 
-  let bannerBgClass = 'bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 border-indigo-500/50 shadow-xl shadow-indigo-900/20';
+  let bannerBgClass = 'bg-gradient-to-r from-emerald-800 via-teal-700 to-emerald-900 border-emerald-500 shadow-xl shadow-emerald-950/20';
   switch (settings.jemaat_banner_bg) {
     case 'GRADIENT_GOLD':
       bannerBgClass = 'bg-gradient-to-r from-amber-950 via-yellow-900 to-amber-950 border-amber-500/50 shadow-xl shadow-amber-900/20';
       break;
     case 'GRADIENT_EMERALD':
-      bannerBgClass = 'bg-gradient-to-r from-emerald-950 via-teal-900 to-emerald-950 border-emerald-500/50 shadow-xl shadow-emerald-900/20';
+      bannerBgClass = 'bg-gradient-to-r from-emerald-800 via-teal-700 to-emerald-900 border-emerald-500 shadow-xl shadow-emerald-900/25';
       break;
     case 'GRADIENT_PURPLE':
       bannerBgClass = 'bg-gradient-to-r from-purple-950 via-fuchsia-900 to-purple-950 border-purple-500/50 shadow-xl shadow-purple-900/20';
@@ -1257,8 +1267,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       bannerBgClass = 'bg-gradient-to-r from-slate-950 via-blue-900 to-cyan-950 border-cyan-500/50 shadow-xl shadow-cyan-900/20';
       break;
     case 'GRADIENT_INDIGO':
-    default:
       bannerBgClass = 'bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 border-indigo-500/50 shadow-xl shadow-indigo-900/20';
+      break;
+    default:
+      bannerBgClass = 'bg-gradient-to-r from-emerald-800 via-teal-700 to-emerald-900 border-emerald-500 shadow-xl shadow-emerald-900/25';
       break;
   }
 
@@ -1444,23 +1456,31 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       {/* Banner Warta / Pengumuman Ticker Berjalan Tersemat (Icon Toa) */}
       {settings.show_pinned_notif_banner !== false && (settings.jemaat_announcement_text || isAdmin) && (
-        <div className="p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-amber-500/20 via-orange-500/15 to-amber-500/20 border border-amber-500/40 text-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg animate-fade-in backdrop-blur-md">
+        <div className={`p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl ${
+          isLightSystem
+            ? 'bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-300 text-amber-950 shadow-xs'
+            : 'bg-gradient-to-r from-amber-500/20 via-orange-500/15 to-amber-500/20 border border-amber-500/40 text-amber-200 shadow-lg'
+        } flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fade-in backdrop-blur-md`}>
           <div className="flex items-center gap-3 min-w-0 flex-1">
-            <span className="p-2 sm:p-2.5 rounded-xl bg-amber-500/30 text-amber-300 border border-amber-400/40 shrink-0 shadow-inner">
-              <Megaphone className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse text-amber-400" />
+            <span className={`p-2 sm:p-2.5 rounded-xl ${
+              isLightSystem ? 'bg-amber-100 text-amber-700 border border-amber-300' : 'bg-amber-500/30 text-amber-300 border border-amber-400/40'
+            } shrink-0 shadow-inner`}>
+              <Megaphone className={`w-4 h-4 sm:w-5 sm:h-5 animate-pulse ${isLightSystem ? 'text-amber-600' : 'text-amber-400'}`} />
             </span>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                <span className="text-[10px] uppercase font-black tracking-wider text-amber-400">
+                <span className={`text-[10px] uppercase font-black tracking-wider ${isLightSystem ? 'text-amber-800' : 'text-amber-400'}`}>
                   Warta &amp; Pengumuman Gereja:
                 </span>
                 {isAdmin && (
-                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30">
+                  <span className={`text-[9px] px-1.5 py-0.2 rounded ${
+                    isLightSystem ? 'bg-amber-100 text-amber-800 font-bold border border-amber-300' : 'bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30'
+                  }`}>
                     Banner Toa
                   </span>
                 )}
               </div>
-              <span className="text-xs sm:text-sm font-semibold text-slate-100 break-words leading-snug block">
+              <span className={`text-xs sm:text-sm font-semibold ${isLightSystem ? 'text-slate-800' : 'text-slate-100'} break-words leading-snug block`}>
                 {settings.jemaat_announcement_text || (isAdmin ? '(Teks warta belum diisi. Klik tombol "Edit Warta" untuk menulis pengumuman)' : '')}
               </span>
             </div>
@@ -1485,28 +1505,38 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       {/* BANNER PROMINEN UTAMA: KONVERSI ANDROID STUDIO & DOWNLOAD GOOGLE-SERVICES.JSON (KHUSUS ADMIN) */}
       {isAdmin && (
-        <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-indigo-950 via-slate-900 to-emerald-950 border-2 border-indigo-500/50 shadow-2xl flex flex-col lg:flex-row lg:items-center justify-between gap-4 text-white animate-fade-in">
+        <div className={`p-4 sm:p-5 rounded-2xl sm:rounded-3xl ${
+          isLightSystem
+            ? 'bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-100/70 border-2 border-emerald-300/80 shadow-md text-slate-800'
+            : 'bg-gradient-to-r from-indigo-950 via-slate-900 to-emerald-950 border-2 border-indigo-500/50 shadow-2xl text-white'
+        } flex flex-col lg:flex-row lg:items-center justify-between gap-4 animate-fade-in`}>
           <div className="flex items-start gap-3.5">
-            <div className="p-3 rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/40 shrink-0 mt-0.5 shadow-inner">
-              <Smartphone className="w-6 h-6 text-emerald-400 animate-pulse" />
+            <div className={`p-3 rounded-2xl ${
+              isLightSystem ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/40'
+            } shrink-0 mt-0.5 shadow-inner`}>
+              <Smartphone className={`w-6 h-6 ${isLightSystem ? 'text-emerald-700' : 'text-emerald-400'} animate-pulse`} />
             </div>
             <div className="space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-black border border-emerald-500/30">
+                <span className={`px-2.5 py-0.5 rounded-full ${
+                  isLightSystem ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                } text-[10px] font-black`}>
                   PROYEK ANDROID STUDIO
                 </span>
-                <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold border border-amber-500/30">
+                <span className={`px-2.5 py-0.5 rounded-full ${
+                  isLightSystem ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                } text-[10px] font-bold`}>
                   FCM Push Notifikasi
                 </span>
-                <span className="text-[11px] text-slate-300 font-mono hidden sm:inline">
+                <span className={`text-[11px] ${isLightSystem ? 'text-slate-600' : 'text-slate-300'} font-mono hidden sm:inline`}>
                   https://tntimbu.github.io/jesuskingdomchrist/
                 </span>
               </div>
-              <h3 className="font-extrabold text-sm sm:text-base text-white">
+              <h3 className={`font-extrabold text-sm sm:text-base ${isLightSystem ? 'text-slate-900' : 'text-white'}`}>
                 📱 Konversi Android Studio &amp; Berkas Firebase (FCM)
               </h3>
-              <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
-                Unduh berkas <code className="bg-slate-950 text-amber-300 px-1.5 py-0.5 rounded font-mono font-bold border border-slate-700">google-services.json</code> resmi untuk diletakkan di folder <code className="bg-slate-950 text-emerald-300 px-1.5 py-0.5 rounded font-mono font-bold border border-slate-700">app/</code> Android Studio, serta salin kode Java native (Status bar profesional, WebView, &amp; Push Notifikasi).
+              <p className={`text-xs ${isLightSystem ? 'text-slate-600' : 'text-slate-300'} max-w-2xl leading-relaxed`}>
+                Unduh berkas <code className={`${isLightSystem ? 'bg-emerald-100/80 text-emerald-900 border-emerald-300' : 'bg-slate-950 text-amber-300 border-slate-700'} px-1.5 py-0.5 rounded font-mono font-bold border`}>google-services.json</code> resmi untuk diletakkan di folder <code className={`${isLightSystem ? 'bg-emerald-100/80 text-emerald-900 border-emerald-300' : 'bg-slate-950 text-emerald-300 border-slate-700'} px-1.5 py-0.5 rounded font-mono font-bold border`}>app/</code> Android Studio, serta salin kode Java native (Status bar profesional, WebView, &amp; Push Notifikasi).
               </p>
             </div>
           </div>
@@ -1517,7 +1547,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               onClick={() => {
                 downloadGoogleServicesJsonFile(settings.firebase_package_name || settings.android_package_name || 'com.jesuskingdomchrist.app', settings);
               }}
-              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-600 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/25 flex items-center gap-2 transition-all cursor-pointer active:scale-95 border border-amber-400/50"
+              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-600 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-black text-xs shadow-md flex items-center gap-2 transition-all cursor-pointer active:scale-95 border border-amber-400/50"
               title="Klik untuk langsung mendownload file google-services.json ke komputer Anda"
             >
               <Download className="w-4 h-4 text-slate-950" />
@@ -1527,7 +1557,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <button
               type="button"
               onClick={() => setIsAndroidStudioModalOpen(true)}
-              className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition-all cursor-pointer active:scale-95 border border-indigo-400/40"
+              className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-md flex items-center gap-2 transition-all cursor-pointer active:scale-95 border border-emerald-400/40"
             >
               <Sparkles className="w-4 h-4 text-amber-300" />
               <span>Buka Generator &amp; Kode Sumber</span>
@@ -1574,20 +1604,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       {/* MENU UTAMA & MODUL PELAYANAN (HANYA DITAMPILKAN UNTUK ADMIN DI DASHBOARD HOME, UNTUK JEMAAT DIALIKAN KE MENU LAINNYA) */}
       {isAdmin && settings.show_admin_quick_access !== false && (
-        <div className={`p-3.5 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl ${cardStyleClass} text-white space-y-2.5 sm:space-y-4`}>
-          <div className="flex items-center justify-between pb-2.5 sm:pb-3 border-b border-white/10">
+        <div className={`p-3.5 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl ${cardStyleClass} ${isLightSystem ? 'text-slate-800' : 'text-white'} space-y-2.5 sm:space-y-4`}>
+          <div className={`flex items-center justify-between pb-2.5 sm:pb-3 border-b ${isLightSystem ? 'border-slate-100' : 'border-white/10'}`}>
             <div className="flex items-center gap-2.5">
-              <div className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-600 to-pink-600 text-white shadow-lg shadow-indigo-500/20">
+              <div className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-emerald-500 via-teal-600 to-emerald-700 text-white shadow-md shadow-emerald-500/20">
                 <Grid className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
               <div>
-                <h3 className="text-sm sm:text-base font-extrabold text-white tracking-wide">
+                <h3 className={`text-sm sm:text-base font-extrabold ${isLightSystem ? 'text-slate-900' : 'text-white'} tracking-wide`}>
                   Panel Quick Access Admin
                 </h3>
-                <p className="text-[11px] text-slate-400">Akses cepat manajemen sistem &amp; modul pelayanan</p>
+                <p className={`text-[11px] ${isLightSystem ? 'text-slate-500' : 'text-slate-400'}`}>Akses cepat manajemen sistem &amp; modul pelayanan</p>
               </div>
             </div>
-            <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-[9px] sm:text-[10px] font-extrabold border border-indigo-500/30 uppercase tracking-wider">
+            <span className={`px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full ${isLightSystem ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'} text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider`}>
               Admin Shortcuts
             </span>
           </div>
@@ -1596,147 +1626,175 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             {/* 1. Jemaat & KK */}
             <button
               onClick={() => onNavigate('jemaat')}
-              className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br from-indigo-950/90 via-slate-900 to-slate-950 hover:from-indigo-900/90 hover:to-indigo-950 border border-indigo-500/30 hover:border-indigo-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-2 sm:space-y-3"
+              className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl ${
+                isLightSystem
+                  ? 'bg-white hover:bg-emerald-50/50 border border-slate-200/90 hover:border-emerald-400 shadow-xs hover:shadow-md'
+                  : 'bg-gradient-to-br from-indigo-950/90 via-slate-900 to-slate-950 hover:from-indigo-900/90 hover:to-indigo-950 border border-indigo-500/30 hover:border-indigo-400 shadow-xl'
+              } text-left transition-all duration-200 group cursor-pointer flex flex-col justify-between space-y-2 sm:space-y-3`}
             >
               <div className="flex items-center justify-between">
                 <div className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-blue-600 text-white shadow-lg group-hover:scale-110 transition-transform">
                   <Users className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <span className="text-[9px] sm:text-[10px] font-extrabold px-1.5 sm:px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                <span className="text-[9px] sm:text-[10px] font-extrabold px-1.5 sm:px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-500/30">
                   {jemaatList.length} Jiwa
                 </span>
               </div>
               <div>
-                <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-blue-300 transition-colors block">
+                <span className={`font-extrabold text-xs sm:text-sm ${isLightSystem ? 'text-slate-900 group-hover:text-blue-600' : 'text-white group-hover:text-blue-300'} transition-colors block`}>
                   Data Jemaat &amp; KK
                 </span>
-                <span className="text-[10px] text-slate-400 block mt-0.5">Database, KK &amp; KTA</span>
+                <span className={`text-[10px] ${isLightSystem ? 'text-slate-500' : 'text-slate-400'} block mt-0.5`}>Database, KK &amp; KTA</span>
               </div>
             </button>
 
             {/* 2. Keuangan & Kas */}
             <button
               onClick={() => onNavigate('keuangan')}
-              className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br from-emerald-950/90 via-slate-900 to-slate-950 hover:from-emerald-900/90 hover:to-emerald-950 border border-emerald-500/30 hover:border-emerald-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-2 sm:space-y-3"
+              className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl ${
+                isLightSystem
+                  ? 'bg-white hover:bg-emerald-50/50 border border-slate-200/90 hover:border-emerald-400 shadow-xs hover:shadow-md'
+                  : 'bg-gradient-to-br from-emerald-950/90 via-slate-900 to-slate-950 hover:from-emerald-900/90 hover:to-emerald-950 border border-emerald-500/30 hover:border-emerald-400 shadow-xl'
+              } text-left transition-all duration-200 group cursor-pointer flex flex-col justify-between space-y-2 sm:space-y-3`}
             >
               <div className="flex items-center justify-between">
                 <div className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-emerald-600 text-white shadow-lg group-hover:scale-110 transition-transform">
                   <DollarSign className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <span className="text-[9px] sm:text-[10px] font-extrabold px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                <span className="text-[9px] sm:text-[10px] font-extrabold px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
                   Kas &amp; Transfer
                 </span>
               </div>
               <div>
-                <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-emerald-300 transition-colors block">
+                <span className={`font-extrabold text-xs sm:text-sm ${isLightSystem ? 'text-slate-900 group-hover:text-emerald-600' : 'text-white group-hover:text-emerald-300'} transition-colors block`}>
                   Keuangan &amp; Kas
                 </span>
-                <span className="text-[10px] text-slate-400 block mt-0.5">Kas, Persembahan &amp; Bank</span>
+                <span className={`text-[10px] ${isLightSystem ? 'text-slate-500' : 'text-slate-400'} block mt-0.5`}>Kas, Persembahan &amp; Bank</span>
               </div>
             </button>
 
             {/* 3. Administrasi & Sakramen */}
             <button
               onClick={() => onNavigate('administrasi')}
-              className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br from-purple-950/90 via-slate-900 to-slate-950 hover:from-purple-900/90 hover:to-purple-950 border border-purple-500/30 hover:border-purple-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-2 sm:space-y-3"
+              className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl ${
+                isLightSystem
+                  ? 'bg-white hover:bg-emerald-50/50 border border-slate-200/90 hover:border-emerald-400 shadow-xs hover:shadow-md'
+                  : 'bg-gradient-to-br from-purple-950/90 via-slate-900 to-slate-950 hover:from-purple-900/90 hover:to-purple-950 border border-purple-500/30 hover:border-purple-400 shadow-xl'
+              } text-left transition-all duration-200 group cursor-pointer flex flex-col justify-between space-y-2 sm:space-y-3`}
             >
               <div className="flex items-center justify-between">
                 <div className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-purple-600 text-white shadow-lg group-hover:scale-110 transition-transform">
                   <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <span className="text-[9px] sm:text-[10px] font-extrabold px-1.5 sm:px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                <span className="text-[9px] sm:text-[10px] font-extrabold px-1.5 sm:px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/30">
                   Surat Sakramen
                 </span>
               </div>
               <div>
-                <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-purple-300 transition-colors block">
+                <span className={`font-extrabold text-xs sm:text-sm ${isLightSystem ? 'text-slate-900 group-hover:text-purple-600' : 'text-white group-hover:text-purple-300'} transition-colors block`}>
                   Administrasi Surat
                 </span>
-                <span className="text-[10px] text-slate-400 block mt-0.5">Baptis, Sidi &amp; Pernikahan</span>
+                <span className={`text-[10px] ${isLightSystem ? 'text-slate-500' : 'text-slate-400'} block mt-0.5`}>Baptis, Sidi &amp; Pernikahan</span>
               </div>
             </button>
 
             {/* 4. Agenda & Reservasi */}
             <button
               onClick={() => onNavigate('agenda')}
-              className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br from-amber-950/90 via-slate-900 to-slate-950 hover:from-amber-900/90 hover:to-amber-950 border border-amber-500/30 hover:border-amber-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-2 sm:space-y-3"
+              className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl ${
+                isLightSystem
+                  ? 'bg-white hover:bg-emerald-50/50 border border-slate-200/90 hover:border-emerald-400 shadow-xs hover:shadow-md'
+                  : 'bg-gradient-to-br from-amber-950/90 via-slate-900 to-slate-950 hover:from-amber-900/90 hover:to-amber-950 border border-amber-500/30 hover:border-amber-400 shadow-xl'
+              } text-left transition-all duration-200 group cursor-pointer flex flex-col justify-between space-y-2 sm:space-y-3`}
             >
               <div className="flex items-center justify-between">
                 <div className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-amber-600 text-white shadow-lg group-hover:scale-110 transition-transform">
                   <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <span className="text-[9px] sm:text-[10px] font-extrabold px-1.5 sm:px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                <span className="text-[9px] sm:text-[10px] font-extrabold px-1.5 sm:px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30">
                   {eventsList.length} Event
                 </span>
               </div>
               <div>
-                <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-amber-300 transition-colors block">
+                <span className={`font-extrabold text-xs sm:text-sm ${isLightSystem ? 'text-slate-900 group-hover:text-amber-600' : 'text-white group-hover:text-amber-300'} transition-colors block`}>
                   Agenda &amp; Event
                 </span>
-                <span className="text-[10px] text-slate-400 block mt-0.5">Jadwal &amp; Reservasi Kursi</span>
+                <span className={`text-[10px] ${isLightSystem ? 'text-slate-500' : 'text-slate-400'} block mt-0.5`}>Jadwal &amp; Reservasi Kursi</span>
               </div>
             </button>
 
             {/* 5. Ruang Chat Jemaat */}
             <button
               onClick={() => onNavigate('chat')}
-              className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br from-indigo-950/90 via-slate-900 to-slate-950 hover:from-indigo-900/90 hover:to-indigo-950 border border-indigo-500/30 hover:border-indigo-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-2 sm:space-y-3"
+              className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl ${
+                isLightSystem
+                  ? 'bg-white hover:bg-emerald-50/50 border border-slate-200/90 hover:border-emerald-400 shadow-xs hover:shadow-md'
+                  : 'bg-gradient-to-br from-indigo-950/90 via-slate-900 to-slate-950 hover:from-indigo-900/90 hover:to-indigo-950 border border-indigo-500/30 hover:border-indigo-400 shadow-xl'
+              } text-left transition-all duration-200 group cursor-pointer flex flex-col justify-between space-y-2 sm:space-y-3`}
             >
               <div className="flex items-center justify-between">
                 <div className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-indigo-600 text-white shadow-lg group-hover:scale-110 transition-transform">
                   <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <span className="text-[9px] sm:text-[10px] font-extrabold px-1.5 sm:px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                <span className="text-[9px] sm:text-[10px] font-extrabold px-1.5 sm:px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30">
                   Live Chat
                 </span>
               </div>
               <div>
-                <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-indigo-300 transition-colors block">
+                <span className={`font-extrabold text-xs sm:text-sm ${isLightSystem ? 'text-slate-900 group-hover:text-indigo-600' : 'text-white group-hover:text-indigo-300'} transition-colors block`}>
                   Ruang Chat
                 </span>
-                <span className="text-[10px] text-slate-400 block mt-0.5">Komunitas Jemaat</span>
+                <span className={`text-[10px] ${isLightSystem ? 'text-slate-500' : 'text-slate-400'} block mt-0.5`}>Komunitas Jemaat</span>
               </div>
             </button>
 
             {/* 6. Alkitab & Pujian */}
             <button
               onClick={() => onNavigate('pustaka')}
-              className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br from-amber-950/90 via-slate-900 to-slate-950 hover:from-amber-900/90 hover:to-amber-950 border border-amber-500/30 hover:border-amber-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-2 sm:space-y-3"
+              className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl ${
+                isLightSystem
+                  ? 'bg-white hover:bg-emerald-50/50 border border-slate-200/90 hover:border-emerald-400 shadow-xs hover:shadow-md'
+                  : 'bg-gradient-to-br from-amber-950/90 via-slate-900 to-slate-950 hover:from-amber-900/90 hover:to-amber-950 border border-amber-500/30 hover:border-amber-400 shadow-xl'
+              } text-left transition-all duration-200 group cursor-pointer flex flex-col justify-between space-y-2 sm:space-y-3`}
             >
               <div className="flex items-center justify-between">
                 <div className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-amber-500 text-slate-950 shadow-lg group-hover:scale-110 transition-transform">
                   <BookMarked className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <span className="text-[9px] sm:text-[10px] font-extrabold px-1.5 sm:px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                <span className="text-[9px] sm:text-[10px] font-extrabold px-1.5 sm:px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30">
                   Alkitab &amp; Lagu
                 </span>
               </div>
               <div>
-                <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-amber-300 transition-colors block">
+                <span className={`font-extrabold text-xs sm:text-sm ${isLightSystem ? 'text-slate-900 group-hover:text-amber-600' : 'text-white group-hover:text-amber-300'} transition-colors block`}>
                   Alkitab &amp; Pujian
                 </span>
-                <span className="text-[10px] text-slate-400 block mt-0.5">KJ, NKB, PKJ, Lagu</span>
+                <span className={`text-[10px] ${isLightSystem ? 'text-slate-500' : 'text-slate-400'} block mt-0.5`}>KJ, NKB, PKJ, Lagu</span>
               </div>
             </button>
 
             {/* 7. Menu Lainnya */}
             <button
               onClick={() => onNavigate('lainnya')}
-              className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br from-cyan-950/90 via-slate-900 to-slate-950 hover:from-cyan-900/90 hover:to-cyan-950 border border-cyan-500/30 hover:border-cyan-400 text-left transition-all duration-200 group cursor-pointer shadow-xl flex flex-col justify-between space-y-2 sm:space-y-3"
+              className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl ${
+                isLightSystem
+                  ? 'bg-white hover:bg-emerald-50/50 border border-slate-200/90 hover:border-emerald-400 shadow-xs hover:shadow-md'
+                  : 'bg-gradient-to-br from-cyan-950/90 via-slate-900 to-slate-950 hover:from-cyan-900/90 hover:to-cyan-950 border border-cyan-500/30 hover:border-cyan-400 shadow-xl'
+              } text-left transition-all duration-200 group cursor-pointer flex flex-col justify-between space-y-2 sm:space-y-3`}
             >
               <div className="flex items-center justify-between">
                 <div className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-cyan-600 text-white shadow-lg group-hover:scale-110 transition-transform">
                   <Grid className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <span className="text-[9px] sm:text-[10px] font-extrabold px-1.5 sm:px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                <span className="text-[9px] sm:text-[10px] font-extrabold px-1.5 sm:px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 border border-cyan-500/30">
                   All Modul
                 </span>
               </div>
               <div>
-                <span className="font-extrabold text-xs sm:text-sm text-white group-hover:text-cyan-300 transition-colors block">
+                <span className={`font-extrabold text-xs sm:text-sm ${isLightSystem ? 'text-slate-900 group-hover:text-cyan-600' : 'text-white group-hover:text-cyan-300'} transition-colors block`}>
                   Menu Lainnya
                 </span>
-                <span className="text-[10px] text-slate-400 block mt-0.5">Semua Modul &amp; Fitur</span>
+                <span className={`text-[10px] ${isLightSystem ? 'text-slate-500' : 'text-slate-400'} block mt-0.5`}>Semua Modul &amp; Fitur</span>
               </div>
             </button>
           </div>
@@ -1754,39 +1812,39 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             {/* Baris Pertama: Total Jemaat (Kotak 1) & Total KK (Kotak 2) */}
             <div className="grid grid-cols-2 gap-1.5 sm:gap-2.5 md:gap-4">
               {/* Kartu 1: Total Jemaat */}
-              <div className={`p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl md:rounded-3xl ${cardStyleClass} border border-indigo-500/30 flex flex-col justify-between space-y-1 sm:space-y-2`}>
+              <div className={`p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl md:rounded-3xl ${cardStyleClass} border ${isLightSystem ? 'border-slate-200/90 shadow-sm' : 'border-indigo-500/30'} flex flex-col justify-between space-y-1 sm:space-y-2`}>
                 <div className="flex items-center justify-between gap-1">
-                  <span className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider truncate">Total Jemaat</span>
-                  <div className="p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shadow-md shrink-0">
+                  <span className={`text-[10px] sm:text-xs ${isLightSystem ? 'text-slate-600' : 'text-slate-300'} font-bold uppercase tracking-wider truncate`}>Total Jemaat</span>
+                  <div className={`p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl ${isLightSystem ? 'bg-blue-50 text-blue-600 border border-blue-200' : 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30'} shadow-xs shrink-0`}>
                     <Users className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                 </div>
                 <div className="flex items-baseline gap-1.5 flex-wrap">
-                  <span className="text-xl sm:text-3xl font-black text-white">{totalJemaat}</span>
-                  <span className="text-[10px] sm:text-xs text-slate-400 font-medium">Jiwa</span>
+                  <span className={`text-xl sm:text-3xl font-black ${isLightSystem ? 'text-slate-900' : 'text-white'}`}>{totalJemaat}</span>
+                  <span className={`text-[10px] sm:text-xs ${isLightSystem ? 'text-slate-500' : 'text-slate-400'} font-medium`}>Jiwa</span>
                 </div>
-                <div className="pt-1.5 sm:pt-2 border-t border-white/10 flex items-center justify-between text-[9px] sm:text-[11px] text-slate-300 gap-1">
-                  <span>L: <strong className="text-indigo-300 font-bold">{totalLaki}</strong></span>
-                  <span>P: <strong className="text-pink-300 font-bold">{totalPerempuan}</strong></span>
+                <div className={`pt-1.5 sm:pt-2 border-t ${isLightSystem ? 'border-slate-100 text-slate-600' : 'border-white/10 text-slate-300'} flex items-center justify-between text-[9px] sm:text-[11px] gap-1`}>
+                  <span>L: <strong className={isLightSystem ? 'text-blue-600 font-bold' : 'text-indigo-300 font-bold'}>{totalLaki}</strong></span>
+                  <span>P: <strong className={isLightSystem ? 'text-pink-600 font-bold' : 'text-pink-300 font-bold'}>{totalPerempuan}</strong></span>
                 </div>
               </div>
 
               {/* Kartu 2: Total Kepala Keluarga (KK) */}
               <div 
-                className={`p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl md:rounded-3xl ${cardStyleClass} border border-purple-500/30 flex flex-col justify-between space-y-1 sm:space-y-2`}
+                className={`p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl md:rounded-3xl ${cardStyleClass} border ${isLightSystem ? 'border-slate-200/90 shadow-sm' : 'border-purple-500/30'} flex flex-col justify-between space-y-1 sm:space-y-2`}
                 title="Total Kartu Keluarga unik. Jemaat dengan Nomor KK yang sama dihitung sebagai satu keluarga."
               >
                 <div className="flex items-center justify-between gap-1">
-                  <span className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider truncate">Total KK</span>
-                  <div className="p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl bg-purple-500/20 text-purple-400 border border-purple-500/30 shadow-md shrink-0">
+                  <span className={`text-[10px] sm:text-xs ${isLightSystem ? 'text-slate-600' : 'text-slate-300'} font-bold uppercase tracking-wider truncate`}>Total KK</span>
+                  <div className={`p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl ${isLightSystem ? 'bg-purple-50 text-purple-600 border border-purple-200' : 'bg-purple-500/20 text-purple-400 border border-purple-500/30'} shadow-xs shrink-0`}>
                     <Home className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                 </div>
                 <div className="flex items-baseline gap-1.5 flex-wrap">
-                  <span className="text-xl sm:text-3xl font-black text-white">{totalKeluarga}</span>
-                  <span className="text-[10px] sm:text-xs text-slate-400 font-medium">Keluarga</span>
+                  <span className={`text-xl sm:text-3xl font-black ${isLightSystem ? 'text-slate-900' : 'text-white'}`}>{totalKeluarga}</span>
+                  <span className={`text-[10px] sm:text-xs ${isLightSystem ? 'text-slate-500' : 'text-slate-400'} font-medium`}>Keluarga</span>
                 </div>
-                <div className="pt-1.5 sm:pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 truncate">
+                <div className={`pt-1.5 sm:pt-2 border-t ${isLightSystem ? 'border-slate-100 text-slate-600' : 'border-white/10 text-slate-300'} text-[9px] sm:text-[11px] truncate`}>
                   <span>Kartu Keluarga (Unik)</span>
                 </div>
               </div>
@@ -1796,40 +1854,40 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div className="grid grid-cols-2 gap-1.5 sm:gap-2.5 md:gap-4">
               {/* Kartu 3: Kas Persembahan */}
               <div
-                className={`p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl md:rounded-3xl ${cardStyleClass} border border-emerald-500/30 flex flex-col justify-between space-y-1 sm:space-y-2`}
+                className={`p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl md:rounded-3xl ${cardStyleClass} border ${isLightSystem ? 'border-slate-200/90 shadow-sm' : 'border-emerald-500/30'} flex flex-col justify-between space-y-1 sm:space-y-2`}
               >
                 <div className="flex items-center justify-between gap-1">
-                  <span className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider truncate">Kas Persembahan</span>
-                  <div className="p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-md shrink-0">
+                  <span className={`text-[10px] sm:text-xs ${isLightSystem ? 'text-slate-600' : 'text-slate-300'} font-bold uppercase tracking-wider truncate`}>Kas Persembahan</span>
+                  <div className={`p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl ${isLightSystem ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'} shadow-xs shrink-0`}>
                     <Wallet className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                 </div>
                 <div className="flex items-baseline gap-1 flex-wrap">
-                  <span className="text-base sm:text-2xl font-black text-emerald-400 leading-tight">
+                  <span className="text-base sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 leading-tight">
                     Rp {saldoKasBersih.toLocaleString('id-ID')}
                   </span>
                 </div>
-                <div className="pt-1.5 sm:pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 flex items-center justify-between">
+                <div className={`pt-1.5 sm:pt-2 border-t ${isLightSystem ? 'border-slate-100 text-slate-600' : 'border-white/10 text-slate-300'} text-[9px] sm:text-[11px] flex items-center justify-between`}>
                   <span>Saldo Kas Bersih</span>
-                  <span className="text-emerald-300 font-semibold">Realtime</span>
+                  <span className="text-emerald-600 dark:text-emerald-300 font-semibold">Realtime</span>
                 </div>
               </div>
 
               {/* Kartu 4: Jadwal & Event */}
               <div
-                className={`p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl md:rounded-3xl ${cardStyleClass} border border-amber-500/30 flex flex-col justify-between space-y-1 sm:space-y-2`}
+                className={`p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl md:rounded-3xl ${cardStyleClass} border ${isLightSystem ? 'border-slate-200/90 shadow-sm' : 'border-amber-500/30'} flex flex-col justify-between space-y-1 sm:space-y-2`}
               >
                 <div className="flex items-center justify-between gap-1">
-                  <span className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider truncate">Jadwal & Event</span>
-                  <div className="p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shadow-md shrink-0">
+                  <span className={`text-[10px] sm:text-xs ${isLightSystem ? 'text-slate-600' : 'text-slate-300'} font-bold uppercase tracking-wider truncate`}>Jadwal & Event</span>
+                  <div className={`p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl ${isLightSystem ? 'bg-amber-50 text-amber-600 border border-amber-200' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'} shadow-xs shrink-0`}>
                     <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                 </div>
                 <div className="flex items-baseline gap-1.5 flex-wrap">
-                  <span className="text-xl sm:text-3xl font-black text-white">{eventsList.length}</span>
-                  <span className="text-[10px] sm:text-xs text-slate-400 font-medium">Agenda</span>
+                  <span className={`text-xl sm:text-3xl font-black ${isLightSystem ? 'text-slate-900' : 'text-white'}`}>{eventsList.length}</span>
+                  <span className={`text-[10px] sm:text-xs ${isLightSystem ? 'text-slate-500' : 'text-slate-400'} font-medium`}>Agenda</span>
                 </div>
-                <div className="pt-1.5 sm:pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 truncate">
+                <div className={`pt-1.5 sm:pt-2 border-t ${isLightSystem ? 'border-slate-100 text-slate-600' : 'border-white/10 text-slate-300'} text-[9px] sm:text-[11px] truncate`}>
                   <span>Agenda Ibadah & Event</span>
                 </div>
               </div>
@@ -2941,75 +2999,75 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           {settings.show_stat_cards !== false && (
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-1.5 sm:gap-2.5 md:gap-4">
               {/* Total Jemaat Card */}
-              <div className={`p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl md:rounded-3xl ${cardStyleClass} border border-indigo-500/30 flex flex-col justify-between space-y-1 sm:space-y-2 text-white`}>
+              <div className={`p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl md:rounded-3xl ${cardStyleClass} border ${isLightSystem ? 'border-slate-200/90 shadow-sm text-slate-800' : 'border-indigo-500/30 text-white'} flex flex-col justify-between space-y-1 sm:space-y-2`}>
                 <div className="flex items-center justify-between gap-1">
-                  <span className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider truncate">Total Jemaat</span>
-                  <div className="p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shadow-md shrink-0">
+                  <span className={`text-[10px] sm:text-xs ${isLightSystem ? 'text-slate-600' : 'text-slate-300'} font-bold uppercase tracking-wider truncate`}>Total Jemaat</span>
+                  <div className={`p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl ${isLightSystem ? 'bg-blue-50 text-blue-600 border border-blue-200' : 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30'} shadow-sm shrink-0`}>
                     <Users className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                 </div>
                 <div className="flex items-baseline gap-1 flex-wrap">
-                  <span className="text-xl sm:text-3xl font-black text-white">{totalJemaat}</span>
-                  <span className="text-[10px] sm:text-xs text-slate-400 font-medium">Jiwa</span>
+                  <span className={`text-xl sm:text-3xl font-black ${isLightSystem ? 'text-slate-900' : 'text-white'}`}>{totalJemaat}</span>
+                  <span className={`text-[10px] sm:text-xs ${isLightSystem ? 'text-slate-500' : 'text-slate-400'} font-medium`}>Jiwa</span>
                 </div>
-                <div className="pt-1.5 sm:pt-2 border-t border-white/10 flex items-center justify-between text-[9px] sm:text-[11px] text-slate-300 gap-1">
-                  <span>L: <strong className="text-indigo-300 font-bold">{totalLaki}</strong></span>
-                  <span>P: <strong className="text-pink-300 font-bold">{totalPerempuan}</strong></span>
+                <div className={`pt-1.5 sm:pt-2 border-t ${isLightSystem ? 'border-slate-100 text-slate-600' : 'border-white/10 text-slate-300'} flex items-center justify-between text-[9px] sm:text-[11px] gap-1`}>
+                  <span>L: <strong className={isLightSystem ? 'text-blue-600 font-bold' : 'text-indigo-300 font-bold'}>{totalLaki}</strong></span>
+                  <span>P: <strong className={isLightSystem ? 'text-pink-600 font-bold' : 'text-pink-300 font-bold'}>{totalPerempuan}</strong></span>
                 </div>
               </div>
 
               {/* Total Keluarga Card */}
               <div 
-                className={`p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl md:rounded-3xl ${cardStyleClass} border border-purple-500/30 flex flex-col justify-between space-y-1 sm:space-y-2 text-white`}
+                className={`p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl md:rounded-3xl ${cardStyleClass} border ${isLightSystem ? 'border-slate-200/90 shadow-sm text-slate-800' : 'border-purple-500/30 text-white'} flex flex-col justify-between space-y-1 sm:space-y-2`}
                 title="Total Kartu Keluarga unik. Jemaat dengan Nomor KK yang sama dihitung sebagai satu keluarga."
               >
                 <div className="flex items-center justify-between gap-1">
-                  <span className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider truncate">Total KK</span>
-                  <div className="p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl bg-purple-500/20 text-purple-400 border border-purple-500/30 shadow-md shrink-0">
+                  <span className={`text-[10px] sm:text-xs ${isLightSystem ? 'text-slate-600' : 'text-slate-300'} font-bold uppercase tracking-wider truncate`}>Total KK</span>
+                  <div className={`p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl ${isLightSystem ? 'bg-purple-50 text-purple-600 border border-purple-200' : 'bg-purple-500/20 text-purple-400 border border-purple-500/30'} shadow-sm shrink-0`}>
                     <Building2 className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                 </div>
                 <div className="flex items-baseline gap-1.5 flex-wrap">
-                  <span className="text-xl sm:text-3xl font-black text-white">{totalKeluarga}</span>
-                  <span className="text-[10px] sm:text-xs text-slate-400 font-medium">Keluarga</span>
+                  <span className={`text-xl sm:text-3xl font-black ${isLightSystem ? 'text-slate-900' : 'text-white'}`}>{totalKeluarga}</span>
+                  <span className={`text-[10px] sm:text-xs ${isLightSystem ? 'text-slate-500' : 'text-slate-400'} font-medium`}>Keluarga</span>
                 </div>
-                <div className="pt-1.5 sm:pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 truncate">
+                <div className={`pt-1.5 sm:pt-2 border-t ${isLightSystem ? 'border-slate-100 text-slate-600' : 'border-white/10 text-slate-300'} text-[9px] sm:text-[11px] truncate`}>
                   <span>Kartu Keluarga (Unik)</span>
                 </div>
               </div>
 
               {/* Total Persembahan Card */}
-              <div className={`p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl md:rounded-3xl ${cardStyleClass} border border-emerald-500/30 flex flex-col justify-between space-y-1 sm:space-y-2 text-white`}>
+              <div className={`p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl md:rounded-3xl ${cardStyleClass} border ${isLightSystem ? 'border-slate-200/90 shadow-sm text-slate-800' : 'border-emerald-500/30 text-white'} flex flex-col justify-between space-y-1 sm:space-y-2`}>
                 <div className="flex items-center justify-between gap-1">
-                  <span className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider truncate">Kas Persembahan</span>
-                  <div className="p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-md shrink-0">
+                  <span className={`text-[10px] sm:text-xs ${isLightSystem ? 'text-slate-600' : 'text-slate-300'} font-bold uppercase tracking-wider truncate`}>Kas Persembahan</span>
+                  <div className={`p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl ${isLightSystem ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'} shadow-sm shrink-0`}>
                     <DollarSign className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                 </div>
                 <div className="flex items-baseline gap-1 flex-wrap">
-                  <span className="text-base sm:text-2xl font-black text-emerald-400 leading-tight">
+                  <span className={`text-base sm:text-2xl font-black ${isLightSystem ? 'text-emerald-600' : 'text-emerald-400'} leading-tight`}>
                     Rp {saldoKasBersih.toLocaleString('id-ID')}
                   </span>
                 </div>
-                <div className="pt-1.5 sm:pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 flex items-center justify-between">
+                <div className={`pt-1.5 sm:pt-2 border-t ${isLightSystem ? 'border-slate-100 text-slate-600' : 'border-white/10 text-slate-300'} text-[9px] sm:text-[11px] flex items-center justify-between`}>
                   <span>Saldo Kas Bersih</span>
-                  <span className="text-emerald-300 font-semibold">Realtime</span>
+                  <span className={isLightSystem ? 'text-emerald-600 font-semibold' : 'text-emerald-300 font-semibold'}>Realtime</span>
                 </div>
               </div>
 
               {/* Event Mendatang Card */}
-              <div className={`p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl md:rounded-3xl ${cardStyleClass} border border-amber-500/30 flex flex-col justify-between space-y-1 sm:space-y-2 text-white`}>
+              <div className={`p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl md:rounded-3xl ${cardStyleClass} border ${isLightSystem ? 'border-slate-200/90 shadow-sm text-slate-800' : 'border-amber-500/30 text-white'} flex flex-col justify-between space-y-1 sm:space-y-2`}>
                 <div className="flex items-center justify-between gap-1">
-                  <span className="text-[10px] sm:text-xs text-slate-300 font-bold uppercase tracking-wider truncate">Jadwal & Event</span>
-                  <div className="p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shadow-md shrink-0">
+                  <span className={`text-[10px] sm:text-xs ${isLightSystem ? 'text-slate-600' : 'text-slate-300'} font-bold uppercase tracking-wider truncate`}>Jadwal & Event</span>
+                  <div className={`p-1.5 sm:p-2.5 rounded-xl sm:rounded-2xl ${isLightSystem ? 'bg-amber-50 text-amber-600 border border-amber-200' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'} shadow-sm shrink-0`}>
                     <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                 </div>
                 <div className="flex items-baseline gap-1.5 flex-wrap">
-                  <span className="text-xl sm:text-3xl font-black text-white">{eventsList.length}</span>
-                  <span className="text-[10px] sm:text-xs text-slate-400 font-medium">Agenda</span>
+                  <span className={`text-xl sm:text-3xl font-black ${isLightSystem ? 'text-slate-900' : 'text-white'}`}>{eventsList.length}</span>
+                  <span className={`text-[10px] sm:text-xs ${isLightSystem ? 'text-slate-500' : 'text-slate-400'} font-medium`}>Agenda</span>
                 </div>
-                <div className="pt-1.5 sm:pt-2 border-t border-white/10 text-[9px] sm:text-[11px] text-slate-300 truncate">
+                <div className={`pt-1.5 sm:pt-2 border-t ${isLightSystem ? 'border-slate-100 text-slate-600' : 'border-white/10 text-slate-300'} text-[9px] sm:text-[11px] truncate`}>
                   <span>Ibadah & Agenda</span>
                 </div>
               </div>
@@ -3018,10 +3076,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           {/* KONFIRMASI TRANSFER PERSEMBAHAN JEMAAT REALTIME (ADMIN WIDGET) */}
           {pendingPersembahanList.length > 0 ? (
-            <div className="p-3.5 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-amber-950/70 via-slate-900/90 to-emerald-950/70 border-2 border-amber-500/50 shadow-2xl space-y-3 sm:space-y-4 text-white animate-fade-in">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
+            <div className={`p-3.5 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl ${
+              isLightSystem
+                ? 'bg-gradient-to-r from-amber-50 via-white to-emerald-50 border-2 border-amber-300 text-slate-800 shadow-lg'
+                : 'bg-gradient-to-r from-amber-950/70 via-slate-900/90 to-emerald-950/70 border-2 border-amber-500/50 shadow-2xl text-white'
+            } space-y-3 sm:space-y-4 animate-fade-in`}>
+              <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b ${isLightSystem ? 'border-amber-200/80' : 'border-white/10'}`}>
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 sm:p-3 rounded-2xl bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-inner shrink-0">
+                  <div className={`p-2.5 sm:p-3 rounded-2xl ${isLightSystem ? 'bg-amber-100 text-amber-700 border border-amber-300' : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'} shadow-inner shrink-0`}>
                     <Bell className="w-5 h-5 sm:w-6 sm:h-6 animate-bounce" />
                   </div>
                   <div>
@@ -3029,14 +3091,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       <span className="px-2.5 py-0.5 rounded-full bg-amber-500 text-slate-950 text-xs font-black uppercase tracking-wider">
                         {pendingPersembahanList.length} Menunggu Konfirmasi
                       </span>
-                      <span className="text-xs text-amber-300 font-semibold flex items-center gap-1">
+                      <span className={`text-xs ${isLightSystem ? 'text-amber-800' : 'text-amber-300'} font-semibold flex items-center gap-1`}>
                         <Sparkles className="w-3.5 h-3.5" /> Transfer Jemaat Masuk Real-Time
                       </span>
                     </div>
-                    <h3 className="text-base sm:text-lg font-black text-white mt-1">
+                    <h3 className={`text-base sm:text-lg font-black ${isLightSystem ? 'text-slate-900' : 'text-white'} mt-1`}>
                       Konfirmasi Transfer Persembahan Jemaat
                     </h3>
-                    <p className="text-xs text-slate-300">
+                    <p className={`text-xs ${isLightSystem ? 'text-slate-600' : 'text-slate-300'}`}>
                       Jemaat telah mengunggah bukti transfer. Verifikasi sekarang agar resmi masuk dan tercatat di Kas Gereja.
                     </p>
                   </div>
@@ -3045,7 +3107,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <button
                   type="button"
                   onClick={() => onNavigate('keuangan')}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-indigo-300 hover:text-white text-xs font-bold border border-slate-700 transition-all flex items-center gap-1.5 self-start sm:self-center cursor-pointer shrink-0"
+                  className={`px-4 py-2 rounded-xl ${
+                    isLightSystem
+                      ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs'
+                      : 'bg-slate-800 hover:bg-slate-700 text-indigo-300 hover:text-white border border-slate-700'
+                  } text-xs font-bold transition-all flex items-center gap-1.5 self-start sm:self-center cursor-pointer shrink-0`}
                 >
                   <span>Buka Menu Keuangan</span>
                   <ArrowUpRight className="w-4 h-4" />
@@ -3056,62 +3122,66 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 {pendingPersembahanList.map((p) => (
                   <div
                     key={p.persembahan_id}
-                    className="p-4 rounded-2xl bg-slate-950/80 border border-amber-500/30 hover:border-amber-400/60 transition-all space-y-3 shadow-lg"
+                    className={`p-4 rounded-2xl ${
+                      isLightSystem
+                        ? 'bg-white border border-slate-200/90 hover:border-amber-400 shadow-xs'
+                        : 'bg-slate-950/80 border border-amber-500/30 hover:border-amber-400/60 shadow-lg'
+                    } transition-all space-y-3`}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 text-[10px] font-bold border border-indigo-500/30">
+                          <span className={`px-2 py-0.5 rounded-md ${isLightSystem ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'} text-[10px] font-bold`}>
                             {p.jenis || 'Persembahan'}
                           </span>
-                          <span className="text-[11px] text-slate-400 font-mono">{p.tanggal}</span>
+                          <span className={`text-[11px] ${isLightSystem ? 'text-slate-500' : 'text-slate-400'} font-mono`}>{p.tanggal}</span>
                         </div>
-                        <h4 className="font-extrabold text-sm text-white mt-1">
+                        <h4 className={`font-extrabold text-sm ${isLightSystem ? 'text-slate-900' : 'text-white'} mt-1`}>
                           {p.nama_pengirim || 'Jemaat'}
                         </h4>
-                        <p className="text-[11px] text-slate-400 line-clamp-1">{p.keterangan || '-'}</p>
+                        <p className={`text-[11px] ${isLightSystem ? 'text-slate-500' : 'text-slate-400'} line-clamp-1`}>{p.keterangan || '-'}</p>
                       </div>
 
                       <div className="text-right shrink-0">
-                        <div className="text-base font-black text-emerald-400">
+                        <div className={`text-base font-black ${isLightSystem ? 'text-emerald-700' : 'text-emerald-400'}`}>
                           Rp {p.jumlah.toLocaleString('id-ID')}
                         </div>
-                        <span className="text-[10px] text-slate-400">{p.metode_pembayaran || 'Transfer Bank'}</span>
+                        <span className={`text-[10px] ${isLightSystem ? 'text-slate-500' : 'text-slate-400'}`}>{p.metode_pembayaran || 'Transfer Bank'}</span>
                       </div>
                     </div>
 
                     {/* Receipt thumbnail & Action buttons */}
-                    <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/10">
+                    <div className={`flex items-center justify-between gap-2 pt-2 border-t ${isLightSystem ? 'border-slate-100' : 'border-white/10'}`}>
                       {p.bukti_transfer ? (
                         <button
                           type="button"
                           onClick={() => setPreviewReceiptItem(p)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-indigo-300 text-xs font-semibold border border-slate-700 transition-all cursor-pointer"
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl ${isLightSystem ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300' : 'bg-slate-900 hover:bg-slate-800 text-indigo-300 border border-slate-700'} text-xs font-semibold transition-all cursor-pointer`}
                         >
-                          <Eye className="w-3.5 h-3.5 text-indigo-400" />
+                          <Eye className={`w-3.5 h-3.5 ${isLightSystem ? 'text-emerald-600' : 'text-indigo-400'}`} />
                           <span>Lihat Bukti Transfer</span>
                         </button>
                       ) : (
-                        <span className="text-[11px] text-slate-500 italic">Tanpa lampiran foto</span>
+                        <span className="text-[11px] text-slate-400 italic">Tanpa lampiran foto</span>
                       )}
 
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
                           onClick={() => handleRejectPersembahan(p.persembahan_id)}
-                          className="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/30 text-rose-300 text-xs font-bold border border-rose-500/30 transition-all cursor-pointer flex items-center gap-1"
+                          className="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 border border-rose-300 text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
                         >
-                          <XCircle className="w-3.5 h-3.5 text-rose-400" />
+                          <XCircle className="w-3.5 h-3.5 text-rose-500" />
                           <span>Tolak</span>
                         </button>
 
                         <button
                           type="button"
                           onClick={() => handleVerifyPersembahan(p.persembahan_id)}
-                          className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-extrabold shadow-md shadow-emerald-600/30 transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
+                          className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-extrabold shadow-sm transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
                         >
                           <CheckCircle2 className="w-3.5 h-3.5 text-white" />
-                          <span>Verifikasi &amp; Terima (Masuk Kas)</span>
+                          <span>Verifikasi</span>
                         </button>
                       </div>
                     </div>
@@ -3120,15 +3190,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
             </div>
           ) : (
-            <div className="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800/80 flex items-center justify-between gap-3 text-xs text-slate-400">
+            <div className={`p-3.5 rounded-2xl ${
+              isLightSystem
+                ? 'bg-emerald-50/70 border border-emerald-200 text-emerald-900'
+                : 'bg-slate-900/60 border border-slate-800/80 text-slate-400'
+            } flex items-center justify-between gap-3 text-xs`}>
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                 <span>Seluruh konfirmasi transfer persembahan jemaat telah terverifikasi (0 transaksi menunggu).</span>
               </div>
               <button
                 type="button"
                 onClick={() => onNavigate('keuangan')}
-                className="text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 cursor-pointer"
+                className={`${isLightSystem ? 'text-emerald-700 hover:text-emerald-800' : 'text-indigo-400 hover:text-indigo-300'} font-semibold flex items-center gap-1 cursor-pointer`}
               >
                 <span>Kelola Keuangan &amp; Kas</span>
                 <ArrowUpRight className="w-3.5 h-3.5" />
@@ -3141,15 +3215,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 md:gap-6">
               {/* Financial Growth Chart */}
               {settings.show_finance_chart !== false && (
-                <div className={`${settings.show_wilayah_chart !== false ? 'lg:col-span-8' : 'lg:col-span-12'} rounded-2xl sm:rounded-3xl ${cardStyleClass} text-white`}>
+                <div className={`${settings.show_wilayah_chart !== false ? 'lg:col-span-8' : 'lg:col-span-12'} rounded-2xl sm:rounded-3xl ${cardStyleClass} ${isLightSystem ? 'border border-slate-200/90 text-slate-800' : 'text-white'}`}>
                   <div className="flex items-center justify-between mb-3 sm:mb-4">
                     <div>
-                      <h3 className="text-base font-bold text-white">Grafik Tren Persembahan & Kas</h3>
-                      <p className="text-xs text-slate-400">Statistik akumulasi penerimaan per bulan tahun 2026</p>
+                      <h3 className={`text-base font-bold ${isLightSystem ? 'text-slate-900' : 'text-white'}`}>Grafik Tren Persembahan &amp; Kas</h3>
+                      <p className={`text-xs ${isLightSystem ? 'text-slate-500' : 'text-slate-400'}`}>Statistik akumulasi penerimaan per bulan tahun 2026</p>
                     </div>
                     <button
                       onClick={() => onNavigate('keuangan')}
-                      className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1"
+                      className={`text-xs ${isLightSystem ? 'text-emerald-700 hover:text-emerald-800' : 'text-indigo-400 hover:text-indigo-300'} font-semibold flex items-center gap-1 cursor-pointer`}
                     >
                       <span>Lihat Detail Kas</span>
                       <ArrowUpRight className="w-4 h-4" />
@@ -3163,25 +3237,25 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
               {/* Wilayah Distribution Chart */}
               {settings.show_wilayah_chart !== false && (
-                <div className={`${settings.show_finance_chart !== false ? 'lg:col-span-4' : 'lg:col-span-12'} rounded-2xl sm:rounded-3xl ${cardStyleClass} text-white flex flex-col justify-between`}>
+                <div className={`${settings.show_finance_chart !== false ? 'lg:col-span-4' : 'lg:col-span-12'} rounded-2xl sm:rounded-3xl ${cardStyleClass} ${isLightSystem ? 'border border-slate-200/90 text-slate-800' : 'text-white'} flex flex-col justify-between`}>
                   <div>
-                    <h3 className="text-base font-bold text-white">Demografi Per Wilayah</h3>
-                    <p className="text-xs text-slate-400 mb-3 sm:mb-4">Sebaran lokasi tempat tinggal jemaat</p>
+                    <h3 className={`text-base font-bold ${isLightSystem ? 'text-slate-900' : 'text-white'}`}>Demografi Per Wilayah</h3>
+                    <p className={`text-xs ${isLightSystem ? 'text-slate-500' : 'text-slate-400'} mb-3 sm:mb-4`}>Sebaran lokasi tempat tinggal jemaat</p>
                     <div className="h-44 sm:h-48 w-full flex items-center justify-center">
                       <Doughnut
                         data={wilayahChartData}
                         options={{
                           responsive: true,
                           maintainAspectRatio: false,
-                          plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', boxWidth: 12, font: { size: 10 } } } }
+                          plugins: { legend: { position: 'bottom', labels: { color: isLightSystem ? '#475569' : '#94a3b8', boxWidth: 12, font: { size: 10 } } } }
                         }}
                       />
                     </div>
                   </div>
-                  <div className="pt-3 sm:pt-4 border-t border-white/10 text-center">
+                  <div className={`pt-3 sm:pt-4 border-t ${isLightSystem ? 'border-slate-100' : 'border-white/10'} text-center`}>
                     <button
                       onClick={() => onNavigate('wilayah')}
-                      className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold inline-flex items-center gap-1"
+                      className={`text-xs ${isLightSystem ? 'text-emerald-700 hover:text-emerald-800' : 'text-indigo-400 hover:text-indigo-300'} font-semibold inline-flex items-center gap-1 cursor-pointer`}
                     >
                       <MapPin className="w-3.5 h-3.5" />
                       <span>Kelola Data Wilayah</span>
@@ -3715,6 +3789,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       <label className="font-bold text-slate-300 block text-xs sm:text-sm">Preset Warna Tema Background</label>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                         {[
+                          { id: 'EMERALD_LIGHT', label: '🌿 Emerald Light (Universal)' },
                           { id: 'DARK_SLATE', label: '🌌 Dark Slate' },
                           { id: 'MIDNIGHT_BLUE', label: '💙 Sapphire Blue' },
                           { id: 'DEEP_PURPLE', label: '💜 Amethyst' },
@@ -3722,7 +3797,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           { id: 'WARM_GOLD', label: '⚜️ Warm Gold' },
                           { id: 'LUXE_LIGHT', label: '☀️ Soft Light' }
                         ].map((t) => {
-                          const isSelected = (customForm.theme_preset || 'DARK_SLATE') === t.id;
+                          const isSelected = (customForm.theme_preset || 'EMERALD_LIGHT') === t.id;
                           return (
                             <button
                               type="button"
