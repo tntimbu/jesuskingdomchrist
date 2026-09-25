@@ -7,10 +7,17 @@ import {
   onSnapshot,
   collection,
   getDocs,
-  Firestore
+  Firestore,
+  setLogLevel
 } from 'firebase/firestore';
 import defaultFirebaseConfig from '../../firebase-applet-config.json';
 import { stopSecurityAlarmSiren } from './soundHelper';
+
+try {
+  setLogLevel('silent');
+} catch {
+  // ignore
+}
 
 const COLLECTION_NAME = 'gkfc_cms';
 
@@ -168,7 +175,7 @@ export function getOrInitFirestore(app: FirebaseApp, databaseId?: string): Fires
     firestoreDb = initializeFirestore(
       app,
       {
-        experimentalAutoDetectLongPolling: true
+        experimentalForceLongPolling: true
       },
       dbId
     );

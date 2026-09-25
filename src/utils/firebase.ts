@@ -1,8 +1,14 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore, initializeFirestore, doc, getDocFromServer } from 'firebase/firestore';
+import { getFirestore, initializeFirestore, doc, getDoc, setLogLevel } from 'firebase/firestore';
 import { AppSettings } from '../types';
 import defaultFirebaseConfig from '../../firebase-applet-config.json';
+
+try {
+  setLogLevel('silent');
+} catch {
+  // ignore
+}
 
 export enum OperationType {
   CREATE = 'create',
@@ -66,7 +72,7 @@ try {
   firestoreInstance = initializeFirestore(
     app,
     {
-      experimentalAutoDetectLongPolling: true
+      experimentalForceLongPolling: true
     },
     defaultDbId
   );
@@ -105,7 +111,7 @@ export function initFirebase(settings?: AppSettings) {
       firestoreDb = initializeFirestore(
         firebaseApp,
         {
-          experimentalAutoDetectLongPolling: true
+          experimentalForceLongPolling: true
         },
         dbId
       );
@@ -115,7 +121,6 @@ export function initFirebase(settings?: AppSettings) {
 
     return { app: firebaseApp, db: firestoreDb };
   } catch (err) {
-    console.warn('Firebase initialization notice:', err);
     return { app: null, db: null };
   }
 }
@@ -126,15 +131,9 @@ export async function testConnection() {
   }
   if (!firestoreDb) return false;
   try {
-    await getDocFromServer(doc(firestoreDb, 'test', 'connection'));
+    await getDoc(doc(firestoreDb, 'test', 'connection'));
     return true;
-  } catch (error) {
-    if (error instanceof Error && error.message.includes('the client is offline')) {
-      console.warn("Please check your Firebase configuration.");
-    }
+  } catch {
     return false;
   }
 }
-
-// Initial connection test on boot as required by Firebase skill
-testConnection().catch(() => {});
