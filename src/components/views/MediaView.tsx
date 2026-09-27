@@ -14,7 +14,12 @@ interface MediaViewProps {
 
 export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH' }) => {
   const [settings, setSettings] = useState(() => StorageManager.getSettings());
-  const isLightSystem = settings.theme_preset === 'EMERALD_LIGHT' || settings.theme_preset === 'LUXE_LIGHT';
+  const isLightSystem =
+    settings.theme_preset === 'EMERALD_LIGHT' ||
+    settings.theme_preset === 'LUXE_LIGHT' ||
+    settings.theme_preset === 'CLEAN_LIGHT' ||
+    !settings.theme_preset ||
+    true;
 
   const [activeTab, setActiveTab] = useState<'PENGUMUMAN' | 'RENUNGAN'>(mode === 'RENUNGAN' ? 'RENUNGAN' : 'PENGUMUMAN');
   const [pengumumanList, setPengumumanList] = useState<Pengumuman[]>([]);
@@ -367,7 +372,7 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
                 key={p.pengumuman_id}
                 className={`rounded-3xl ${
                   isLightSystem
-                    ? 'bg-white border border-slate-200/90 shadow-sm text-slate-800 hover:border-emerald-400'
+                    ? 'bg-white border-2 border-teal-100/90 shadow-xl shadow-teal-900/5 text-slate-800 hover:border-teal-400 hover:shadow-2xl'
                     : 'bg-slate-900 border border-slate-800 shadow-sm text-white hover:border-indigo-500/40'
                 } p-6 transition-all flex flex-col justify-between`}
               >
@@ -454,7 +459,7 @@ export const MediaView: React.FC<MediaViewProps> = ({ currentUser, mode = 'BOTH'
                 key={r.renungan_id}
                 className={`rounded-3xl ${
                   isLightSystem
-                    ? 'bg-white border border-slate-200/90 shadow-sm text-slate-800 hover:border-emerald-400'
+                    ? 'bg-white border-2 border-teal-100/90 shadow-xl shadow-teal-900/5 text-slate-800 hover:border-teal-400 hover:shadow-2xl'
                     : 'bg-slate-900 border border-slate-800 p-5 sm:p-6 shadow-xl text-white hover:border-indigo-500/40'
                 } p-5 sm:p-6 transition-all space-y-4`}
               >

@@ -867,11 +867,11 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
     <div className="space-y-6 pb-32 sm:pb-24">
       {/* Header Title Section */}
       <div className="flex flex-col gap-1.5 pb-4 border-b border-slate-800">
-        <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight flex items-center gap-2">
-          <ShieldCheck className="w-6 h-6 text-indigo-400" />
-          <span>Pengaturan &amp; Custom Tampilan System</span>
+        <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+          <ShieldCheck className="w-6 h-6 text-teal-600" />
+          <span>Pengaturan &amp; Kustomisasi Sistem</span>
         </h2>
-        <p className="text-xs sm:text-sm text-slate-400">
+        <p className="text-xs sm:text-sm text-slate-500">
           {currentUser.role === 'SUPER_ADMIN'
             ? 'Kontrol penuh profil gereja, kustomisasi visual, video social, Google Sheets GAS, Firebase API & RBAC Users.'
             : 'Kelola profil gereja, judul dashboard, tema warna, logo, video media sosial, serta akun user (Admin & Jemaat).'}
@@ -879,19 +879,19 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
       </div>
 
       {/* Tab Navigation Menu (Sticky, Scrollable & Bebas Tertutup Layar) */}
-      <div className="sticky top-20 z-20 bg-slate-950/95 backdrop-blur-md py-2 -mx-2 px-2 sm:-mx-4 sm:px-4 border-b border-slate-800/80 shadow-lg">
+      <div className="sticky top-20 z-20 bg-white/95 backdrop-blur-md py-2.5 -mx-2 px-2 sm:-mx-4 sm:px-4 border-b border-teal-100 shadow-sm">
         <div className="w-full overflow-x-auto scrollbar-thin pb-1">
-          <div className="inline-flex items-center gap-1.5 sm:gap-2 p-1.5 rounded-2xl bg-slate-900 border border-slate-800 min-w-max shadow-inner">
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 p-1.5 rounded-2xl bg-teal-50/80 border border-teal-200 min-w-max shadow-inner">
             <button
               type="button"
               onClick={() => setActiveTab('METADATA')}
               className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
                 activeTab === 'METADATA'
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                  ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md shadow-teal-600/25'
+                  : 'text-slate-700 hover:text-teal-800 hover:bg-white/80'
               }`}
             >
-              <Palette className="w-4 h-4 text-amber-400" />
+              <Palette className="w-4 h-4 text-amber-500" />
               <span>1. Profil, Tema &amp; Navbar</span>
             </button>
 
@@ -900,11 +900,11 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
               onClick={() => setActiveTab('PUSH_NOTIF')}
               className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
                 activeTab === 'PUSH_NOTIF'
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                  ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md shadow-teal-600/25'
+                  : 'text-slate-700 hover:text-teal-800 hover:bg-white/80'
               }`}
             >
-              <Bell className="w-4 h-4 text-amber-400" />
+              <Bell className="w-4 h-4 text-amber-500" />
               <span>2. 🔔 Notifikasi HP (Website 2 APK)</span>
             </button>
 
@@ -913,13 +913,13 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
               onClick={() => setActiveTab('ANDROID_STUDIO')}
               className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
                 activeTab === 'ANDROID_STUDIO'
-                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 ring-1 ring-emerald-400'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                  ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md shadow-teal-600/25 ring-1 ring-teal-400'
+                  : 'text-slate-700 hover:text-teal-800 hover:bg-white/80'
               }`}
             >
-              <Smartphone className="w-4 h-4 text-emerald-400" />
+              <Smartphone className="w-4 h-4 text-teal-600" />
               <span>3. 📱 Android Studio &amp; FCM Pro</span>
-              <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-extrabold border border-emerald-500/40">
+              <span className="px-1.5 py-0.5 rounded-full bg-teal-100 text-teal-800 text-[10px] font-extrabold border border-teal-300">
                 Fix Build
               </span>
             </button>
@@ -929,11 +929,11 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
               onClick={() => setActiveTab('USERS')}
               className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
                 activeTab === 'USERS'
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                  ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md shadow-teal-600/25'
+                  : 'text-slate-700 hover:text-teal-800 hover:bg-white/80'
               }`}
             >
-              <Users className="w-4 h-4 text-indigo-300" />
+              <Users className="w-4 h-4 text-teal-700" />
               <span>4. Manajemen User ({tenantScopedUsers.length})</span>
             </button>
 
@@ -948,14 +948,14 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
               }}
               className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
                 activeTab === 'GAS_FIREBASE'
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                  ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md shadow-teal-600/25'
+                  : 'text-slate-700 hover:text-teal-800 hover:bg-white/80'
               } ${currentUser.role !== 'SUPER_ADMIN' ? 'opacity-60 cursor-not-allowed' : ''}`}
             >
               {currentUser.role !== 'SUPER_ADMIN' ? (
-                <Lock className="w-3.5 h-3.5 text-amber-400" />
+                <Lock className="w-3.5 h-3.5 text-amber-500" />
               ) : (
-                <ShieldCheck className="w-4 h-4 text-indigo-400" />
+                <ShieldCheck className="w-4 h-4 text-teal-600" />
               )}
               <span>5. Google Sheets &amp; Firebase</span>
             </button>
@@ -966,11 +966,11 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                 onClick={() => setActiveTab('AUDIT')}
                 className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
                   activeTab === 'AUDIT'
-                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                    ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md shadow-teal-600/25'
+                    : 'text-slate-700 hover:text-teal-800 hover:bg-white/80'
                 }`}
               >
-                <Activity className="w-4 h-4 text-amber-400" />
+                <Activity className="w-4 h-4 text-amber-500" />
                 <span>6. Audit Logs ({activityLogs.length})</span>
               </button>
             )}
@@ -1037,31 +1037,36 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
 
           <form onSubmit={handleSaveMeta} className="space-y-6 text-xs">
             {/* Section 1: Identitas & Informasi Gereja */}
-            <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-xl">
-              <h3 className="text-base font-bold pb-3 border-b border-slate-800 flex items-center justify-between">
-                <span>1. Identitas & Profil Gereja</span>
-                <span className="text-[10px] font-semibold text-slate-400">Header & Contact Info</span>
+            <div className="rounded-3xl bg-white border-2 border-teal-100 shadow-xl shadow-teal-900/5 p-6 text-slate-800 space-y-4">
+              <h3 className="text-base font-extrabold text-slate-900 pb-3 border-b border-teal-100 flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-teal-600" />
+                  <span>1. Identitas &amp; Profil Gereja</span>
+                </span>
+                <span className="text-[10px] font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded-full">
+                  Header &amp; Contact Info
+                </span>
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Nama Gereja *</label>
+                  <label className="block text-slate-700 mb-1 font-bold text-xs">Nama Gereja *</label>
                   <input
                     type="text"
                     required
                     value={metaForm.nama_gereja}
                     onChange={(e) => setMetaForm({ ...metaForm, nama_gereja: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-teal-200 text-slate-800 font-bold focus:bg-white focus:border-teal-500 outline-none"
                   />
                 </div>
 
-                <div className="sm:col-span-2 space-y-3 bg-slate-950 p-4 rounded-2xl border border-slate-800">
-                  <label className="font-bold text-indigo-300 flex items-center gap-1.5">
-                    <ImageIcon className="w-4 h-4 text-indigo-400" />
-                    <span>Logo & Gambar Identitas Gereja (Tersinkronisasi Realtime)</span>
+                <div className="sm:col-span-2 space-y-3 bg-teal-50/50 p-4 rounded-2xl border border-teal-200/80">
+                  <label className="font-bold text-teal-900 flex items-center gap-1.5 text-xs">
+                    <ImageIcon className="w-4 h-4 text-teal-600" />
+                    <span>Logo &amp; Gambar Identitas Gereja (Tersinkronisasi Realtime)</span>
                   </label>
 
-                  <div className="flex flex-col sm:flex-row items-center gap-4 bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                  <div className="flex flex-col sm:flex-row items-center gap-4 bg-white p-3.5 rounded-xl border border-teal-200 shadow-2xs">
                     <div className="shrink-0 relative">
                       <img
                         src={metaForm.logo || DEFAULT_CHURCH_LOGO}
@@ -1069,9 +1074,9 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                         onError={(e) => {
                           (e.target as HTMLImageElement).src = DEFAULT_CHURCH_LOGO;
                         }}
-                        className="w-16 h-16 rounded-2xl object-cover border-2 border-indigo-500/50 shadow-md bg-slate-950"
+                        className="w-16 h-16 rounded-2xl object-cover border-2 border-teal-400 shadow-md bg-white p-1"
                       />
-                      <span className="absolute -bottom-1 -right-1 px-2 py-0.5 bg-indigo-600 text-[9px] font-bold text-white rounded-full">
+                      <span className="absolute -bottom-1 -right-1 px-2 py-0.5 bg-teal-600 text-[9px] font-bold text-white rounded-full">
                         Preview
                       </span>
                     </div>
@@ -1083,9 +1088,9 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                           value={metaForm.logo || ''}
                           placeholder="Paste URL Gambar Logo atau Upload File..."
                           onChange={(e) => setMetaForm({ ...metaForm, logo: e.target.value })}
-                          className="flex-1 px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-[11px]"
+                          className="flex-1 px-3 py-2 rounded-xl bg-slate-50 border border-teal-200 text-slate-800 font-mono text-[11px] focus:bg-white focus:border-teal-500 outline-none"
                         />
-                        <label className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shrink-0 transition-all">
+                        <label className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shrink-0 transition-all shadow-xs">
                           <Upload className="w-4 h-4" />
                           <span>Upload File Logo</span>
                           <input
@@ -1109,11 +1114,11 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                       </div>
 
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-[10px] text-slate-400 font-semibold">Pilih Preset Logo:</span>
+                        <span className="text-[10px] text-slate-500 font-semibold">Pilih Preset Logo:</span>
                         <button
                           type="button"
                           onClick={() => setMetaForm({ ...metaForm, logo: DEFAULT_CHURCH_LOGO })}
-                          className="px-2.5 py-1 rounded-lg bg-indigo-950 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold hover:bg-indigo-900"
+                          className="px-2.5 py-1 rounded-lg bg-teal-50 text-teal-800 border border-teal-200 text-[10px] font-bold hover:bg-teal-100"
                         >
                           Gold Cross Badge
                         </button>
@@ -1125,7 +1130,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                               logo: 'https://images.unsplash.com/photo-1548625361-185966347898?w=300&auto=format&fit=crop&q=80'
                             })
                           }
-                          className="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 border border-slate-700 text-[10px] hover:bg-slate-700"
+                          className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 border border-slate-200 text-[10px] font-semibold hover:bg-slate-200"
                         >
                           Cathedral Photo
                         </button>
@@ -1135,144 +1140,144 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Judul Header Dashboard</label>
+                  <label className="block text-slate-700 mb-1 font-bold text-xs">Judul Header Dashboard</label>
                   <input
                     type="text"
                     value={metaForm.header_title || ''}
                     placeholder="Jesus Kingdom Christ"
                     onChange={(e) => setMetaForm({ ...metaForm, header_title: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-teal-200 text-slate-800 font-semibold focus:bg-white focus:border-teal-500 outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Subtitle Header Dashboard</label>
+                  <label className="block text-slate-700 mb-1 font-bold text-xs">Subtitle Header Dashboard</label>
                   <input
                     type="text"
                     value={metaForm.header_subtitle || ''}
                     placeholder="Sistem Informasi Management & Portal Layanan Jemaat"
                     onChange={(e) => setMetaForm({ ...metaForm, header_subtitle: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-teal-200 text-slate-800 focus:bg-white focus:border-teal-500 outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Alamat Lengkap</label>
+                  <label className="block text-slate-700 mb-1 font-bold text-xs">Alamat Lengkap</label>
                   <input
                     type="text"
                     value={metaForm.alamat}
                     onChange={(e) => setMetaForm({ ...metaForm, alamat: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-teal-200 text-slate-800 focus:bg-white focus:border-teal-500 outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Nomor Telepon / Hotline</label>
+                  <label className="block text-slate-700 mb-1 font-bold text-xs">Nomor Telepon / Hotline</label>
                   <input
                     type="text"
                     value={metaForm.telepon}
                     onChange={(e) => setMetaForm({ ...metaForm, telepon: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-teal-200 text-slate-800 focus:bg-white focus:border-teal-500 outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Email Resmi Sekretariat</label>
+                  <label className="block text-slate-700 mb-1 font-bold text-xs">Email Resmi Sekretariat</label>
                   <input
                     type="email"
                     value={metaForm.email}
                     onChange={(e) => setMetaForm({ ...metaForm, email: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-teal-200 text-slate-800 focus:bg-white focus:border-teal-500 outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Website Resmi</label>
+                  <label className="block text-slate-700 mb-1 font-bold text-xs">Website Resmi</label>
                   <input
                     type="text"
                     value={metaForm.website || ''}
                     onChange={(e) => setMetaForm({ ...metaForm, website: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-teal-200 text-slate-800 focus:bg-white focus:border-teal-500 outline-none"
                   />
                 </div>
               </div>
             </div>
 
             {/* Section 1.5: Pengaturan Rekening Bank & QRIS Persembahan Digital */}
-            <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-xl">
-              <h3 className="text-base font-bold pb-3 border-b border-slate-800 flex items-center justify-between">
+            <div className="rounded-3xl bg-white border-2 border-teal-100 shadow-xl shadow-teal-900/5 p-6 text-slate-800 space-y-4">
+              <h3 className="text-base font-extrabold text-slate-900 pb-3 border-b border-teal-100 flex items-center justify-between">
                 <span className="flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-emerald-400" />
-                  <span>Pengaturan Rekening Bank & QRIS Persembahan Digital</span>
+                  <CreditCard className="w-5 h-5 text-teal-600" />
+                  <span>Pengaturan Rekening Bank &amp; QRIS Persembahan Digital</span>
                 </span>
-                <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-1 rounded-full">
+                <span className="text-[10px] font-bold text-teal-800 bg-teal-50 border border-teal-200 px-2.5 py-1 rounded-full">
                   Transfer Dashboard Jemaat
                 </span>
               </h3>
 
-              <p className="text-xs text-slate-400">
-                Informasi bank dan QRIS ini akan ditampilkan kepada jemaat pada Portal Jemaat ketika melakukan transfer persembahan / perpuluhan digital.
+              <p className="text-xs text-slate-500">
+                Informasi bank dan barcode QRIS ini akan ditampilkan kepada jemaat pada Portal Jemaat ketika melakukan transfer persembahan / perpuluhan digital.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Nama Bank *</label>
+                  <label className="block text-slate-700 mb-1 font-bold text-xs">Nama Bank *</label>
                   <input
                     type="text"
                     placeholder="Contoh: Bank BCA / Mandiri / BRI"
                     value={metaForm.rekening_bank_nama || ''}
                     onChange={(e) => setMetaForm({ ...metaForm, rekening_bank_nama: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-teal-200 text-slate-800 font-semibold focus:bg-white focus:border-teal-500 outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Nomor Rekening Bank *</label>
+                  <label className="block text-slate-700 mb-1 font-bold text-xs">Nomor Rekening Bank *</label>
                   <input
                     type="text"
                     placeholder="Contoh: 527-089-1122"
                     value={metaForm.rekening_bank_nomor || ''}
                     onChange={(e) => setMetaForm({ ...metaForm, rekening_bank_nomor: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono font-bold text-emerald-400"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-teal-200 text-slate-900 font-mono font-bold focus:bg-white focus:border-teal-500 outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Atas Nama Rekening *</label>
+                  <label className="block text-slate-700 mb-1 font-bold text-xs">Atas Nama Rekening *</label>
                   <input
                     type="text"
                     placeholder="Contoh: Jesus Kingdom Christ"
                     value={metaForm.rekening_bank_atas_nama || ''}
                     onChange={(e) => setMetaForm({ ...metaForm, rekening_bank_atas_nama: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-semibold"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-teal-200 text-slate-800 font-semibold focus:bg-white focus:border-teal-500 outline-none"
                   />
                 </div>
               </div>
 
               {/* QRIS Image Upload / Link */}
-              <div className="space-y-3 bg-slate-950 p-4 rounded-2xl border border-slate-800">
-                <label className="font-bold text-emerald-300 flex items-center gap-1.5">
-                  <QrCode className="w-4 h-4 text-emerald-400" />
+              <div className="space-y-3 bg-teal-50/50 p-4 rounded-2xl border border-teal-200/80">
+                <label className="font-bold text-teal-900 flex items-center gap-1.5 text-xs">
+                  <QrCode className="w-4 h-4 text-teal-600" />
                   <span>Gambar / Barcode Kode QRIS Gereja</span>
                 </label>
 
-                <div className="flex flex-col sm:flex-row items-center gap-4 bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                <div className="flex flex-col sm:flex-row items-center gap-4 bg-white p-3.5 rounded-xl border border-teal-200 shadow-2xs">
                   {metaForm.qris_image_url ? (
                     <div className="shrink-0 relative">
                       <img
                         src={metaForm.qris_image_url}
                         alt="QRIS Preview"
-                        className="w-24 h-24 rounded-2xl object-cover border-2 border-emerald-500/50 shadow-md bg-white p-1"
+                        className="w-24 h-24 rounded-2xl object-cover border-2 border-teal-500/80 shadow-md bg-white p-1 ring-2 ring-teal-100"
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = 'none';
                         }}
                       />
-                      <span className="absolute -bottom-1 -right-1 px-2 py-0.5 bg-emerald-600 text-[9px] font-bold text-white rounded-full">
+                      <span className="absolute -bottom-1 -right-1 px-2 py-0.5 bg-teal-600 text-[9px] font-bold text-white rounded-full">
                         QRIS Active
                       </span>
                     </div>
                   ) : (
-                    <div className="w-24 h-24 rounded-2xl border-2 border-dashed border-slate-700 flex items-center justify-center text-slate-500 text-xs text-center p-2">
+                    <div className="w-24 h-24 rounded-2xl border-2 border-dashed border-teal-300 flex items-center justify-center text-teal-700 text-xs text-center p-2 bg-teal-50/30">
                       Belum ada QRIS
                     </div>
                   )}
@@ -1284,9 +1289,9 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                         value={metaForm.qris_image_url || ''}
                         placeholder="Paste URL Gambar Kode QRIS atau Upload File..."
                         onChange={(e) => setMetaForm({ ...metaForm, qris_image_url: e.target.value })}
-                        className="flex-1 px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-[11px]"
+                        className="flex-1 px-3 py-2 rounded-xl bg-slate-50 border border-teal-200 text-slate-800 font-mono text-[11px] focus:bg-white focus:border-teal-500 outline-none"
                       />
-                      <label className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shrink-0 transition-all">
+                      <label className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shrink-0 transition-all shadow-xs">
                         <Upload className="w-4 h-4" />
                         <span>Upload QRIS</span>
                         <input
@@ -1308,7 +1313,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                         />
                       </label>
                     </div>
-                    <p className="text-[10px] text-slate-400">
+                    <p className="text-[10px] text-slate-500">
                       Format disarankan: PNG / JPEG / WebP / SVG. Gambar QRIS akan dipindai oleh aplikasi mobile banking / m-banking jemaat.
                     </p>
                   </div>
@@ -1317,16 +1322,21 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
             </div>
 
             {/* Section 2: Tema Warna, Background & Custom Visual Admin */}
-            <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-xl">
-              <h3 className="text-base font-bold pb-3 border-b border-slate-800 flex items-center justify-between">
-                <span>2. Kustomisasi Tema Warna & Style Dashboard Admin</span>
-                <span className="text-[10px] font-semibold text-slate-400">Visual Styling</span>
+            <div className="rounded-3xl bg-white border-2 border-teal-100 shadow-xl shadow-teal-900/5 p-6 text-slate-800 space-y-4">
+              <h3 className="text-base font-extrabold text-slate-900 pb-3 border-b border-teal-100 flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <Palette className="w-5 h-5 text-teal-600" />
+                  <span>2. Kustomisasi Tema Warna &amp; Style Dashboard Admin</span>
+                </span>
+                <span className="text-[10px] font-bold text-teal-800 bg-teal-50 border border-teal-200 px-2.5 py-1 rounded-full">
+                  Visual Styling
+                </span>
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Preset Warna Background */}
                 <div className="space-y-2">
-                  <label className="block text-slate-400 font-semibold">Preset Background Admin</label>
+                  <label className="block text-slate-700 font-bold text-xs">Preset Background Admin</label>
                   <div className="grid grid-cols-2 gap-2">
                     {[
                       { id: 'EMERALD_LIGHT', label: '🌿 Emerald Light (Universal)', bg: 'from-emerald-50 via-teal-50 to-white text-emerald-950', border: 'border-emerald-500' },
@@ -1343,33 +1353,33 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                         onClick={() => setMetaForm({ ...metaForm, theme_preset: t.id as any })}
                         className={`p-2.5 rounded-xl bg-gradient-to-br ${t.bg} border text-left text-[11px] font-bold transition-all flex items-center justify-between ${
                           (metaForm.theme_preset || 'EMERALD_LIGHT') === t.id
-                            ? `${t.border} ring-2 ring-emerald-500 shadow-lg scale-[1.02]`
-                            : 'border-slate-800 opacity-70 hover:opacity-100'
+                            ? `${t.border} ring-2 ring-teal-500 shadow-md scale-[1.02]`
+                            : 'border-slate-200 opacity-70 hover:opacity-100'
                         }`}
                       >
                         <span className="truncate">{t.label}</span>
-                        {(metaForm.theme_preset || 'EMERALD_LIGHT') === t.id && <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
+                        {(metaForm.theme_preset || 'EMERALD_LIGHT') === t.id && <Check className="w-3.5 h-3.5 text-teal-600 shrink-0" />}
                       </button>
                     ))}
                   </div>
                 </div>
 
                 {/* Custom Unlimited Hex Color Picker */}
-                <div className="sm:col-span-2 lg:col-span-3 p-4 sm:p-5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-4">
+                <div className="sm:col-span-2 lg:col-span-3 p-4 sm:p-5 rounded-2xl bg-teal-50/50 border border-teal-200 space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                      <label className="block text-amber-400 font-extrabold text-xs sm:text-sm">
-                        🎨 Kustom Kode Warna Hex (Contoh: #CD5C5C) - Bebas Tanpa Batas
+                      <label className="block text-teal-900 font-extrabold text-xs sm:text-sm">
+                        🎨 Kustom Kode Warna Hex (Contoh: #059669) - Bebas Tanpa Batas
                       </label>
-                      <p className="text-[11px] text-slate-400 mt-0.5">
-                        Kustomisasi warna tema bebas dengan memasukkan kode hex apa saja (seperti #CD5C5C, #10B981, #FF5733). Berlaku untuk tampilan Admin &amp; Akun Jemaat.
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        Kustomisasi warna tema bebas dengan memasukkan kode hex apa saja (seperti #059669, #0F766E, #10B981). Berlaku untuk tampilan Admin &amp; Akun Jemaat.
                       </p>
                     </div>
                     <div
-                      className="w-12 h-12 rounded-2xl border-2 border-white/20 shadow-xl shrink-0 flex items-center justify-center font-mono text-[10px] text-white font-black"
-                      style={{ backgroundColor: metaForm.warna_tema || '#CD5C5C' }}
+                      className="w-12 h-12 rounded-2xl border-2 border-white shadow-md shrink-0 flex items-center justify-center font-mono text-[10px] text-white font-black"
+                      style={{ backgroundColor: metaForm.warna_tema || '#059669' }}
                     >
-                      {metaForm.warna_tema || '#CD5C5C'}
+                      {metaForm.warna_tema || '#059669'}
                     </div>
                   </div>
 
@@ -1380,20 +1390,20 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                         <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-mono font-bold text-xs">HEX:</span>
                         <input
                           type="text"
-                          value={metaForm.warna_tema || '#CD5C5C'}
+                          value={metaForm.warna_tema || '#059669'}
                           onChange={(e) => {
                             const val = e.target.value;
                             setMetaForm({ ...metaForm, warna_tema: val });
                           }}
-                          placeholder="#CD5C5C"
-                          className="w-full pl-14 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono font-extrabold text-sm focus:ring-2 focus:ring-amber-500 outline-none uppercase"
+                          placeholder="#059669"
+                          className="w-full pl-14 pr-4 py-2.5 rounded-xl bg-white border border-teal-200 text-slate-900 font-mono font-extrabold text-sm focus:ring-2 focus:ring-teal-500 outline-none uppercase"
                         />
                       </div>
                       {/* HTML Color Picker Button */}
-                      <label className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 cursor-pointer flex items-center gap-2 text-xs font-bold text-slate-200 shrink-0">
+                      <label className="p-2.5 rounded-xl bg-white hover:bg-teal-50 border border-teal-200 cursor-pointer flex items-center gap-2 text-xs font-bold text-teal-800 shrink-0 shadow-2xs">
                         <input
                           type="color"
-                          value={metaForm.warna_tema && /^#[0-9A-F]{6}$/i.test(metaForm.warna_tema) ? metaForm.warna_tema : '#CD5C5C'}
+                          value={metaForm.warna_tema && /^#[0-9A-F]{6}$/i.test(metaForm.warna_tema) ? metaForm.warna_tema : '#059669'}
                           onChange={(e) => setMetaForm({ ...metaForm, warna_tema: e.target.value })}
                           className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent"
                         />
@@ -1403,11 +1413,11 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
 
                     {/* Live Preview Button Tag */}
                     <div className="flex items-center gap-2">
-                      <span className="text-[11px] text-slate-400 font-medium">Pratinjau:</span>
+                      <span className="text-[11px] text-slate-500 font-semibold">Pratinjau:</span>
                       <button
                         type="button"
-                        className="px-3.5 py-1.5 rounded-xl text-white font-extrabold text-xs shadow-lg transition-all"
-                        style={{ backgroundColor: metaForm.warna_tema || '#CD5C5C' }}
+                        className="px-3.5 py-1.5 rounded-xl text-white font-extrabold text-xs shadow-md transition-all"
+                        style={{ backgroundColor: metaForm.warna_tema || '#059669' }}
                       >
                         Warna Utama
                       </button>
@@ -1450,7 +1460,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
 
                 {/* Accent Color */}
                 <div className="space-y-2">
-                  <label className="block text-slate-400 font-semibold">Warna Aksen Utama System</label>
+                  <label className="block text-slate-700 font-bold text-xs">Warna Aksen Utama System</label>
                   <div className="grid grid-cols-2 gap-2">
                     {[
                       { id: 'INDIGO', label: '🟣 Royal Indigo', color: 'bg-indigo-600' },
@@ -1464,10 +1474,10 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                         type="button"
                         key={ac.id}
                         onClick={() => setMetaForm({ ...metaForm, accent_color: ac.id as any })}
-                        className={`p-2.5 rounded-xl bg-slate-950 border text-left text-[11px] font-bold transition-all flex items-center justify-between ${
+                        className={`p-2.5 rounded-xl border text-left text-[11px] font-bold transition-all flex items-center justify-between cursor-pointer ${
                           (metaForm.accent_color || 'INDIGO') === ac.id
-                            ? 'border-indigo-500 ring-2 ring-indigo-500/50 text-white'
-                            : 'border-slate-800 text-slate-400 hover:text-slate-200'
+                            ? 'border-teal-500 ring-2 ring-teal-300 bg-teal-50 text-teal-950 shadow-sm'
+                            : 'border-slate-200 bg-white text-slate-600 hover:border-teal-300'
                         }`}
                       >
                         <div className="flex items-center gap-2 truncate">
@@ -1481,11 +1491,11 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
 
                 {/* Style Kartu */}
                 <div className="space-y-2">
-                  <label className="block text-slate-400 font-semibold">Style Kartu &amp; Border</label>
+                  <label className="block text-slate-700 font-bold text-xs">Style Kartu &amp; Border</label>
                   <div className="grid grid-cols-2 gap-2">
                     {[
                       { id: 'GLASS', label: '✨ Glassmorphism', desc: 'Blur Transparan' },
-                      { id: 'SOLID', label: '⬛ Solid Dark', desc: 'Gelap Pekat' },
+                      { id: 'SOLID', label: '⬛ Solid Light', desc: 'Putih Pekat Bersih' },
                       { id: 'NEON', label: '💡 Neon Accent', desc: 'Glow Menyala' },
                       { id: 'FLAT', label: '📄 Flat Bordered', desc: 'Simpel Flat' }
                     ].map((c) => (
@@ -1493,14 +1503,14 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                         type="button"
                         key={c.id}
                         onClick={() => setMetaForm({ ...metaForm, card_style: c.id as any })}
-                        className={`p-2.5 rounded-xl bg-slate-950 border text-left transition-all ${
+                        className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                           (metaForm.card_style || 'GLASS') === c.id
-                            ? 'border-indigo-500 ring-2 ring-indigo-500/50 text-white'
-                            : 'border-slate-800 text-slate-400 hover:text-slate-200'
+                            ? 'border-teal-500 ring-2 ring-teal-300 bg-teal-50 text-teal-950 shadow-sm'
+                            : 'border-slate-200 bg-white text-slate-600 hover:border-teal-300'
                         }`}
                       >
                         <div className="font-bold text-[11px]">{c.label}</div>
-                        <div className="text-[9px] text-slate-500 mt-0.5">{c.desc}</div>
+                        <div className="text-[9px] text-slate-400 mt-0.5">{c.desc}</div>
                       </button>
                     ))}
                   </div>
@@ -1508,7 +1518,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
 
                 {/* Style Garis Pinggir Kartu (Border Line Accent) */}
                 <div className="space-y-2">
-                  <label className="block text-slate-400 font-semibold">Gaya Garis Pinggir Kartu (Border Color)</label>
+                  <label className="block text-slate-700 font-bold text-xs">Gaya Garis Pinggir Kartu (Border Color)</label>
                   <div className="grid grid-cols-2 gap-2">
                     {[
                       { id: 'ACCENT_FULL', label: '🔲 Border Warna Tema', desc: 'Penuh Warna Custom' },
@@ -1520,34 +1530,34 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                         type="button"
                         key={b.id}
                         onClick={() => setMetaForm({ ...metaForm, card_border_accent: b.id as any })}
-                        className={`p-2.5 rounded-xl bg-slate-950 border text-left transition-all ${
+                        className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                           (metaForm.card_border_accent || 'ACCENT_FULL') === b.id
-                            ? 'border-indigo-500 ring-2 ring-indigo-500/50 text-white'
-                            : 'border-slate-800 text-slate-400 hover:text-slate-200'
+                            ? 'border-teal-500 ring-2 ring-teal-300 bg-teal-50 text-teal-950 shadow-sm'
+                            : 'border-slate-200 bg-white text-slate-600 hover:border-teal-300'
                         }`}
                       >
                         <div className="font-bold text-[11px]">{b.label}</div>
-                        <div className="text-[9px] text-slate-500 mt-0.5">{b.desc}</div>
+                        <div className="text-[9px] text-slate-400 mt-0.5">{b.desc}</div>
                       </button>
                     ))}
                   </div>
                 </div>
 
                 {/* SUB-SECTION KHUSUS: KUSTOMISASI NAVBAR / HEADER ATAS */}
-                <div id="navbar-customizer-section" className="sm:col-span-2 lg:col-span-3 p-4 sm:p-6 rounded-2xl bg-gradient-to-br from-slate-950/95 to-indigo-950/30 border-2 border-indigo-500/30 space-y-5 scroll-mt-24">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-indigo-500/20">
+                <div id="navbar-customizer-section" className="sm:col-span-2 lg:col-span-3 p-4 sm:p-6 rounded-2xl bg-teal-50/60 border-2 border-teal-200 space-y-5 scroll-mt-24 text-slate-800">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-teal-200">
                     <div className="flex items-center gap-2.5">
-                      <div className="p-2 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 shadow-lg">
+                      <div className="p-2 rounded-xl bg-teal-100 border border-teal-300 text-teal-700 shadow-sm">
                         <Palette className="w-5 h-5" />
                       </div>
                       <div>
-                        <h4 className="text-sm sm:text-base font-black text-white flex items-center gap-2">
+                        <h4 className="text-sm sm:text-base font-black text-slate-900 flex items-center gap-2">
                           <span>Kustomisasi Warna, Tema &amp; Garis Navbar Atas</span>
-                          <span className="px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-bold border border-indigo-500/30">
+                          <span className="px-2 py-0.5 rounded-full bg-teal-100 text-teal-800 text-[10px] font-bold border border-teal-300">
                             Fitur Admin
                           </span>
                         </h4>
-                        <p className="text-[11px] text-slate-400 mt-0.5">
+                        <p className="text-[11px] text-slate-500 mt-0.5">
                           Atur warna bar navigasi paling atas secara bebas (pilihan preset, kode warna hex mandiri, style blur, dan aksen garis).
                         </p>
                       </div>
@@ -1559,12 +1569,12 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                     const previewNb = getNavbarTheme(metaForm);
                     return (
                       <div className="space-y-1.5">
-                        <div className="flex items-center justify-between text-xs font-bold text-slate-300">
-                          <span className="flex items-center gap-1.5 text-indigo-300">
-                            <Eye className="w-4 h-4 text-amber-400" />
+                        <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+                          <span className="flex items-center gap-1.5 text-teal-800">
+                            <Eye className="w-4 h-4 text-teal-600" />
                             <span>Pratinjau Langsung Navbar</span>
                           </span>
-                          <span className="text-[10px] text-slate-400 font-mono">
+                          <span className="text-[10px] text-slate-500 font-mono">
                             Preset: {metaForm.navbar_theme_preset || 'DEFAULT_DARK'}
                           </span>
                         </div>
@@ -1622,7 +1632,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
 
                   {/* 1. Preset Tema Navbar */}
                   <div className="space-y-2">
-                    <label className="block text-slate-300 font-semibold text-xs">
+                    <label className="block text-slate-700 font-bold text-xs">
                       1. Preset Warna Tema Navbar
                     </label>
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
@@ -1646,15 +1656,15 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                             onClick={() => setMetaForm({ ...metaForm, navbar_theme_preset: preset.id as any })}
                             className={`p-2.5 rounded-xl border text-left text-[11px] font-bold transition-all flex items-center justify-between cursor-pointer ${
                               isSelected
-                                ? 'border-amber-400 ring-2 ring-amber-400/50 bg-slate-800 text-white shadow-md'
-                                : 'border-slate-800 bg-slate-950/70 text-slate-300 hover:border-slate-700'
+                                ? 'border-teal-500 ring-2 ring-teal-300 bg-white text-teal-950 shadow-md'
+                                : 'border-teal-200 bg-white/80 text-slate-700 hover:border-teal-400'
                             }`}
                           >
                             <div className="flex items-center gap-1.5 truncate">
-                              <span className={`w-3 h-3 rounded-full border border-white/20 shrink-0 ${preset.bg}`} />
+                              <span className={`w-3 h-3 rounded-full border border-slate-300 shrink-0 ${preset.bg}`} />
                               <span className="truncate">{preset.name}</span>
                             </div>
-                            {isSelected && <Check className="w-3.5 h-3.5 text-amber-400 shrink-0" />}
+                            {isSelected && <Check className="w-3.5 h-3.5 text-teal-600 shrink-0" />}
                           </button>
                         );
                       })}
@@ -1662,19 +1672,19 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                   </div>
 
                   {/* 2. Custom Hex Input & Swatches */}
-                  <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-3">
+                  <div className="p-4 rounded-xl bg-white border border-teal-200 space-y-3 shadow-xs">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div>
-                        <label className="text-xs font-bold text-amber-300 flex items-center gap-2">
-                          <Palette className="w-4 h-4 text-amber-400" />
+                        <label className="text-xs font-bold text-teal-900 flex items-center gap-2">
+                          <Palette className="w-4 h-4 text-teal-600" />
                           <span>2. Kustom Kode Warna Hex Navbar Bebas (Contoh: #0f172a, #020617)</span>
                         </label>
-                        <p className="text-[11px] text-slate-400">
+                        <p className="text-[11px] text-slate-500">
                           Masukkan kode hex warna apa saja yang diinginkan untuk bar navigasi atas.
                         </p>
                       </div>
                       <div
-                        className="w-9 h-9 rounded-xl border-2 border-white/20 shadow shrink-0 flex items-center justify-center font-mono text-[9px] text-white font-bold"
+                        className="w-9 h-9 rounded-xl border-2 border-teal-300 shadow shrink-0 flex items-center justify-center font-mono text-[9px] text-white font-bold"
                         style={{ backgroundColor: metaForm.navbar_custom_bg || '#1e293b' }}
                       >
                         {metaForm.navbar_custom_bg || '#1e293b'}
@@ -1697,10 +1707,10 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                             })
                           }
                           placeholder="#1e293b"
-                          className="w-full pl-14 pr-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono font-bold text-xs focus:ring-2 focus:ring-amber-400 outline-none uppercase"
+                          className="w-full pl-14 pr-3 py-2 rounded-xl bg-slate-50 border border-teal-200 text-slate-900 font-mono font-bold text-xs focus:ring-2 focus:ring-teal-500 outline-none uppercase"
                         />
                       </div>
-                      <label className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 cursor-pointer flex items-center gap-2 text-xs font-bold text-slate-200 shrink-0">
+                      <label className="px-3 py-2 rounded-xl bg-teal-50 hover:bg-teal-100 border border-teal-200 cursor-pointer flex items-center gap-2 text-xs font-bold text-teal-800 shrink-0">
                         <input
                           type="color"
                           value={
@@ -1723,7 +1733,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
 
                     {/* Quick Swatches */}
                     <div>
-                      <span className="text-[11px] font-bold text-slate-400 block mb-1.5">
+                      <span className="text-[11px] font-bold text-slate-600 block mb-1.5">
                         Rekomendasi Warna Navbar:
                       </span>
                       <div className="flex flex-wrap gap-1.5">
@@ -1757,12 +1767,12 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                               }
                               className={`px-2.5 py-1 rounded-xl border text-[10px] font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                                 isActive
-                                  ? 'border-amber-400 text-white bg-slate-800 ring-2 ring-amber-400/40'
-                                  : 'border-slate-800 text-slate-300 hover:border-slate-600 bg-slate-950'
+                                  ? 'border-teal-500 text-teal-950 bg-teal-100 ring-2 ring-teal-300'
+                                  : 'border-slate-200 text-slate-700 hover:border-teal-400 bg-white'
                               }`}
                             >
                               <span
-                                className="w-2.5 h-2.5 rounded-full border border-white/20 shrink-0"
+                                className="w-2.5 h-2.5 rounded-full border border-slate-300 shrink-0"
                                 style={{ backgroundColor: chip.hex }}
                               />
                               <span>{chip.name}</span>
@@ -1777,14 +1787,14 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     {/* Gaya Transparansi */}
                     <div className="space-y-2">
-                      <label className="block text-slate-300 font-semibold text-xs flex items-center gap-1.5">
-                        <Layers className="w-3.5 h-3.5 text-indigo-400" />
+                      <label className="block text-slate-700 font-bold text-xs flex items-center gap-1.5">
+                        <Layers className="w-3.5 h-3.5 text-teal-600" />
                         <span>3. Gaya &amp; Transparansi</span>
                       </label>
                       <div className="space-y-1.5">
                         {[
                           { id: 'GLASS', label: '✨ Glass Blur', desc: 'Transparan Modern' },
-                          { id: 'SOLID', label: '⬛ Solid Dark', desc: 'Pekat Tanpa Blur' },
+                          { id: 'SOLID', label: '⬛ Solid Light', desc: 'Pekat Tanpa Blur' },
                           { id: 'GRADIENT', label: '🌈 Gradient', desc: 'Gradasi Halus' }
                         ].map((s) => (
                           <button
@@ -1793,12 +1803,12 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                             onClick={() => setMetaForm({ ...metaForm, navbar_style: s.id as any })}
                             className={`w-full p-2 rounded-xl border text-left transition-all cursor-pointer ${
                               (metaForm.navbar_style || 'GLASS') === s.id
-                                ? 'border-indigo-500 bg-indigo-600/20 text-white font-bold ring-1 ring-indigo-500'
-                                : 'border-slate-800 bg-slate-950/60 text-slate-400 hover:text-white'
+                                ? 'border-teal-500 bg-teal-100 text-teal-950 font-bold ring-1 ring-teal-400'
+                                : 'border-teal-200 bg-white text-slate-600 hover:border-teal-400'
                             }`}
                           >
                             <p className="text-[11px] font-bold">{s.label}</p>
-                            <p className="text-[9px] text-slate-500">{s.desc}</p>
+                            <p className="text-[9px] text-slate-400">{s.desc}</p>
                           </button>
                         ))}
                       </div>
@@ -1806,8 +1816,8 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
 
                     {/* Garis Bawah Aksen */}
                     <div className="space-y-2">
-                      <label className="block text-slate-300 font-semibold text-xs flex items-center gap-1.5">
-                        <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                      <label className="block text-slate-700 font-bold text-xs flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-teal-600" />
                         <span>4. Garis Bawah Aksen</span>
                       </label>
                       <div className="space-y-1.5">
@@ -1823,12 +1833,12 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                             onClick={() => setMetaForm({ ...metaForm, navbar_border_accent: b.id as any })}
                             className={`w-full p-2 rounded-xl border text-left transition-all cursor-pointer ${
                               (metaForm.navbar_border_accent || 'SUBTLE') === b.id
-                                ? 'border-indigo-500 bg-indigo-600/20 text-white font-bold ring-1 ring-indigo-500'
-                                : 'border-slate-800 bg-slate-950/60 text-slate-400 hover:text-white'
+                                ? 'border-teal-500 bg-teal-100 text-teal-950 font-bold ring-1 ring-teal-400'
+                                : 'border-teal-200 bg-white text-slate-600 hover:border-teal-400'
                             }`}
                           >
                             <p className="text-[11px] font-bold truncate">{b.label}</p>
-                            <p className="text-[9px] text-slate-500 truncate">{b.desc}</p>
+                            <p className="text-[9px] text-slate-400 truncate">{b.desc}</p>
                           </button>
                         ))}
                       </div>
@@ -1836,8 +1846,8 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
 
                     {/* Kontras Teks */}
                     <div className="space-y-2">
-                      <label className="block text-slate-300 font-semibold text-xs flex items-center gap-1.5">
-                        <Sun className="w-3.5 h-3.5 text-amber-400" />
+                      <label className="block text-slate-700 font-bold text-xs flex items-center gap-1.5">
+                        <Sun className="w-3.5 h-3.5 text-amber-500" />
                         <span>5. Warna Teks Navbar</span>
                       </label>
                       <div className="space-y-1.5">
@@ -1852,12 +1862,12 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                             onClick={() => setMetaForm({ ...metaForm, navbar_custom_text: t.id as any })}
                             className={`w-full p-2 rounded-xl border text-left transition-all cursor-pointer ${
                               (metaForm.navbar_custom_text || 'AUTO') === t.id
-                                ? 'border-amber-400 bg-amber-500/15 text-white font-bold ring-1 ring-amber-400'
-                                : 'border-slate-800 bg-slate-950/60 text-slate-400 hover:text-white'
+                                ? 'border-teal-500 bg-teal-100 text-teal-950 font-bold ring-1 ring-teal-400'
+                                : 'border-teal-200 bg-white text-slate-600 hover:border-teal-400'
                             }`}
                           >
                             <p className="text-[11px] font-bold">{t.label}</p>
-                            <p className="text-[9px] text-slate-500">{t.desc}</p>
+                            <p className="text-[9px] text-slate-400">{t.desc}</p>
                           </button>
                         ))}
                       </div>
@@ -1868,30 +1878,30 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
             </div>
 
             {/* Section 2.5: Kustomisasi Background Footer & Icon Navigasi (Mobile / Bottom Bar) */}
-            <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-5 shadow-xl">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-800 gap-2">
+            <div className="rounded-3xl bg-white border-2 border-teal-200/90 p-6 text-slate-800 space-y-5 shadow-xl shadow-teal-950/5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-teal-100 gap-2">
                 <div>
-                  <h3 className="text-base font-bold text-indigo-300 flex items-center gap-2">
-                    <Layers className="w-5 h-5 text-indigo-400" />
+                  <h3 className="text-base font-bold text-teal-900 flex items-center gap-2">
+                    <Layers className="w-5 h-5 text-teal-600" />
                     <span>2.5. Kustomisasi Background Footer &amp; Tombol Icon (Bottom Nav)</span>
-                    <span className="px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-bold border border-indigo-500/30">
+                    <span className="px-2 py-0.5 rounded-full bg-teal-50 text-teal-800 text-[10px] font-bold border border-teal-200">
                       Admin &amp; SuperAdmin
                     </span>
                   </h3>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-slate-500 mt-0.5">
                     Sesuaikan warna latar belakang footer mobile, garis pembatas atas, bentuk background icon (Home, Renungan, Jadwal, Profil, Lainnya), serta warna aktif dan idle.
                   </p>
                 </div>
               </div>
 
               {/* Live Preview Box */}
-              <div className="space-y-2 p-4 rounded-2xl bg-slate-950/80 border border-slate-800">
-                <div className="flex items-center justify-between text-xs font-bold text-slate-300 mb-1">
-                  <span className="flex items-center gap-1.5 text-indigo-300">
-                    <Eye className="w-4 h-4 text-indigo-400" />
+              <div className="space-y-2 p-4 rounded-2xl bg-teal-50/60 border border-teal-200">
+                <div className="flex items-center justify-between text-xs font-bold text-slate-700 mb-1">
+                  <span className="flex items-center gap-1.5 text-teal-800">
+                    <Eye className="w-4 h-4 text-teal-600" />
                     <span>Pratinjau Langsung Tampilan Footer &amp; Icon:</span>
                   </span>
-                  <span className="text-[10px] text-slate-400">
+                  <span className="text-[10px] text-slate-500">
                     Preset: {metaForm.footer_theme_preset || 'DEFAULT_DARK'}
                   </span>
                 </div>
@@ -1929,7 +1939,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
 
               {/* 1. Preset Background Footer */}
               <div className="space-y-2">
-                <label className="block text-slate-300 font-semibold text-xs">
+                <label className="block text-slate-700 font-bold text-xs">
                   1. Pilih Preset Warna Background Footer:
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -1954,12 +1964,12 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                         onClick={() => setMetaForm({ ...metaForm, footer_theme_preset: p.id as any })}
                         className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                           isSelected
-                            ? 'border-indigo-500 bg-indigo-600/20 text-white font-bold ring-1 ring-indigo-500'
-                            : 'border-slate-800 bg-slate-950/60 text-slate-400 hover:text-white'
+                            ? 'border-teal-500 bg-teal-100 text-teal-950 font-bold ring-1 ring-teal-400'
+                            : 'border-teal-200 bg-white text-slate-700 hover:border-teal-400'
                         }`}
                       >
                         <p className="text-[11px] font-bold truncate">{p.name}</p>
-                        <p className="text-[9px] text-slate-500 truncate mt-0.5">{p.desc}</p>
+                        <p className="text-[9px] text-slate-400 truncate mt-0.5">{p.desc}</p>
                       </button>
                     );
                   })}
@@ -1967,14 +1977,14 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
               </div>
 
               {/* 2. Kustom Hex Footer Khusus */}
-              <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
+              <div className="p-3.5 rounded-2xl bg-white border border-teal-200 space-y-3 shadow-xs">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-white flex items-center gap-1.5">
-                    <Palette className="w-3.5 h-3.5 text-indigo-400" />
+                  <label className="text-xs font-bold text-teal-900 flex items-center gap-1.5">
+                    <Palette className="w-3.5 h-3.5 text-teal-600" />
                     <span>2. Warna Hex Background Footer Khusus</span>
                   </label>
                   <span
-                    className="w-6 h-6 rounded-lg border border-white/20 inline-block"
+                    className="w-6 h-6 rounded-lg border border-slate-300 inline-block"
                     style={{ backgroundColor: metaForm.footer_custom_bg || '#020617' }}
                   />
                 </div>
@@ -1990,9 +2000,9 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                       })
                     }
                     placeholder="#020617"
-                    className="flex-1 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-xs uppercase outline-none"
+                    className="flex-1 px-3 py-1.5 rounded-xl bg-slate-50 border border-teal-200 text-slate-900 font-mono text-xs uppercase outline-none"
                   />
-                  <label className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 cursor-pointer flex items-center gap-1.5 text-xs text-slate-200">
+                  <label className="px-3 py-1.5 rounded-xl bg-teal-50 hover:bg-teal-100 border border-teal-200 cursor-pointer flex items-center gap-1.5 text-xs text-teal-800 font-bold">
                     <input
                       type="color"
                       value={
@@ -2018,7 +2028,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {/* Gaya Transparansi Footer */}
                 <div className="space-y-1.5">
-                  <label className="block text-slate-300 font-semibold text-xs">
+                  <label className="block text-slate-700 font-bold text-xs">
                     3. Gaya Transparansi Footer:
                   </label>
                   {[
@@ -2032,8 +2042,8 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                       onClick={() => setMetaForm({ ...metaForm, footer_style: s.id as any })}
                       className={`w-full p-2 rounded-xl border text-left text-xs transition-all cursor-pointer ${
                         (metaForm.footer_style || 'GLASS') === s.id
-                          ? 'border-indigo-500 bg-indigo-600/20 text-white font-bold'
-                          : 'border-slate-800 bg-slate-950/60 text-slate-400 hover:text-white'
+                          ? 'border-teal-500 bg-teal-100 text-teal-950 font-bold ring-1 ring-teal-400'
+                          : 'border-teal-200 bg-white text-slate-700 hover:border-teal-400'
                       }`}
                     >
                       {s.label}
@@ -2043,7 +2053,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
 
                 {/* Garis Pembatas Atas Footer */}
                 <div className="space-y-1.5">
-                  <label className="block text-slate-300 font-semibold text-xs">
+                  <label className="block text-slate-700 font-bold text-xs">
                     4. Garis Pembatas Atas:
                   </label>
                   {[
@@ -2058,8 +2068,8 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                       onClick={() => setMetaForm({ ...metaForm, footer_border_accent: b.id as any })}
                       className={`w-full p-2 rounded-xl border text-left text-xs transition-all cursor-pointer ${
                         (metaForm.footer_border_accent || 'SUBTLE') === b.id
-                          ? 'border-indigo-500 bg-indigo-600/20 text-white font-bold'
-                          : 'border-slate-800 bg-slate-950/60 text-slate-400 hover:text-white'
+                          ? 'border-teal-500 bg-teal-100 text-teal-950 font-bold ring-1 ring-teal-400'
+                          : 'border-teal-200 bg-white text-slate-700 hover:border-teal-400'
                       }`}
                     >
                       {b.label}
@@ -2069,7 +2079,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
 
                 {/* Bentuk Background Icon */}
                 <div className="space-y-1.5">
-                  <label className="block text-slate-300 font-semibold text-xs">
+                  <label className="block text-slate-700 font-bold text-xs">
                     5. Bentuk Background Icon:
                   </label>
                   {[
@@ -2085,8 +2095,8 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                       onClick={() => setMetaForm({ ...metaForm, footer_icon_bg_style: shape.id as any })}
                       className={`w-full p-2 rounded-xl border text-left text-xs transition-all cursor-pointer ${
                         (metaForm.footer_icon_bg_style || 'SUBTLE') === shape.id
-                          ? 'border-amber-400 bg-amber-500/15 text-white font-bold'
-                          : 'border-slate-800 bg-slate-950/60 text-slate-400 hover:text-white'
+                          ? 'border-teal-500 bg-teal-100 text-teal-950 font-bold ring-1 ring-teal-400'
+                          : 'border-teal-200 bg-white text-slate-700 hover:border-teal-400'
                       }`}
                     >
                       {shape.label}
@@ -2097,11 +2107,11 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
 
               {/* 6. Kustom Warna Background Icon Aktif & Diam */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
-                  <label className="text-xs font-bold text-white flex items-center justify-between">
+                <div className="p-3.5 rounded-2xl bg-white border border-teal-200 space-y-2 shadow-xs">
+                  <label className="text-xs font-bold text-slate-800 flex items-center justify-between">
                     <span>Warna Background Icon Aktif</span>
                     <span
-                      className="w-4 h-4 rounded border border-white/20 inline-block"
+                      className="w-4 h-4 rounded border border-slate-300 inline-block"
                       style={{
                         backgroundColor: metaForm.footer_icon_active_bg || `${metaForm.warna_tema || '#CD5C5C'}25`
                       }}
@@ -2113,9 +2123,9 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                       value={metaForm.footer_icon_active_bg || ''}
                       onChange={(e) => setMetaForm({ ...metaForm, footer_icon_active_bg: e.target.value })}
                       placeholder="Default: Warna Tema"
-                      className="flex-1 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-xs outline-none"
+                      className="flex-1 px-3 py-1.5 rounded-xl bg-slate-50 border border-teal-200 text-slate-800 font-mono text-xs outline-none"
                     />
-                    <label className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 cursor-pointer text-xs text-slate-200">
+                    <label className="px-2.5 py-1.5 rounded-xl bg-teal-50 hover:bg-teal-100 border border-teal-200 cursor-pointer text-xs text-teal-800 font-bold">
                       <input
                         type="color"
                         value={
@@ -2130,11 +2140,11 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                   </div>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2">
-                  <label className="text-xs font-bold text-white flex items-center justify-between">
+                <div className="p-3.5 rounded-2xl bg-white border border-teal-200 space-y-2 shadow-xs">
+                  <label className="text-xs font-bold text-slate-800 flex items-center justify-between">
                     <span>Warna Background Icon Diam</span>
                     <span
-                      className="w-4 h-4 rounded border border-white/20 inline-block"
+                      className="w-4 h-4 rounded border border-slate-300 inline-block"
                       style={{
                         backgroundColor: metaForm.footer_icon_custom_bg || 'transparent'
                       }}
@@ -2146,9 +2156,9 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                       value={metaForm.footer_icon_custom_bg || ''}
                       onChange={(e) => setMetaForm({ ...metaForm, footer_icon_custom_bg: e.target.value })}
                       placeholder="Default: Transparan"
-                      className="flex-1 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono text-xs outline-none"
+                      className="flex-1 px-3 py-1.5 rounded-xl bg-slate-50 border border-teal-200 text-slate-800 font-mono text-xs outline-none"
                     />
-                    <label className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 cursor-pointer text-xs text-slate-200">
+                    <label className="px-2.5 py-1.5 rounded-xl bg-teal-50 hover:bg-teal-100 border border-teal-200 cursor-pointer text-xs text-teal-800 font-bold">
                       <input
                         type="color"
                         value={
@@ -2166,14 +2176,14 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
             </div>
 
             {/* Section 3: Custom Tampilan Portal Jemaat (Mobile & Dashboard Jemaat) */}
-            <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-xl">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+            <div className="rounded-3xl bg-white border-2 border-teal-200/90 p-6 text-slate-800 space-y-4 shadow-xl shadow-teal-950/5">
+              <div className="flex items-center justify-between pb-3 border-b border-teal-100">
                 <div>
-                  <h3 className="text-base font-bold text-indigo-300 flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-amber-400" />
+                  <h3 className="text-base font-bold text-teal-900 flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-teal-600" />
                     <span>3. Kustomisasi Tampilan Portal Jemaat (Hape & Mobile View)</span>
                   </h3>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-slate-500 mt-0.5">
                     Atur ucapan selamat datang, gaya banner, teks pengumuman, serta aktifkan/nonaktifkan modul di Dashboard Jemaat.
                   </p>
                 </div>
@@ -2181,63 +2191,63 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Judul Banner Selamat Datang Jemaat</label>
+                  <label className="block text-slate-700 mb-1 font-bold text-xs">Judul Banner Selamat Datang Jemaat</label>
                   <input
                     type="text"
                     value={metaForm.jemaat_banner_title || 'Shalom & Selamat Datang'}
                     onChange={(e) => setMetaForm({ ...metaForm, jemaat_banner_title: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-bold"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-teal-200 text-slate-900 font-bold text-xs"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Subtitle Banner Jemaat</label>
+                  <label className="block text-slate-700 mb-1 font-bold text-xs">Subtitle Banner Jemaat</label>
                   <input
                     type="text"
                     value={metaForm.jemaat_banner_subtitle || 'Portal Layanan Jemaat Resmi & Sistem Informasi Terpadu'}
                     onChange={(e) => setMetaForm({ ...metaForm, jemaat_banner_subtitle: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-teal-200 text-slate-900 text-xs"
                   />
                 </div>
 
                 {/* DEDIKASI PENGATURAN WARTA & PENGUMUMAN DENGAN ICON TOA */}
-                <div className="sm:col-span-2 p-4 sm:p-5 rounded-2xl bg-amber-500/10 border-2 border-amber-500/30 text-amber-200 space-y-3 shadow-inner">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-amber-500/20">
-                    <div className="flex items-center gap-2 text-amber-300 font-bold text-xs sm:text-sm">
-                      <div className="p-1.5 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                        <Megaphone className="w-4 h-4 animate-pulse text-amber-400" />
+                <div className="sm:col-span-2 p-4 sm:p-5 rounded-2xl bg-teal-50/70 border-2 border-teal-300 text-teal-950 space-y-3 shadow-inner">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-teal-200">
+                    <div className="flex items-center gap-2 text-teal-900 font-bold text-xs sm:text-sm">
+                      <div className="p-1.5 rounded-lg bg-teal-100 text-teal-700 border border-teal-300">
+                        <Megaphone className="w-4 h-4 animate-pulse text-teal-600" />
                       </div>
                       <span>Pengaturan Warta &amp; Pengumuman Dashboard (Icon Toa)</span>
                     </div>
-                    <label className="flex items-center gap-2 cursor-pointer text-xs text-amber-200 font-semibold bg-amber-500/20 px-3 py-1.5 rounded-xl border border-amber-500/30 w-fit">
+                    <label className="flex items-center gap-2 cursor-pointer text-xs text-teal-900 font-bold bg-white px-3 py-1.5 rounded-xl border border-teal-300 w-fit shadow-xs">
                       <input
                         type="checkbox"
                         checked={metaForm.show_pinned_notif_banner !== false}
                         onChange={(e) => setMetaForm({ ...metaForm, show_pinned_notif_banner: e.target.checked })}
-                        className="rounded border-amber-500 text-amber-600 focus:ring-amber-500 w-4 h-4"
+                        className="rounded border-teal-400 text-teal-600 focus:ring-teal-500 w-4 h-4"
                       />
                       <span>Tampilkan Banner Toa di Dashboard</span>
                     </label>
                   </div>
 
-                  <p className="text-[11px] text-slate-300">
+                  <p className="text-[11px] text-slate-600">
                     Teks pengumuman ini akan muncul di bagian atas halaman Dashboard dengan icon <strong>Toa (Megaphone)</strong> berkedip untuk seluruh jemaat dan pengunjung.
                   </p>
 
                   {/* Pratinjau Tampilan Dashboard */}
                   <div className="space-y-1">
-                    <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">
+                    <span className="text-[10px] font-bold text-teal-800 uppercase tracking-wider">
                       Pratinjau Tampilan di Dashboard:
                     </span>
-                    <div className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/20 via-orange-500/15 to-amber-500/20 border border-amber-500/40 text-amber-200 flex items-center gap-3">
-                      <span className="p-2 rounded-xl bg-amber-500/30 text-amber-300 border border-amber-400/40 shrink-0">
-                        <Megaphone className="w-4 h-4 animate-pulse text-amber-400" />
+                    <div className="p-3 sm:p-3.5 rounded-2xl bg-white border border-teal-300 text-slate-800 flex items-center gap-3 shadow-sm">
+                      <span className="p-2 rounded-xl bg-teal-100 text-teal-700 border border-teal-200 shrink-0">
+                        <Megaphone className="w-4 h-4 animate-pulse text-teal-600" />
                       </span>
                       <div className="min-w-0 flex-1">
-                        <span className="text-[10px] uppercase font-black tracking-wider text-amber-400 block sm:inline mr-2">
+                        <span className="text-[10px] uppercase font-black tracking-wider text-teal-800 block sm:inline mr-2">
                           Warta &amp; Pengumuman Gereja:
                         </span>
-                        <span className="text-xs font-semibold text-slate-100 break-words">
+                        <span className="text-xs font-semibold text-slate-800 break-words">
                           {metaForm.jemaat_announcement_text?.trim() || 'Teks pengumuman yang Anda ketik di bawah akan tampil di sini...'}
                         </span>
                       </div>
@@ -2245,7 +2255,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-slate-200 mb-1 font-semibold text-xs">
+                    <label className="block text-slate-700 mb-1 font-bold text-xs">
                       Isi Teks Warta / Pengumuman Gereja:
                     </label>
                     <textarea
@@ -2253,15 +2263,15 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                       value={metaForm.jemaat_announcement_text || ''}
                       onChange={(e) => setMetaForm({ ...metaForm, jemaat_announcement_text: e.target.value })}
                       placeholder="Contoh: Ibadah Raya Minggu ini diadakan pukul 09:00 WIB di Gedung Utama. Dilanjutkan perjamuan kudus..."
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs leading-relaxed placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-teal-200 text-slate-900 text-xs leading-relaxed placeholder-slate-400 focus:outline-none focus:border-teal-500"
                     />
                     <div className="pt-2 flex justify-end">
                       <button
                         type="button"
                         onClick={() => handleSaveMeta()}
-                        className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-amber-500/20 cursor-pointer transition-all active:scale-95"
+                        className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-teal-600/25 cursor-pointer transition-all active:scale-95"
                       >
-                        <Check className="w-4 h-4 text-slate-950 stroke-[3]" />
+                        <Check className="w-4 h-4 text-white stroke-[3]" />
                         <span>Simpan Pengumuman Toa Sekarang</span>
                       </button>
                     </div>
@@ -2270,8 +2280,8 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
 
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <label className="text-slate-400 font-semibold text-xs sm:text-sm">Pengaturan Lebar Kartu Dashboard Jemaat</label>
-                    <span className="text-[10px] text-indigo-400 font-mono font-semibold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">Pilih 1 Ukuran Lebar</span>
+                    <label className="text-slate-700 font-bold text-xs sm:text-sm">Pengaturan Lebar Kartu Dashboard Jemaat</label>
+                    <span className="text-[10px] text-teal-700 font-mono font-bold bg-teal-50 px-2 py-0.5 rounded border border-teal-200">Pilih 1 Ukuran Lebar</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     {[
@@ -2289,17 +2299,17 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                           onClick={() => setMetaForm({ ...metaForm, jemaat_card_width: cw.id as any })}
                           className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                             isSelected
-                              ? 'border-indigo-500 bg-indigo-950/60 ring-2 ring-indigo-500/50 text-white shadow-lg'
-                              : 'border-slate-800 bg-slate-950 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                              ? 'border-teal-500 bg-teal-50 ring-2 ring-teal-300 text-teal-950 shadow-sm'
+                              : 'border-teal-200 bg-white text-slate-700 hover:border-teal-400'
                           }`}
                         >
                           <div className="flex items-center justify-between w-full mb-1">
                             <span className="font-bold text-[11px]">{cw.label}</span>
-                            <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 ${isSelected ? 'border-indigo-400 bg-indigo-500' : 'border-slate-600'}`}>
+                            <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 ${isSelected ? 'border-teal-500 bg-teal-600' : 'border-slate-300'}`}>
                               {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                             </div>
                           </div>
-                          <div className="text-[9px] text-slate-500">{cw.desc}</div>
+                          <div className="text-[9px] text-slate-400">{cw.desc}</div>
                         </button>
                       );
                     })}
@@ -2308,8 +2318,8 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
 
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <label className="text-slate-400 font-semibold text-xs sm:text-sm">Ukuran Kepadatan Padding Kartu (Density)</label>
-                    <span className="text-[10px] text-indigo-400 font-mono font-semibold bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">Pilih 1 Padding</span>
+                    <label className="text-slate-700 font-bold text-xs sm:text-sm">Ukuran Kepadatan Padding Kartu (Density)</label>
+                    <span className="text-[10px] text-teal-700 font-mono font-bold bg-teal-50 px-2 py-0.5 rounded border border-teal-200">Pilih 1 Padding</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     {[
@@ -2325,17 +2335,17 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                           onClick={() => setMetaForm({ ...metaForm, card_size: cs.id as any })}
                           className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                             isSelected
-                              ? 'border-indigo-500 bg-indigo-950/60 ring-2 ring-indigo-500/50 text-white shadow-lg'
-                              : 'border-slate-800 bg-slate-950 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                              ? 'border-teal-500 bg-teal-50 ring-2 ring-teal-300 text-teal-950 shadow-sm'
+                              : 'border-teal-200 bg-white text-slate-700 hover:border-teal-400'
                           }`}
                         >
                           <div className="flex items-center justify-between w-full mb-1">
                             <span className="font-bold text-[11px]">{cs.label}</span>
-                            <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 ${isSelected ? 'border-indigo-400 bg-indigo-500' : 'border-slate-600'}`}>
+                            <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 ${isSelected ? 'border-teal-500 bg-teal-600' : 'border-slate-300'}`}>
                               {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                             </div>
                           </div>
-                          <div className="text-[9px] text-slate-500">{cs.desc}</div>
+                          <div className="text-[9px] text-slate-400">{cs.desc}</div>
                         </button>
                       );
                     })}
@@ -2343,7 +2353,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 mb-2 font-semibold">Style Warna Background Seluruh Kartu Dashboard & Jemaat</label>
+                  <label className="block text-slate-700 mb-2 font-bold text-xs">Style Warna Background Seluruh Kartu Dashboard & Jemaat</label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {[
                       { id: 'DEFAULT_GLASS', label: '✨ Transparan Glass' },
@@ -2360,10 +2370,10 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                         type="button"
                         key={cb.id}
                         onClick={() => setMetaForm({ ...metaForm, jemaat_cards_bg: cb.id as any })}
-                        className={`p-2.5 rounded-xl bg-slate-950 border text-left text-xs font-bold transition-all cursor-pointer ${
+                        className={`p-2.5 rounded-xl border text-left text-xs font-bold transition-all cursor-pointer ${
                           (metaForm.jemaat_cards_bg || 'DEFAULT_GLASS') === cb.id
-                            ? 'border-indigo-500 ring-2 ring-indigo-500/50 text-white'
-                            : 'border-slate-800 text-slate-400 hover:text-slate-200'
+                            ? 'border-teal-500 ring-2 ring-teal-300 bg-teal-50 text-teal-950 shadow-xs'
+                            : 'border-teal-200 bg-white text-slate-700 hover:border-teal-400'
                         }`}
                       >
                         {cb.label}
@@ -2373,7 +2383,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 mb-2 font-semibold">Style Background Banner Utama Jemaat (Paling Atas)</label>
+                  <label className="block text-slate-700 mb-2 font-bold text-xs">Style Background Banner Utama Jemaat (Paling Atas)</label>
                   <div className="grid grid-cols-2 gap-2">
                     {[
                       { id: 'GRADIENT_INDIGO', label: '🌌 Royal Twilight' },
@@ -2387,10 +2397,10 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                         type="button"
                         key={gb.id}
                         onClick={() => setMetaForm({ ...metaForm, jemaat_banner_bg: gb.id as any })}
-                        className={`p-2.5 rounded-xl bg-slate-950 border text-left text-xs font-bold transition-all ${
+                        className={`p-2.5 rounded-xl border text-left text-xs font-bold transition-all cursor-pointer ${
                           (metaForm.jemaat_banner_bg || 'GRADIENT_INDIGO') === gb.id
-                            ? 'border-indigo-500 ring-2 ring-indigo-500/50 text-white'
-                            : 'border-slate-800 text-slate-400 hover:text-slate-200'
+                            ? 'border-teal-500 ring-2 ring-teal-300 bg-teal-50 text-teal-950 shadow-xs'
+                            : 'border-teal-200 bg-white text-slate-700 hover:border-teal-400'
                         }`}
                       >
                         {gb.label}
@@ -2400,7 +2410,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 mb-2 font-semibold">Sakelar Komponen Dashboard Jemaat (Aktif/Nonaktif)</label>
+                  <label className="block text-slate-700 mb-2 font-bold text-xs">Sakelar Komponen Dashboard Jemaat (Aktif/Nonaktif)</label>
                   <div className="grid grid-cols-1 gap-2">
                     {[
                       { key: 'show_jemaat_announcement_banner', label: 'Banner Pengumuman Ticker' },
@@ -2413,14 +2423,14 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                     ].map((jItem) => (
                       <label
                         key={jItem.key}
-                        className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between cursor-pointer text-xs font-semibold hover:border-slate-700"
+                        className="p-2.5 rounded-xl bg-white border border-teal-200 flex items-center justify-between cursor-pointer text-xs font-semibold hover:border-teal-400 shadow-2xs"
                       >
-                        <span>{jItem.label}</span>
+                        <span className="text-slate-800">{jItem.label}</span>
                         <input
                           type="checkbox"
                           checked={(metaForm as any)[jItem.key] !== false}
                           onChange={(e) => setMetaForm({ ...metaForm, [jItem.key]: e.target.checked })}
-                          className="rounded border-slate-700 text-indigo-600 focus:ring-indigo-500 w-4 h-4 shrink-0"
+                          className="rounded border-teal-300 text-teal-600 focus:ring-teal-500 w-4 h-4 shrink-0"
                         />
                       </label>
                     ))}
@@ -2430,7 +2440,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
             </div>
 
             {/* Section 4: Pengaturan Lengkap Visibilitas Komponen Dashboard Home (Admin & Jemaat) */}
-            <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-xl">
+            <div className="rounded-3xl bg-white border-2 border-teal-100 shadow-xl shadow-teal-900/5 p-6 text-slate-800 space-y-4">
               <DashboardVisibilityManager
                 settings={metaForm}
                 onChange={(newSettings) => setMetaForm(newSettings)}
@@ -2438,34 +2448,36 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
             </div>
 
             {/* Section 5: Kontrol Tombol Floating Download Aplikasi Mobile (.APK Android) */}
-            <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-xl">
-              <h3 className="text-base font-bold pb-3 border-b border-slate-800 flex items-center justify-between">
-                <span className="flex items-center gap-2 text-emerald-400">
-                  <Sparkles className="w-5 h-5 text-emerald-400" />
+            <div className="rounded-3xl bg-white border-2 border-teal-100 shadow-xl shadow-teal-900/5 p-6 text-slate-800 space-y-4">
+              <h3 className="text-base font-extrabold text-slate-900 pb-3 border-b border-teal-100 flex items-center justify-between">
+                <span className="flex items-center gap-2 text-teal-700">
+                  <Sparkles className="w-5 h-5 text-teal-600" />
                   <span>5. Kontrol Tombol Melayang Download APK Mobile Android</span>
                 </span>
-                <span className="text-[10px] font-semibold text-slate-400">Mobile APK Download Control</span>
+                <span className="text-[10px] font-bold text-teal-800 bg-teal-50 border border-teal-200 px-2.5 py-1 rounded-full">
+                  Mobile APK Download Control
+                </span>
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <label className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-slate-700 flex items-center justify-between cursor-pointer transition-all sm:col-span-2">
+                <label className="p-3.5 rounded-2xl bg-teal-50/50 border border-teal-200 hover:border-teal-300 flex items-center justify-between cursor-pointer transition-all sm:col-span-2">
                   <div>
-                    <div className="font-bold text-xs text-emerald-300">Tampilkan Tombol Floating Download APK Mobile Android</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">Jika diaktifkan, tombol melayang untuk mengunduh file .APK akan tampil di sudut kanan bawah dashboard.</div>
+                    <div className="font-bold text-xs text-teal-900">Tampilkan Tombol Floating Download APK Mobile Android</div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">Jika diaktifkan, tombol melayang untuk mengunduh file .APK akan tampil di sudut kanan bawah dashboard.</div>
                   </div>
                   <input
                     type="checkbox"
                     checked={metaForm.show_apk_download_button !== false}
                     onChange={(e) => setMetaForm({ ...metaForm, show_apk_download_button: e.target.checked })}
-                    className="rounded border-slate-700 text-emerald-600 focus:ring-emerald-500 w-5 h-5 shrink-0"
+                    className="rounded border-teal-300 text-teal-600 focus:ring-teal-500 w-5 h-5 shrink-0"
                   />
                 </label>
 
                 {/* Notifikasi jika disembunyikan oleh tombol (X) */}
-                <div className="sm:col-span-2 p-3 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div className="sm:col-span-2 p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                   <div>
-                    <div className="font-bold text-slate-300 text-xs">Status Tombol Melayang di Perangkat Ini:</div>
-                    <div className="text-[11px] text-slate-400">
+                    <div className="font-bold text-slate-800 text-xs">Status Tombol Melayang di Perangkat Ini:</div>
+                    <div className="text-[11px] text-slate-500">
                       Pengguna dapat menyembunyikan tombol melayang langsung dari dashboard dengan menekan tombol silang <strong>(x)</strong>.
                     </div>
                   </div>
@@ -2479,20 +2491,20 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                         alert('Tombol melayang download APK & banner berhasil dipulihkan dan akan tampil kembali di dashboard!');
                       } catch (e) {}
                     }}
-                    className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs cursor-pointer shrink-0 transition-all shadow-md active:scale-95 text-center"
+                    className="px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs cursor-pointer shrink-0 transition-all shadow-md active:scale-95 text-center"
                   >
                     Reset &amp; Tampilkan di Dashboard
                   </button>
                 </div>
 
-                <div className="sm:col-span-2 space-y-2 p-3.5 rounded-2xl bg-slate-900/80 border border-emerald-500/30">
+                <div className="sm:col-span-2 space-y-2 p-3.5 rounded-2xl bg-teal-50/50 border border-teal-200">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
-                      <label className="block text-emerald-300 font-bold text-xs flex items-center gap-1.5">
-                        <Smartphone className="w-4 h-4 text-emerald-400" />
+                      <label className="block text-teal-900 font-bold text-xs flex items-center gap-1.5">
+                        <Smartphone className="w-4 h-4 text-teal-600" />
                         <span>Link File .APK Google Drive Khusus Gereja Ini:</span>
                       </label>
-                      <p className="text-[11px] text-slate-400">
+                      <p className="text-[11px] text-slate-500">
                         Setiap gereja memiliki link APK terpisah. Tempelkan link file APK Google Drive resmi milik gereja Anda di sini.
                       </p>
                     </div>
@@ -2501,7 +2513,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                         href={metaForm.apk_download_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/40 text-emerald-300 text-xs font-bold transition-all shrink-0 cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold transition-all shrink-0 cursor-pointer shadow-xs"
                         title="Buka dan tes tautan Google Drive APK"
                       >
                         <Download className="w-3.5 h-3.5" />
@@ -2514,10 +2526,10 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                     value={metaForm.apk_download_url || ''}
                     onChange={(e) => setMetaForm({ ...metaForm, apk_download_url: e.target.value })}
                     placeholder="https://drive.google.com/file/d/.../view?usp=sharing"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-xs focus:ring-2 focus:ring-emerald-500 outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-teal-200 text-slate-800 font-mono text-xs focus:ring-2 focus:ring-teal-500 outline-none"
                   />
-                  <div className="flex flex-wrap items-center gap-2 text-[10px] text-slate-400 pt-1">
-                    <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">
+                  <div className="flex flex-wrap items-center gap-2 text-[10px] text-slate-500 pt-1">
+                    <span className="px-2 py-0.5 rounded-md bg-teal-100 text-teal-800 border border-teal-200 font-semibold">
                       ✓ Terisolasi Per-Gereja
                     </span>
                     <span>
@@ -2529,10 +2541,10 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
             </div>
 
             {/* Save Button */}
-            <div className="flex justify-end pt-3 border-t border-slate-800">
+            <div className="flex justify-end pt-3 border-t border-teal-100">
               <button
                 type="submit"
-                className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 flex items-center gap-2"
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-bold text-xs shadow-md shadow-teal-600/25 flex items-center gap-2 cursor-pointer active:scale-95"
               >
                 <Check className="w-4 h-4" />
                 <span>Simpan Seluruh Kustomisasi Tampilan</span>
@@ -2546,25 +2558,25 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
       {activeTab === 'PUSH_NOTIF' && (
         <div className="space-y-6">
           {/* Header Banner */}
-          <div className="rounded-3xl bg-gradient-to-r from-indigo-950 via-slate-900 to-indigo-950 border border-indigo-500/30 p-6 text-white space-y-3 shadow-xl">
+          <div className="rounded-3xl bg-gradient-to-r from-teal-800 via-teal-700 to-teal-800 border-2 border-teal-600 p-6 text-white space-y-3 shadow-xl">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="p-3 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shrink-0">
-                  <Bell className="w-6 h-6 animate-pulse" />
+                <div className="p-3 rounded-2xl bg-white/15 text-white border border-white/20 shrink-0">
+                  <Bell className="w-6 h-6 animate-pulse text-amber-300" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="text-base sm:text-lg font-extrabold text-white">
                       Pengaturan Push Notifikasi OneSignal
                     </h3>
-                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold border border-emerald-500/30">
+                    <span className="px-2.5 py-0.5 rounded-full bg-teal-500/30 text-teal-100 text-[10px] font-bold border border-teal-400/40">
                       Gratis Selamanya
                     </span>
-                    <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-bold border border-indigo-500/30">
+                    <span className="px-2.5 py-0.5 rounded-full bg-teal-500/30 text-teal-100 text-[10px] font-bold border border-teal-400/40">
                       Status Bar HP Android &amp; Web
                     </span>
                   </div>
-                  <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                  <p className="text-xs text-teal-100 mt-1 leading-relaxed">
                     Kirim pesan broadcast warta dan pengumuman gereja langsung ke status bar atas HP jemaat dengan suara dering (chime) dan getar, bahkan ketika aplikasi sedang ditutup.
                   </p>
                 </div>
@@ -2574,23 +2586,23 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                 href="https://dashboard.onesignal.com"
                 target="_blank"
                 rel="noreferrer"
-                className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 flex items-center justify-center gap-1.5 shrink-0 transition-all cursor-pointer"
+                className="px-4 py-2.5 rounded-xl bg-white text-teal-900 font-bold text-xs shadow-md hover:bg-teal-50 flex items-center justify-center gap-1.5 shrink-0 transition-all cursor-pointer"
               >
-                <ExternalLink className="w-4 h-4" />
+                <ExternalLink className="w-4 h-4 text-teal-700" />
                 <span>Buka Dashboard OneSignal</span>
               </a>
             </div>
           </div>
 
           {/* Banner Menuju Android Studio Converter Pro */}
-          <div className="rounded-2xl bg-gradient-to-r from-indigo-950/80 via-slate-900 to-emerald-950/60 border border-indigo-500/40 p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-lg">
+          <div className="rounded-2xl bg-teal-50 border border-teal-300 p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-xs text-slate-800">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 shrink-0">
+              <div className="p-2.5 rounded-xl bg-teal-100 text-teal-700 border border-teal-300 shrink-0">
                 <Smartphone className="w-5 h-5" />
               </div>
               <div>
-                <p className="font-bold text-white text-sm">Konversi ke Android Studio Resmi &amp; Firebase FCM?</p>
-                <p className="text-slate-300 text-xs">
+                <p className="font-bold text-slate-900 text-sm">Konversi ke Android Studio Resmi &amp; Firebase FCM?</p>
+                <p className="text-slate-600 text-xs">
                   Dapatkan kode Java lengkap, konfigurasi status bar profesional, safe area notch, dan file google-services.json untuk link <strong>https://tntimbu.github.io/jesuskingdomchrist/</strong>
                 </p>
               </div>
@@ -2598,7 +2610,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
             <button
               type="button"
               onClick={() => setIsAndroidStudioModalOpen(true)}
-              className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shrink-0 flex items-center gap-1.5 shadow-lg shadow-emerald-600/20 transition cursor-pointer"
+              className="px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs shrink-0 flex items-center gap-1.5 shadow-md shadow-teal-600/20 transition cursor-pointer"
             >
               <span>Buka Android Studio Converter</span>
               <ChevronRight className="w-4 h-4" />
@@ -2606,39 +2618,39 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
           </div>
 
           {/* STATUS KONEKSI ONESIGNAL (LIVE STATUS CARD) */}
-          <div className="rounded-3xl bg-slate-900 border-2 border-indigo-500/30 p-6 text-white space-y-4 shadow-xl">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+          <div className="rounded-3xl bg-white border-2 border-teal-200/90 p-6 text-slate-800 space-y-4 shadow-xl shadow-teal-950/5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-teal-100">
               <div className="flex items-center gap-3">
                 <div className={`p-2.5 rounded-2xl border ${
                   metaForm.onesignal_app_id && metaForm.onesignal_rest_api_key
-                    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
                     : metaForm.onesignal_app_id
-                    ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
-                    : 'bg-slate-800 text-slate-400 border-slate-700'
+                    ? 'bg-amber-50 text-amber-700 border-amber-300'
+                    : 'bg-slate-100 text-slate-500 border-slate-200'
                 }`}>
                   <Smartphone className="w-5 h-5" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h4 className="font-extrabold text-sm sm:text-base text-white">
+                    <h4 className="font-extrabold text-sm sm:text-base text-slate-900">
                       Status Koneksi OneSignal
                     </h4>
                     {metaForm.onesignal_app_id && metaForm.onesignal_rest_api_key ? (
-                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold border border-emerald-500/30 flex items-center gap-1">
-                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-bold border border-emerald-300 flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
                         Terhubung &amp; Siap Kirim
                       </span>
                     ) : metaForm.onesignal_app_id ? (
-                      <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 text-[10px] font-bold border border-amber-500/30">
+                      <span className="px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 text-[10px] font-bold border border-amber-300">
                         App ID Terpasang &bull; Butuh REST API Key
                       </span>
                     ) : (
-                      <span className="px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 text-[10px] font-semibold border border-slate-700">
+                      <span className="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-semibold border border-slate-200">
                         Belum Terhubung
                       </span>
                     )}
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-0.5">
+                  <p className="text-[11px] text-slate-500 mt-0.5">
                     {metaForm.onesignal_app_id && metaForm.onesignal_rest_api_key
                       ? 'Layanan push notifikasi aktif. Setiap warta baru atau pesan tes dapat langsung disiarkan ke seluruh perangkat.'
                       : 'Lengkapi OneSignal App ID dan REST API Key di bawah untuk menghubungkan aplikasi ini ke OneSignal.'}
@@ -2655,57 +2667,57 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                   setCopiedKeyLabel('web_url');
                   setTimeout(() => setCopiedKeyLabel(null), 2500);
                 }}
-                className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-indigo-300 font-semibold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer shrink-0 border border-slate-700"
+                className="px-3 py-2 rounded-xl bg-slate-50 hover:bg-teal-50 text-teal-800 font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer shrink-0 border border-teal-200"
                 title="Salin URL website gereja Anda untuk dimasukkan ke kolom Site URL di OneSignal"
               >
-                <Copy className="w-3.5 h-3.5" />
+                <Copy className="w-3.5 h-3.5 text-teal-600" />
                 <span>{copiedKeyLabel === 'web_url' ? 'URL Web Tersalin!' : 'Salin Site URL Web'}</span>
               </button>
             </div>
 
             {/* Panduan 4 Langkah Menghubungkan OneSignal */}
-            <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2.5">
-              <div className="font-bold text-amber-300 text-xs flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-amber-400" />
+            <div className="p-4 rounded-2xl bg-teal-50/70 border border-teal-200 space-y-2.5">
+              <div className="font-bold text-teal-950 text-xs flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-teal-600" />
                 <span>Cara Menghubungkan OneSignal (Hanya Butuh 2 Menit):</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs">
-                <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
-                  <div className="font-bold text-white flex items-center gap-1.5">
-                    <span className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]">1</span>
+                <div className="p-3 rounded-xl bg-white border border-teal-200 space-y-1 shadow-2xs">
+                  <div className="font-bold text-slate-900 flex items-center gap-1.5">
+                    <span className="w-5 h-5 rounded-full bg-teal-600 text-white flex items-center justify-center text-[10px]">1</span>
                     <span>Buat Akun Gratis</span>
                   </div>
-                  <p className="text-slate-400 text-[11px] leading-relaxed">
-                    Buka <a href="https://onesignal.com" target="_blank" rel="noreferrer" className="text-indigo-400 underline font-semibold">onesignal.com</a> lalu daftar akun gratis (Free Plan selamanya).
+                  <p className="text-slate-600 text-[11px] leading-relaxed">
+                    Buka <a href="https://onesignal.com" target="_blank" rel="noreferrer" className="text-teal-700 underline font-semibold">onesignal.com</a> lalu daftar akun gratis (Free Plan selamanya).
                   </p>
                 </div>
 
-                <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
-                  <div className="font-bold text-white flex items-center gap-1.5">
-                    <span className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]">2</span>
+                <div className="p-3 rounded-xl bg-white border border-teal-200 space-y-1 shadow-2xs">
+                  <div className="font-bold text-slate-900 flex items-center gap-1.5">
+                    <span className="w-5 h-5 rounded-full bg-teal-600 text-white flex items-center justify-center text-[10px]">2</span>
                     <span>Tambah Aplikasi</span>
                   </div>
-                  <p className="text-slate-400 text-[11px] leading-relaxed">
+                  <p className="text-slate-600 text-[11px] leading-relaxed">
                     Klik <strong>New App/Website</strong> &gt; Beri nama misal <em>GKFC Church</em> &gt; Pilih platform <strong>Web Push</strong>.
                   </p>
                 </div>
 
-                <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
-                  <div className="font-bold text-white flex items-center gap-1.5">
-                    <span className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]">3</span>
+                <div className="p-3 rounded-xl bg-white border border-teal-200 space-y-1 shadow-2xs">
+                  <div className="font-bold text-slate-900 flex items-center gap-1.5">
+                    <span className="w-5 h-5 rounded-full bg-teal-600 text-white flex items-center justify-center text-[10px]">3</span>
                     <span>Salin Site URL</span>
                   </div>
-                  <p className="text-slate-400 text-[11px] leading-relaxed">
-                    Pilih <strong>Custom Code</strong> &gt; tempelkan Site URL Anda (<code className="text-emerald-400 break-all">{window.location.origin}</code>).
+                  <p className="text-slate-600 text-[11px] leading-relaxed">
+                    Pilih <strong>Custom Code</strong> &gt; tempelkan Site URL Anda (<code className="text-teal-700 break-all font-bold">{window.location.origin}</code>).
                   </p>
                 </div>
 
-                <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
-                  <div className="font-bold text-white flex items-center gap-1.5">
-                    <span className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px]">4</span>
+                <div className="p-3 rounded-xl bg-white border border-teal-200 space-y-1 shadow-2xs">
+                  <div className="font-bold text-slate-900 flex items-center gap-1.5">
+                    <span className="w-5 h-5 rounded-full bg-teal-600 text-white flex items-center justify-center text-[10px]">4</span>
                     <span>Salin Keys &amp; IDs</span>
                   </div>
-                  <p className="text-slate-400 text-[11px] leading-relaxed">
+                  <p className="text-slate-600 text-[11px] leading-relaxed">
                     Di OneSignal buka <strong>Settings &gt; Keys &amp; IDs</strong>, salin <strong>App ID</strong> &amp; <strong>REST API Key</strong> ke form di bawah.
                   </p>
                 </div>
@@ -2715,21 +2727,21 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
 
           {/* FORMULIR PENGATURAN KUNCI ONESIGNAL */}
           <form onSubmit={handleSaveMeta} className="space-y-6">
-            <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-xl">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+            <div className="rounded-3xl bg-white border-2 border-teal-200/90 p-6 text-slate-800 space-y-4 shadow-xl shadow-teal-950/5">
+              <div className="flex items-center justify-between pb-3 border-b border-teal-100">
                 <div className="flex items-center gap-2">
-                  <Key className="w-5 h-5 text-indigo-400" />
-                  <h4 className="font-bold text-sm text-white">Formulir Konfigurasi Kunci OneSignal</h4>
+                  <Key className="w-5 h-5 text-teal-600" />
+                  <h4 className="font-bold text-sm text-slate-900">Formulir Konfigurasi Kunci OneSignal</h4>
                 </div>
-                <span className="text-[10px] text-slate-400">Tersimpan Aman di Database CMS</span>
+                <span className="text-[10px] text-slate-400 font-semibold">Tersimpan Aman di Database CMS</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                 {/* Sakelar Aktifkan */}
-                <label className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-slate-700 flex items-center justify-between cursor-pointer transition sm:col-span-2">
+                <label className="p-3.5 rounded-2xl bg-teal-50/50 border border-teal-200 hover:border-teal-300 flex items-center justify-between cursor-pointer transition sm:col-span-2">
                   <div>
-                    <div className="font-bold text-xs text-emerald-300">Aktifkan Layanan Push Notifikasi OneSignal</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">
+                    <div className="font-bold text-xs text-teal-950">Aktifkan Layanan Push Notifikasi OneSignal</div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">
                       Izinkan CMS mengirim sinyal notifikasi push ke seluruh HP jemaat yang membuka web / memasang aplikasi.
                     </div>
                   </div>
@@ -2737,15 +2749,15 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                     type="checkbox"
                     checked={metaForm.onesignal_enabled !== false}
                     onChange={(e) => setMetaForm({ ...metaForm, onesignal_enabled: e.target.checked })}
-                    className="rounded border-slate-700 text-emerald-600 focus:ring-emerald-500 w-5 h-5 shrink-0"
+                    className="rounded border-teal-300 text-teal-600 focus:ring-teal-500 w-5 h-5 shrink-0"
                   />
                 </label>
 
                 {/* Sakelar Otomatis saat Warta diubah */}
-                <label className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-slate-700 flex items-center justify-between cursor-pointer transition sm:col-span-2">
+                <label className="p-3.5 rounded-2xl bg-teal-50/50 border border-teal-200 hover:border-teal-300 flex items-center justify-between cursor-pointer transition sm:col-span-2">
                   <div>
-                    <div className="font-bold text-xs text-indigo-300">Otomatis Kirim Notifikasi saat Warta/Pengumuman Disimpan</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">
+                    <div className="font-bold text-xs text-teal-950">Otomatis Kirim Notifikasi saat Warta/Pengumuman Disimpan</div>
+                    <div className="text-[10px] text-slate-500 mt-0.5">
                       Setiap kali Admin mengedit atau memperbarui teks warta di Dashboard, otomatis terkirim notifikasi ke bar HP.
                     </div>
                   </div>
@@ -2753,19 +2765,19 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                     type="checkbox"
                     checked={metaForm.onesignal_auto_push_announcement !== false}
                     onChange={(e) => setMetaForm({ ...metaForm, onesignal_auto_push_announcement: e.target.checked })}
-                    className="rounded border-slate-700 text-indigo-600 focus:ring-indigo-500 w-5 h-5 shrink-0"
+                    className="rounded border-teal-300 text-teal-600 focus:ring-teal-500 w-5 h-5 shrink-0"
                   />
                 </label>
 
                 {/* OneSignal App ID */}
                 <div className="space-y-1 sm:col-span-1">
                   <div className="flex items-center justify-between">
-                    <label className="block text-slate-300 font-semibold">
-                      OneSignal App ID <span className="text-amber-400">* (Wajib)</span>
+                    <label className="block text-slate-700 font-bold">
+                      OneSignal App ID <span className="text-amber-600">* (Wajib)</span>
                     </label>
                     {metaForm.onesignal_app_id && (
-                      <span className="text-[10px] text-emerald-400 flex items-center gap-1 font-semibold">
-                        <Check className="w-3 h-3" /> Terisi
+                      <span className="text-[10px] text-teal-700 flex items-center gap-1 font-bold">
+                        <Check className="w-3 h-3 text-teal-600" /> Terisi
                       </span>
                     )}
                   </div>
@@ -2774,7 +2786,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                     value={metaForm.onesignal_app_id || ''}
                     onChange={(e) => setMetaForm({ ...metaForm, onesignal_app_id: e.target.value.trim() })}
                     placeholder="Contoh: 12345678-abcd-1234-ef01-123456789abc"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-xs focus:outline-none focus:border-indigo-400"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-teal-200 text-slate-900 font-mono text-xs focus:outline-none focus:border-teal-500"
                   />
                   <p className="text-[10px] text-slate-400">
                     Didapat dari OneSignal &gt; <em>Settings</em> &gt; <em>Keys &amp; IDs</em> (format UUID 36 karakter).
@@ -2784,13 +2796,13 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                 {/* OneSignal REST API Key */}
                 <div className="space-y-1 sm:col-span-1">
                   <div className="flex items-center justify-between">
-                    <label className="block text-slate-300 font-semibold">
-                      OneSignal REST API Key <span className="text-amber-400">* (Wajib untuk Kirim)</span>
+                    <label className="block text-slate-700 font-bold">
+                      OneSignal REST API Key <span className="text-amber-600">* (Wajib untuk Kirim)</span>
                     </label>
                     <button
                       type="button"
                       onClick={() => setShowOneSignalKey(!showOneSignalKey)}
-                      className="text-[10px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+                      className="text-[10px] text-teal-700 hover:text-teal-900 flex items-center gap-1 font-semibold"
                     >
                       {showOneSignalKey ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
                       <span>{showOneSignalKey ? 'Sembunyikan' : 'Lihat Kunci'}</span>
@@ -2802,7 +2814,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                       value={metaForm.onesignal_rest_api_key || ''}
                       onChange={(e) => setMetaForm({ ...metaForm, onesignal_rest_api_key: e.target.value.trim() })}
                       placeholder="Kunci REST API OneSignal (os_v2_app_... atau string rahasia)"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-xs focus:outline-none focus:border-indigo-400 pr-10"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-teal-200 text-slate-900 font-mono text-xs focus:outline-none focus:border-teal-500 pr-10"
                     />
                   </div>
                   <p className="text-[10px] text-slate-400">
@@ -2813,7 +2825,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                 {/* Google Project Number / Sender ID */}
                 <div className="space-y-1 sm:col-span-2">
                   <div className="flex items-center justify-between">
-                    <label className="block text-slate-300 font-semibold">
+                    <label className="block text-slate-700 font-bold">
                       Google Project Number / Firebase Sender ID:
                     </label>
                     <button
@@ -2824,7 +2836,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                         setCopiedKeyLabel('sender_id');
                         setTimeout(() => setCopiedKeyLabel(null), 2000);
                       }}
-                      className="text-[10px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-semibold"
+                      className="text-[10px] text-teal-700 hover:text-teal-900 flex items-center gap-1 font-bold"
                     >
                       <Copy className="w-3 h-3" />
                       <span>{copiedKeyLabel === 'sender_id' ? 'Tersalin!' : 'Salin Nilai'}</span>
@@ -2835,7 +2847,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                     value={metaForm.onesignal_google_project_number || '250034601366'}
                     onChange={(e) => setMetaForm({ ...metaForm, onesignal_google_project_number: e.target.value })}
                     placeholder="250034601366"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white font-mono text-xs focus:outline-none focus:border-indigo-400"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-teal-200 text-slate-900 font-mono text-xs focus:outline-none focus:border-teal-500"
                   />
                   <p className="text-[10px] text-slate-400">
                     Nomor project resmi Firebase gereja untuk sinkronisasi Android.
@@ -2843,10 +2855,10 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                 </div>
               </div>
 
-              <div className="flex justify-end pt-3 border-t border-slate-800">
+              <div className="flex justify-end pt-3 border-t border-teal-100">
                 <button
                   type="submit"
-                  className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 flex items-center gap-1.5 cursor-pointer transition active:scale-95"
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-bold text-xs shadow-md shadow-teal-600/25 flex items-center gap-1.5 cursor-pointer transition active:scale-95"
                 >
                   <Check className="w-4 h-4" />
                   <span>Simpan &amp; Hubungkan OneSignal</span>
@@ -2856,13 +2868,13 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
           </form>
 
           {/* PUSAT PENGUJIAN & REGISTRASI PERANGKAT (LIVE TEST HUB) */}
-          <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-xl">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-800">
+          <div className="rounded-3xl bg-white border-2 border-teal-200/90 p-6 text-slate-800 space-y-4 shadow-xl shadow-teal-950/5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-teal-100">
               <div className="flex items-center gap-2">
-                <Send className="w-5 h-5 text-amber-400" />
-                <h4 className="font-bold text-sm text-white">Pusat Uji Coba Pengiriman &amp; Registrasi Perangkat</h4>
+                <Send className="w-5 h-5 text-teal-600" />
+                <h4 className="font-bold text-sm text-slate-900">Pusat Uji Coba Pengiriman &amp; Registrasi Perangkat</h4>
               </div>
-              <span className="text-[10px] text-emerald-400 font-semibold">Coba Sekarang di HP atau Laptop Anda</span>
+              <span className="text-[10px] text-teal-800 font-bold bg-teal-50 border border-teal-200 px-2.5 py-1 rounded-full">Coba Sekarang di HP atau Laptop Anda</span>
             </div>
 
             {/* Hasil Uji Izin Perangkat */}
@@ -2870,15 +2882,15 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
               <div
                 className={`p-3.5 rounded-2xl border text-xs font-bold leading-relaxed flex items-center justify-between gap-2 animate-fade-in ${
                   permissionPromptResult.granted
-                    ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
-                    : 'bg-amber-500/20 border-amber-500/40 text-amber-300'
+                    ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                    : 'bg-amber-50 border-amber-300 text-amber-900'
                 }`}
               >
                 <span>{permissionPromptResult.message}</span>
                 <button
                   type="button"
                   onClick={() => setPermissionPromptResult(null)}
-                  className="text-slate-400 hover:text-white"
+                  className="text-slate-400 hover:text-slate-700"
                 >
                   &times;
                 </button>
@@ -2890,8 +2902,8 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
               <div
                 className={`p-3.5 rounded-2xl border text-xs font-bold leading-relaxed animate-fade-in ${
                   pushTestResult.success
-                    ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
-                    : 'bg-rose-500/20 border-rose-500/40 text-rose-300'
+                    ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                    : 'bg-rose-50 border-rose-300 text-rose-800'
                 }`}
               >
                 {pushTestResult.message}
@@ -2900,41 +2912,41 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div className="space-y-1">
-                <label className="block text-slate-300 font-semibold">Judul Notifikasi Tes:</label>
+                <label className="block text-slate-700 font-bold">Judul Notifikasi Tes:</label>
                 <input
                   type="text"
                   value={testPushTitle}
                   onChange={(e) => setTestPushTitle(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-teal-200 text-slate-900 text-xs"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="block text-slate-300 font-semibold">Isi Pesan Notifikasi Tes:</label>
+                <label className="block text-slate-700 font-bold">Isi Pesan Notifikasi Tes:</label>
                 <input
                   type="text"
                   value={testPushMessage}
                   onChange={(e) => setTestPushMessage(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-teal-200 text-slate-900 text-xs"
                 />
               </div>
             </div>
 
             {/* Pratinjau Tampilan Notifikasi di Bar HP */}
             <div className="space-y-1.5 pt-1">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+              <span className="text-[11px] font-bold text-teal-800 uppercase tracking-wider block">
                 Simulasi Tampilan di Status Bar Android:
               </span>
-              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white shrink-0 shadow">
+              <div className="p-3.5 rounded-2xl bg-teal-50/70 border border-teal-200 flex items-start gap-3 shadow-2xs">
+                <div className="w-8 h-8 rounded-full bg-teal-600 flex items-center justify-center text-white shrink-0 shadow">
                   <Bell className="w-4 h-4" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-xs text-white truncate">{testPushTitle || 'GKFC Church'}</span>
-                    <span className="text-[10px] text-slate-500 shrink-0">Sekarang</span>
+                    <span className="font-bold text-xs text-slate-900 truncate">{testPushTitle || 'GKFC Church'}</span>
+                    <span className="text-[10px] text-slate-400 shrink-0">Sekarang</span>
                   </div>
-                  <p className="text-[11px] text-slate-300 mt-0.5 break-words">
+                  <p className="text-[11px] text-slate-700 mt-0.5 break-words">
                     {testPushMessage || 'Pesan notifikasi warta gereja...'}
                   </p>
                 </div>
@@ -2947,9 +2959,9 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                 type="button"
                 onClick={handlePromptPermission}
                 disabled={isPromptingPermission}
-                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-200 border border-indigo-500/40 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition active:scale-95 disabled:opacity-50 shrink-0"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-300 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition active:scale-95 disabled:opacity-50 shrink-0"
               >
-                <Bell className="w-4 h-4 text-indigo-400" />
+                <Bell className="w-4 h-4 text-teal-600" />
                 <span>{isPromptingPermission ? 'Menunggu Izin...' : '🔔 Uji & Izinkan Notifikasi di HP/Browser Ini'}</span>
               </button>
 
@@ -2958,7 +2970,7 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                 type="button"
                 onClick={handleTestPushNotification}
                 disabled={isTestingPush}
-                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 cursor-pointer transition active:scale-95 disabled:opacity-50 shrink-0"
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-extrabold text-xs shadow-md shadow-teal-600/25 flex items-center justify-center gap-2 cursor-pointer transition active:scale-95 disabled:opacity-50 shrink-0"
               >
                 <Send className="w-4 h-4" />
                 <span>{isTestingPush ? 'Sedang Mengirim ke OneSignal...' : '🚀 Kirim Pesan Uji Coba Broadcast'}</span>
@@ -2967,20 +2979,20 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
           </div>
 
           {/* OPSI TAMBAHAN: GOOGLE-SERVICES.JSON (FIREBASE FCM) */}
-          <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-xl">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-800">
+          <div className="rounded-3xl bg-white border-2 border-teal-200/90 p-6 text-slate-800 space-y-4 shadow-xl shadow-teal-950/5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-teal-100">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                <div className="p-2 rounded-xl bg-teal-50 text-teal-700 border border-teal-200">
                   <FileJson className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="font-extrabold text-sm sm:text-base text-white flex items-center gap-2">
+                  <h4 className="font-extrabold text-sm sm:text-base text-slate-900 flex items-center gap-2">
                     <span>Opsi Cadangan: File google-services.json (Firebase FCM)</span>
-                    <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 text-[10px] font-semibold border border-slate-700">
+                    <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-semibold border border-slate-200">
                       Opsional
                     </span>
                   </h4>
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-[11px] text-slate-500">
                     Digunakan jika software builder Anda membutuhkan file konfigurasi Firebase FCM langsung.
                   </p>
                 </div>
@@ -2993,15 +3005,15 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
                   setDownloadSuccess(true);
                   setTimeout(() => setDownloadSuccess(false), 3500);
                 }}
-                className="px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg transition cursor-pointer shrink-0"
+                className="px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-md transition cursor-pointer shrink-0"
               >
                 {downloadSuccess ? <Check className="w-4 h-4 text-white" /> : <Download className="w-4 h-4" />}
                 <span>{downloadSuccess ? 'File Berhasil Didownload!' : 'Download google-services.json'}</span>
               </button>
             </div>
 
-            <div className="flex items-center gap-3 text-xs text-slate-400">
-              <span className="font-mono text-emerald-400 font-bold bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800">
+            <div className="flex items-center gap-3 text-xs text-slate-500">
+              <span className="font-mono text-teal-900 font-bold bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200">
                 Package Name: {apkPackageName}
               </span>
               <span>File ini sudah tersusun otomatis dan dapat diunduh kapan saja.</span>
@@ -3009,39 +3021,39 @@ export const SystemSettingsView: React.FC<SystemSettingsViewProps> = ({
           </div>
 
           {/* Card Panduan Cepat Website 2 APK Builder */}
-          <div className="rounded-3xl bg-slate-900 border border-slate-800 p-6 text-white space-y-4 shadow-xl">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <h4 className="font-bold text-sm text-white flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-indigo-400" />
+          <div className="rounded-3xl bg-white border-2 border-teal-200/90 p-6 text-slate-800 space-y-4 shadow-xl shadow-teal-950/5">
+            <div className="flex items-center justify-between pb-3 border-b border-teal-100">
+              <h4 className="font-bold text-sm text-slate-900 flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-teal-600" />
                 <span>3. Langkah Penting Saat Membuat APK di "Website 2 APK Builder"</span>
               </h4>
               <button
                 type="button"
                 onClick={() => setIsGuideModalOpen(true)}
-                className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold underline"
+                className="text-xs text-teal-700 hover:text-teal-900 font-bold underline"
               >
                 Buka Tutorial Lengkap
               </button>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
-                <span className="font-bold text-amber-400 block">Langkah A: Di Website 2 APK</span>
-                <p className="text-slate-400 text-[11px]">
-                  Cari opsi <strong>Push Notifications</strong> &gt; Centang <strong>[OneSignal]</strong>. Masukkan App ID &amp; Google Project Number (<code className="text-emerald-400">250034601366</code>).
+              <div className="p-3.5 rounded-2xl bg-teal-50/50 border border-teal-200 space-y-1">
+                <span className="font-bold text-amber-800 block">Langkah A: Di Website 2 APK</span>
+                <p className="text-slate-600 text-[11px]">
+                  Cari opsi <strong>Push Notifications</strong> &gt; Centang <strong>[OneSignal]</strong>. Masukkan App ID &amp; Google Project Number (<code className="text-teal-800 font-bold">250034601366</code>).
                 </p>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
-                <span className="font-bold text-indigo-400 block">Langkah B: Generate &amp; Pasang APK</span>
-                <p className="text-slate-400 text-[11px]">
+              <div className="p-3.5 rounded-2xl bg-teal-50/50 border border-teal-200 space-y-1">
+                <span className="font-bold text-teal-900 block">Langkah B: Generate &amp; Pasang APK</span>
+                <p className="text-slate-600 text-[11px]">
                   Build file APK dan instal ke HP. Buka aplikasi 1x dan klik <strong>"Izinkan" (Allow)</strong> saat HP meminta izin notifikasi.
                 </p>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-1">
-                <span className="font-bold text-emerald-400 block">Langkah C: Selesai!</span>
-                <p className="text-slate-400 text-[11px]">
+              <div className="p-3.5 rounded-2xl bg-teal-50/50 border border-teal-200 space-y-1">
+                <span className="font-bold text-emerald-800 block">Langkah C: Selesai!</span>
+                <p className="text-slate-600 text-[11px]">
                   Kapanpun Admin mengubah Warta atau mengirim pesan, HP Android akan otomatis berdering di bar atas meski aplikasi sedang ditutup!
                 </p>
               </div>

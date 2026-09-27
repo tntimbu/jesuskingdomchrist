@@ -248,19 +248,19 @@ export const FloatingNotificationBanner: React.FC<FloatingNotificationBannerProp
         >
           {/* Multi-notification Header Bar */}
           {activeNotifs.length > 1 && (
-            <div className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-slate-950/95 border border-slate-700/80 backdrop-blur-xl text-[11px] shadow-xl text-white">
-              <span className="text-slate-300 font-medium flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-indigo-500 animate-ping" />
+            <div className="flex items-center justify-between px-3.5 py-2 rounded-2xl bg-white/98 border border-teal-200/90 backdrop-blur-xl text-[11px] shadow-lg text-slate-800">
+              <span className="text-slate-600 font-semibold flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-teal-500 animate-ping" />
                 <span>
-                  <strong>{activeNotifs.length}</strong> Notifikasi &amp; Pembaruan Baru
+                  <strong className="text-teal-900 font-bold">{activeNotifs.length}</strong> Notifikasi &amp; Pembaruan Baru
                 </span>
               </span>
               <button
                 type="button"
                 onClick={() => handleDismissAll(activeNotifs.map((n) => n.notif_id))}
-                className="text-xs text-indigo-400 hover:text-white font-bold hover:underline cursor-pointer flex items-center gap-1 transition-colors"
+                className="text-xs text-teal-700 hover:text-teal-900 font-bold hover:underline cursor-pointer flex items-center gap-1 transition-colors"
               >
-                <CheckCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <CheckCheck className="w-3.5 h-3.5 text-teal-600" />
                 <span>Tutup Semua ({activeNotifs.length})</span>
               </button>
             </div>
@@ -275,12 +275,12 @@ export const FloatingNotificationBanner: React.FC<FloatingNotificationBannerProp
               <div
                 key={notif.notif_id}
                 onClick={() => handleNavigateToSource(notif)}
-                className={`group relative overflow-hidden p-3.5 rounded-2xl border-2 shadow-[0_20px_50px_rgba(0,0,0,0.85)] backdrop-blur-2xl transition-all cursor-pointer hover:shadow-indigo-500/25 active:scale-[0.99] ${
+                className={`group relative overflow-hidden p-4 rounded-3xl border-2 shadow-[0_12px_36px_-6px_rgba(13,148,136,0.18),0_4px_16px_rgba(0,0,0,0.06)] bg-white/98 backdrop-blur-2xl transition-all cursor-pointer hover:border-teal-500 hover:shadow-xl active:scale-[0.99] ${
                   isWarning
-                    ? 'bg-slate-950/95 border-rose-500/80 text-rose-100 ring-2 ring-rose-500/20 hover:border-rose-400'
+                    ? 'border-rose-400 text-slate-800 ring-2 ring-rose-100 hover:border-rose-500'
                     : isImportant
-                    ? 'bg-slate-950/95 border-purple-500/80 text-purple-100 ring-2 ring-purple-500/20 hover:border-purple-400'
-                    : 'bg-slate-950/95 border-indigo-500/80 text-indigo-100 ring-2 ring-indigo-500/20 hover:border-indigo-400'
+                    ? 'border-amber-400 text-slate-800 ring-2 ring-amber-100 hover:border-amber-500'
+                    : 'border-teal-300 text-slate-800 ring-2 ring-teal-50 hover:border-teal-500'
                 }`}
                 title="Klik untuk langsung membuka sumber informasi"
               >
@@ -290,8 +290,8 @@ export const FloatingNotificationBanner: React.FC<FloatingNotificationBannerProp
                     isWarning
                       ? 'bg-gradient-to-r from-rose-500 via-amber-400 to-rose-600'
                       : isImportant
-                      ? 'bg-gradient-to-r from-purple-500 via-indigo-400 to-purple-600'
-                      : 'bg-gradient-to-r from-indigo-500 via-sky-400 to-indigo-600'
+                      ? 'bg-gradient-to-r from-amber-500 via-teal-400 to-amber-600'
+                      : 'bg-gradient-to-r from-teal-500 via-emerald-400 to-teal-600'
                   }`}
                 />
 
@@ -299,12 +299,12 @@ export const FloatingNotificationBanner: React.FC<FloatingNotificationBannerProp
                 <div className="flex items-start justify-between gap-2.5 relative z-10 pt-1">
                   <div className="flex items-center gap-2.5 min-w-0 flex-1">
                     <div
-                      className={`p-2 rounded-xl flex items-center justify-center shrink-0 shadow-md ${
+                      className={`p-2.5 rounded-2xl flex items-center justify-center shrink-0 shadow-md ${
                         isWarning
-                          ? 'bg-rose-600 text-white ring-2 ring-rose-400/40'
+                          ? 'bg-rose-600 text-white ring-2 ring-rose-200'
                           : isImportant
-                          ? 'bg-purple-600 text-white ring-2 ring-purple-400/40'
-                          : 'bg-indigo-600 text-white ring-2 ring-indigo-400/40'
+                          ? 'bg-amber-600 text-white ring-2 ring-amber-200'
+                          : 'bg-teal-600 text-white ring-2 ring-teal-200'
                       }`}
                     >
                       {icon}
@@ -313,12 +313,12 @@ export const FloatingNotificationBanner: React.FC<FloatingNotificationBannerProp
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span
-                          className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
+                          className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
                             isWarning
-                              ? 'bg-rose-500/30 text-rose-200 border border-rose-400/40'
+                              ? 'bg-rose-50 text-rose-700 border border-rose-200'
                               : isImportant
-                              ? 'bg-purple-500/30 text-purple-200 border border-purple-400/40'
-                              : 'bg-indigo-500/30 text-indigo-200 border border-indigo-400/40'
+                              ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                              : 'bg-teal-50 text-teal-800 border border-teal-200'
                           }`}
                         >
                           {catLabel}
@@ -327,7 +327,7 @@ export const FloatingNotificationBanner: React.FC<FloatingNotificationBannerProp
                           {notif.tanggal}
                         </span>
                       </div>
-                      <h4 className="text-xs sm:text-sm font-extrabold text-white leading-snug line-clamp-1 mt-0.5 group-hover:text-indigo-200 transition-colors">
+                      <h4 className="text-xs sm:text-sm font-black text-slate-900 leading-snug line-clamp-1 mt-0.5 group-hover:text-teal-700 transition-colors">
                         {notif.judul}
                       </h4>
                     </div>
@@ -342,7 +342,7 @@ export const FloatingNotificationBanner: React.FC<FloatingNotificationBannerProp
                         if (isWarning) playWarningChime();
                         else playNotificationChime();
                       }}
-                      className="p-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 transition-all cursor-pointer"
+                      className="p-1.5 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-700 border border-teal-200 transition-all cursor-pointer"
                       title="Bunyikan Suara"
                     >
                       <Volume2 className="w-3.5 h-3.5" />
@@ -354,7 +354,7 @@ export const FloatingNotificationBanner: React.FC<FloatingNotificationBannerProp
                         e.stopPropagation();
                         handleDismiss(notif.notif_id);
                       }}
-                      className="p-1.5 rounded-lg bg-white/10 hover:bg-rose-600 text-slate-300 hover:text-white transition-all cursor-pointer"
+                      className="p-1.5 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-slate-200 transition-all cursor-pointer"
                       title="Tutup Notifikasi"
                     >
                       <X className="w-3.5 h-3.5" />
@@ -363,13 +363,13 @@ export const FloatingNotificationBanner: React.FC<FloatingNotificationBannerProp
                 </div>
 
                 {/* Body Message Snippet */}
-                <div className="mt-2 text-[11px] sm:text-xs text-slate-200 leading-snug bg-black/45 px-3 py-2 rounded-xl border border-white/10 relative z-10 group-hover:bg-black/60 transition-colors">
+                <div className="mt-2.5 text-[11px] sm:text-xs text-slate-700 leading-relaxed bg-teal-50/50 px-3.5 py-2.5 rounded-2xl border border-teal-100 relative z-10 group-hover:bg-teal-50 transition-colors">
                   <p className="line-clamp-2">{notif.pesan}</p>
 
                   {/* Click to Source Action Button */}
-                  <div className="mt-2 pt-1.5 border-t border-white/10 flex items-center justify-between text-[11px] font-bold">
-                    <span className="text-indigo-300 group-hover:text-indigo-200 flex items-center gap-1">
-                      <ExternalLink className="w-3.5 h-3.5 text-indigo-400" />
+                  <div className="mt-2.5 pt-2 border-t border-teal-200/60 flex items-center justify-between text-[11px] font-bold">
+                    <span className="text-teal-700 group-hover:text-teal-900 flex items-center gap-1">
+                      <ExternalLink className="w-3.5 h-3.5 text-teal-600" />
                       <span>{buttonLabel}</span>
                     </span>
                     <button
@@ -378,21 +378,21 @@ export const FloatingNotificationBanner: React.FC<FloatingNotificationBannerProp
                         e.stopPropagation();
                         setSelectedNotifForDetail(notif);
                       }}
-                      className="px-2 py-0.5 rounded-md bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white text-[10px] font-medium transition-colors cursor-pointer flex items-center gap-1"
+                      className="px-2.5 py-1 rounded-lg bg-white hover:bg-teal-100 text-slate-700 hover:text-teal-900 text-[10px] font-bold border border-teal-200 transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
                       title="Buka teks lengkap"
                     >
-                      <Eye className="w-3 h-3" />
+                      <Eye className="w-3 h-3 text-teal-600" />
                       <span>Rincian</span>
                     </button>
                   </div>
                 </div>
 
                 {/* Footer Tag */}
-                <div className="mt-1.5 flex items-center justify-between text-[10px] text-slate-400 relative z-10 px-1">
+                <div className="mt-2 flex items-center justify-between text-[10px] text-slate-400 relative z-10 px-1">
                   <span className="truncate">
-                    Oleh: <strong className="text-slate-200">{notif.pengirim || 'Admin Gereja'}</strong>
+                    Oleh: <strong className="text-slate-700 font-semibold">{notif.pengirim || 'Admin Gereja'}</strong>
                   </span>
-                  <span className="text-indigo-400 font-semibold group-hover:underline">
+                  <span className="text-teal-700 font-bold group-hover:underline">
                     Klik untuk membuka &rarr;
                   </span>
                 </div>
@@ -410,16 +410,16 @@ export const FloatingNotificationBanner: React.FC<FloatingNotificationBannerProp
 
         return (
           <div
-            className="fixed inset-0 z-[100000] flex items-center justify-center p-4 sm:p-6 bg-slate-950/85 backdrop-blur-md animate-fade-in"
+            className="fixed inset-0 z-[100000] flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-md animate-fade-in"
             onClick={() => setSelectedNotifForDetail(null)}
           >
             <div
-              className={`relative w-full max-w-lg sm:max-w-xl rounded-3xl bg-slate-900 border-2 shadow-[0_25px_70px_rgba(0,0,0,0.95)] overflow-hidden flex flex-col max-h-[90vh] text-white ${
+              className={`relative w-full max-w-lg sm:max-w-xl rounded-3xl bg-white border-2 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-slate-800 ${
                 isWarning
-                  ? 'border-rose-500/80 shadow-rose-950/50'
+                  ? 'border-rose-400'
                   : isImportant
-                  ? 'border-purple-500/80 shadow-purple-950/50'
-                  : 'border-indigo-500/80 shadow-indigo-950/50'
+                  ? 'border-amber-400'
+                  : 'border-teal-300'
               }`}
               onClick={(e) => e.stopPropagation()}
             >
@@ -429,21 +429,21 @@ export const FloatingNotificationBanner: React.FC<FloatingNotificationBannerProp
                   isWarning
                     ? 'bg-gradient-to-r from-rose-500 via-amber-400 to-rose-600'
                     : isImportant
-                    ? 'bg-gradient-to-r from-purple-500 via-indigo-400 to-purple-600'
-                    : 'bg-gradient-to-r from-indigo-500 via-sky-400 to-indigo-600'
+                    ? 'bg-gradient-to-r from-amber-500 via-teal-400 to-amber-600'
+                    : 'bg-gradient-to-r from-teal-500 via-emerald-400 to-teal-600'
                 }`}
               />
 
               {/* Header */}
-              <div className="p-5 sm:p-6 pb-4 border-b border-white/10 flex items-start justify-between gap-4">
+              <div className="p-5 sm:p-6 pb-4 border-b border-slate-100 flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3.5 min-w-0 flex-1">
                   <div
-                    className={`p-3 rounded-2xl flex items-center justify-center shrink-0 shadow-lg ${
+                    className={`p-3 rounded-2xl flex items-center justify-center shrink-0 shadow-md ${
                       isWarning
-                        ? 'bg-rose-600 text-white ring-4 ring-rose-500/20'
+                        ? 'bg-rose-600 text-white ring-4 ring-rose-100'
                         : isImportant
-                        ? 'bg-purple-600 text-white ring-4 ring-purple-500/20'
-                        : 'bg-indigo-600 text-white ring-4 ring-indigo-500/20'
+                        ? 'bg-amber-600 text-white ring-4 ring-amber-100'
+                        : 'bg-teal-600 text-white ring-4 ring-teal-100'
                     }`}
                   >
                     {icon}
@@ -454,10 +454,10 @@ export const FloatingNotificationBanner: React.FC<FloatingNotificationBannerProp
                       <span
                         className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
                           isWarning
-                            ? 'bg-rose-500/30 text-rose-200 border border-rose-400/40'
+                            ? 'bg-rose-50 text-rose-700 border border-rose-200'
                             : isImportant
-                            ? 'bg-purple-500/30 text-purple-200 border border-purple-400/40'
-                            : 'bg-indigo-500/30 text-indigo-200 border border-indigo-400/40'
+                            ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                            : 'bg-teal-50 text-teal-800 border border-teal-200'
                         }`}
                       >
                         {catLabel}
@@ -466,12 +466,12 @@ export const FloatingNotificationBanner: React.FC<FloatingNotificationBannerProp
                         {selectedNotifForDetail.tanggal}
                       </span>
                     </div>
-                    <h3 className="text-lg sm:text-xl font-extrabold text-white leading-snug">
+                    <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 leading-snug">
                       {selectedNotifForDetail.judul}
                     </h3>
-                    <div className="text-xs text-slate-400 mt-1 flex items-center gap-2 flex-wrap">
+                    <div className="text-xs text-slate-500 mt-1 flex items-center gap-2 flex-wrap">
                       <span>
-                        Pengirim: <strong className="text-slate-200">{selectedNotifForDetail.pengirim || 'Admin Gereja'}</strong>
+                        Pengirim: <strong className="text-slate-800 font-semibold">{selectedNotifForDetail.pengirim || 'Admin Gereja'}</strong>
                       </span>
                     </div>
                   </div>
@@ -480,7 +480,7 @@ export const FloatingNotificationBanner: React.FC<FloatingNotificationBannerProp
                 <button
                   type="button"
                   onClick={() => setSelectedNotifForDetail(null)}
-                  className="p-2 rounded-xl bg-white/10 hover:bg-rose-600 text-slate-300 hover:text-white transition-all cursor-pointer shrink-0"
+                  className="p-2 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-slate-200 transition-all cursor-pointer shrink-0"
                   title="Tutup (Esc)"
                 >
                   <X className="w-5 h-5" />
@@ -489,22 +489,22 @@ export const FloatingNotificationBanner: React.FC<FloatingNotificationBannerProp
 
               {/* Scrollable Message Content */}
               <div className="p-5 sm:p-6 overflow-y-auto max-h-[50vh] space-y-2.5">
-                <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <div className="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider">
                   <span className="flex items-center gap-1.5">
-                    <FileText className="w-3.5 h-3.5 text-indigo-400" />
+                    <FileText className="w-3.5 h-3.5 text-teal-600" />
                     <span>Isi Notifikasi:</span>
                   </span>
-                  <span className="text-[11px] text-slate-500 font-normal">
+                  <span className="text-[11px] text-slate-400 font-normal">
                     (Dapat digulir ke bawah)
                   </span>
                 </div>
-                <div className="p-4 sm:p-5 rounded-2xl bg-black/50 border border-white/10 text-slate-100 text-sm sm:text-base leading-relaxed whitespace-pre-line select-text font-normal shadow-inner">
+                <div className="p-4 sm:p-5 rounded-2xl bg-teal-50/40 border border-teal-200/80 text-slate-800 text-sm sm:text-base leading-relaxed whitespace-pre-line select-text font-normal shadow-2xs">
                   {selectedNotifForDetail.pesan}
                 </div>
               </div>
 
               {/* Footer Actions */}
-              <div className="p-4 sm:p-5 border-t border-white/10 bg-slate-950/70 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="p-4 sm:p-5 border-t border-slate-100 bg-slate-50/80 flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                   <button
                     type="button"
@@ -512,10 +512,10 @@ export const FloatingNotificationBanner: React.FC<FloatingNotificationBannerProp
                       if (isWarning) playWarningChime();
                       else playNotificationChime();
                     }}
-                    className="px-3 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer w-full sm:w-auto"
+                    className="px-3.5 py-2 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer w-full sm:w-auto shadow-2xs"
                     title="Bunyikan Suara"
                   >
-                    <Volume2 className="w-4 h-4" />
+                    <Volume2 className="w-4 h-4 text-teal-600" />
                     <span>Bunyikan Suara</span>
                   </button>
                 </div>
@@ -524,7 +524,7 @@ export const FloatingNotificationBanner: React.FC<FloatingNotificationBannerProp
                   <button
                     type="button"
                     onClick={() => setSelectedNotifForDetail(null)}
-                    className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-slate-200 font-semibold text-xs sm:text-sm cursor-pointer transition-all flex-1 sm:flex-none text-center"
+                    className="px-4 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold text-xs sm:text-sm cursor-pointer transition-all flex-1 sm:flex-none text-center shadow-2xs"
                   >
                     Tutup
                   </button>
@@ -532,7 +532,7 @@ export const FloatingNotificationBanner: React.FC<FloatingNotificationBannerProp
                   <button
                     type="button"
                     onClick={() => handleNavigateToSource(selectedNotifForDetail)}
-                    className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/40 cursor-pointer transition-all active:scale-95 flex-1 sm:flex-none text-center ring-2 ring-indigo-400/50"
+                    className="px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-teal-600/30 cursor-pointer transition-all active:scale-95 flex-1 sm:flex-none text-center"
                   >
                     <ExternalLink className="w-4 h-4" />
                     <span>{buttonLabel}</span>

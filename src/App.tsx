@@ -572,33 +572,33 @@ export default function App() {
       {activeTab !== 'chat' && incomingChatNotif && (
         <div
           role="alert"
-          className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[9990] max-w-sm w-[calc(100vw-2rem)] sm:w-84 p-3.5 rounded-2xl bg-slate-900/95 border border-indigo-500/50 shadow-2xl backdrop-blur-xl text-white transition-all ring-4 ring-indigo-500/20 animate-fade-in"
+          className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[9990] max-w-sm w-[calc(100vw-2rem)] sm:w-84 p-4 rounded-3xl bg-white/98 border-2 border-teal-300 shadow-xl backdrop-blur-xl text-slate-800 transition-all ring-4 ring-teal-50 animate-fade-in"
         >
           <div className="flex items-start gap-3">
             <div className="relative shrink-0 mt-0.5">
-              <div className="w-10 h-10 rounded-xl bg-indigo-600/30 border border-indigo-500/50 flex items-center justify-center text-indigo-400 shadow-inner">
-                <MessageCircle className="w-5 h-5 text-indigo-300" />
+              <div className="w-10 h-10 rounded-2xl bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-600 shadow-inner">
+                <MessageCircle className="w-5 h-5 text-teal-600" />
               </div>
-              <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-emerald-400 rounded-full border-2 border-slate-900 animate-ping" />
-              <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-emerald-400 rounded-full border-2 border-slate-900" />
+              <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-teal-500 rounded-full border-2 border-white animate-ping" />
+              <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-teal-500 rounded-full border-2 border-white" />
             </div>
 
             <div className="flex-1 min-w-0 pr-1">
               <div className="flex items-center justify-between gap-1">
-                <span className="text-xs font-bold text-indigo-300 truncate">
+                <span className="text-xs font-bold text-teal-900 truncate">
                   {incomingChatNotif.sender_name}
                 </span>
-                <span className="text-[10px] text-emerald-400 font-semibold shrink-0 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
+                <span className="text-[10px] text-teal-800 bg-teal-50 border border-teal-200 px-2 py-0.2 rounded-full font-bold shrink-0 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-teal-500 inline-block" />
                   Chat Masuk
                 </span>
               </div>
 
-              <p className="text-xs text-slate-200 line-clamp-2 mt-1 font-normal leading-relaxed">
+              <p className="text-xs text-slate-700 line-clamp-2 mt-1 font-normal leading-relaxed">
                 {incomingChatNotif.message}
               </p>
 
-              <div className="flex items-center gap-2 mt-2.5 pt-2 border-t border-slate-800/80">
+              <div className="flex items-center gap-2 mt-2.5 pt-2 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => {
@@ -613,7 +613,7 @@ export default function App() {
                     setIncomingChatNotif(null);
                     handleSelectTab('chat');
                   }}
-                  className="text-xs font-bold px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-1.5 transition-all shadow-md shadow-indigo-600/30 cursor-pointer"
+                  className="text-xs font-bold px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white flex items-center gap-1.5 transition-all shadow-md shadow-teal-600/30 cursor-pointer"
                 >
                   <MessageCircle className="w-3.5 h-3.5" />
                   <span>Buka Chat</span>
@@ -631,7 +631,7 @@ export default function App() {
                     }
                     setIncomingChatNotif(null);
                   }}
-                  className="text-xs text-slate-400 hover:text-white px-2.5 py-1.5 rounded-xl hover:bg-slate-800 transition-all cursor-pointer"
+                  className="text-xs text-slate-500 hover:text-slate-800 px-2.5 py-1.5 rounded-xl hover:bg-slate-100 transition-all cursor-pointer font-semibold"
                 >
                   Tutup
                 </button>
@@ -651,7 +651,7 @@ export default function App() {
                 }
                 setIncomingChatNotif(null);
               }}
-              className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-all shrink-0 cursor-pointer"
+              className="text-slate-400 hover:text-slate-700 p-1 rounded-lg hover:bg-slate-100 transition-all shrink-0 cursor-pointer"
               title="Tutup Notifikasi"
             >
               <X className="w-4 h-4" />

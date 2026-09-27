@@ -120,21 +120,21 @@ export const DashboardVisibilityManager: React.FC<DashboardVisibilityManagerProp
   return (
     <div className="space-y-4">
       {/* Top Banner & Batch Actions */}
-      <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-950/80 via-slate-900 to-purple-950/80 border border-indigo-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-inner">
+      <div className="p-4 rounded-2xl bg-white border-2 border-teal-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 shrink-0">
-            <SlidersHorizontal className="w-5 h-5 text-indigo-200" />
+          <div className="p-2.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md shadow-teal-600/20 shrink-0">
+            <SlidersHorizontal className="w-5 h-5 text-white" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs sm:text-sm font-extrabold text-white">
+              <span className="text-xs sm:text-sm font-extrabold text-slate-900">
                 Kontrol Visibilitas Komponen Dashboard Home
               </span>
-              <span className="px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-bold border border-indigo-500/30">
+              <span className="px-2 py-0.5 rounded-full bg-teal-50 text-teal-800 text-[10px] font-bold border border-teal-200">
                 {activeCount} / {totalCount} Aktif
               </span>
             </div>
-            <p className="text-[11px] text-slate-300 mt-0.5">
+            <p className="text-[11px] text-slate-500 mt-0.5">
               Atur seluruh widget &amp; elemen yang diizinkan tampil di Dashboard Home untuk Jemaat dan Admin.
             </p>
           </div>
@@ -145,7 +145,7 @@ export const DashboardVisibilityManager: React.FC<DashboardVisibilityManagerProp
           <button
             type="button"
             onClick={handleEnableAll}
-            className="px-2.5 py-1.5 rounded-xl bg-emerald-600/80 hover:bg-emerald-500 text-white text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer shadow active:scale-95"
+            className="px-2.5 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer shadow-xs active:scale-95"
             title="Aktifkan & tampilkan semua komponen di dashboard"
           >
             <Check className="w-3.5 h-3.5" />
@@ -154,7 +154,7 @@ export const DashboardVisibilityManager: React.FC<DashboardVisibilityManagerProp
           <button
             type="button"
             onClick={handleDisableAll}
-            className="px-2.5 py-1.5 rounded-xl bg-rose-600/80 hover:bg-rose-500 text-white text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer shadow active:scale-95"
+            className="px-2.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer shadow-xs active:scale-95"
             title="Sembunyikan semua komponen (dashboard minimalis)"
           >
             <EyeOff className="w-3.5 h-3.5" />
@@ -163,10 +163,10 @@ export const DashboardVisibilityManager: React.FC<DashboardVisibilityManagerProp
           <button
             type="button"
             onClick={handleResetDefault}
-            className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer shadow active:scale-95 border border-slate-700"
+            className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer shadow-2xs active:scale-95 border border-slate-200"
             title="Kembalikan semua komponen ke status default rekomendasi"
           >
-            <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
+            <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
             <span>Reset Default</span>
           </button>
         </div>
@@ -182,8 +182,8 @@ export const DashboardVisibilityManager: React.FC<DashboardVisibilityManagerProp
               onClick={() => setSelectedCategory(cat.id)}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                 selectedCategory === cat.id
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                  : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'
+                  ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md shadow-teal-600/25'
+                  : 'bg-white text-slate-700 hover:text-teal-800 border border-teal-100 shadow-2xs'
               }`}
             >
               {cat.label}
@@ -198,14 +198,14 @@ export const DashboardVisibilityManager: React.FC<DashboardVisibilityManagerProp
             placeholder="Cari komponen..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+            className="w-full pl-8 pr-3 py-1.5 rounded-xl bg-white border border-teal-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-teal-500"
           />
         </div>
       </div>
 
       {/* Component Cards Grid */}
       {filteredComponents.length === 0 ? (
-        <div className="p-8 text-center rounded-2xl bg-slate-950/60 border border-slate-800 text-slate-400 text-xs">
+        <div className="p-8 text-center rounded-2xl bg-white border border-teal-100 text-slate-500 text-xs">
           Tidak ditemukan komponen dengan kata kunci "{searchQuery}".
         </div>
       ) : (
@@ -217,10 +217,10 @@ export const DashboardVisibilityManager: React.FC<DashboardVisibilityManagerProp
               <div
                 key={comp.key}
                 onClick={() => handleToggle(comp.key)}
-                className={`p-4 rounded-2xl border transition-all cursor-pointer select-none flex flex-col justify-between space-y-3 min-w-0 overflow-hidden ${
+                className={`p-4 rounded-2xl border-2 transition-all cursor-pointer select-none flex flex-col justify-between space-y-3 min-w-0 overflow-hidden ${
                   isVisible
-                    ? 'bg-slate-950/90 border-indigo-500/40 hover:border-indigo-400 shadow-md ring-1 ring-indigo-500/20'
-                    : 'bg-slate-950/40 border-slate-800/80 hover:border-slate-700 opacity-60'
+                    ? 'bg-white border-teal-200/90 hover:border-teal-400 shadow-md shadow-teal-900/5 ring-2 ring-teal-50'
+                    : 'bg-slate-50 border-slate-200/80 hover:border-slate-300 opacity-60'
                 }`}
               >
                 {/* Card Top Row */}
@@ -229,8 +229,8 @@ export const DashboardVisibilityManager: React.FC<DashboardVisibilityManagerProp
                     <div
                       className={`p-2.5 rounded-xl shrink-0 ${
                         isVisible
-                          ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30'
-                          : 'bg-slate-800/50 text-slate-500 border border-slate-700/50'
+                          ? 'bg-teal-50 text-teal-700 border border-teal-200'
+                          : 'bg-slate-200/70 text-slate-500 border border-slate-300/50'
                       }`}
                     >
                       {renderIcon(comp.iconName)}
@@ -240,10 +240,10 @@ export const DashboardVisibilityManager: React.FC<DashboardVisibilityManagerProp
                         <span
                           className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-md ${
                             comp.targetRole === 'ALL'
-                              ? 'bg-blue-500/10 text-blue-300 border border-blue-500/20'
+                              ? 'bg-teal-50 text-teal-800 border border-teal-200'
                               : comp.targetRole === 'ADMIN'
-                              ? 'bg-amber-500/10 text-amber-300 border border-amber-500/20'
-                              : 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20'
+                              ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                              : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                           }`}
                         >
                           {comp.targetRole === 'ALL'
@@ -253,7 +253,7 @@ export const DashboardVisibilityManager: React.FC<DashboardVisibilityManagerProp
                             : 'Khusus Jemaat'}
                         </span>
                       </div>
-                      <h4 className="text-xs sm:text-sm font-bold text-white leading-snug break-words">
+                      <h4 className="text-xs sm:text-sm font-bold text-slate-900 leading-snug break-words">
                         {comp.label}
                       </h4>
                     </div>
@@ -263,7 +263,7 @@ export const DashboardVisibilityManager: React.FC<DashboardVisibilityManagerProp
                   <div className="shrink-0 pt-0.5">
                     <div
                       className={`w-9 h-5 rounded-full transition-colors relative flex items-center p-0.5 ${
-                        isVisible ? 'bg-indigo-600' : 'bg-slate-800'
+                        isVisible ? 'bg-teal-600' : 'bg-slate-300'
                       }`}
                     >
                       <div
@@ -276,26 +276,26 @@ export const DashboardVisibilityManager: React.FC<DashboardVisibilityManagerProp
                 </div>
 
                 {/* Description */}
-                <p className="text-[11px] text-slate-300/80 leading-relaxed break-words">
+                <p className="text-[11px] text-slate-600 leading-relaxed break-words">
                   {comp.description}
                 </p>
 
                 {/* Status Indicator */}
-                <div className="pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-[11px] gap-2 min-w-0">
-                  <span className="text-slate-500 font-mono text-[10px] truncate max-w-[130px] sm:max-w-[160px]">{comp.key}</span>
+                <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] gap-2 min-w-0">
+                  <span className="text-slate-400 font-mono text-[10px] truncate max-w-[130px] sm:max-w-[160px]">{comp.key}</span>
                   <span
                     className={`font-bold flex items-center gap-1.5 shrink-0 text-xs ${
-                      isVisible ? 'text-emerald-400' : 'text-slate-500'
+                      isVisible ? 'text-teal-700' : 'text-slate-400'
                     }`}
                   >
                     {isVisible ? (
                       <>
-                        <Eye className="w-3.5 h-3.5 text-emerald-400" />
+                        <Eye className="w-3.5 h-3.5 text-teal-600" />
                         <span>Tampil di Dashboard</span>
                       </>
                     ) : (
                       <>
-                        <EyeOff className="w-3.5 h-3.5 text-slate-500" />
+                        <EyeOff className="w-3.5 h-3.5 text-slate-400" />
                         <span>Disembunyikan</span>
                       </>
                     )}
